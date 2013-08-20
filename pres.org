@@ -1,0 +1,128 @@
+#+TITLE:     Introduction to Dependent Types
+#+AUTHOR:    Chris Warburton
+#+EMAIL:     chriswarbo@gmail.com
+#+DATE:      Monday 19th August, 2013
+#+DESCRIPTION: Introduces dependent type systems for program verification
+#+KEYWORDS: dependent types, type systems, idris, functional programming
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:f \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+#+startup: beamer
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [bigger]
+#+BEAMER_FRAME_LEVEL: 2
+#+COLUMNS: %40ITEM %10BEAMER_env(Env) %9BEAMER_envargs(Env Args) %4BEAMER_col(Col) %10BEAMER_extra(Extra)
+
+* Motivation
+** Why Types?
+   - Programmers make mistakes
+   - Software evolves, specifications drift
+   - Enforce interfaces
+     - Esp. for libraries and higher-order functions
+   - Keep track of tedious properties
+     - Escaping, overflow, resources (memory, files, sockets), etc.
+   - Expose structure and properties of problems and algorithms
+** Why not tests?
+   - Types and tests are orthogonal
+     - We should use both!
+   - Tests look for bugs in a depth-first way
+     - Check detailed properties of specific inputs
+   - Types look for bugs in a breadth-first way
+     - Check limited properties of /every input/
+** Why Dependent Types?
+   - Allow /arbitrary/ types
+     - Almost Turing-complete
+   - /Simple/ foundation
+     - Extends Lambda Calculus
+   - Seamlessly combines /programming/ and /theorem-proving/
+     - Curry-Howard: Types are theorems, programs are their proofs
+   - Incremental
+     - Focus on properties we care about (eg. code injection, time-bounds)
+* Mechanics
+** Type Systems
+   - Assigns at least one type to every value
+     - Dynamic types are just large sums
+   - Can only /restrict/ code
+     - "I can already do that in $LANG!"
+   - Purely syntactic
+     - *1 + 1 != 2*
+   - Only exist at compile-time
+   - Consistent
+     - Necessarily /incomplete/: Some correct programs won't type-check
+** Dependent Type Systems
+   - One language
+     - Types are first-class values, just like everything else
+     - We can compute our types as part of our program
+   - Types can /depend/ on values:
+     - /Dependent/ functions
+       #+BEGIN_EXAMPLE
+       id : (t : Type) -> t -> t
+       #+END_EXAMPLE
+     - /Dependent/ pairs:
+       #+BEGIN_EXAMPLE
+       (t : Type ** t)
+       #+END_EXAMPLE
+** Types Are Terms
+   #+BEGIN_EXAMPLE
+   intOrChar : Bool -> Type
+   intOrChar True  = Int
+   intOrChar False = Char
+
+   data (=) : a -> b -> Type where
+     refl : (x : a) -> (x = x)
+
+   unitTestCheck : (allUnitTestsPass = True)
+   unitTestCheck = refl allUnitTestsPass
+   #+END_EXAMPLE
+** Dependent Functions
+   - Result /type/ can contain argument /value/
+   - No specific values, so use /universal quantification/ \hfill *forall*
+
+** Dependent Pairs
+   - Second value's /type/ can contain first /value/
+   - Each pair can differ, so we get /existential quantification/ \hfill *there exists*
+* Examples
+** Demo
+* Discussion
+** Applications
+   - Theorem proving (esp. Coq, Agda)
+   - Tricky datastructures/algorithms
+   - Security
+     - Handling malicious input (eg. PDF)
+     - Proof-carrying code
+   - Inductive programming
+** Drawbacks
+   - Consistent type systems must be /total/
+     - Defined for all inputs
+     - Must terminate or co-terminate
+   - Library problem: damages code re-use
+   - Verbose
+     - Dependent pattern-matching, views, etc.
+** On-going Research
+   - Library problem
+     - Ornaments
+     - Observational equality
+     - Higher-dimensional Type Theory
+   - Automation
+     - Theorem proving
+     - Type inference
+     - Termination checking
+   - UI
+     - More informative types can inform our IDEs
+** Summary
+   - Pros:
+     - Verifications of arbitrary properties
+     - Incremental safety
+     - Theorem-proving
+   - Cons:
+     - Verbose
+     - Totality-checking
+     - Limited code re-use
+** Thanks
+   Questions?
