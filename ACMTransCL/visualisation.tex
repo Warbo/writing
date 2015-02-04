@@ -3,9 +3,9 @@
 
 
 \begin{figure}
- 
+
 $$
-\xy0;/r.12pc/: 
+\xy0;/r.12pc/:
 *[o]=<80pt,30pt>\hbox{\txt{Coq libraries:\\one or many?}}="a"*\frm<8pt>{-,},
 (40,35)*[o]=<80pt,30pt>\hbox{\txt{General\\pattern-search}}="r"*\frm<8pt>{-},
 (40,-35)*[o]=<80pt,30pt>\hbox{\txt{Relative to\\ Coq object}}="b"*\frm<8pt>{-},
@@ -27,32 +27,23 @@ $$
 "d";"h" **\dir{-} ?>*\dir{>},
 "e";"i" **\dir{-} ?>*\dir{>},
 "f";"j" **\dir{-} ?>*\dir{>},
-%"r";"a" **\dir{-} ?>*\dir{>},
-%"c";"d" **\dir{-} ?>*\dir{>},
-%"d";"h" **\dir{-} ?>*\dir{>},
-%"c";"e" **\dir{-} ?>*\dir{>},
-%"e";"c" **\dir{-} ?>*\dir{>}
-%+<0em,0em>@+ 
 \endxy
 $$
 \caption{Visualisation techniques included in ML4PG.}\label{fig:visualisation}
 \end{figure}
 
 
-In the previous sections, we have seen how ML4PG can be used to find families of proofs following 
+In the previous sections, we have seen how ML4PG can be used to find families of proofs following
 a common pattern, and use those families to automatically prove theorems. However, when the proof-generation
-method fails, the output provided by ML4PG algorithms is just a set of similar patches with no hints of why 
-these proof-patches are deemed similar. 
-% In addition, the user needs
-% to replay the proof to infer the pattern. %Therefore, the conceptualisation of proof-patterns can be
-% %a challenge. 
+method fails, the output provided by ML4PG algorithms is just a set of similar patches with no hints of why
+these proof-patches are deemed similar.
 In this section, we present our approach to facilitate the understanding of proof patterns using different visualisation tools
 that are summarised in Figure~\ref{fig:visualisation}.
 
 \paragraph{An automaton-like representation of the proof-flow}
 The first problem that we address is the discovery of the key features that were taken
-into account during the cluster formation. This is a well-known problem in machine-learning 
-known as \emph{feature selection}~\cite{Bishop}. From a given set of features, feature selection algorithms 
+into account during the cluster formation. This is a well-known problem in machine-learning
+known as \emph{feature selection}~\cite{Bishop}. From a given set of features, feature selection algorithms
 generate different subsets of features and create a ranking of feature subsets.
 ML4PG uses the \emph{correlation-based feature subset selection} algorithm implemented in Weka~\cite{Weka}
 --- the machine-learning toolbox employed by ML4PG to extract the relevant features.
@@ -64,43 +55,32 @@ $-$ The tactics applied in the first and second steps of the proof-patches (\lst
 
 $-$ The type of the argument of the tactic applied in the first step of the proof-patches (\lstinline?nat?).
 
-$-$ The second top symbol of the goal in the second step of the proof-patches (the $\sum$ symbol). 
+$-$ The second top symbol of the goal in the second step of the proof-patches (the $\sum$ symbol).
 
-$-$ The first and second auxiliary lemmas applied in the the third step of the proof-patches. The first auxiliary lemma (\lstinline?sumrB?) is used to expand the summations and is 
+$-$ The first and second auxiliary lemmas applied in the the third step of the proof-patches. The first auxiliary lemma (\lstinline?sumrB?) is used to expand the summations and is
 common to all the proofs. There are two different \lq\lq{}second\rq\rq{} auxiliary lemmas that occur in the proofs of Lemma~\ref{lem:fundamental} and~\ref{lem:nilpotent2} (\lstinline?big_nat_recr? and
 \lstinline?big_nat_recl? --- both extract elements of a summation); however, the recurrent feature extraction process have assigned similar values to them.
 
-ML4PG uses this information and produces an automaton-shape representation for discovered % to help in the visualisation of 
-proof-patterns and the correlated features that determined the patterns. In our example, the associated ``automaton'' is depicted in Figure~\ref{fig:automata}. 
+ML4PG uses this information and produces an automaton-shape representation for discovered
+proof-patterns and the correlated features that determined the patterns. In our example, the associated ``automaton'' is depicted in Figure~\ref{fig:automata}.
 \end{example}
 
-
-
-% This feature selection mechanism helps to explain why the proof-patches are similar since it indicates the 
-% features that have been relevant for the construction of the cluster. To show the selected features and their relation with 
-% the proof-patches, we introduce an automaton-shape representation. In~\cite{GWR14}, a tool to infer models 
-% from proof traces was presented. Those models help to understand the behaviour exhibited by a collection
-% of proofs and is represented by automata. 
-
-
 Generally, given a cluster of proof patches ${\cal C}$, we have an automaton $A$ with $5$ consecutive states. The $i$th state of $A$ is labelled
-with the list of $i$th goals in the proof-patches contained in ${\cal C}$. The transitions between the $i$th and $i+1$th states are given by 
+with the list of $i$th goals in the proof-patches contained in ${\cal C}$. The transitions between the $i$th and $i+1$th states are given by
 the $i$th tactic of each proof-patch of ${\cal C}$. If two or more tactics belong to the same group (see Table~\ref{tab:tactics}),
-they are merged in a unique transition; otherwise, the tactics will be shown as different transitions. In addition, each state is annotated with 
-features 
+they are merged in a unique transition; otherwise, the tactics will be shown as different transitions. In addition, each state is annotated with
+features
 whose correlation determined the cluster.
 
 \begin{figure}[t]
-\centering 
+\centering
 \includegraphics[scale=.19]{itp6.png}
-\caption{\scriptsize{\emph{Fragment of the automaton 
- corresponding to the cluster of four lemma fragments described in the case study of Section~\ref{sec:recurrent}} (the whole automaton can be seen in Appendix~\ref{sec:automaton}). 
-It shows correspondence between certain proof steps of lemmas % the following lemmas were discovered:
-\texttt{telescope} (for the lemma of Example~\ref{example0}), \texttt{nilpotent\_inverse} (for Lemma~\ref{lem:nilpotent2}), and \texttt{persistent\_homology} 
-(for Lemma~\ref{lem:fundamental}). Square boxes denote feature correlation where it exists. 
-To be compact, we  hide full lemma statements, tactic and auxiliary lemma names, symbols, etc., but they can be shown by ML4PG. 
-%For example, the full statements of the following cluster lemmas will be shown:
-%The names of the lemmas of that cluster are: 
+\caption{\scriptsize{\emph{Fragment of the automaton
+ corresponding to the cluster of four lemma fragments described in the case study of Section~\ref{sec:recurrent}} (the whole automaton can be seen in Appendix~\ref{sec:automaton}).
+It shows correspondence between certain proof steps of lemmas
+\texttt{telescope} (for the lemma of Example~\ref{example0}), \texttt{nilpotent\_inverse} (for Lemma~\ref{lem:nilpotent2}), and \texttt{persistent\_homology}
+(for Lemma~\ref{lem:fundamental}). Square boxes denote feature correlation where it exists.
+To be compact, we  hide full lemma statements, tactic and auxiliary lemma names, symbols, etc., but they can be shown by ML4PG.
 }}\label{fig:automata}
 \end{figure}
 
@@ -114,8 +94,8 @@ As we have previously explained, ML4PG can cluster terms using a recurrent clust
 \begin{example}
  In Example~\ref{ex:maxnACA}, we have shown how the lemma \lstinline?maxnACA? is automatically proven thanks to its similarity with lemmas \lstinline?addnACA?, \lstinline?minnACA?, \lstinline?mulnACA?. From Figure~\ref{fig:treevisualisation}, it is trivial why these 4 lemmas are similar.
 
- 
- 
+
+
 
 \begin{figure}
 \centering
@@ -125,12 +105,12 @@ As we have previously explained, ML4PG can cluster terms using a recurrent clust
 \draw (0,-1.5) node{\includegraphics[scale=.2]{addnACA.png}} ;
 \draw (7,-1.5) node{\includegraphics[scale=.2]{mulnACA.png}}  ;
 \end{tikzpicture}
-\caption{Term trees associated with \texttt{maxnACA} (top left), \texttt{minnACA} (top right), \texttt{addnACA} (bottom left), \texttt{mulnACA} (bottom right).}\label{fig:treevisualisation} 
-\end{figure} 
- 
+\caption{Term trees associated with \texttt{maxnACA} (top left), \texttt{minnACA} (top right), \texttt{addnACA} (bottom left), \texttt{mulnACA} (bottom right).}\label{fig:treevisualisation}
+\end{figure}
+
  \end{example}
 
- 
+
 \paragraph{Cluster visualisation}
 
 Finally, we have also improved the visualisation of clusters. Initially, ML4PG's output is a list of similar lemmas (or in general terms), and the user can adjust the accuracy of those families varying the granularity value (see the case studied included at the end of Section~\ref{sec:recurrent}). However, this means that he has to run the clustering process several times, and remember the families that were generated in each iteration. These problems have been tackled thanks to a new visualisation tool that captures the relations between the families of similar proofs/terms obtained using different granularity values, see Figure~\ref{fig:clustervisualisation}.
@@ -141,30 +121,7 @@ Finally, we have also improved the visualisation of clusters. Initially, ML4PG's
 \begin{figure}
 \centering
 \includegraphics[scale=.3]{clustervisualisation.png}
-\caption{Cluster visualisation for the case study included at the end of Section~\ref{sec:recurrent} regarding the families of similar lemmas to Lemma~\ref{lem:nilpotent}: \texttt{telescope} (for the lemma of Example~\ref{example0}), \texttt{nilpotent\_inverse} (for Lemma~\ref{lem:nilpotent2}), and \texttt{persistent\_homology} 
-(for Lemma~\ref{lem:fundamental}). The outer, middle and inner square contain, respectively, the proof-patches obtained with granularities 1, 3 and 5. It shows correspondence between certain proof steps of lemmas % the following lemmas were discovered:
-}\label{fig:clustervisualisation} 
-\end{figure} 
-
-
-
-%for clustering that are related to that 
-%state.
-
-
-% $-$ there are several transitions from the $j$th to the $j+1$th state labelled by the $j$th tactic of each proof-patch of $P$ -- if either the $j$th tactic of two or more
-% proof-patches is the same or belong to the same group (see Table~\ref{tab:tactics}), the transitions are merged in a unique transition labelled with the set of those tactics,
-% 
-% $-$ if a proof ends after the $j$th tactic of a proof-patch, the $j+1$ state is represented as final.
-
-%\begin{example}
-
- 
- 
-
-
-
-
-%\end{example}
-
-
+\caption{Cluster visualisation for the case study included at the end of Section~\ref{sec:recurrent} regarding the families of similar lemmas to Lemma~\ref{lem:nilpotent}: \texttt{telescope} (for the lemma of Example~\ref{example0}), \texttt{nilpotent\_inverse} (for Lemma~\ref{lem:nilpotent2}), and \texttt{persistent\_homology}
+(for Lemma~\ref{lem:fundamental}). The outer, middle and inner square contain, respectively, the proof-patches obtained with granularities 1, 3 and 5. It shows correspondence between certain proof steps of lemmas
+}\label{fig:clustervisualisation}
+\end{figure}

@@ -10,16 +10,14 @@ We split Gallina tokens into the following groups.
  \item Group 4: \lstinline?fix?, \lstinline?cofix?.
  \item Group 5: \lstinline?@?,
  \item Group 6: \lstinline?match?, \lstinline?if?.
- \item Group 7: \lstinline?:=?, \lstinline?=>?, \lstinline?is?. 
+ \item Group 7: \lstinline?:=?, \lstinline?=>?, \lstinline?is?.
  \item Group 8: \lstinline?Inductive?, \lstinline?CoInductive?.
  \item Group 9: \lstinline?exists?, \lstinline?exists2?.
- \item Group 10: \lstinline?:?, \lstinline?:>?, \lstinline?<:?, \lstinline?%?.
- 
- 
+ \item Group 10: \lstinline?:?, \lstinline?:>?, \lstinline?<:?, \lstinline?
+
+
 \end{itemize}
 
 
 
 The formula for the $j$th Gallina token of the $n$th group is given by the formula $$- (n + \sum_{i=0}^j \frac{1}{10\times 2^{i-1}})$$
-
-

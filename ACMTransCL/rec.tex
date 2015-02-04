@@ -1,48 +1,26 @@
 \section{Recurrent Term Clustering}\label{sec:reclemmaclustering}
 
-The previous section introduced a method of defining statistically significant features. % to be used in Coq term clustering.
+The previous section introduced a method of defining statistically significant features.
 It remains to define the functions
-%Machine-learning algorithms usually work with vectors of numerical features~\cite{Bishop}; 
-%therefore, it is necessary to define a function to assign numerical values to non-numerical 
-%features -- as in our case with functions 
  $[.]_{term}$ and $[.]_{type}$ that will determine the feature values.
-These functions must be sensitive to the structure of terms, assigning close values 
-to similar terms, and more distant values to unrelated terms. %This is the reason to have $\mathbb{Q}^-$
-%as the codomain of the function $[.]_{constr}$, and $\mathbb{Q}^+$ as the codomain of the function $[.]_{term}$.
-%similarly with the value $-1$ of the second component of the triples associated with constructors nodes and the codomain of $[.]_{type}$ --
-%this will unambiguously distinguish the values assigned to constructors nodes and term-type nodes. 
+These functions must be sensitive to the structure of terms, assigning close values
+to similar terms, and more distant values to unrelated terms.
 
-%On the contrary to constructors, we do not know in advance all the terms that can occur in a development -- new terms can be defined by the user. Then, 
-%a predefined function is not suitable, and we need functions adaptive to the introduction of new terms or types.
-%The term component of a term-type node is a variable, a sort or a global name; 
 A term \lstinline?t? is represented by the $300$ feature values of $[\texttt{t}]_M$.
 The values of $[.]_{M}$
 for  variables  and pre-defined sorts in \lstinline?t? are fixed, but the values of user-defined terms (and types!) contained in \texttt{t}
 have to be computed recursively, based
-on the structures of their definitions, and %. Since global names must be defined 
-%in the library to use them, we can group their definitions (that are terms) 
-using clustering to compute their feature vectors, and their representative values for $[\texttt{t}]_M$. %to assign representative numbers. 
-It is the nature of functional languages to have terms depending on other terms, and feature extraction/clustering cycle is 
-repeated recursively to reflect complex mutual term dependencies as feature values.  %include all the necessary definitions.
-%Declarations and definitions of $t_1, \ldots \ t_n$ can themselves contain other user-defined terms, for which we need to run clustering to determine their feature values, and so on.
- We call this method \emph{recurrent clustering}: the function $[.]_M$ automatically (and recurrently) adapts to the given libraries and the current proof stage. % process 
-%will be used to assign values to global names -- 
-%It works similarly for the function $[.]_{type}$.
-% 
-% will assign values to the term components of the term-type nodes of ML4PG term trees;
-% and these terms components are necessarily defined in Coq -- remember that the term components of term-type nodes
-% are variables, sorts and global names. These term definitions can themselves be grouped against other term definitions appearing in the library using 
-% \emph{clustering}~\cite{Bishop}; and the process can be repeated recursively to include all the necessary terms of the library. 
-% These groups of terms will be used to define our function $[.]_{term}$; and this is how the feature extraction
-% becomes part of a \emph{recurrent clustering} process.
-%Thus, clustering and its statistical parameters play a special role in ML4PG feature extraction.
+on the structures of their definitions, and
+using clustering to compute their feature vectors, and their representative values for $[\texttt{t}]_M$.
+It is the nature of functional languages to have terms depending on other terms, and feature extraction/clustering cycle is
+repeated recursively to reflect complex mutual term dependencies as feature values.
+ We call this method \emph{recurrent clustering}: the function $[.]_M$ automatically (and recurrently) adapts to the given libraries and the current proof stage.
 This differs from the standard machine-learning approach (and the old version of ML4PG), where the process of feature extraction is separated from running pattern-recognition algorithms. Here, one is a crucial part of another.
- % the numerical conversion of Coq terms into feature vectors.
-%The details are as follows.
 
 
-When Coq objects are divided into clusters, a unique integer number is assigned to each cluster. Clustering algorithms compute 
-a \emph{proximity value} (ranging from $0$ to $1$) to every object in a cluster to indicate the certainty of the given example belonging 
+
+When Coq objects are divided into clusters, a unique integer number is assigned to each cluster. Clustering algorithms compute
+a \emph{proximity value} (ranging from $0$ to $1$) to every object in a cluster to indicate the certainty of the given example belonging
 to the cluster. The cluster numbers and the proximity values are used in the definitions of $[.]_{term}$ and $[.]_{type}$ below.
 
 
@@ -50,150 +28,109 @@ to the cluster. The cluster numbers and the proximity values are used in the def
 Given a term  \lstinline?t? of a Coq library, the functions $[.]_{term}$ and $[.]_{type}$ are defined respectively for the term component \lstinline?t1?
 and the type component \lstinline?t2? of every term-type node in the ML4PG term tree of \lstinline?t? as follows:
 
-$-$ $[\texttt{t1}]_{term/type}=i$, if \lstinline?t1? is the $i$th distinct variable in \lstinline?t?. 
+$-$ $[\texttt{t1}]_{term/type}=i$, if \lstinline?t1? is the $i$th distinct variable in \lstinline?t?.
 
 $-$ $[\texttt{t1}]_{term/type}=100+\sum_{j=1}^i\frac{1}{10\times 2^{j-1}}$, if \lstinline?t1? is the $i$th element of the set\\ $\{\texttt{Set},\texttt{Prop},\texttt{Type(0)},
 \texttt{Type(1)}, \texttt{Type(2)},\ldots\}$.
- 
-$-$ $[\texttt{t1}]_{term}=200+2\times j + p$, where $j$ is a number of a cluster $C_j$ computed by the latest run of term clustering, %the term definition of the global names introduced before \lstinline?t?,
-%$\texttt{t1}\in C_j$ 
-such that $p$ is the proximity value of $\texttt{t1}$ in $C_j$. 
 
-%$-$ $[\texttt{t2}]_{type}=i$, if \lstinline?t2? is the $i$th distinct variable in \lstinline?t?. 
+$-$ $[\texttt{t1}]_{term}=200+2\times j + p$, where $j$ is a number of a cluster $C_j$ computed by the latest run of term clustering,
+such that $p$ is the proximity value of $\texttt{t1}$ in $C_j$.
 
-%$-$ $[\texttt{t2}]_{type}=100+\sum_{j=1}^i\frac{1}{10\times 2^{j-1}}$, if \lstinline?t2? is the $i$th element of the set\\ $\{\texttt{Set},\texttt{Prop},\texttt{Type(0)},
-%\texttt{Type(1)}, \texttt{Type(2)},\ldots\}$.
- 
 $-$ $[\texttt{t2}]_{type}=200+2\times j + p$, where $j$ is a number of a cluster $C_j$ computed by the latest run of type clustering (i.e. term clustering restricted to types),
 such that $p$ is the proximity value of $\texttt{t2}$ in $C_j$.
-% 
-% where $C_j$ is a cluster obtained as a result of clustering the term \lstinline?t2? with the rest of the type components of 
-% the terms of the library, $\texttt{t2}\in C_j$ and $p$ is the proximity value of $\texttt{t2}$ in $C_j$. 
 \end{definition}
 
 
 Note the recurrent nature of the functions $[.]_{term}$ and $[.]_{type}$ where numbering of components of \lstinline?t? depends on the term definitions
-and types included in the library, assuming those values are computed by iterating the process back to the basic definitions.  In addition, the function $[.]_{term}$ internally uses the function $[.]_{type}$ in the recurrent clustering 
-process and \emph{vice versa}. %; however, terms and types are not mixed during the clustering process. 
-%The motivation behind the various parameters
-%of Definition~\ref{def:funterm} is as follows:
+and types included in the library, assuming those values are computed by iterating the process back to the basic definitions.  In addition, the function $[.]_{term}$ internally uses the function $[.]_{type}$ in the recurrent clustering
+process and \emph{vice versa}.
 
-In the above definition, 
-%$-$ Variables. T
+In the above definition,
 the variable encoding reflects the number and order of unique variables appearing in the term, note its similarity to the de Bruijn indexes.
-%$-$ Sorts. 
-In the formula for sorts, $\sum_{j=1}^i\frac{1}{10\times 2^{j-1}}$ reflects the close relation among sorts, and 
-$100$ is used to  distinguish sorts from variables and names. 
- %(it is unusual to have a term with $100$ or more variables) 
-%$-$ 
+In the formula for sorts, $\sum_{j=1}^i\frac{1}{10\times 2^{j-1}}$ reflects the close relation among sorts, and
+$100$ is used to  distinguish sorts from variables and names.
+
 Finally, the formula $200+2\times j + p$ assigns $[\texttt{t1}]$ (or $[\texttt{t2}]$) a value within $[200+2\times j,200+2\times j+1]$ depending on the
-statistical proximity of \lstinline?t1? (or \lstinline?t2?) in cluster $j$. Thus, elements of the same cluster have closer values comparing to the values 
-assigned to elements of other clusters, sorts, and variables. The formula is the same for the functions $[.]_{term}$ and $[.]_{type}$, but it is computed with different 
-clusters and the values %; then, a term and a type component can 
-%have the same value. However, they will never 
+statistical proximity of \lstinline?t1? (or \lstinline?t2?) in cluster $j$. Thus, elements of the same cluster have closer values comparing to the values
+assigned to elements of other clusters, sorts, and variables. The formula is the same for the functions $[.]_{term}$ and $[.]_{type}$, but it is computed with different
+clusters and the values
 occur in different cells of the term-tree matrices (cf. Definition~\ref{df:matrix}); thus, clustering algorithms distinguish terms and types on the level of features rather than feature values.
 
 We can now state the main property of the ML4PG feature extraction.
 
 \begin{proposition}
-Let ${\cal T}$ be the set of Coq terms  whose trees have maximum depth $10$ and level index $10$. 
-Then, the function $[.]_{M}$ restricted to ${\cal T}$ is a one-to-one function. 
+Let ${\cal T}$ be the set of Coq terms  whose trees have maximum depth $10$ and level index $10$.
+Then, the function $[.]_{M}$ restricted to ${\cal T}$ is a one-to-one function.
 \end{proposition}
 
-Once the feature values of ML4PG term tree matrices have been computed, we can cluster these matrices and 
-obtain groups of similar terms. In particular, ML4PG can be used to cluster definitions, types and lemma 
-statements. 
-We finish this section with some clusters discovered among the 457 definitions of the basic infrastructure of the SSReflect 
+Once the feature values of ML4PG term tree matrices have been computed, we can cluster these matrices and
+obtain groups of similar terms. In particular, ML4PG can be used to cluster definitions, types and lemma
+statements.
+We finish this section with some clusters discovered among the 457 definitions of the basic infrastructure of the SSReflect
 library~\cite{SSReflect}.
-% From version 1.5, the SSReflect library can be downloaded independently from the MathComp library containing the proof of the Feit-Thompson theorem~\cite{FTT}. 
-% Using the method presented throughout this section,
-% we analyse the similarities   %and theorem statements (1403 theorems)
-% of this library. 
 
 \begin{example}
 We include here 3 of the 91 clusters discovered by ML4PG automatically in the SSReflect library of 457 terms (across 12 standard files), within 5--10 seconds.
-Note that this example of cluster-search is not goal-oriented, ML4PG discovers patterns without any user guidance, and offers the user to consider term similarities of which he may 
-not be aware. 
+Note that this example of cluster-search is not goal-oriented, ML4PG discovers patterns without any user guidance, and offers the user to consider term similarities of which he may
+not be aware.
 
 \begin{itemize}
  \item Cluster 1:
 {\scriptsize \begin{lstlisting}
  Fixpoint eqn (m n : nat) :=
-   match m, n with 
-   | 0, 0 => true | m'.+1, n'.+1 => eqn m' n' 
+   match m, n with
+   | 0, 0 => true | m'.+1, n'.+1 => eqn m' n'
    | _, _ => false end.
  Fixpoint eqseq (s1 s2 : seq T)  :=
-   match s1, s2 with 
-   | [::], [::] => true | x1 :: s1', x2 :: s2' => (x1 == x2) && eqseq s1' s2' 
-   | _, _ => false end.         
+   match s1, s2 with
+   | [::], [::] => true | x1 :: s1', x2 :: s2' => (x1 == x2) && eqseq s1' s2'
+   | _, _ => false end.
 \end{lstlisting}}
-    
+
 \item  Cluster 2:
-{\scriptsize 
+{\scriptsize
 \begin{lstlisting}
  Fixpoint drop n s := match s, n with | _ :: s', n'.+1 => drop n' s' | _, _ => s end.
  Fixpoint take n s := match s, n with | x :: s', n'.+1 => x :: take n' s' | _, _ => [::] end.
 \end{lstlisting}}
 
 \item Cluster 3:
-{\scriptsize 
+{\scriptsize
 \begin{lstlisting}
  Definition flatten := foldr cat (Nil T).
  Definition sumn := foldr addn 0.
-\end{lstlisting}} 
+\end{lstlisting}}
 \end{itemize}
 
 
 
 \end{example}
 
-The first cluster contains the definitions of equality for natural numbers and lists --- showing that 
-ML4PG can spot similarities across libraries. The second cluster discovers the relation between \lstinline?take? (takes the first $n$ elements of 
-a list) and \lstinline?drop? (drops the first $n$ elements of a list). % -- several clusters are related to these ``trivial'' relation among functions.
-%At first sight, the last pattern seems to belong to the category of ``trivial'' patterns, but 
-The last pattern is less trivial of the three, as it depends on 
-%this cluster does not include 
+The first cluster contains the definitions of equality for natural numbers and lists --- showing that
+ML4PG can spot similarities across libraries. The second cluster discovers the relation between \lstinline?take? (takes the first $n$ elements of
+a list) and \lstinline?drop? (drops the first $n$ elements of a list).
+The last pattern is less trivial of the three, as it depends on
 other definitions, like \lstinline?foldr?, \lstinline?cat? (concatenation of lists) and \lstinline?addn? (sum
-of natural numbers). 
-%the reason is the recurrent term clustering that 
-Recurrent term clustering handles such dependencies well: it assigns close values to \lstinline?cat? and \lstinline?addn?,  since they have been discovered to belong to the same cluster. %It is worth remarking that all these clusters are discovered automatically based on the
-%statistical features captured from terms.
-Note the precision of ML4PG clustering. Among $457$ terms it considered, $15$ used \lstinline?foldr?, however,  Cluster 3 contained only $2$ definitions, excluding e.g. % were displayed as 
-%a pattern.
-%\lstinline?foldr? (like 
-%Definitions like 
-\lstinline?Definition allpairs s t:=foldr (fun x => cat (map (f x) t)) [::] s? ; \lstinline?Definition divisors n:=foldr add_divisors [:: 1] (prime_decomp n)?  or \lstinline?Definition Poly:=foldr cons_poly 0.? --- this is due to the recurrent clustering process since functions like \lstinline?add_divisors? or \lstinline?cons_poly? are not clustered together with functions \lstinline?cat? and \lstinline?addn?. 
-%that are used in 
+of natural numbers).
+Recurrent term clustering handles such dependencies well: it assigns close values to \lstinline?cat? and \lstinline?addn?,  since they have been discovered to belong to the same cluster.
+Note the precision of ML4PG clustering. Among $457$ terms it considered, $15$ used \lstinline?foldr?, however,  Cluster 3 contained only $2$ definitions, excluding e.g.
+\lstinline?Definition allpairs s t:=foldr (fun x => cat (map (f x) t)) [::] s? ; \lstinline?Definition divisors n:=foldr add_divisors [:: 1] (prime_decomp n)?  or \lstinline?Definition Poly:=foldr cons_poly 0.? --- this is due to the recurrent clustering process since functions like \lstinline?add_divisors? or \lstinline?cons_poly? are not clustered together with functions \lstinline?cat? and \lstinline?addn?.
+
 
 To summarise, there are three main properties that distinguish ML4PG pattern search from standard Coq search commands:
 \begin{itemize}
 	\item the user does not have to know and provide any search pattern;
 	\item the discovered clusters do not have to follow a \lq\lq{}pattern\rq\rq{} in a strict sense (e.g. neither exact symbol names nor their order make a pattern), but ML4PG considers structures and background information found in the library; and,
-	\item working with potentially huge sets of Coq objects, ML4PG makes its own intelligent discrimination of more significant and less significant patterns, 
+	\item working with potentially huge sets of Coq objects, ML4PG makes its own intelligent discrimination of more significant and less significant patterns,
 	as example with \lstinline?foldr? has shown. This is opposed to the classic search for \lstinline?foldr? pattern that would present the user with a set of $15$ definitions.
 \end{itemize}
 
 
-ML4PG can also work in a goal-directed mode, 
-%Given a user-defined function ${\cal D}$, ML4PG can 
+ML4PG can also work in a goal-directed mode,
 and discover only clusters of terms that are similar to the given term \lstinline?t?.
-This can speed-up the proof development in two different ways. 
-%If $t$ was not previously defined (or ML4PG fails to find that definition), 
-In addition, clustering will provide definitions of terms similar to \lstinline?t?; %, types
-%and structure; 
-hence, the proofs of the theorems 
+This can speed-up the proof development in two different ways.
+In addition, clustering will provide definitions of terms similar to \lstinline?t?;
+hence, the proofs of the theorems
 involving those terms may follow similar patterns.
-%about those functions are likely to follow a similar pattern to the theorems about ${t}$. 
 Clustering can also discover that a newly defined term \lstinline?t? was previously defined (perhaps in a different notation, as ML4PG works with structures across notations);
-in that case, the user can use the existing library definition and all its background theory instead of defining it from scratch. 
-
-
-
-
-
- 
-
-
-
-
-
+in that case, the user can use the existing library definition and all its background theory instead of defining it from scratch.
