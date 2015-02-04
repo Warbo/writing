@@ -1,0 +1,108 @@
+\section{Evaluation}\label{sec:evaluation}
+
+In the previous sections, we have shown how ML4PG has been designed to provide \emph{interesting} and \emph{non-trivial} hints on user's demand, 
+and to be flexible enough to do so at any stage of the proof, and relative to any chosen proof library. 
+However, it is difficult to measure how ML4PG improves the interactive proof building experience, since
+the usability of a hint varies from user to user. In this section, we present a quantitative method to evaluate
+how useful ML4PG can be during the proof development.
+
+
+Machine-learning techniques have been previously used for the automatically generation of proofs in 
+ITPs, see~\cite{Duncan02,DixonF03,GNR14}. ML4PG was not initially designed with this aim;
+but we can use the information obtained from clustering to automatically generate proof attempts for a given theorem. 
+
+\begin{PEM}\label{pem}
+Given the statement of a theorem $T$ and a set of lemmas $L=\{L_i\}_i$, we can use ML4PG to find a proof for $T$ as follows:
+\begin{enumerate}
+ \item Using term-clustering and $T\cup L$ as dataset, obtain the cluster $C$ that contains the theorem $T$ (i.e. $C=T\cup \{L_j\}_j$ where $\{L_j\}_j$ is the set of lemmas similar to $T$).
+ \item Obtain the sequence of tactics $\{T_1^j,\ldots,T_{n_i}^j\}_{j}$ used to prove each lemma $L_j$ in $C$.
+ \item For each $j$, try to prove $T$ using $T_1^j,\ldots,T_{n_j}^j$.
+ \item If no sequence of tactics prove $T$, then for each tactic use ML4PG to infer the argument for each tactic $T_k^j$:
+    \begin{itemize}
+     \item If the argument of $T_k^j$ is an internal hypothesis from the context of a proof, try all the internal hypothesis from the context of the current proof. 
+     \item If the argument of $T_k^j$ is an external lemma $E$, use term-clustering and $L$ as dataset to compute the lemmas in the same cluster as $E$ and try all those lemmas.
+     \item[***] This can be naturally extended to tactics with several arguments, just trying all the possible combinations. 
+  \end{itemize}    
+\end{enumerate}
+\end{PEM}
+
+\begin{example}\label{ex:maxnACA}
+Let $T$ be the lemma \lstinline?maxnACA? that states the inner commutativity of the maximum of two natural numbers in the SSReflect library:
+
+\begin{lstlisting}
+Lemma maxnACA : interchange maxn maxn. 
+\end{lstlisting}
+
+\noindent and $L$ be the \lstinline?ssrnat? library of SSReflect. Using Proof Exploration Method~\ref{pem}, we can construct a 
+proof of \lstinline?maxnACA? as follows. 
+
+\begin{enumerate}
+ \item $T$ belongs to the cluster containing the lemmas $\{$\lstinline?addnACA?, \lstinline?minnACA?, \lstinline?mulnACA?$\}$ -- these
+ 3 lemmas state the inner commutativity of addition, multiplication and the minimum of two naturals respectively. 
+ \item For this example, we will only consider the proof of the lemma \lstinline?addnACA? that is proven using the sequence of tactics \lstinline?by move=> m n p q; rewrite -!addnA (addnCA n).?
+ \item The proof of \lstinline?maxnACA? fails using the sequence of tactics from \lstinline?addnACA?.
+ \item The proof of \lstinline?addnACA? uses the lemmas \lstinline?addnA? and \lstinline?addnCA?. If we cluster these lemmas with the
+ rest of the lemmas of the ssrnat library we find the cluster $\{$\lstinline?minnA?, \lstinline?mulnA?, \lstinline?maxnA?$\}$ for 
+ \lstinline?addnA?, and the cluster $\{$\lstinline?minnAC?, \lstinline?mulnAC?, \lstinline?maxnAC?$\}$ for 
+ \lstinline?addnAC?. 
+ \item Using the lemmas \lstinline?maxnA? and \lstinline?maxnAC?, we construct the sequence of tactics \lstinline?by move=> m n p q; rewrite -!maxnA (maxnCA n).? that proves the lemma \lstinline?maxnACA?.
+\end{enumerate}
+ 
+\end{example}
+
+
+Using 5 Coq theories of varied sizes, we perform an empirical evaluation of our proof exploration method. Our test data consists of the Basic infrastructure of SSReflect library~\cite{SSReflect}, the formalisation about Java-like bytecode presented in~\cite{HK14}, the formalisation of persistent homology~\cite{HCMS12}, the paths library of the HoTT development~\cite{hottbook}, and two formalisations of Nash Equilibrium~\cite{Ves06,nash}. Using Proof exploration method~\ref{pem}, we try to prove every lemma of these libraries with a fully-honest approach (following the terminology from~\cite{KaliszykU14}): clustering is only performed against the lemmas that have previously
+proven in the given library. In addition, we study the impact of changing the granularity value.
+
+The results of our experiments can be seen in Table~\ref{tab:reproven}. The success rate of the proof exploration method 
+depends on how similar are the proofs of theorems in a given library. This explains the high success rate in the \lstinline?Paths?
+library, where most of the lemmas are proven using almost the same sequence of tactics, and the low rate in the Persistent Homology 
+library, where just a few lemmas are similarly proven. The granularity value does not have a big impact in the performance of 
+our experiments, and almost the same amount of lemmas are proven with the different values. In some cases, like in the Nash equilibrium
+library, a small granularity value generates bigger clusters that increase the exploration space allowing to prove more lemmas. 
+However, reducing the granularity value can also have a negative impact; for instance, in the JVM library the number of clusters
+is reduced and this means a reduction of the proven theorems. 
+
+The evaluation method presented in this section shows an estimation of how ML4PG can help during the proof development. 
+This evaluation is a bit artificial since it heavily relies on having a well-developed background theory. For instance, 
+in Example~\ref{ex:maxnACA}, the proof exploration method is able to automatically generate a proof for \lstinline?maxnACA? since
+the lemmas \lstinline?maxnA? and \lstinline?maxnAC? were already in the library, but this is not a common scenario when the user
+is creating his library. However, ML4PG can be useful for the user even if those two lemmas are not available: ML4PG can suggest
+that \lstinline?maxnACA? is similar to  \lstinline?addnACA?, and from the proof of the latter theorem, the user can infer that he needs
+to state the lemmas \lstinline?maxnA? and \lstinline?maxnAC? that were missing in the library. The automatic generation of lemmas based
+on clustering information was studied for the ACL2 system in~\cite{lpar13} --- the extrapolation of the technique presented in~\cite{lpar13} to Coq is not trivial since ACL2 works with first-order logic and Coq works with higher-order logic. 
+
+
+
+% 
+% \begin{itemize}
+%  \item Basic infrastructure of SSReflect library~\cite{SSReflect}: 1389 theorems formalised using SSReflect.
+%  \item Formalisation about Java-like bytecode~\cite{HK14}: 49 theorems formalised using SSReflect.
+%  \item Formalisation of Persistent Homology~\cite{HCMS12}: 306 theorems formalised using SSReflect.
+%  \item Library Paths of HoTT development~\cite{hottbook}: 80 theorems formalised using plain Coq.
+%  \item Formalisation of Nash Equilibrium~\cite{Ves06,nash}: 145 theorems formalised using plain Coq.
+% \end{itemize}
+
+
+
+\begin{table}
+\tbl{\scriptsize{\emph{Percentage of automatically re-proven theorems.}}\label{tab:reproven}}{
+\centering
+\begin{tabular}{cccccc}
+ \hline
+ Library & Language & Granularity 1 & Granularity 3 & Granularity 5 & Theorems \\
+ \hline
+
+ SSReflect library  & SSReflect & $36\%$ & $35\%$ & $28\%$ & 1389\\
+ 
+  JVM & SSReflect  & $56\%$ & $58\%$ & $65\%$ & 49\\
+ 
+ Persistent Homology & SSReflect  & $0\%$ & $10\%$ & $12\%$ & 306\\
+ 
+ Paths (HoTT) & Coq & $92\%$ & $91\%$ & $94\%$ &80\\
+ 
+ Nash Equilibrium & Coq & $40\%$ & $37\%$ & $36\%$ & 145\\
+   \hline
+\end{tabular}}
+ 
+\end{table}

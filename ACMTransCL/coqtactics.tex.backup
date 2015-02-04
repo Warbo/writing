@@ -1,0 +1,64 @@
+\section{Groups of Coq tactics and number assignment}\label{sec:coqtactics}
+
+We have divided the Coq tactics in the groups presented in Table~\ref{tab:coqtactics}.
+
+
+
+\begin{table}
+\centering
+\begin{tabular}{l||l}
+
+Group & Tactics of the group\\
+
+\hline
+\hline
+Group 1 & \lstinline?intro, intro after, intro at bottom, intro at top?\\
+        & \lstinline?intro before, intros, intros until, move?\\
+\hline
+Group 2 & \lstinline?apply, apply in, apply with, refine, eapply, eapply in,?\\
+& \lstinline?exact, simple apply, simple apply in?\\
+\hline
+Group 3& \lstinline?assert, assert as, assert by?\\
+\hline
+Group 4 & \lstinline?assumption, auto, autorewrite, autounfold, intuition,?\\
+ & \lstinline?solve, tauto, trivial?\\
+\hline
+Group 5 & \lstinline?rewrite, rewrite ->, rewrite <-, rewrite at, rewrite by,?\\
+& \lstinline?rewrite in, ?\\
+\hline
+Group 6 & \lstinline??\\
+\hline
+Group 7 & \lstinline??\\
+\hline
+Group 8 & \lstinline??\\
+\hline
+Group 9 & \lstinline??\\
+\hline
+Group 10 & \lstinline??\\
+\hline
+Group 11 & \lstinline??\\
+\hline
+Group 12 & \lstinline??\\
+\hline
+Group 13 & \lstinline??\\
+\hline
+Group 14 & \lstinline??\\
+\hline
+Group 15 & \lstinline??\\
+\hline
+Group 16 & \lstinline??\\
+\hline
+Group 17 & \lstinline??\\
+\hline
+Group 18 & \lstinline??\\
+\hline
+Group 19 & \lstinline??\\
+\hline
+\end{tabular}
+\caption{\emph{Groups of Coq tactics}}\label{tab:coqtactics}
+\end{table}
+
+
+The formula used in the function $[.]_{tactic}$ to compute the value of a Coq tactic is given by 
+$i+\sum_{j=0}^k\frac{1}{10 \times 2^{j-1}}$ where $i$ is the group of the tactic and $k$ is the position 
+of the tactic in that group (see right side of Table~\ref{tab:coqtactics}). 

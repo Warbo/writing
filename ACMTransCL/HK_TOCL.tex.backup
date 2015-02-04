@@ -1,0 +1,137 @@
+\documentclass[acmtocl]{acmsmall}
+
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{arrows}
+\usepackage{amssymb}
+\usepackage{amsfonts,amsmath,latexsym,stmaryrd}
+\usepackage{listings}
+\usepackage{cite}
+\input{macro}
+
+\usepackage{verbatim}
+\usepackage{rotating}
+\usepackage{pdflscape}
+\usepackage{booktabs}
+\usetikzlibrary{shapes,snakes}
+% 
+% \usepackage{theorem}
+% 
+% \theorembodyfont{\rmfamily}
+% \newtheorem{Thm}{Theorem}
+% \newtheorem{Defn}[Thm]{Definition}
+% \newtheorem{Ex}[Thm]{Example}
+% \newtheorem{Lem}[Thm]{Lemma}
+% \newtheorem{Prop}[Thm]{Proposition}
+\newtheorem{PS}[theorem]{Proof Strategy}
+% \newtheorem{GR}{General Remark}
+% \newtheorem{Alg}{Algorithm}
+
+
+
+
+\begin{document}
+ 
+\markboth{J. Heras and E. Komendantskaya}{Proof-Pattern Search in Coq/SSReflect}
+
+\title{Proof-Pattern Search in Coq/SSReflect}
+
+%                                     also used for the TOC unless
+%                                     \toctitle is used
+%
+\author{J\'onathan Heras
+\affil{School of Computing, University of Dundee, UK}
+Ekaterina Komendantskaya
+\affil{School of Computing, University of Dundee, UK}
+}
+%
+
+
+
+
+\begin{abstract}
+ML4PG is an extension of the Proof General interface, allowing
+the user to invoke machine-learning algorithms and find proof similarities
+in Coq/SSReflect libraries. In this paper, we present three new improvements to
+%techniques that enhance the quality of the results obtained by 
+ML4PG.
+First, a new method of \lq\lq{}recurrent clustering" is introduced to collect statistical features from Coq terms.
+Now the user can receive suggestions about similar definitions,
+types and lemma statements, in addition to proof strategies. Second, Coq
+proofs are split into patches to capture proof strategies that could arise
+at different stages of a proof. Finally, we improve ML4PG's output by introducing
+an automaton representation for proof patterns.\\
+\end{abstract}
+
+
+
+\category{F.4.1}{Mathematical Logic and Formal Languages}{Mathematical Logic -- Mechanical theorem proving}
+\category{D.2.4}{Software Engineering}{Software/Program Verification -- Formal methods.}
+
+\terms{}
+
+\keywords{Coq/SSReflect, Proof Patterns, Recurrent Clustering, Pattern Recognition, Feature Extraction.}
+
+
+\acmformat{J\'onathan Heras and Ekaterina Komendantskaya, 2014.
+Proof-Pattern Search in Coq/SSReflect.}
+
+
+\begin{bottomstuff}
+The work was supported by EPSRC grants EP/J014222/1 and EP/K031864/1.
+
+Author's addresses: J\'onathan Heras and Ekaterina Komendantskaya,
+School of Computing, University of Dundee, UK
+\end{bottomstuff}
+
+\maketitle
+ 
+
+
+
+\input{introduction}
+
+\input{lemmaclustering}
+
+\input{rec}
+
+\input{patches}
+
+\input{evaluation}
+
+\input{conceptualisation}
+
+\input{relatedwork}
+
+\input{conclusions}
+
+
+
+%\section{Acknowledgements}
+
+
+
+
+
+
+
+
+
+
+
+\bibliographystyle{ACM-Reference-Format-Journals}
+\bibliography{biblio}
+
+\pagebreak
+
+\appendix
+
+\input{gallina}
+
+\input{coqtactics}
+
+\input{automaton}
+
+\end{document}
+ 

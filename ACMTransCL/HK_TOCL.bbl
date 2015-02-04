@@ -1,0 +1,344 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{00}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{{\tt DOI:}\penalty0{#1}\ }
+  \fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       #1{#1}          \fi
+
+\bibitem[\protect\citeauthoryear{Asperti et~al\mbox{.}}{Asperti
+  et~al\mbox{.}}{2006}]%
+        {AspertiGCTZ04}
+{A. Asperti} {and} {others}. 2006.
+\newblock \showarticletitle{{A Content Based Mathematical Search Engine:
+  Whelp}}. In {\em TYPES'04} {\em (LNCS)}, Vol. 3839. 17--32.
+\newblock
+\showDOI{%
+\url{http://dx.doi.org/10.1007/11617990\_2}}
+
+
+\bibitem[\protect\citeauthoryear{Bertot, Pons, and Pottier}{Bertot
+  et~al\mbox{.}}{2000}]%
+        {BPP00}
+{Y. Bertot}, {O. Pons}, {and} {L. Pottier}. 2000.
+\newblock {\em {Dependency Graphs for Interactive Theorem Provers}}.
+\newblock {T}echnical {R}eport 4052.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Bishop}{Bishop}{2006}]%
+        {Bishop}
+{C. Bishop}. 2006.
+\newblock {\em Pattern Recognition and Machine Learning}.
+\newblock Springer.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{{\textsc{Coq} development team}}{{\textsc{Coq}
+  development team}}{2013}]%
+        {Coq}
+{{\textsc{Coq} development team}}. 2013.
+\newblock {\em {The \textsc{Coq} Proof Assistant Reference Manual, version
+  8.4pl3}}.
+\newblock {T}echnical {R}eport.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Coquand and Huet}{Coquand and Huet}{1988}]%
+        {CoquandH88}
+{T. Coquand} {and} {G. Huet}. 1988.
+\newblock \showarticletitle{The Calculus of Constructions}.
+\newblock {\em Information and Computation\/} {76}, 2/3 (1988), 95--120.
+\newblock
+\showDOI{%
+\url{http://dx.doi.org/10.1016/0890-5401(88)90005-3}}
+
+
+\bibitem[\protect\citeauthoryear{Coquand and Paulin-Mohring}{Coquand and
+  Paulin-Mohring}{1990}]%
+        {CoPa89}
+{T. Coquand} {and} {C. Paulin-Mohring}. 1990.
+\newblock \showarticletitle{Inductively defined types}. In {\em Colog'88} {\em
+  (LNCS)}, Vol. 417. 50--66.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Dixon and Fleuriot}{Dixon and
+  Fleuriot}{2003}]%
+        {DixonF03}
+{L. Dixon} {and} {J.~D. Fleuriot}. 2003.
+\newblock \showarticletitle{{IsaPlanner: A Prototype Proof Planner in
+  Isabelle}}. In {\em 19th International Conference on Automated Deduction
+  (CADE'2003)} {\em (LNCS)}, Vol. 2741. 279--283.
+\newblock
+\showDOI{%
+\url{http://dx.doi.org/10.1007/978-3-540-45085-6\_22}}
+
+
+\bibitem[\protect\citeauthoryear{Duncan}{Duncan}{2002}]%
+        {Duncan02}
+{H. Duncan}. 2002.
+\newblock {\em The use of Data-Mining for the Automatic Formation of Tactics}.
+\newblock Ph.D. Dissertation. University of Edinburgh.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Garillot et~al\mbox{.}}{Garillot
+  et~al\mbox{.}}{2009}]%
+        {GarillotEtAl09}
+{F. Garillot} {and} {others}. 2009.
+\newblock \showarticletitle{Packaging mathematical structures}. In {\em
+  TPHOLs'09} {\em (LNCS)}, Vol. 5674.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Gonthier et~al\mbox{.}}{Gonthier
+  et~al\mbox{.}}{2013}]%
+        {FTT}
+{G. Gonthier} {and} {others}. 2013.
+\newblock \showarticletitle{{A Machine-Checked Proof of the Odd Order
+  Theorem}}. In {\em ITP'13} {\em (LNCS)}, Vol. 7998. 163--179.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Gonthier and Mahboubi}{Gonthier and
+  Mahboubi}{2010}]%
+        {SSReflect}
+{G. Gonthier} {and} {A. Mahboubi}. 2010.
+\newblock \showarticletitle{{An introduction to small scale reflection}}.
+\newblock {\em Journal of Formalized Reasoning\/} {3}, 2 (2010), 95--152.
+\newblock
+\showDOI{%
+\url{http://dx.doi.org/10.6092/issn.1972-5787/1979}}
+
+
+\bibitem[\protect\citeauthoryear{Gransden, Walkinshaw, and Raman}{Gransden
+  et~al\mbox{.}}{2014}]%
+        {GNR14}
+{T. Gransden}, {N. Walkinshaw}, {and} {R. Raman}. 2014.
+\newblock \showarticletitle{{Mining State-Based Models from Proof Corpora}}. In
+  {\em Conferences on Intelligent Computer Mathematics (CICM'14)} {\em (LNCS)},
+  Vol. 8543. 282--297.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Hall et~al\mbox{.}}{Hall
+  et~al\mbox{.}}{2009}]%
+        {Weka}
+{M. Hall} {and} {others}. 2009.
+\newblock \showarticletitle{{The WEKA Data Mining Software: An Update}}.
+\newblock {\em SIGKDD Explorations\/} {11}, 1 (2009), 10--18.
+\newblock
+\showDOI{%
+\url{http://dx.doi.org/10.1145/1656274.1656278}}
+
+
+\bibitem[\protect\citeauthoryear{Heras et~al\mbox{.}}{Heras
+  et~al\mbox{.}}{2013a}]%
+        {HCMS12}
+{J. Heras} {and} {others}. 2013a.
+\newblock \showarticletitle{{Computing Persistent Homology within
+  Coq/SSReflect}}.
+\newblock {\em ACM Transactions on Computational Logic\/} {14}, 4 (2013).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Heras et~al\mbox{.}}{Heras
+  et~al\mbox{.}}{2013b}]%
+        {lpar13}
+{J. Heras} {and} {others}. 2013b.
+\newblock \showarticletitle{{Proof-Pattern Recognition and Lemma Discovery in
+  ACL2}}. In {\em LPAR-19} {\em (LNCS)}, Vol. 8312. 389--406.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Heras and Komendantskaya}{Heras and
+  Komendantskaya}{2014a}]%
+        {HK12}
+{J. Heras} {and} {E. Komendantskaya}. 2012--2014a.
+\newblock {ML4PG: downloadable programs, manual, examples}.
+\newblock   (2012--2014).
+\newblock
+\newblock
+\shownote{\url{www.computing.dundee.ac.uk/staff/katya/ML4PG/}.}
+
+
+\bibitem[\protect\citeauthoryear{Heras and Komendantskaya}{Heras and
+  Komendantskaya}{2013}]%
+        {CICM13}
+{J. Heras} {and} {E. Komendantskaya}. 2013.
+\newblock \showarticletitle{{ML4PG in Computer Algebra Verification}}. In {\em
+  CICM'13} {\em (LNCS)}, Vol. 7961. 354--358.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Heras and Komendantskaya}{Heras and
+  Komendantskaya}{2014b}]%
+        {HK14}
+{J. Heras} {and} {E. Komendantskaya}. 2014b.
+\newblock \showarticletitle{{Recycling Proof Patterns in Coq: Case Studies}}.
+\newblock {\em Journal Mathematics in Computer Science, accepted\/} (2014).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Kaliszyk and Urban}{Kaliszyk and
+  Urban}{2013}]%
+        {lpar-urban}
+{C. Kaliszyk} {and} {J. Urban}. 2013.
+\newblock \showarticletitle{{Lemma Mining over HOL Light}}. In {\em LPAR-19}
+  {\em (LNCS)}, Vol. 8312. 503--517.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Kaliszyk and Urban}{Kaliszyk and
+  Urban}{2014a}]%
+        {holyhammer}
+{C. Kaliszyk} {and} {J. Urban}. 2014a.
+\newblock \showarticletitle{{Learning-Assisted Automated Reasoning with
+  Flyspeck}}.
+\newblock {\em Journal of Automated Reasoning\/} {53}, 2 (2014), 173--213.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Kaliszyk and Urban}{Kaliszyk and
+  Urban}{2014b}]%
+        {KaliszykU14}
+{C. Kaliszyk} {and} {J. Urban}. 2014b.
+\newblock \showarticletitle{Learning-assisted Theorem Proving with Millions of
+  Lemmas}.
+\newblock {\em CoRR\/}  {abs/1402.3578} (2014).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Komendantskaya et~al\mbox{.}}{Komendantskaya
+  et~al\mbox{.}}{2013}]%
+        {KHG13}
+{E. Komendantskaya} {and} {others}. 2013.
+\newblock \showarticletitle{{Machine Learning for Proof General: interfacing
+  interfaces}}.
+\newblock {\em Electronic Proceedings in Theoretical Computer Science\/}  {118}
+  (2013), 15--41.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{K\"uhlwein et~al\mbox{.}}{K\"uhlwein
+  et~al\mbox{.}}{2013}]%
+        {K13}
+{D. K\"uhlwein} {and} {others}. 2013.
+\newblock \showarticletitle{{MaSh: Machine Learning for Sledgehammer}}. In {\em
+  ITP'13} {\em (LNCS)}, Vol. 7998. 35--50.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Pacalet and Bertot}{Pacalet and
+  Bertot}{2013}]%
+        {dpdgraph}
+{A. Pacalet} {and} {Y. Bertot}. 2009--2013.
+\newblock The DpdGraph tool.
+\newblock   (2009--2013).
+\newblock
+\newblock
+\shownote{\url{https://anne.pacalet.fr/dev/dpdgraph/}.}
+
+
+\bibitem[\protect\citeauthoryear{Paulson and Blanchette}{Paulson and
+  Blanchette}{2010}]%
+        {Paulson_threeyears}
+{L.~C. Paulson} {and} {J.~C. Blanchette}. 2010.
+\newblock \showarticletitle{Three Years of Experience with Sledgehammer, a
+  Practical Link between Automatic and Interactive Theorem Provers}. In {\em
+  8th International Workshop on the Implementation of Logics (IWIL'10)}.
+\newblock
+\showDOI{%
+\url{http://dx.doi.org/10.1.1.186.3278}}
+
+
+\bibitem[\protect\citeauthoryear{Pottier and Pons}{Pottier and Pons}{1998}]%
+        {dependtohtml}
+{L. Pottier} {and} {O. Pons}. 1998.
+\newblock {\em {dependtohtml: Creating Hypertext graphical representation of
+  directed graphs}}.
+\newblock {T}echnical {R}eport.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Roux}{Roux}{2009}]%
+        {nash}
+{S.~Le Roux}. 2009.
+\newblock \showarticletitle{{Acyclic Preferences and Existence of Sequential
+  Nash Equilibria: A Formal and Constructive Equivalence}}. In {\em 20th
+  International Conference on Theorem Proving in Higher Order Logics
+  (TPHOLs'07)} {\em (LNCS)}, Vol. 5674. 293--309.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Tews}{Tews}{2011}]%
+        {prooftree}
+{H. Tews}. 2011.
+\newblock \showarticletitle{Automatic Library Compilation and Proof-Tree
+  Visualisation for Coq Proof General}. In {\em 3rd Coq Workshop}.
+\newblock
+\showURL{%
+\url{http://askra.de/software/prooftree/}}
+
+
+\bibitem[\protect\citeauthoryear{{Univalent Foundations Program}}{{Univalent
+  Foundations Program}}{2013}]%
+        {hottbook}
+{The {Univalent Foundations Program}}. 2013.
+\newblock {\em Homotopy Type Theory: Univalent Foundations of Mathematics}.
+\newblock \url{http://homotopytypetheory.org/book}, Institute for Advanced
+  Study.
+\newblock
+\newblock
+\shownote{\url{https://github.com/HoTT/HoTT/wiki}.}
+
+
+\bibitem[\protect\citeauthoryear{Urban et~al\mbox{.}}{Urban
+  et~al\mbox{.}}{2008}]%
+        {UrbanSPV08}
+{J. Urban} {and} {others}. 2008.
+\newblock \showarticletitle{{MaLARea SG1- Machine Learner for Automated
+  Reasoning with Semantic Guidance}}. In {\em IJCAR'08} {\em (LNCS)}, Vol.
+  5195. 441--456.
+\newblock
+\showDOI{%
+\url{http://dx.doi.org/10.1007/978-3-540-71070-7\_37}}
+
+
+\bibitem[\protect\citeauthoryear{Vestergaard}{Vestergaard}{2006}]%
+        {Ves06}
+{R. Vestergaard}. 2006.
+\newblock \showarticletitle{A constructive approach to sequential Nash
+  equilibria}.
+\newblock {\em Information Processing Letter\/}  {97} (2006), 46--51.
+\newblock
+
+
+\end{thebibliography}

@@ -1,0 +1,96 @@
+This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
+The top-level auxiliary file: HK_TOCL.aux
+The style file: ACM-Reference-Format-Journals.bst
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: biblio.bib
+I was expecting a `,' or a `}'---line 615 of file biblio.bib
+ :     
+ :     note = {\url{http://mahout.apache.org/}},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 758 of file biblio.bib
+ :  
+ :  title = {seL4: formal verification of an OS kernel},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+Warning--empty publisher in AspertiGCTZ04
+Warning--empty address in AspertiGCTZ04
+Warning--empty institution in BPP00
+Warning--empty address in Bishop
+Warning--empty institution in Coq
+Warning--empty publisher in CoPa89
+Warning--empty address in CoPa89
+Warning--empty publisher in DixonF03
+Warning--empty address in DixonF03
+Warning--empty publisher in GarillotEtAl09
+Warning--empty address in GarillotEtAl09
+Warning--page numbers missing in both pages and numpages fields in GarillotEtAl09
+Warning--empty publisher in FTT
+Warning--empty address in FTT
+Warning--empty publisher in GNR14
+Warning--empty address in GNR14
+Warning--page numbers missing in both pages and numpages fields in HCMS12
+Warning--empty publisher in lpar13
+Warning--empty address in lpar13
+Warning--empty publisher in CICM13
+Warning--empty address in CICM13
+Warning--no number and no volume in HK14
+Warning--page numbers missing in both pages and numpages fields in HK14
+Warning--empty publisher in lpar-urban
+Warning--empty address in lpar-urban
+Warning--page numbers missing in both pages and numpages fields in KaliszykU14
+Warning--empty publisher in K13
+Warning--empty address in K13
+Warning--empty publisher in Paulson_threeyears
+Warning--empty address in Paulson_threeyears
+Warning--page numbers missing in both pages and numpages fields in Paulson_threeyears
+Warning--empty institution in dependtohtml
+Warning--empty publisher in nash
+Warning--empty address in nash
+Warning--empty publisher in prooftree
+Warning--empty address in prooftree
+Warning--page numbers missing in both pages and numpages fields in prooftree
+Warning--empty publisher in UrbanSPV08
+Warning--empty address in UrbanSPV08
+You've used 31 entries,
+            5290 wiz_defined-function locations,
+            1418 strings with 18151 characters,
+and the built_in function-call counts, 29552 in all, are:
+= -- 3703
+> -- 1049
+< -- 13
++ -- 324
+- -- 461
+* -- 1705
+:= -- 3340
+add.period$ -- 158
+call.type$ -- 31
+change.case$ -- 174
+chr.to.int$ -- 28
+cite$ -- 70
+duplicate$ -- 2551
+empty$ -- 1804
+format.name$ -- 484
+if$ -- 7031
+int.to.chr$ -- 4
+int.to.str$ -- 0
+missing$ -- 110
+newline$ -- 290
+num.names$ -- 245
+pop$ -- 1001
+preamble$ -- 1
+purify$ -- 324
+quote$ -- 0
+skip$ -- 741
+stack$ -- 0
+substring$ -- 2262
+swap$ -- 231
+text.length$ -- 84
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 422
+warning$ -- 39
+while$ -- 288
+width$ -- 0
+write$ -- 584
+(There were 2 error messages)

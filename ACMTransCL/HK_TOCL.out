@@ -1,0 +1,11 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [1][-]{section.2}{Feature Extraction for Coq terms}{}
+\BOOKMARK [1][-]{section.3}{Recurrent Term Clustering}{}
+\BOOKMARK [1][-]{section.4}{Recurrent Proof Clustering}{}
+\BOOKMARK [1][-]{section.5}{Evaluation}{}
+\BOOKMARK [1][-]{section.6}{Visualisation tools in ML4PG}{}
+\BOOKMARK [1][-]{section.7}{Related Work}{}
+\BOOKMARK [1][-]{section.8}{Conclusions}{}
+\BOOKMARK [1][-]{appendix.A}{Formula for Gallina tokens}{}
+\BOOKMARK [1][-]{appendix.B}{Groups of Coq tactics and number assignment}{}
+\BOOKMARK [1][-]{appendix.C}{Automaton}{}

@@ -1,0 +1,145 @@
+\section{Introduction}\label{sec:introduction}
+
+
+
+
+Development of Interactive Theorem Provers (ITPs) has led to the creation of big libraries and varied infrastructures for formal
+mathematical proofs. 
+These frameworks usually involve thousands of definitions and theorems (for instance, there are approximately
+4200 definitions and 15000 theorems in the formalisation of the Feit-Thompson theorem~\cite{FCT}). % Definitions,
+%theorems and proof-strategies used in
+Parts of  those libraries can often be re-applied in new domains; however, 
+it is a challenge for expert and non-expert users alike to trace them and find re-usable concepts and proof ideas.
+
+
+Coq/SSReflect provide comprehensive search mechanisms to browse the corpus of results available in different libraries.
+There are several search commands in Coq:  \lstinline?Search?~, \lstinline?SearchAbout?, \lstinline?SearchPattern?
+and \lstinline?SearchRewrite?~\cite{Coq}. In addition, SSReflect implements its own version of the \lstinline?Search?
+command \cite{SSReflect} -- SSReflect's \lstinline?Search? gathers the functionality of the 4 Coq's search commands.
+The Whelp platform~\cite{AspertiGCTZ04} is a web search engine for mathematical knowledge formalised in Coq, which features 3 functionalities:
+\lstinline?Match? (similar to Coq's \lstinline?Search? command), \lstinline?Hint? (that finds all the theorems which can
+be applied to derive the current goal) and \lstinline?Elim? (that retrieves all the eliminators of a given type).
+%In this section, we compare ML4PG with these tools.  
+
+%Let us explain first when these tools are usually invoked. 
+Search mechanisms can be used in two different scenarios. If the user knows how to continue the proof, but
+he does not remember (or know) the concrete name of the desired auxiliary lemma, it suffices to provide a search pattern to Coq searching engines, e.g.
+using commands of the form \lstinline?Search "distr" in bigop? or  
+\lstinline?Search _ (_ * (\big[_/_]_(_ <- _| _) _))?, where \texttt{bigop} is a library, \texttt{"distr"} is a pattern in a lemma name, and  \lstinline? _ (_ * (\big[_/_]_(_ <- _| _) _))?
+is a term-pattern for search.
+ 
+%\begin{example}\label{ex:distr}
+% In the proof of Lemma~\ref{lem:nilpotent}, we may want to introduce the term $(1-M)$ inside the sum $\sum_{i=0}^{n-1} M^i$, but 
+% if we have no experience with the bigop library of SSReflect, it is likely that we do not know the name of the concrete lemma. 
+% The lemma which carries out this task can be find using, for instance, the commands \lstinline?Search "distr" in bigop.? or  
+%\lstinline?Search _ (_ * (\big[_/_]_(_ <- _| _) _))?. 
+%\end{example}
+In the second scenario, the user needs help in the middle of the proof. Searching mechanisms can be also useful in this 
+case; for instance, using the \lstinline?Search? command the user can search all the lemmas associated with a concrete term
+of the current goal; or the \lstinline?Hint? mechanism of Whelp can find all the theorems which can be applied to derive the current goal.
+
+%\begin{example}\label{ex:fact}
+% In the proof of Lemma~\ref{lem:factorial}, we can find all the lemmas related to the factorial function using the command
+% \lstinline?SearchAbout factorial?. 
+%\end{example}
+
+%ML4PG is helpful in the second scenario, since it provides families of similar proofs. Inspecting that family of proofs, 
+%the user can find a pattern to finish the proof that she is formalising. 
+
+%As we have seen in Examples~\ref{ex:distr} and~\ref{ex:fact}, 
+The above search mechanisms are goal directed and deterministic. That is, the user
+searches  the chosen  libraries, for lemmas related to a concrete type, term or pattern. 
+If the patterns defined by the user are present in the given library, then the user is guaranteed to see the relevant lemmas on the screen.
+
+The situation is more complicated if the user does not really know the right pattern to search for. Imagine, for example, being in the middle of constructing a proof, 
+and wishing to get some non-trivial hint on how to proceed, wishing there was an ITP expert near, who would suggest a further proof strategy based on his previous experience.
+The ML4PG (``Machine-Learning for Proof-General'') tool~\cite{KHG13,HK13,CICM13,HK14} was created to emulate such intelligent help automatically, using statistical machine-learning
+algorithms.
+The main idea was to use statistical clustering to detect common proof patterns. A proof pattern was defined as a correlation between the tactics  and the types/shapes of 
+subgoals resulting from the tactic applications, 
+within five proof steps.
+The resulting tool could indeed find some interesting -- unexpected and yet relevant -- proof-patterns,
+across different notation, types, and libraries used. The experiments span several subjects -- basic infrastructures, Computer Algebra, Game Theory, and
+certification of Java Virtual Machine; the results are best summarised in~\cite{CICM13,HK14}.
+
+
+In comparison to the more traditional \emph{search engines}, ML4PG is a goal-independent (unsupervised) tool, i.e. the user does not have to know the required pattern in advance.
+But, as many 
+statistical machine-learning applications, it is also non-deterministic. That is, the tool failing to suggest a successful pattern does not mean there is no ``interesting'' pattern.
+Actually, the notion of a proof pattern being ``interesting'' was left to the user's judgement, as well. 
+
+
+That initial approach had one inherent limitation: the essence of a Coq/SSReflect proof is not fully expressible by a sequence of applied tactics. 
+The definitions, types, and shapes of auxiliary lemmas used in the proof can be much more sophisticated and conceptual than a proof script calling them.
+Therefore, although the tool could find interesting, and often useful, sequences of tactics; it could not go further to recognise e.g. similar definitions.
+ 
+In this paper, we report the most recent extensions to ML4PG, the major of which is involving all kinds of Coq terms -- type declarations, object definitions and lemma statements into
+the process 
+of pattern search, which required additional algorithms of feature extraction that would reflect the mutual dependency of various proof objects; see Section~\ref{sec:lemmaclustering}. 
+This major step in ML4PG development prompted other improvements. The initial ML4PG was considering features arising from first 5 proof steps in a proof, whereas now we treat every proof as a collection of
+proof patches, each potentially
+representing an interesting proof strategy. Moreover, if say 15th-20th step in one proof resembles a 115th-120th step in another, the tool is now able to detected such patterns deep down.  
+The feature extraction algorithms for proof features has been further refined to include the data collected from other Coq terms, and from the structures of type definitions, and now the 
+whole syntax of the chosen libraries is subject
+to \emph{recurrent clustering} -- a novel technique for ML4PG, but see~\cite{lpar13}. All extensions to proof-feature extraction are explained in Section~\ref{sec:recurrent}. 
+Finally, we improve conceptualisation of ML4PG's output. It used to show, in response to the user's call, a set of similar proofs,
+with no hints of why these proofs are deemed similar. We now introduce an automaton-shape 
+representation of each detected proof-patch, showing the proof-features that correlate, see Section~\ref{sec:conceptualisation}. This partially addresses the last drawback, of the subjective approach to 
+the pattern's ``interestingness'' -- now 
+the tool clearly declares correlation of which proof features ``made'' the suggested proof pattern. 
+Finally, in Section~\ref{sec:conclusions}, we conclude the paper.
+Examples we use throughout the paper come from SUCH AND SUCH SSReflect libraries; and ML4PG is now a part of the standard Proof General distribution, more ML4PG materials are available at~\cite{HK12}.  
+
+
+
+
+
+ 
+%On the contrary, the proof patterns found by
+%ML4PG are unknown in advance. In this way, ML4PG can find some unexpected results but which can still be useful for the user. 
+
+%\begin{example}\label{ex:cancel}
+ % The command \lstinline?Search _ (\sum_(_ <- _) (_ - _))?  can find Lemmas~\ref{lem:lemma3} and~\ref{lem:fundamental}; this can 
+ % be useful in the proof of Lemma~\ref{lem:nilpotent} since the three lemmas follow the same pattern. However, Lemma~\ref{lem:nilpotent2}
+ % whose proof is closer to the proof of Lemma~\ref{lem:nilpotent} (see Table~\ref{tab:compare}) cannot be found using the previous search command
+ % or other commands involving the terms of Lemma~\ref{lem:nilpotent}: \lstinline?Search _ (\sum_(_ <- _) _ *m _)?, 
+ % \lstinline?Search _ (_ *m (_ - _))? or \lstinline?Search _ (_ *m _)? (this last command finds Lemma~\ref{lem:nilpotent2}, but there are 
+ % approximately 120 additional suggestions).
+%\end{example}
+
+%Finally, we can consider the relevance of suggestions provided by search mechanisms and ML4PG. In both cases, some of the results returned by these tools
+%can be useless; however, they can be refined modifying the input of the search mechanisms or changing some parameters in ML4PG. 
+
+%\begin{example}\label{ex:relevance}
+% In Benchmark 1, a search of all the lemmas involving big operations produce more than $300$ lemmas. If we refine the search to lemmas involving $\sum$,
+% we can find $250$ lemmas; and the command \lstinline?Search _ (\sum_(_ <- _) (_ - _))? produces $4$ lemmas. In the same way, we have seen in Table~\ref{tab:compare}
+% that the modification of parameters such as the granularity or the algorithm produce better results. %
+%\end{example}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%The main contributions of this paper are: 
+
+%\begin{itemize}
+% \item a new feature extraction method based on the shape of Coq terms, see Section~\ref{sec:lemmaclustering}.
+% \item an extension of ML4PG's feature extraction method~\cite{KHG13} to capture information from complete 
+% proofs of varied sizes using patches, see Section~\ref{sec:patches}.
+% \item an evaluation of these techniques in one of the most relevant developments in theorem proving: 
+% the Feit-Thompson theorem~\cite{FTT}, see Section~\ref{sec:evaluation}.
+ 
+ 
+%\end{itemize}

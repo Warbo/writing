@@ -1,0 +1,252 @@
+\section{Evaluation}\label{sec:search-coq}
+
+In this section, we look broader at ML4PG's functionality relative to the range  of proof-pattern search methods already available in 
+Coq/SSReflect. We then analyse the results produced with two experimental extension of ML4PG that modify the feature extraction algorithm for proofs 
+presented  in Section~\ref{sec:ml4pg} with (1) a sparse algorithm and (2) the term-tree feature extraction algorithm presented for definitions and 
+used in ACL2 to find patterns in theorems~\cite{lpar13}. 
+
+
+\subsection{Symbolic Methods}\label{ss:s}
+
+Coq provides comprehensive symbolic search mechanisms to browse the corpus of results available in its libraries. 
+There are 4 commands in Coq to find theorems: \lstinline?Search?~, \lstinline?SearchAbout?, \lstinline?SearchPattern?
+and \lstinline?SearchRewrite?~\cite{Coq}. In addition, SSReflect implements its own version of the \lstinline?Search?
+command \cite{SSReflect} -- SSReflect's \lstinline?Search? command subsumes the four Coq's search mechanisms.
+Related is the Whelp platform~\cite{AspertiGCTZ04} --  a web search engine for mathematical knowledge formalised in Coq, which features 3 functionalities:
+\lstinline?Match? (similar to Coq's \lstinline?Search? command), \lstinline?Hint? (that finds all the theorems which can
+be applied to derive the current goal) and \lstinline?Elim? (that retrieves all the eliminators of a given type).
+
+In all these tools, the search focuses on lemma statements only, as opposed to searching proof patterns in ML4PG. 
+In the lemma statements, 
+%All these mechanisms 
+they search for ``local'' patterns, such as names, types, operators or combination of them. The main methods behind them are algorithms of unification and matching, which have a more
+deterministic outcome than ML4PG: the searching engine will always find all lemmas that can be exactly matched against the user-defined searching pattern. 
+%This
+%means that the search focuses on lemma statements and ignores the proofs. 
+The results produced by these tools are most useful in situations when the user knows what kind of a pattern he is searching for.
+
+%enough 
+%in some situations; for instance, when the user knows how to continue her proof, but she does not remind (or know) the concrete
+%name of the lemma that she wants to apply.
+
+\begin{example}\label{ex:distr}
+In the proof of Lemma~\ref{lem:nilpotent}, we may want to introduce the term $(1-M)$ inside the sum $\sum_{i=0}^{n-1} M^i$, but 
+if we have no experience with the bigop library of SSReflect, it is likely that we do not know the name of the concrete lemma. 
+The lemma which carries out this task can be found using, for instance, the commands \lstinline?Search "distr" in bigop?, that finds the lemmas 
+of the \lstinline?bigop? library containing \lstinline?"distr"? in their name, or 
+\lstinline?Search (_ * (\big[_/_]_(_ <- _) _))?, that finds a particular statement pattern.
+\end{example}
+
+However, these tools are less useful when the user is unsure about how to continue the proof. Even if they can be used, for instance, to  
+find all the theorems applicable to derive the current goal (\lstinline?Hint? mechanism of Whelp), they cannot
+find a ``global'' proof pattern (like e.g. Proof Strategies~\ref{ps:math} and~\ref{ps:spec}) to tackle the proof of a concrete goal. 
+
+\begin{example}\label{ex:relevance}
+ In the second user scenario, a search of all the lemmas involving big operations produce more than $300$ lemmas. If we refine the search to lemmas involving $\sum$,
+ we can find $250$ lemmas. If we search lemmas about the multiplication of matrices, the Search command returns more than $120$ results.  The command
+ \lstinline?Search "distr"? obtains almost 100 lemmas. 
+\end{example}
+
+Although the symbolic search is deterministic, it can be helpless for discovering
+more general or less trivial patterns. Refinement of
+ the results produced by the symbolic search mechanisms
+ involves some kind of creativity in the input of these tools.
+In contrast, ML4PG can help to find those ``meta'' proof patterns 
+but cannot be guaranteed to find the smaller, ``local'' patterns as well as the standard tools do. 
+
+
+
+
+
+
+
+
+
+\subsection{Sparse ML4PG}\label{ss:sm}
+
+Moving from specific and lower-level patterns to global patterns, we introduce an experimental extension to ML4PG -- 
+%In addition to the proof patch method, we have devised, and also implemented in ML4PG, 
+a new \emph{sparse} method to deal with whole proofs without analysing the patches. This method extends the rows of Table~\ref{tab:TGPR} 
+to include all goal steps in a proof. 
+%rows as subgoals as produced during the proof of a theorem. 
+Moreover, if a cell contains information about several features 
+(cf. tactics for row $g4$  in Table~\ref{tab:TGPR}), this feature is split into many separate features, see
+Table~\ref{tab:TGPR-sparse}. 
+
+\begin{table}
+\centering
+\scriptsize{
+\begin{tabular}{|l||l|l|l|l|l|l|l|l|l|}
+\hline
+ &    \ldots & \emph{tactic 1} & \emph{tactic 2} & \emph{tactic 3} & \emph{N tactics} & \emph{arg type 1} & \emph{arg type 2} & \emph{arg type 3} &  \ldots \\
+\hline
+\hline
+\emph{g1}&   \ldots & [elim$]_{Tac}$ & 0 & 0 & $1$  & [nat]  & 0 & 0 & \ldots   \\
+ \hline
+  \emph{g2} &   \ldots & [rewrite$]_{Tac}$ & 0 & 0 & $1$  & [Prop]  & 0 & 0 & \ldots \\
+ \hline
+  \emph{g3} &   \ldots & [rewrite$]_{Tac}$ & 0 & 0 & $1$  & [Prop] & [Prop] & [Prop] &  \ldots  \\
+ \hline
+  \emph{g4} &   \ldots & [move:$]_{Tac}$ & [rewrite$]_{Tac}$ & [move/$]_{Tac}$ & $3$  & [Prop] & [Prop] & [Prop] & \ldots  \\
+ \hline 
+  \emph{g5} & \ldots & [rewrite$]_{Tac}$ & 0 & 0 & $1$  & [Prop]  & 0 & 0 & \ldots   \\
+ \hline
+  \end{tabular}
+
+	}
+ \caption{\textbf{A fragment of the table illustrating the work of ML4PG's sparse feature extraction algorithm for the proof in Table~\ref{tab:sumfirstn}.}}\label{tab:TGPR-sparse}
+ \end{table}
+
+%This sparse algorithm produces several empty cells which will be filled with zeros. In addition, the numbers of features must be the same for all 
+%the proofs; to deal with this issue the feature tables of small proofs are padded with zeros until reach the number of features of the biggest proof of the library.
+%For instance, if the biggest proof of a library contains 20 subgoals, and another proof just contains 5 goals; then, the rows 6--20 of the small proof
+%will be filled with zeros. 
+%For instance, if the biggest proof of a library contains 20 subgoals, and another proof just contains 5 goals; then, the rows 6--20 of the small proof
+%will be filled with zeros. 
+
+Sparse feature vectors may contain many $0$-features, especially as big proofs determine the size of feature vectors for all (even short) proofs.
+The rest of the functionality of ML4PG presented in the introduction remains unchanged; however, %it is worth mentioning 
+%that 
+the only available clustering method that can handle the sparse feature vectors is now  K-means algorithm. 
+
+\begin{example}\label{ex:jvm-sparse}
+Table~\ref{tab:jvm-sparse} shows the results obtained by ML4PG using the sparse method for the second and third user scenarios presented in Section~\ref{sec:scenarios}.
+For the third user scenario (JVM development), the results are similar to the best results obtained previously (cf. Table~\ref{tab:jvm}), so it actually adds precision.
+For the second user scenario (mathematical development), it fails completely.  
+
+
+\begin{table}
+\centering
+{\scriptsize 
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+   \hline
+    & $g=1$& $g=2$& $g=3$& $g=4$ & $g=5$\\
+   \hline
+   User scenario 2 & 0  &0  &0 & 0& 0 \\
+   \hline  
+   User scenario 3 & 11$^{a-d}$  &4$^{a-d}$  &4$^{a-d}$ & 0& 0 \\
+   \hline  
+  \end{tabular}}
+ % \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+ %  \hline
+ %   & $g=1$& $g=2$& $g=3$& $g=4$ & $g=5$\\
+ %  \hline
+ %  K-means (Matlab) & 11$^{a-d}$  &4$^{a-d}$  &4$^{a-d}$ & 0& 0 \\
+ %  \hline  
+ % \end{tabular} 
+    \caption{\textbf{Sparse clustering for 2nd and 3rd user scenarios, using K-means algorithm.} \emph{Notation (a-d) follows Table~\ref{tab:jvm}.}}\label{tab:jvm-sparse}
+\end{table}
+ 
+\end{example}
+
+
+The main difference in the sparse clustering for the two scenarios is the extent to which sparsity increases when we apply the new algorithm of feature extraction. 
+As proofs in the third scenario examples
+have very regular shapes and sizes, the resulting ``sparse'' feature vectors (size 66) do not differ much from the initial 
+dense vectors implemented in ML4PG (size 30), but marginally improve 
+representation of external auxiliary lemmas. For the second scenario, where the proofs are much less regular, sparsity has the opposite effect:
+ the sparse algorithm of feature extraction increases the number of features from 30 to 355  -- and this translates into $12$-fold increase 
+in the dimensions of the feature space over which classification is performed; this decreases classification precision drastically.
+
+From the efficiency point of view, the sparse method is slower than the proof-patch method.
+This is due to the fact that the sparse mechanism must standardise the size of all the feature vectors (this can involve hundreds of vectors);
+on the contrary, this step is not necessary in the other method. In addition, clustering algorithms get slower when increasing the number
+of features and the sparse method produces vectors with hundreds of features. 
+
+As a summary, sparse methods have the following disadvantages in ML4PG setting: they will require either regular (as in third user scenario) or very large data sets 
+to be accurate,  whereas we wish ML4PG to be versatile, and robust with small  as well as big libraries, without any restrictions on proof regularity.
+The substantial slow-down of the sparse methods defies the idea of fast interactive communication between the user, ML4PG, and Coq compiler.
+Finally, not all clustering algorithms can in principle be adapted to sparsity.
+
+% 
+% 
+% \subsection{Term-tree ML4PG}\label{subseq:defs}
+% 
+% 
+% 
+% 
+% 
+% \subsection{Term-tree method revisited: searching definitions}\label{subseq:defs}
+% 
+% Both Coq's search tools and ML4PG are focused on finding theorems; however, they do not provide any mechanism to discover definitions.   
+% In general, the discovery of definitions in ITPs is a difficult task: they are distributed across libraries and usually they are poor-documented.
+% Hence, non-expert users can be tempted to define their notions from scratch instead 
+% of searching whether that definitions are already in the libraries. This approach has a clear drawback: if a user introduces a new 
+% definition, he needs to develop a background theory about it; however, if he uses a definition already available, he can take advantage of the results previously proven about it.
+% 
+% In this situation, it would be extremely helpful to have a tool that could detect similar definitions to the ones introduced by the user beyond a name-based search. 
+% As a solution, we have enhanced ML4PG with a new functionality that find families of similar definitions in relation to the one given by the
+% user. This extension follows the same principles used in ML4PG to find clusters of lemmas (cf. Section~\ref{sec:compare}); the 
+% only difference is the feature-extraction algorithm. 
+% 
+% The method to extract features from definitions, called \emph{term-tree method}, was presented in~\cite{lpar13}, and its original aim was the extraction of features from 
+% the term trees associated with definitions and theorems included in the ACL2 theorem prover~\cite{KMM00-1}. Feature extraction from terms 
+% or term trees is common to most feature-extraction algorithms implemented in automated theorem provers: see
+% e.g.~\cite{KuhlweinLTUH12,TsivtsivadzeUGH11,UrbanSPV08}. The term-tree method captures features given by a finite number of properties common to all possible term trees:
+% the term arity and the term tree depth. 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+
+\subsection{Term-tree feature extraction for theorems}\label{sec:ttt}
+
+The last experimental feature that we have included in ML4PG is the use of the term-tree feature extraction 
+algorithm presented in~\ref{ss:ttfe} to extract features from theorems. The term-tree method was successfully 
+applied in ACL2~\cite{lpar13} to find families of similar proofs.
+However, the nature of ACL2 and Coq is completely different: ACL2 is automatic, untyped, and works with
+first-order logic; on the contrary, Coq is tactic-driven, typed and works with higher order logic. 
+
+The interaction of the user with ACL2 consists in introducing new lemmas to help the prover in its automatic
+proof; then, it makes sense to focus on lemmas (and their shapes) 
+that are the only thing that the user can control in ACL2. However, if we only use the lemma statements in Coq, 
+we will lose the real interaction of the user with the system. Then, it does not make sense to use the term-tree
+feature extraction to find families of similar proofs in Coq since the method does not capture that knowledge.
+
+Instead of finding of similar proofs, we analysed the term-tree method in a different scenario. We studied if 
+it could be used (together with the clustering process) to suggest rewriting rules to derive a
+current goal -- that is, if it could act as a similar tool to the \lstinline?Hint? command in Whelp. 
+Our benchmark to test the suitability of this approach were the lemmas included in the libraries of user scenarios
+2 and 3. In those lemmas, we removed the rewriting rules from the SSReflect libraries presented in user scenario 1
+and tested if the new extension of ML4PG was able to suggest the actual rewriting rule. Table~\ref{tab:tt-rate} shows
+the success rates and the mean number of suggestions using the K-means algorithm. 
+
+\begin{table}
+\centering
+{\scriptsize 
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+     & $g=1$& $g=2$& $g=3$& $g=4$ & $g=5$\\
+     \hline
+  Success rate & $62\%$  & $31\%$ & $10\%$ & $6\%$ & $3\%$ \\
+  \hline
+  Mean number of suggestions & 91  & 72  & 35 & 8 & 3 \\   
+  \hline
+\end{tabular}}
+\caption{\textbf{Success rate and mean number of rewriting rules suggested by the new extension of ML4PG using the K-means algorithm.}}\label{tab:tt-rate} 
+\end{table}
+
+
+As can be seen from Table~\ref{tab:tt-rate}, the new ML4PG extension is not able to provide good suggestions. Increasing the granularity value produce 
+small clusters but in few cases the elements of that cluster can be used to rewrite the current goal. On the contrary, the success rate using a 
+small granularity value is better, but the user needs to inspect a big number of lemmas to decide the one to use. 
+The main reason because this method fails is because rewriting rules are usually applied to part of a goal, but the ML4PG extension search 
+similarities considering the goal statements as a whole. To solve this problem, we could use the method presented in~\cite{JDB11,ku12,BB05} where
+features are not only extracted from the complete term associated with the goal, but also from different fragments of the term. However, this 
+requires further work to study the feasibility of this approach. 
+
+
+
+
+
+
+
+
+
+
+
+

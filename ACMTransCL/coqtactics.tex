@@ -1,0 +1,72 @@
+\newpage
+
+\section{Groups of Coq tactics and number assignment}\label{sec:coqtactics}
+
+% We have divided the Coq tactics in the groups presented in Table~\ref{tab:coqtactics}.
+
+Table~\ref{tab:coqtactics} splits the Coq tactics into different groups. The formula used in the function $[.]_{tactic}$ 
+to compute the value of a Coq tactic is given by 
+$i+\sum_{j=0}^k\frac{1}{10 \times 2^{j-1}}$ where $i$ is the group of the tactic and $k$ is the position 
+of the tactic in that group (cf. right side of Table~\ref{tab:coqtactics}). 
+
+\begin{table}[h]
+\tbl{{\scriptsize \emph{Groups of Coq tactics}}\label{tab:coqtactics}}{
+\centering
+\begin{tabular}{l||l}
+
+Group & Tactics of the group\\
+
+\hline
+\hline
+Group 1:           &  \lstinline?exact, eexact, assumption, eassumption, ?\\
+Applying theorems &  \lstinline?refine, apply, eapply, simple apply, lapply, ?\\
+\hline
+Group 2:           &  \lstinline?constructor, split, exists, left, right, ?\\
+Managing inductive constructors & \lstinline?econstructor, esplit, eexists, eleft, eright?\\
+\hline
+Group 3:           &  \lstinline?intro, intros, clear, rever, move, rename,  ?\\
+Managing local context & \lstinline?set, remember, pose, decompose?\\
+\hline
+Group 4:            &  \lstinline?assert, cut, pose, specialize, generalize, ?\\
+Controlling proof flow & \lstinline?evar, instantiate, admit, absurd, ?\\
+& \lstinline?contradition, contradict, exfalso?\\
+\hline
+Group 5:            & \lstinline?destruct, case, ecase, simple destruct,?\\
+Case analysis and induction & \lstinline?induction, einduction, elim, eelim, ?\\
+ & \lstinline?simple induction, double induction, ?\\
+     & \lstinline?dependent induction, functional induction,?\\
+  & \lstinline? discriminate, injection, fix, cofix, ?\\
+    & \lstinline? case_eq, elimtype?\\
+\hline
+Group 6:          &  \lstinline?rewrite, erewrite, cutrewrite, replace, ?\\
+Rewriting expressions &  \lstinline?reflexivity, symmetry, transitivity, subst, ?\\
+&  \lstinline?stepl, change?\\
+\hline
+Group 7:          &  \lstinline?cbv, compute, vm_compute, red, hnf, simpl, ?\\
+Performing computations  &  \lstinline?unfold, fold, pattern, conv_tactic?\\
+\hline
+Group 8:           &  \lstinline?auto, trivial, eauto, autounfold, ?\\
+Automation       &  \lstinline?autorewrite?\\
+\hline
+Group 9:           &  \lstinline?tauto, intuition, rtauto, firstorder, ?\\
+Decision procedures & \lstinline?congruence?\\
+\hline
+Group 10 &  \lstinline?decide equality, compare, simplify_eq,?\\
+Equality & \lstinline?esimplify_eq?\\
+\hline
+Group 11 &  \lstinline?inversion, dependent inversion,?\\
+Inversion & \lstinline?functional inversion, quote?\\
+\hline
+Group 12 & \lstinline?classical_left, classical_right?\\
+Classical tactics & \lstinline??\\
+\hline
+Group 13 & \lstinline?omega, ring, field, fourier?\\
+Automatizing & \\
+\hline
+Group 14 & Rest of Coq tactics\\
+\hline
+\end{tabular}}
+\end{table}
+
+
+

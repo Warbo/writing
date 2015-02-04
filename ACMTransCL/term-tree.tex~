@@ -1,0 +1,113 @@
+
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{theorem}
+%\usepackage{cite}
+\input{macro}
+
+ \newtheorem{thm}{Theorem}[section]
+ \newtheorem{cor}[thm]{Corollary}
+ \newtheorem{lemma}[thm]{Lemma}
+ \newtheorem{prop}[thm]{Proposition}
+ \theoremstyle{definition}
+ \newtheorem{definition}[thm]{Definition}
+
+
+
+\title{Term-tree extraction from Coq terms}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+
+I took the syntax of Coq terms from \url{http://coq.inria.fr/refman/Reference-Manual003.html#sec25}:
+
+\begin{verbatim}
+ term	::=	forall binders , term    (1)
+ 	|	fun binders => term      (2) 
+ 	|	fix fix_bodies           (3)
+ 	|	cofix cofix_bodies       (4)
+ 	|	let ident [binders] [: term] := term in term (5)
+ 	|	let fix fix_body in term  (6)
+ 	|	let cofix cofix_body in term  (7)
+ 	|	let ( [name , … , name] ) [dep_ret_type] := term in term (8)
+ 	|	let ’ pattern [in term] := term [return_type] in term (9)
+ 	|	if term [dep_ret_type] then term else term (10)
+ 	|	term : term (11)
+ 	|	term <: term (12)
+ 	|	term :>      (13) 
+ 	|	term -> term (14)
+ 	|	term arg  …  arg  (15) 
+ 	|	@ qualid [term  …  term] (16)
+ 	|	term % ident (17)
+ 	|	match match_item , … , match_item [return_type] with	   	 
+ 	 	   [[|] equation | … | equation] end (18)
+ 	|	qualid	 (19)
+ 	|	sort (20)
+ 	|	num (21)
+ 	|	_ (22)
+ 	|	( term )  (23)	   	 
+ 	 	
+\end{verbatim}
+
+
+\begin{definition}[Term tree]\label{def:termtree}
+ Given a Coq term $t$, its term tree is inductively defined as follows:
+
+ \begin{itemize}
+  \item if $t$ is of the form (1) (\lstinline?forall binders, term?), $t$ is represented by the tree with the root node labelled by \lstinline?forall?, and its inmediate subtrees given by the trees representing
+  \lstinline?binders? and \lstinline?term?.
+  \item if $t$ is of the form (2) (\lstinline?fun binders => term?), $t$ is represented by the tree with the root node labelled by \lstinline?fun?, and its inmediate subtrees given by the trees representing
+  \lstinline?binders? and \lstinline?term?.
+  \item if $t$ is of the form (3) (or (4)) (\lstinline?fix fix_bodies?), $t$ is represented by the tree with the root node labelled by \lstinline?fix? (respectively \lstinline?cofix?), and its inmediate
+  subtree given by the tree representing \lstinline?fix_bodies? (respectively \lstinline?cofix_bodies?).
+   \item if $t$ is of the form (5)  (\lstinline?let ident := term1 in term?), $t$ is represented by the tree with the root node labelled by \lstinline?let?, and it has two children,
+   the first one given by the tree with root node \lstinline?:=? and two children given by the trees of \lstinline?ident? and \lstinline?term1?, and the other tree given by the tree 
+   of \lstinline?term?.
+   \item if $t$ is of the form (6) (or (7))  (\lstinline?let fix fix_body in term?), $t$ is represented by the tree with the root node labelled by \lstinline?let_fix? (or \lstinline?let_cofix?),
+   and it has two children given by the trees of \lstinline?fix_body? and \lstinline?term?. Analogously for (8) and (9).  
+  \item if $t$ is of the form (10) (\lstinline?if term then term else term?), $t$ is represented by the tree  with the root node labelled by  \lstinline?if? and with three children given by the trees associated with 
+   the \lstinline?term?s.
+   \item if $t$ is of the form (11)  (\lstinline?term : term2?), $t$ is represented by the tree associated with the left \lstinline?term?. 
+  \item if $t$ is of the form (12) (\lstinline?term <: term?), $t$ is represented by the tree with the root node labelled by \lstinline?<:?, and it has two children given by the two trees associated with the
+  two terms. 
+    \item if $t$ is of the form (13) (\lstinline?term :>?), $t$ is represented by the tree with the root node labelled by \lstinline?:>?, and it has one child given by the tree associated with the
+  \lstinline?term?. 
+    \item if $t$ is of the form (14) (\lstinline?term -> term?), $t$ is represented by the tree with the root node labelled by \lstinline?->?, and it has two children given by the two trees associated with the
+  two terms. 
+  \item if $t$ is of the form (15) (\lstinline?term arg ... arg?), $t$ is represented by the tree with the root node labelled by \lstinline?term?, and it immediate subtrees given by trees representing 
+      each \lstinline?arg?.
+  \item if $t$ is of the form (16) (\lstinline?@ qualid [term ... term]?), $t$ is represented by the tree with the root node labelled by \lstinline?@?, it has two children: the left one given by the tree of
+        \lstinline?qualid?, and the right one is a tree with the root node labelled by \lstinline?square_bracket? and its immediate subtrees given by trees representing the \lstinline?terms?.
+    \item if $t$ is of the form (17) (\lstinline?term % ident?), $t$ is represented by the tree with the root node labelled by \lstinline?%?, and it immediate subtrees given by trees representing 
+       \lstinline?term? and \lstinline?ident?.      
+    \item if $t$ is of the form (18)  (\lstinline?match ...?), $t$ is represented by the tree  with the root node labelled by  \lstinline?match? and its inmediate subtrees given by the trees representing
+    \lstinline?match_item? and \lstinline?equations?, the trees for the equations are given by trees with root node \lstinline?case?.
+  \item if $t$ is of the form (19),(20),(21) or (22), $t$ is represented by a tree consisting of one single node, labelled by the element itself.
+   \item if $t$ is of the form (23)  (\lstinline?(term)?), $t$ is represented by the tree associated with \lstinline?term?.
+ \end{itemize}
+
+ In the definition of inductive types (\lstinline?Inductive name := | name : term | name : term ... | name : term ?), the tree is given by a tree with root node 
+ \lstinline?constructors? and its immediate subtrees given by the trees of \lstinline?term?s. Analogously for the definition of coinductive types. 
+
+\end{definition}
+
+From the term trees, I construct the feature tables as in ACL2(ml). The function that computes values has some predefined values for \lstinline?match, fix, let? that are 
+assigned depending on the relation of those elements (e.g. \lstinline?let? and \lstinline?let_fix? have close values). The rest of values is computed dynamically. 
+
+
+
+
+
+
+
+
+
+
+ 
+\end{document}

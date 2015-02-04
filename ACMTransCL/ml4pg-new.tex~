@@ -1,0 +1,507 @@
+\section{ML4PG: statistical proof-pattern recognition}\label{}
+
+In this section, we provide an introduction to proof-pattern recognition with ML4PG; 
+full details of implementation can be found in \cite{KHG13,HK12}. 
+
+ML4PG is a tool that uses \emph{clustering algorithms}~\cite{Bishop} -- a family of \emph{unsupervised learning methods} that 
+divide data into $n$ groups of similar objects (called clusters) -- to detect families of similar proofs and also families 
+of similar definitions and types. In both cases, ML4PG can find families in relation to a concrete proof or definition, or in
+an independent way. In addition to this main functionality, ML4PG offers the user a number of simple options to configure the 
+clustering algorithms while staying within the Proof General environment, a detailed description of these options is given in~\cite{KHG13}.
+
+The procedure to find families of definitions and families of proofs is the one given in Features \textbf{F.1}--\textbf{F.3}. The only 
+difference occurs in Feature \textbf{F.1} and it is related to how the features are extracted from proofs and definitions. The discovery of
+statistically significant features in data is a research area of its own in machine-learning, known as 
+\emph{feature extraction}, see~\cite{Bishop}. Statistical machine-learning algorithms classify given examples seen as points in an $m$-dimensional space, where $m$ 
+is the maximum number of features each example may be characterised by. Irrespective of the particular feature extraction algorithm used, most pattern recognition 
+tools~\cite{Bishop} will require that the number of selected features is limited and fixed. The exception to this is a special class of methods called ``sparse'' methods,
+see \cite{Blum92}. In our case, we stay with the classic assumption of the fixed-size feature vectors.
+
+In the case of proofs, our feature extraction mechanism tracks statistics considering both correlation of features within several proof steps, and
+correlation of sub-goal shapes and user actions (tactics). The tracking of goals, tactics and their correlation is one of the biggest differences if we compare ML4PG with
+other tools that use machine-learning in ITPs and that are focus on either tactics~\cite{Duncan02} or goal shapes~\cite{Mash,lpar-urban,lpar13} -- those tools lose knowledge
+(e.g. when and why a tactic is applied) of the interaction of the user with the prover. However, the algorithm presented in~\cite{KHG13} had some limitations: it only captured 
+the first steps of a proof and did not capture properly the correlation of some features. Therefore, we have redesigned the algorithm to keep on tracking the correlation of 
+goals and tactics but solving the limitations of the previous algorithm. 
+
+The algorithm that is applied to gather statistics of proofs cannot be used in the case of definitions and types. Instead, we extract features from the term trees associated
+with those definitions and types using a method imported from~\cite{lpar13} -- its original aim was the extraction of features from the term trees associated with definitions
+and theorems included in the ACL2 theorem prover~\cite{KMM00-1}.  However, the method presented in~\cite{lpar13} cannot be directly applied to Coq terms since it is necessary to 
+adapt it from the characteristics of the untyped first-order ACL2 prover to the  ones of the typed higher-order Coq theorem prover.
+
+The rest of this section is devoted to provide a detailed description of the new algorithm to track proofs and the adaptation of the algorithm presented in~\cite{lpar13}.
+We start with the latter since some of the results produced with that algorithm are reused in the former. 
+
+
+\subsection{Term-tree feature extraction in ML4PG}
+
+Feature extraction from terms or term trees is common to most feature-extraction algorithms implemented in automated theorem provers: see 
+e.g.~\cite{KuhlweinLTUH12,TsivtsivadzeUGH11,UrbanSPV08}.
+
+\begin{definition}[Term tree]\label{def:termtree}
+A variable or a constant is represented by a tree consisting of one single node, labelled by the variable or the constant itself.
+A function application $f(t_1, \ldots,  t_n)$ is represented by the tree with the root node labelled by $f$, and its immediate subtrees
+given by trees representing $t_1 , \ldots, t_n$.
+\end{definition}
+
+
+\begin{example}
+The \lstinline?list? type and the \lstinline?length? functions given by the following code
+ 
+\begin{lstlisting}
+Inductive list (A : Type) : Type :=
+    nil : list A | cons : A -> list A -> list A
+
+Fixpoint length (A : Type) (l : list A) :=
+  match l with | nil => 0 | cons _ l' => S (length l') end.
+\end{lstlisting}
+
+\noindent can be represented by the term trees of Figure~\ref{fig:list-length}.
+
+\begin{figure}
+  
+\begin{tikzpicture} 
+ 
+\draw (0,0) node { 
+{\scriptsize
+ \begin{tikzpicture}[level 1/.style={sibling distance=25mm},
+level 2/.style={sibling distance=20mm},
+level 3/.style={sibling distance=10mm},scale=.8]
+  
+  \node (root) {\texttt{constructors}} [level distance=10mm]
+     child { node {\texttt{list}} 
+             child { node {\texttt{A}} }
+           }
+     child { node {\texttt{->}} 
+             child { node {\texttt{A}} }
+             child { node {\texttt{->}}
+                     child { node {\texttt{list}} 
+                             child { node {\texttt{A}} }}
+                             child { node {\texttt{list}} 
+                                     child { node {\texttt{A}} }}   
+                   }
+           }
+            
+   ;
+   
+ \end{tikzpicture}}};
+ 
+ 
+\draw (6,0) node { 
+{\scriptsize
+ \begin{tikzpicture}[level 1/.style={sibling distance=25mm},
+level 2/.style={sibling distance=20mm},
+level 3/.style={sibling distance=10mm},scale=.8]
+  
+  \node (root) {\texttt{match}} [level distance=10mm]
+     child { node {\texttt{l}} }
+     child { node {\texttt{case}} 
+             child { node {\texttt{nil}} }
+             child { node {\texttt{0}}}
+           }
+     child { node {\texttt{case}} 
+             child { node {\texttt{cons}} 
+                     child { node {\texttt{\_}} }
+                     child { node {\texttt{l'}} }
+                   }
+             child { node {\texttt{S}}
+                     child { node {\texttt{length}} 
+                             child { node {\texttt{l'}} }}}
+           }
+            
+   ;
+   
+ \end{tikzpicture}}};
+ 
+
+  
+\end{tikzpicture}
+ 
+\caption{\textbf{Term trees for type \texttt{list} (left) and function \texttt{length} (right).}}\label{fig:list-length} 
+ 
+\end{figure}
+\end{example}
+
+
+The term-tree method imported from~\cite{lpar13} has been adapted to track a large (potentially unlimited) number of Coq types and symbols 
+by a finite number of features, as follows. The Coq types and symbols are represented by distinct feature values given by rational numbers, those
+values are computed dynamically by a \emph{recurrent clustering} algorithm. The \emph{features} are given by the finite number of 
+properties common to all possible term trees: the term arity and the term tree depth, see Table~\ref{tab:tt}.
+This is formalised in the following definitions.
+
+ 
+\begin{definition}[Term tree depth level]
+Given  a term tree $T$, the \emph{depth} of the node $t$ in $T$, denoted by \emph{depth(t)}, is defined as follows:
+%\begin{itemize}
+
+$-$ $depth(t) = 0$, if $t$ is a root node;
+
+$-$ $depth(t) = n+1$, where $n$ is the depth of the parent node of $t$.
+%\end{itemize}
+\label{def:termtreelevel}
+\end{definition}
+	
+\begin{definition}[Term tree matrices]\label{df:matrix}
+Given a term tree $T$ for a term with signature $\Sigma$, and a function 
+$[.]: \Sigma \rightarrow \mathbb{Q}$, the ACL2(ml) term tree matrix $M_T$ is a $7 \times 7$ matrix that satisfies the following conditions:
+\begin{itemize}
+ \item the $(0,j)$-th entry of $M_T$ is a number $[t]$, such that $t$ is a node in $T$, $t$ is a variable and $depth(t) = j$.
+ \item the $(i,j)$-th entry of $M_T$ ($i \neq 0$) is a number $[t]$, such that $t$ is a node in $T$, $t$ has arity $i+1$ and $depth(t) = j$. 
+\end{itemize}
+
+\end{definition}
+
+We deliberately specify $[.]$ only by its type in Definition \ref{df:matrix}. In ML4PG, this function 
+is dynamically re-defined for every library, as we are going to describe shortly in Definition~\ref{def:recurrent}. 
+In practice, there will be a set of such functions computed in every session of ML4PG. To make the feature extraction
+uniform across all Coq terms appearing in the library, the matrices are extended to cover terms up to arity $n$ and tree-depth $m$.
+The parameters $n$ and $m$ can vary slightly; for all libraries considered in the paper $n=5$ and $m=7$ were sufficient, giving a feature vector
+size of $49$ 
+
+
+\begin{table}
+  
+   \scriptsize{
+  \begin{tabular}{|c||c|c|c|c|c|c|c|}
+     \hline
+    & variables & arity 0 & arity 1 & arity 2 & arity 3 \\
+    \hline
+    \hline
+    tree depth $0$ & 0  & 0 & 0   & [constructors]    & 0\\
+    \hline
+    tree depth $1$ & 0 & 0  &  [list] &  [\texttt{->}] & 0\\
+    \hline
+    tree depth $2$ & [A]::[A] & 0  &  0 &  [\texttt{->}] & 0\\
+    \hline
+    tree depth $3$ & 0 & 0  &  [list]::[list] &  0 & 0\\
+    \hline
+    tree depth $4$ & [A]::[A] & 0  &  0 &  0 & 0\\
+    \hline    
+ \end{tabular}}
+ \vspace{.2cm}
+   \scriptsize{
+  \begin{tabular}{|c||c|c|c|c|c|c|c|}
+     \hline
+    & variables & arity 0 & arity 1 & arity 2 & arity 3 \\
+    \hline
+    \hline
+    tree depth $0$ & 0  & 0 & 0   & 0    & [match]\\
+    \hline
+    tree depth $1$ & [l] & 0 & 0  & [case]::[case]  & 0\\
+    \hline
+    tree depth $2$ & 0 & [nil]::[0]  &  [S] & [cons]   & 0\\
+    \hline
+    tree depth $3$ & [\_]::[l'] &  0 & [length]   &  0 & 0\\
+    \hline
+    tree depth $4$ & [l'] & 0  &  0 &  0 & 0\\
+    \hline    
+ \end{tabular}}
+  
+\caption{\textbf{Term-tree feature extraction matrices for \texttt{list} (top) and \texttt{length} (bottom).} \emph{The operator ``\texttt{::}'' indicates the concatenation of values (e.g.
+  4::5=45).}}\label{tab:tt} 
+\end{table}
+
+
+
+
+
+
+\textbf{Recurrent Clustering.} The function $[.]$ influences results of ML4PG proof-pattern recognition; 
+and the computation of $[.]$ needs to be sensitive to the similarities that exist between the symbols and types.
+In Coq, every entry in a term tree is necessarily itself defined in Coq. Then, the symbol and type definitions can themselves
+be clustered against other definitions used by the library; and the process can be repeated recursively to include all the necessary 
+standard library symbols and types. This is how the feature extraction becomes a part of \textbf{recurrent clustering} in ML4PG.
+ML4PG clusters all the library definitions in the background every time a new definition is introduced. We call this process \emph{Definition Clustering}. 
+
+\begin{definition}[{Function $[.]$}]\label{def:recurrent}
+Given the $n$th term definition (either a type or symbol definition) of the library (call the term $t$), a function $[.]$ is inductively 
+defined for every symbol $s$ in $t$ as follows:
+\begin{itemize}
+\item $[s] = [t_s]$, if $s$ is a variable of type $t_s$;
+\item $[s] = -10$, if $t$ is a recursive definition defining the function $s$;
+\item $[s]= -(1+\sum_{j=1}^i \frac{1}{10\times 2^{j-1}})$, if $s$ is the type \lstinline?Type(i)? (we consider the type \lstinline?Set? as \lstinline?Type(0)?);
+\item $[s] = 2 \times j + p $, where $C_j$ is  a cluster obtained as a result of definition clustering for library definitions $1$ to $n-1$, 
+$s\in C_j$ and $p$ is the proximity value of $s$ in $C_j$ -- the proximity is a value assigned by clustering algorithms that ranges from 0 to 1 and indicates the 
+certainty of the given example belonging to the cluster.
+\end{itemize} 
+\end{definition}
+
+Note the recurrent nature of clustering in Definition~\ref{def:recurrent}, with symbol and type numbering for the $n$th term depending on the clustering results 
+for previous $n - 1$ terms. As the above definition implies, the function $[.]$ is adaptive, 
+and is recomputed automatically when new definitions and types (and hence new symbols) are 
+introduced. The motivation behind the various parameters of Definition~\ref{def:recurrent} is as follows:
+
+\begin{itemize}
+ \item \emph{Variables.} The variable encoding reflects the number and order of unique variables appearing in the term, note its correspondence  to the De Bruijn 
+indexes.
+ \item \emph{Recursive case.} For every recursive call $s$, we assign a negative value in order for feature values to distinguish the occurrence of the inductive
+ symbol being currently defined from occurrence of any external functions invoked in the body of the term. 
+ \item \emph{\lstinline?Type(i)?.} The formula provided in this case serves to assign closer values to all the types of the form \lstinline?Type(i)?. The negative value
+ distinguish these types (predefined in Coq) from other types that can be defined by the user. 
+ \item The formula $2 \times j + p$ assigns $[s]$ a value within $[2 \times j, 2 \times j + 1]$, depending on their statistical proximity $p$ for that cluster --
+ $p$ always lies within $[0,1]$. Thus, elements of the same cluster have closer values comparing to  the values assigned to elements of other clusters.
+\end{itemize}
+
+
+
+
+
+
+\subsection{Proof feature extraction in ML4PG}
+
+In~\cite{KHG13}, we presented a method of feature extraction called the \emph{proof-trace method}. It allows us to capture a potentially 
+infinite variety of lemma shapes, by means of gathering a fixed number of statistical features. This method is formalised in the following 
+definitions. 
+
+\begin{definition}[Coq proof]
+ Given a statement $S$ in Coq, a \emph{Coq proof} of $S$ is given by a sequence of pairs $(G_i,T_i)_i$ where every $G_i$ is a goal and $T_i$ is
+ either a tactic or a sequence of tactics (separated by ``\lstinline?;?'') satisfying:
+ \begin{itemize}
+  \item $G_0=S$,
+  \item $\forall i$ with $0<i$, $G_i$ is the goal obtained after applying the tactic or sequence of tactics (separated by ``\lstinline?;?'') $T_{i-1}$. 
+ \end{itemize}
+\end{definition}
+
+
+\begin{definition}
+ $[.]_{Tac} : Tac \rightarrow \mathbb{N}$, ***** Include cases *****
+\end{definition}
+
+
+\begin{definition}[Proof-trace matrices]\label{def:ptm}
+Given a Coq proof $C=(G_i,T_i)$ and a function $[.]_{Lem}$ that assigns a unique number to each lemma appearing in a proof, the \emph{proof-trace matrix} $M_C$ is a $5\times 8$ 
+matrix that satisfies the following conditions:
+
+\begin{itemize}
+ \item the $(i,0)$-th entry of $M_C$ is $[T_{i_0}]_{Tac}::\ldots::[T_{i_j}]_{Tac}$ where $T_{i_k}$ is the $k-th$ tactic appearing in $T_i$ and
+ $::$ indicates the concatenation of values,
+ \item the $(i,1)$-th entry of $M_C$ is the number of tactics appearing in $T_i$,
+ \item the $(i,2)$-th entry of $M_C$ is  $[t_{i_0}]::\ldots::[t_{i_j}]$ where $t_{i_k}$ is the type of the argument 
+ of the $k-th$ tactic appearing in $T_i$,
+ \item the $(i,3)$-th entry of $M_C$ is  $[a_{i_0}]_{Lem}::\ldots::[a_{i_j}]_{Lem}$ where $a_{i_k}$ is the argument 
+ of the $k-th$ tactic appearing in $T_i$,
+ \item the $(i,4)$-th entry of $M_C$ is  $[s]$ where $s$ is the top symbol of $G_i$,
+ \item the $(i,5)$-th entry of $M_C$ is  $[s]$ where $s$ is the second symbol of $G_i$,
+ \item the $(i,6)$-th entry of $M_C$ is  $[s]$ where $s$ is  the third symbol of $G_i$,
+ \item the $(i,7)$-th entry of $M_C$ is the number of subgoals after applying $T_i$ to $G_i$.
+\end{itemize} 
+\end{definition}
+
+We postpone the definition of the function  $[.]_{Lem}$ that will be dynamically computed. 
+
+
+\begin{example}\label{example1}
+Given the goal $$\forall g:\mathbb{N} \rightarrow \mathbb{Z}\implies \sum_{0\leq i \leq n} (g(i+1) - g(i)) = g(n+1) - g(0)$$
+
+\noindent Table~\ref{tab:sumfirstn} shows its Coq proof, and the proof-trace matrix of that proof is given in Table~\ref{tab:TGPR}. 
+
+\begin{table}
+ 	\centering
+ 	\footnotesize{
+ 		\begin{tabular}{|l|l|}
+ 		\hline
+ 	Goals and Subgoals & Applied Tactics \\
+ 		\hline
+ 		\hline
+ 	{\scriptsize $\forall~n,\sum\limits_{i=0}^{n} (g(i+1) - g(i)) = g(n+1) - g(0)$} & \\
+ 			& {\scriptsize \lstinline?elim : n => [|n _].?} \\
+        $\sum\limits_{i=0}^{0} (g(i+1) - g(i)) = g(1) - g(0)$ & \\
+        & {\scriptsize\lstinline?by rewrite big_nat1.?}\\
+        $\sum\limits_{i=0}^{n+1} (g(i+1) - g(i)) = g(n+2) - g(0)$ &\\
+        
+        & {\scriptsize\lstinline?rewrite sumrB big_nat_recr big_nat_recl addrC?}\\
+          & ~~~~~~~~~{\scriptsize\lstinline?      addrC -subr_sub -!addrA addrA.?} \\
+        $g(n+2) + \sum\limits_{i=0}^{n} g(i+1) - $ &\\
+        $  \sum\limits_{i=0}^{n} g(i+1) - g(0) = g(n+2) - g(0)$ &\\
+        &{\scriptsize\lstinline?move : eq_refl; rewrite -subr_eq0; move/eqP => ->.?}\\
+         $g(n+2) + 0 - g(0) = g(n+2) - g(0)$ &\\
+        &{\scriptsize\lstinline?by rewrite sub0r.?}\\
+ 		$\Box$ & \\
+ 		& {\scriptsize\lstinline?Qed.?}\\
+ 		\hline
+ 		\end{tabular}
+ 		
+ 		}
+ 	\caption{\textbf{Proof for Lemma~\ref{lem:lemma3} in SSReflect.}}
+ 	\label{tab:sumfirstn}
+ \end{table}
+
+
+\begin{table}
+\centering
+\tiny{
+\begin{tabular}{|l||l|l|l|l|l|l|l|l|}
+\hline
+ & \emph{tactics} & \emph{n tactics} & \emph{arg type} & \emph{arg} & \emph{symbol1} & \emph{symbol2} & \emph{symbol3} & \emph{subgoals} \\
+\hline
+\hline
+\emph{g1}& $[elim]_{Tac}$ & $1$  & $[nat]_{Ty}$  & $[Hyp]_{Lem}$ & $[\forall]_{Sym}$ & $[=]_{Sym}$ & $[\sum]_{Sym}$ & $2$ \\
+ \hline
+  \emph{g2} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[big\_nat1]_{Lem}$ & $[=]_{Sym}$ & $[\sum]_{Sym}$ & $[-]_{Sym}$& $0$ \\
+ \hline
+  \emph{g3} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}::$ & $[EL']_{Lem}$  & $[=]_{Sym}$ & $[\sum]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+            & & & $\overset{8}{\ldots}::$ & & & & & \\
+            & & & $[Prop]_{Ty}$ & & & & & \\
+ \hline
+  \emph{g4} & $[move:]_{Tac}::$ & $3$  & $[Prop]_{Ty}::$ &  $[EL'']_{Lem}$  & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+            & $[rewrite]_{Tac}::$ & & $\overset{3}{\ldots}::$ & & & & & \\
+            & $[move/]_{Tac}$ & & $[Prop]_{Ty}$& & & & & \\
+ \hline 
+  \emph{g5} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[sub0r]_{Lem}$ & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $0$ \\
+ \hline
+  \end{tabular}}
+
+ \caption{\textbf{Proof-trace matrix for the proof in Table~\ref{tab:sumfirstn}.} 
+\emph{Where we use notation $EL'$, ML4PG gathers the lemma names: (\lstinline?sumrB?, \lstinline?big_nat_recr?~, \lstinline?big_nat_recl?, \ldots);
+where we use $EL''$, ML4PG gathers the lemma names (\lstinline?eq_refl?, \lstinline?subr_eq0?, \lstinline?eqP?).}}\label{tab:TGPR}
+ \end{table}
+
+\end{example}
+
+With the \emph{proof-trace method}, the  lemma structure ``shows itself'' through some simple statistics of the proof steps it induces. Note that, using the 
+two dimensions of Table~\ref{tab:TGPR}, we gather statistics both \emph{dynamically} (considering corelation of features within several proof steps) and
+\emph{relationally} (tracking correlation of sub-goal shapes and user actions). An advantage of this method is that, due to the simplicity of every single
+statistical feature, it applies uniformly to any Coq library, irrespective of proof complexity. ML4PG extracts all proof features during Coq compilation.
+
+Proof-trace matrices consider just the first five proof steps, cf. Table~\ref{tab:TGPR}, inevitably losing some information. This problem is tackled with the 
+notion of \emph{proof-patch} matrices. The underlying idea of this technique is that one small proof may potentially 
+resemble a fragment of a bigger proof; also, various small ``patches'' of different big proofs may resemble. 
+
+\begin{definition}[Proof-patch matrices]\label{def:ppm}
+Let $C=(G_i,T_i)$ be a Coq proof and $[.]_{Tac},[.]_{Ty},[.]_{Lem}$ and $[.]_{Sym}$ be functions that assign respectively
+unique integers to each tactic, type, lemma and symbol appearing in a proof -- the assignation is given by the order of appearance of tactics, types, lemmas and symbols
+in the library. The proof $C$ can be split into patches $C_0,\ldots,C_n$ such that
+
+\begin{itemize}
+ \item $C_j=(G_k,T_k)_{j\times 5 \leq k < (j+1)\times 5}$ for $0\leq j < n$,
+ \item $C_n=(G_k,T_k)_{m-5 \leq k \leq m}$ where $m$ is the lenght of the sequence $C=(G_i,T_i)$.
+\end{itemize}
+
+Then, the \emph{proof-patch matrices} of $C$ are the proof-trace matrices $M_{C_0},\ldots,M_{C_n}$ of the patches $C_0,\ldots,C_n$.
+\end{definition}
+
+\begin{example}
+ The proof presented in Example~\ref{example1} only produces one proof-patch matrix since such proof contains 5 steps.  However,
+ if we split the sequence of tactics \lstinline?move : eq_refl; rewrite -subr_eq0; move/eqP => ->? into the tactics \lstinline?move : eq_refl?,
+ \lstinline?rewrite -subr_eq0?,  \lstinline?move/eqP => ->?, we obtain the proof-patch matrices of Table~\ref{tab:patches}.
+ 
+ 
+ \begin{table}
+\centering
+\tiny{
+\begin{tabular}{|l||l|l|l|l|l|l|l|l|}
+\hline
+ & \emph{tactics} & \emph{n tactics} & \emph{arg type} & \emph{arg} & \emph{symbol1} & \emph{symbol2} & \emph{symbol3} & \emph{subgoals} \\
+\hline
+\hline
+\emph{g1}& $[elim]_{Tac}$ & $1$  & $[nat]_{Ty}$  & $[Hyp]_{Lem}$ & $[\forall]_{Sym}$ & $[=]_{Sym}$ & $[\sum]_{Sym}$ & $2$ \\
+ \hline
+  \emph{g2} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[big\_nat1]_{Lem}$ & $[=]_{Sym}$ & $[\sum]_{Sym}$ & $[-]_{Sym}$& $0$ \\
+ \hline
+  \emph{g3} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}::$ & $[EL']_{Lem}$  & $[=]_{Sym}$ & $[\sum]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+            & & & $\overset{8}{\ldots}::$ & & & & & \\
+            & & & $[Prop]_{Ty}$ & & & & & \\
+ \hline
+   \emph{g4} & $[move:]_{Tac}::$ & $1$  & $[Prop]_{Ty}$ &  $[eq_refl]_{Lem}$  & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+ \hline 
+  \emph{g5} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[subr_eq0]_{Lem}$ & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+ \hline
+  \end{tabular}
+  
+  \vspace{.2cm}
+  
+\begin{tabular}{|l||l|l|l|l|l|l|l|l|}
+\hline
+ & \emph{tactics} & \emph{n tactics} & \emph{arg type} & \emph{arg} & \emph{symbol1} & \emph{symbol2} & \emph{symbol3} & \emph{subgoals} \\
+\hline
+\hline
+\emph{g1} & $[move/]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[eqP]_{Lem}$ & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+ \hline
+  \emph{g2} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[sub0r]_{Lem}$ & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $0$ \\
+ \hline
+  \emph{g3} & $0$ & $0$  & $0$ & $0$  & $0$ & $0$ & $0$ & $0$ \\
+ \hline
+  \emph{g4} & $0$ & $0$  & $0$ & $0$  & $0$ & $0$ & $0$ & $0$ \\
+ \hline 
+  \emph{g5} & $0$ & $0$  & $0$ & $0$  & $0$ & $0$ & $0$ & $0$ \\
+ \hline
+  \end{tabular}
+  
+  \vspace{.2cm}
+  
+\begin{tabular}{|l||l|l|l|l|l|l|l|l|}
+\hline
+ & \emph{tactics} & \emph{n tactics} & \emph{arg type} & \emph{arg} & \emph{symbol1} & \emph{symbol2} & \emph{symbol3} & \emph{subgoals} \\
+\hline
+\hline
+\emph{g1}& $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}::$ & $[EL']_{Lem}$  & $[=]_{Sym}$ & $[\sum]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+            & & & $\overset{8}{\ldots}::$ & & & & & \\
+            & & & $[Prop]_{Ty}$ & & & & & \\
+ \hline
+  \emph{g2} & $[move:]_{Tac}::$ & $1$  & $[Prop]_{Ty}$ &  $[eq_refl]_{Lem}$  & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+ \hline
+  \emph{g3} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[subr_eq0]_{Lem}$ & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+ \hline
+\emph{g4}& $[move/]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[eqP]_{Lem}$ & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $1$ \\
+ \hline
+  \emph{g5} & $[rewrite]_{Tac}$ & $1$  & $[Prop]_{Ty}$  & $[sub0r]_{Lem}$ & $[=]_{Sym}$ & $[+]_{Sym}$ & $[-]_{Sym}$ & $0$ \\
+ \hline
+  \end{tabular}  
+  }
+
+ \caption{\textbf{Proof-patch matrices for the new proof of the goal of Example~\ref{example1}.} 
+\emph{Where we use notation $EL'$, ML4PG gathers the lemma names: (\lstinline?sumrB?, \lstinline?big_nat_recr?~, \lstinline?big_nat_recl?, \ldots);
+where we use $EL''$, ML4PG gathers the lemma names (\lstinline?eq_refl?, \lstinline?subr_eq0?, \lstinline?eqP?).}}\label{tab:patches}
+ \end{table}
+ 
+\end{example}
+
+
+
+ **** Explanation of $[]_{Lem}$ $[]$ and dynamic lemma numbering *******
+
+% 
+% Once all proof features are extracted, ML4PG is ready to communicate with \emph{machine-learning interfaces} (Feature \textbf{F.2}). 
+% ML4PG is built to be modular -- that is,  the feature extraction is first completed within the Proof General environment, where 
+% the data is gathered in the format of hash tables, and then these tables are converted to the format of the chosen machine-learning tool (in our case, MATLAB~\cite{Matlab} or 
+% Weka~\cite{Weka}). 
+% Extending the list of machine-learning engines does not require any further modifications to the feature extraction algorithm, but just defining new \emph{translators} for those engines.
+% There is a synchronous communication between ML4PG and the
+% machine-learning interfaces, which run in the background waiting for ML4PG calls.  
+% The user can chose additional proof libraries to be clustered against the current proof.
+% ML4PG provides output instantly.
+% 
+%  
+% ML4PG offers a choice of \emph{pattern-recognition algorithm}.  We connected ML4PG only to  \emph{clustering algorithms}~\cite{Bishop} -- a family of
+% \emph{unsupervised learning methods}. Clustering techniques divide data into $n$ groups of similar objects (called clusters), where the value of $n$ is 
+% provided by the user. Unsupervised  learning is chosen when no user guidance or class tags are given to the algorithm in advance: in our case, we do not expect the user
+% to ``tag'' the library proofs in any way. There are several clustering algorithms  available in MATLAB (\emph{K-means} and \emph{Gaussian}) and Weka 
+% (\emph{K-means}, \emph{FarthestFirst} and \emph{Expectation Maximisation}, in short E.M.); we will use several of them in the coming examples. 
+% 
+% Various numbers of clusters can be useful: this may depend on the 
+% size of the data set, and on existing similarities between the proofs. 
+% ML4PG has its own algorithm that determines the optimal number of clusters interactively, and based on the library size. % tailored to the interactive proofs. 
+% As a result, the user does not provide the value of $n$ directly, but
+% just decides on \emph{granularity} in the ML4PG menu, by selecting a value between $1$ and $5$, where $1$ stands for a low 
+% granularity (producing fewer large clusters) and $5$ stands for a high granularity (producing many smaller clusters). 
+% Given a granularity value $g$, the number of clusters $n$ is given by the formula {\small $$n=\lfloor\frac{\text{objects to cluster}}{10-g}\rfloor.$$}
+% 
+% We analyse the results produced by different algorithms and granularity values in Section~\ref{sec:compare}.
+% 
+% Finally (Feature \textbf{F.3}), ML4PG processes the clusters obtained by Matlab and Weka and displays families of 
+% related proofs to the user. It is the nature of statistical methods to produce results with some ``probability'', 
+% and not being able to provide ``guarantees'' that a certain cluster will be found for a certain library. However, ML4PG ensures quality of the output
+% in several different ways. First of all, the results shown in Tables~\ref{tab:compare} and \ref{tab:jvm} are not taken from one random run of a clustering
+% algorithm -- instead, ML4PG output shows the digest of clustering results coming from  200 runs of the clustering algorithm. Only clusters that appear
+% frequently in 200 runs of the algorithm are displayed to the user. There is a way to manipulate the frequency threshold within ML4PG. 
+% Another measure -- relative proximity of examples in a cluster --  is also taken into account by ML4PG before the results are shown, see~\cite{KHG13,HK12}. 
+% If a lemma is contained in several clusters, proximity and frequency values are used to determine one ``most reliable'' cluster to display.
+% 
+% As a final remark, the clustering may be performed in relation to the current unfinished proof, or in a 
+% goal-independent way. In the next section, we present different scenarios to illustrate how ML4PG works in these two cases. 
+% 
+% 
+% 
+% 
+% 
+% 

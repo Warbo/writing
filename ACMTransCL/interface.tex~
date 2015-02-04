@@ -1,0 +1,55 @@
+\section{ML4PG}\label{sec:interface}
+
+In this section, we present the main functionality that ML4PG offers to the user. ML4PG works with Coq and its SSReflect dialect, 
+and it does not assume any machine-learning knowledge from the user. 
+ML4PG accommodates 4 buttons in the Proof General interface that can be used respectively to: (1) find similar proofs in relation to an unfinished proof,
+(2) find families of similar proofs, (3) find definitions that are similar to a concrete definition, and (4) find families of similar definitions. 
+This functionality is achieved in ML4PG in the following way.
+
+\begin{itemize}
+ \item[\textbf{F.1.}] it works on the background of Proof General extracting some low-level features from proofs and definitions in Coq/SSReflect;
+ \item[\textbf{F.2.}] it automatically sends the gathered statistics to a chosen machine-learning interface and triggers execution of a 
+ clustering algorithm of user's choice;
+ \item[\textbf{F.3.}] it does some gentle post-processing of the results given by the machine-learning tool, and displays families of 
+ either related proofs or related definitions to the user. 
+\end{itemize}
+
+Feature \textbf{F.1} is one of the main contributions in ML4PG, and the technical details of the methods to capture statistics from proofs and 
+definitions are given in Section~\ref{sec:ml4pg}. Roughly speaking, the extraction of features produces as result numerical vectors that are used
+as input in the machine-learning algorithms.
+
+Once all proof features are extracted 
+ML4PG is ready to communicate with machine-learning interfaces (Feature \textbf{F.2}). 
+ML4PG is built to be modular -- that is, the feature
+extraction is first completed within the Proof General environment, where the data is gathered in the format of hash tables, and then these tables are 
+converted to the format of the chosen machine-learning tool. In Stage-1 of ML4PG development, we connected ML4PG both with Matlab~\cite{Matlab} and
+Weka~\cite{Weka}; the results that we obtained with both systems were similar and Weka has the advantage of being an open-source software; hence, in 
+Stage-2 we decided to use only Weka as machine-learning engine. 
+
+ML4PG offers a choice of pattern-recognition algorithm. ML4PG is connected only to clustering algorithms~\cite{Bishop} --
+a family of unsupervised learning methods. Clustering techniques divide data into $n$ groups of similar objects 
+(called clusters), where the value of $n$ is provided by the user. Unsupervised learning is chosen when no user guidance or class 
+tags are given to the algorithm in advance: in our case, we do not expect the user to ``tag'' the library proofs in any
+way. There are several clustering algorithms available in Weka (K-means, FarthestFirst and Expectation Maximisation, in short E.M.) 
+and the user can select the algorithm using ML4PG's menu included in the Proof General interface. 
+
+Various numbers of clusters can be useful: this may depend on the size of the data set, and on existing similarities between the proofs.
+ML4PG has its own algorithm that determines the optimal number of clusters interactively, and based on the library size. As a result, 
+the user does not provide the value of $n$ directly, but just decides on \emph{granularity} in the ML4PG menu, by selecting a value
+between $1$ and $5$, where $1$ stands for a low granularity (producing fewer large clusters) and $5$ stands for a high granularity 
+(producing many smaller clusters). Given a granularity value $g$, the number of clusters $n$ is given by the formula
+
+$$n=\lfloor\frac{\text{objects to cluster}}{10-g}\rfloor.$$
+
+It is worth mentioning that it is the nature of statistical methods to produce results with some ``probability'', and not being able to provide ``guarantees''
+that a certain cluster will be found for a certain library. However, ML4PG ensures quality of the output in several different ways (Feature \textbf{F.3}).
+First of all, the results are not taken from one random run of a clustering algorithm -- instead, ML4PG output shows the digest of clustering results coming from $200$
+runs of the clustering algorithm. Only clusters that appear frequently in $200$ runs of the algorithm are displayed to the user. There is a way to manipulate
+the frequency threshold within ML4PG. Another measure is a \emph{proximity value} assigned by clustering algorithms to every term in a cluster -- the value ranges 
+from $0$ to $1$ , and indicates the certainty of the given example belonging to the cluster. This proximity value is also taken into account by ML4PG before the results
+are shown. If a lemma is contained in several clusters, proximity and frequency values are used to determine one ``most reliable'' cluster to display.
+
+
+
+
+
