@@ -1,0 +1,39 @@
+* Dimensionality Reduction, Distributed Representations and Learning Structured Data
+
+Many machine learning algorithms require that all their input values be of the same, fixed size. For example, learning algorithms for artificial neural networks (ANNs) such as backpropagation only adjust the *weights* of each edge in the graph; the set of nodes and their connections (including the *input layer*) remains fixed.
+
+This poses a problem when the size of our inputs may vary, may be unknown, or may even be unbounded. In these cases we need a (possibly lossy) technique to normalise these inputs to a standard, fixed size which is amenable to learning.
+
+** Truncation and Padding
+
+The simplest way to limit the size of our inputs is to choose a size then truncate anything larger, and pad anything smaller. This is unsatisfactory, since it introduces a conflict between *data* efficiency and *time* efficiency: increasing our input size will slow down the learning algorithm, often exponentially, whilst decreasing the input size increases the probability that relevant information will be lost by the truncation.
+
+** Dimension Reduction
+
+A more sophisticated approach to reducing the size of our inputs is to view it as a *dimension reduction* technique: our inputs can be considered as points in a high-dimensional space, which may vary per point, which we must project into an N-dimensional space in which we can learn.
+
+Truncation is a trivial dimension reduction technique: take the first N components of the coordinate. A more sophisticated projection function would consider the *structure* of the points, and project with the hyperplane which preserves as much of this structure as possible (or, equivalently, reduces the *mutual information* between the points).
+
+There are many techniques to find these hyperplanes, but most require all input points to have the *same* dimensionality, which is precisely the constraint we're trying to avoid. Still, dimension reduction can mitigate the efficiency conflict introduced by truncation: we can truncate to a large size, to minimise information loss, then reduce these large, fixed-dimension inputs to a smaller size more amenable to learning.
+
+This does not solve another problem with projection functions though: we require many data points in order to discover their structure. This is difficult in an online setting, where input arrives incrementally. Whilst it is possible to learn a dimension-reduction function *and* a value function on the reduced data, the dynamics of such a system would be difficult to analyse: the core ML algorithm would have to predict the behaviour of the dimension-reducer as well as the underlying data, which would only become feasible once the dimension-reducer has converged to a stable projection function.
+
+** Structured Data
+
+The task of dimension reduction changes when we consider *structured* data. Recursive structures, like trees, have *fractal* dimension: increasing the size of a recursive structure causes more *fine-grained* detail, rather than appending extra, orthogonal detail.
+
+We can leverage this recursive structure when reducing our inputs to a fixed-size. As demonstrated by ******, to reduce a tree of features to a single feature, we only require a combination function which matches the recursive nature of the tree.
+
+In particular, we can choose a combining function : (Feature * Feature) -> Feature
+
+** Sequencing
+
+One lossless method for fixing the size of our input is to split it into fixed-size *chunks*. These can be fed into an appropriate ML algorithm one at a time, and terminated by a special sentinel sequence which cannot appear in the data chunks. This technique allows us to trade *space* (measured in bits) for *time* (measured in steps).
+
+Not all learning algorithms can be adapted to accept sequences. One notable approach is to use *recurrent* ANNs (RANNs), which allow arbitrary connections between nodes, including cycles. Compared to *feed-forward* ANNs (FFANNs), which are acyclic, the output of a RANN may depend arbitrarily on *previous* inputs (in fact, RANNs are universal computers).
+
+The main problem with RANNs, compared to the more widely-used FFANs, is the difficulty of training them. If we extend the backpropagation algorithm to handle cycles, we get the *backpropagation through time* algorithm. However, this suffers the *vanishing gradient* problem: error values decay exponentially as they traverse each cycle, which prevents effective learning of delayed dependencies, undermining the main advantage of RANNs.
+
+The vanishing gradient problem is the subject of current research, but most solutions so far are rather ad hoc.
+
+**
