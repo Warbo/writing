@@ -1,39 +1,70 @@
-* Dimensionality Reduction, Distributed Representations and Learning Structured Data
+#+TITLE: Dimensionality Reduction, Distributed Representations and Learning Structured Data
+#+OPTIONS: toc:nil
+# \bibliography{~/Documents/ArchivedPapers/Bibtex.bib}
 
-Many machine learning algorithms require that all their input values be of the same, fixed size. For example, learning algorithms for artificial neural networks (ANNs) such as backpropagation only adjust the *weights* of each edge in the graph; the set of nodes and their connections (including the *input layer*) remains fixed.
+Many machine learning algorithms require all their input values to have the same, fixed size. For example, popular learning algorithms for artificial neural networks (ANNs) such as *backpropagation* use a fixed graph of nodes and edges, and only adjust the *weight* associated with each edge.
 
-This poses a problem when the size of our inputs may vary, may be unknown, or may even be unbounded. In these cases we need a (possibly lossy) technique to normalise these inputs to a standard, fixed size which is amenable to learning.
+This poses a problem when the size of each input is not known, may vary and may even be unbounded. For example, in the case of *online* learning we must make predictions/decisions before seeing all of the inputs. Unbounded input appears in domains such as proof automation, where a theorem may be a tree of unbounded depth. In these situations we need a (possibly lossy) technique to normalise all inputs to a standard, fixed size which is amenable to learning. These fixed-size representations are called *features* and the normalising process is known as *feature extraction*. Without loss of generality we will assume our features to be vectors of \( N \) bits, since this is a universal format relevant to real implementations.
 
 ** Truncation and Padding
 
-The simplest way to limit the size of our inputs is to choose a size then truncate anything larger, and pad anything smaller. This is unsatisfactory, since it introduces a conflict between *data* efficiency and *time* efficiency: increasing our input size will slow down the learning algorithm, often exponentially, whilst decreasing the input size increases the probability that relevant information will be lost by the truncation.
+The simplest way to limit the size of our inputs is to truncate anything larger than a particular size (and pad anything smaller). This is the approach taken by ML4PG, which limits itself to trees with at most 10 levels and 10 elements per level; each tree is converted to a \( 30 \times 10 \) matrix (3 values per tree node) and learning takes place on these normalised representations.
+
+Truncation is unsatisfactory in the way it balances /data/ efficiency with /time/ efficiency. Specifically, truncation works best when the input data contains no redundancy and is arranged with the most significant data first (in a sense, it is "big-endian"). The less these assumptions hold, the less we can truncate. Since many learning algorithms scale poorly with input size, we would prefer to eliminate the redundancy using a more aggressive algorithm, to keep the resulting feature size as low as possible.
 
 ** Dimension Reduction
 
-A more sophisticated approach to reducing the size of our inputs is to view it as a *dimension reduction* technique: our inputs can be considered as points in a high-dimensional space, which may vary per point, which we must project into an N-dimensional space in which we can learn.
+A more sophisticated approach to the problem of reducing input size is to view it as a /dimension reduction/ technique: our inputs can be modelled as points in high-dimensional spaces, which we want to project into a lower-dimensional space (\( \left\{ {0, 1} \right\}^N \) in the case of \( N \)-bit vectors).
 
-Truncation is a trivial dimension reduction technique: take the first N components of the coordinate. A more sophisticated projection function would consider the *structure* of the points, and project with the hyperplane which preserves as much of this structure as possible (or, equivalently, reduces the *mutual information* between the points).
+Truncation is a trivial dimension reduction technique: take the first \( N \) coordinates (bits). More sophisticated projection functions consider the /distribution/ of the points, and project with the hyperplane which preserves as much of the variance as possible (or, equivalently, reduces the *mutual information* between the points).
 
-There are many techniques to find these hyperplanes, but most require all input points to have the *same* dimensionality, which is precisely the constraint we're trying to avoid. Still, dimension reduction can mitigate the efficiency conflict introduced by truncation: we can truncate to a large size, to minimise information loss, then reduce these large, fixed-dimension inputs to a smaller size more amenable to learning.
+There are many techniques to find these hyperplanes, such as Principle Component Analysis and auto-encoding; however, since these techniques are effectively machine learning algorithms in their own right, they suffer some of the same constraints we're trying to avoid:
 
-This does not solve another problem with projection functions though: we require many data points in order to discover their structure. This is difficult in an online setting, where input arrives incrementally. Whilst it is possible to learn a dimension-reduction function *and* a value function on the reduced data, the dynamics of such a system would be difficult to analyse: the core ML algorithm would have to predict the behaviour of the dimension-reducer as well as the underlying data, which would only become feasible once the dimension-reducer has converged to a stable projection function.
+ - They operate /offline/, requiring all input points up-front
+ - All input points must have the same dimensionality
+
+In particular, the second constraint is precisely what we're trying to avoid. Sophisticated dimension reduction is still useful for /compressing/ large, redundant features into smaller, information-dense representations, and as such provides a good complement to truncation.
+
+The requirement for offline "batch" processing is more difficult to overcome, since any learning we perform for feature extraction will interfere with the core learning algorithm that's consuming these features. Such systems are possible, but out of scope for this small initial implementation.
 
 ** Structured Data
 
-The task of dimension reduction changes when we consider *structured* data. Recursive structures, like trees, have *fractal* dimension: increasing the size of a recursive structure causes more *fine-grained* detail, rather than appending extra, orthogonal detail.
+The task of dimension reduction changes when we consider /structured/ data. Recursive structures, like trees, have /fractal/ dimension: increasing the size of a recursive structure gives us more /fine-grained/ features, rather than /orthogonal/ features.
 
-We can leverage this recursive structure when reducing our inputs to a fixed-size. As demonstrated by ******, to reduce a tree of features to a single feature, we only require a combination function which matches the recursive nature of the tree.
+To eliminate the fractional dimension of structured input, we need to /fold/ the structure using some /combining function/. For proof automation we are concerned with tree structures of the following form:
 
-In particular, we can choose a combining function : (Feature * Feature) -> Feature
+\begin{displaymath}
+  Tree = \left\{
+           \begin{array}{l l}
+             leaf(\mathbf{F})      & \quad \text{where $\mathbf{F}$ is a feature}\\
+             branch(L, R) & \quad \text{where $L$ and $R$ are trees}
+           \end{array}
+         \right.
+\end{displaymath}
+
+Following *** we choose *circular convolution*, denoted \( \odot \), as our combining function. Hence, to /reduce/ a tree of features \( T \) to a single feature, we can use the following fold operation:
+
+\begin{displaymath}
+  \begin{split}
+    reduce(leaf(\mathbf{F}))      & = \mathbf{F}
+    \\
+    reduce(branch(L, R)) & = reduce(L) \odot reduce(R)
+  \end{split}
+\end{displaymath}
+
+Circular convolution is used  due to the following desirable properties:
+
+ - *Non-commutative*: \( A \odot B  \not\approx B \odot A \), hence we can distinguish between \( branch(A, B) \) and \( branch(B, A) \)
+ - *Non-associative*: \( A \odot (B \odot C) \not\approx (A \odot B) \odot C \), hence we can distinguish between \( branch(A, branch(B, C)) \) and \( branch(branch(A, B), C) \)
+
+Here we use \( \not\approx \) to represent that these quantities differ /with high probability/, based on empirical testing. This is the best we can do, since the type of combining functions \( (Feature \times Feature) \rightarrow Feature \) has a co-domain strictly smaller than its domain, and hence it must discard some information. In the case of circular convolution, the remaining information is spread out among the bits in the resulting feature, which is known as a *distributed representation*.
 
 ** Sequencing
 
-One lossless method for fixing the size of our input is to split it into fixed-size *chunks*. These can be fed into an appropriate ML algorithm one at a time, and terminated by a special sentinel sequence which cannot appear in the data chunks. This technique allows us to trade *space* (measured in bits) for *time* (measured in steps).
+Any investigation of variable-size input would be incomplete without mentioning the /sequencing/. This is a lossless approach, which splits the input into fixed-size /chunks/, which are fed into an appropriate ML algorithm one at a time. The sequence is terminated by a sentinel; an "end-of-sequence" marker which, by construction, is distinguishable from the data chunks. This technique allows us to trade /space/ (the size of our input) for /time/ (the number of chunks in a sequence).
 
-Not all learning algorithms can be adapted to accept sequences. One notable approach is to use *recurrent* ANNs (RANNs), which allow arbitrary connections between nodes, including cycles. Compared to *feed-forward* ANNs (FFANNs), which are acyclic, the output of a RANN may depend arbitrarily on *previous* inputs (in fact, RANNs are universal computers).
+Not all learning algorithms can be adapted to accept sequences. One notable approach is to use *recurrent ANNs* (RANNs), which allow arbitrary connections between nodes, including cycles. Compared to *feed-forward* ANNs (FFANNs), which are acyclic, the /future output/ of a RANN may depend arbitrarily on its /past inputs/ (in fact, RANNs are universal computers).
 
-The main problem with RANNs, compared to the more widely-used FFANs, is the difficulty of training them. If we extend the backpropagation algorithm to handle cycles, we get the *backpropagation through time* algorithm. However, this suffers the *vanishing gradient* problem: error values decay exponentially as they traverse each cycle, which prevents effective learning of delayed dependencies, undermining the main advantage of RANNs.
+The main problem with RANNs, compared to the more widely-used FFANNs, is the difficulty of training them. If we extend the standard backpropagation algorithm to handle cycles, we get the *backpropagation through time* algorithm. However, this suffers a problem known as the *vanishing gradient*: error values decay exponentially as they propagate back through the cycles, which prevents effective learning of delayed dependencies, undermining the main advantage of RANNs.
 
 The vanishing gradient problem is the subject of current research, but most solutions so far are rather ad hoc.
-
-**

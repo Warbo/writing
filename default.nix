@@ -4,7 +4,8 @@ stdenv.mkDerivation {
   name = "phd-meetings";
   src  = ./.;
   buildInputs = [
-    pkgs.texLiveFull
+    pkgs.texLiveFull # LaTeX
     pkgs.emacs
+    pkgs.ghostscript
   ];
 }
