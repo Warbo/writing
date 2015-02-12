@@ -5,8 +5,6 @@ stdenv.mkDerivation {
   src  = ./.;
   buildInputs = [
     pkgs.texLiveFull # LaTeX
-    pkgs.emacs
-    pkgs.ghostscript
     pkgs.graphviz
     pkgs.blockdiag
     pkgs.haskellPackages.pandoc
@@ -14,7 +12,6 @@ stdenv.mkDerivation {
     panpipe
     panhandle
     coq_mtac
-    git
     treefeatures
   ];
 }
