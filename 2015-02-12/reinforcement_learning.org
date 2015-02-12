@@ -1,0 +1,53 @@
+#+title: Reinforcement Learning for Proof Automation
+#+options: toc:nil
+# \bibliography{~/Documents/ArchivedPapers/Bibtex.bib}
+
+The *reinforcement learning* problem builds on the general *agent/environment* framework, used as a simplifying assumption in many AI fields. In a general agent/environment setup, the *agent* (the learning system) is distinct from the *environment* (everything else), and the only interaction between the two is the alternate sending and receiving of discrete messages, known as *actions* (from agent to environment) and *observations* (from environment to agent):
+
+#+name: ae_code
+#+begin_example
+blockdiag {
+  A [label="Agent"]
+  E [label="Environment"]
+  A -> E [label="Actions"]
+  E -> A [label="Observations"]
+}
+#+end_example
+
+#+begin_src sh :results output :exports results :var bd=ae_code
+echo "$bd" > ae.bd
+blockdiag -o ae.png ae.bd
+#+end_src
+
+#+caption: Agent/environment framework
+[[ae.png]]
+
+Reinforcement learning extends this framework by having the agent receive /pairs/ of values: an observation (as before) and a *reward*:
+
+#+name: rl_code
+#+begin_example
+blockdiag {
+  A [label="Agent"]
+  E [label="Environment"]
+  A -> E [label="Actions"]
+  E -> A [label="(Observation, Reward) pairs"]
+}
+#+end_example
+
+#+begin_src sh :results output :exports results :var bd=rl_code
+echo "$bd" > rl.bd
+blockdiag -o rl.png rl.bd
+#+end_src
+
+#+caption: Reinforcement learning framework
+[[rl.png]]
+
+Rewards must admit a total order, which the agent uses to distinguish how well it is performing, but are otherwise unconstrained. Specific problem instances may use a very limited reward signal like \( \left\{ {0,1} \right\} \) to indicate success/failure, or a very rich reward signal like \( \mathbb{R} \) to encode some performance metric (in a real implementation, this would require a computable/semi-computable approximation). Agents may choose their actions to achieve a variety of goals, such as maximising the expectation of a large reward, maximising the expected sum of future rewards (if the reward type admits addition), etc.
+
+** Reinforcement Learning and Games
+
+Due to its separation of agent and environment; use of discrete, alternating messages; and notion of reward, reinforcement learning is a very general form of *game*. This makes it amenable to study via game theory, but also as a representation of existing, real games. For example, Samuel's programs for playing the game of Checkers use an approach which would today be labelled reinforcement learning. Remarkably, this connection runs both ways: the MC-AIXI-CTW algorithm is a general reinforcement learning agent, whose implementation is directly inspired by the *context-tree weighting* algorithm of state-of-the-art programs for playing Go.
+
+*** Theorem Proving and Games
+
+The act of theorem proving can be considered as a game, where the rules are those of logical deduction (in whatever formal system is )
