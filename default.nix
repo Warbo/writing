@@ -13,5 +13,6 @@ stdenv.mkDerivation {
     panhandle
     coq_mtac
     treefeatures
+    pkgs.inotifyTools
   ];
 }
