@@ -64,10 +64,6 @@ Here we use $\not\approx$ to represent that these quantities differ *with high p
 
 Prior to 2014-09-08, the Coq proof assistant provided a rudimentary XML import/export feature, which we can use to access tree structures for learning. We achieve this by using the `external`{.ocaml} primitive of the Ltac tactic language: `external "cmd" "arg" t1 t2 t3.`{.ocaml} will run the shell command `cmd`, passing the string `arg` as an argument. We can provide any number of Coq terms, here shown as `t1`, `t2` and `t3`, which will be serialised to XML and sent to the shell command's standard input. The standard output can be used to send instructions back to Coq, but we'll ignore that feature for now.
 
-```bash
-echo "Hello world"
-```
-
 ```{pipe="tee process.sh"}
 #!/bin/sh
 xml=$(cat /dev/stdin)
@@ -75,6 +71,10 @@ hash=$(echo "$xml" | md5sum)
 echo "$xml" > "${hash}.xml"
 echo "$xml" | processor 8 > "${hash}.feature"
 echo '<CALL uri="idtac" />'
+```
+
+```{pipe="sh"}
+chmod +x process.sh
 ```
 
 ```{pipe="tee nats.v"}
@@ -85,7 +85,7 @@ Goal True.
 ```{pipe="sh"}
 for n in {0..255}
 do
-  echo 'try (external "processor" "6" ' >> nats.v
+  echo 'try (external "./process.sh" "6" ' >> nats.v
   echo "$n"                             >> nats.v
   echo ')  || idtac. '                  >> nats.v
 done
