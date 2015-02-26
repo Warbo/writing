@@ -27,7 +27,7 @@ function needsUpdate {
 }
 
 function mtime {
-  stat --printf="%Y" "$1"
+  stat -L --printf="%Y" "$1"
 }
 
 function pdfOf {

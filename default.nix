@@ -4,15 +4,27 @@ stdenv.mkDerivation {
   name = "phd-meetings";
   src  = ./.;
   buildInputs = [
-    pkgs.texLiveFull # LaTeX
+    # LaTeX
+    pkgs.texLiveFull
+
+    # Graph drawing
     pkgs.graphviz
     pkgs.blockdiag
+
+    # Document rendering
     pkgs.haskellPackages.pandoc
     pkgs.haskellPackages.pandocCiteproc
     panpipe
     panhandle
-    coq_mtac
-    treefeatures
+
+    # Embedded code snippets
+    #coq_mtac
+    #treefeatures
+    vim
+    haskellPackages.ghc
+    haskellPackages.QuickCheck
+
+    # Automatic rendering
     pkgs.inotifyTools
   ];
 }
