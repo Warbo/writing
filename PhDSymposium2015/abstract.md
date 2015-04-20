@@ -1,38 +1,42 @@
 ---
 title: Machine Learning for Theory Exploration
-author: Chris Warburton
+author:
+- name: Chris Warburton
+  affiliation: University of Dundee
+  email: cmwarburton@dundee.ac.uk
+- name: Ekaterina Komendantskaya
+  affiliation: University of Dundee
+  email: katya@dundee.ac.uk
 documentclass: default
 citation-style: acm-sig-proceedings.csl
 bibliography: /home/chris/Documents/ArchivedPapers/Bibtex.bib
 abstract: |
-  Computer-assisted, formal Mathematics is dominated by two complementary approaches: **Interactive Theorem Proving** and **Automated Theorem Proving**. Whilst gaining popularity among Computer Scientists, Mathematicians remain skeptical. **Theory Exploration** provides an alternative to the theorem-proving paradigm, which corresponds more closely to the way Mathematics is practiced; however, the potential of existing exploration systems is limited by their reliance on brute-force search. We propose the use of statistical techniques from Machine Learning to make theory exploration feasibile in real-world domains.
+  **Theory Exploration** (TE) aims to automate the tedious yet necessary task of verifying Mathematicians' and programmers' work, but the blind search used by existing approaches limits them to small examples. Meanwhile, huge repositories of formal knowledge are being routinely data-mined for structure and correlation. We provide a method for guiding TE using these abundant statistics, and assess whether this hybrid approach is feasible for tackling problems of a realistic size.
 
 ---
 
 #  Introduction
 
-*Theorem proving* is the dominant paradigm in computer-assisted formal Mathematics: the *interactive* approach (ITP) provides a "book-keeping" framework to manage and check manually-written proofs; whilst the *automated* approach (ATP) can prove "routine" theorems, of certain restricted forms, with little manual intervention. Both are *goal-directed*: they assume the prior selection of some interesting, plausible conjecture which the user would like to prove. This is comparable to software development tools, which assume the user is trying to solve some pre-specified problem.
+Small mistakes made in Mathematics and programming can cause large problems in the real world. Computer verification can reduce this risk by checking our reasoning step-by-step; but traditional software's inability to follow "obvious" arguments without explicit guidance often makes it impractical. The recent *theory exploration* approach[@buchberger2000theory] tackles this by generating a database of facts about a user-provided "theory" (eg. a software library). This database can either serve as "background knowledge" for a traditional verification tool, to help it follow more coarse-grained proof steps; or it can be queried directly to discover interesting facts about the theory.
 
-There is growing support for theorem proving systems among Computer Scientists and Software Engineers. In particular, the *propositions as types*[@howard1995formulae] principle blurs the distinction between theorem proving and software development, leading to an influx of ITP techniques in areas like strongly-typed programming.
+Existing TE systems, such as <span style="font-variant:small-caps;">QuickSpec</span>[@QuickSpec] and <span style="font-variant:small-caps;">HipSpec</span>[@Claessen_hipspec:automating], rely on undirected, brute-force search to generate their databases. Although complete, these algorithms' exponential complexity limits their scalability to small theories with only a handful of definitions. To be practical, the technique must be able to work with theories spanning thousands of definitions, without relying on expert users to cherry-pick a sub-set.
 
-Mathematicians (with the notable exception of Homotopy Type Theorists[@voevodsky2013homotopy]) are more skeptical. Buchberger[@buchberger2000theory] suggests this indifference is due to the theorem-proving paradigm being unrepresentative of the work carried out in mathematical research, teaching and application. In particular, he advocates a more open-ended, less goal-directed framework: considering whole collections of definitions, theorems and computations together; rather than trying to prove individual theorems in isolation. This is the Theory Exploration (TE) paradigm, and the sentiment is even echoed within the goal-oriented ATP community[@fearnley1996automated].
+**Machine Learning** (ML) offers many scalable techniques for studying large theories, such as *premise selection*[@kuhlwein2012overview]: choosing lemmas which are most likely to help us prove a conjecture. This is similar to our cherry-picking problem, but TE is concerned with a theory's structure rather than individual conjectures.
 
-To retain some focus and direction in the absence of an explicit goal, TE begins with a collection of definitions and relationships (a "theory"; for example, an equational definition of Peano arithmetic). Conjectures about these definitions are grouped into "layers" of roughly similar complexity, and tackled all at once. When a layer is sufficiently understood, or "completed" (eg. with a decision procedure), it can be placed alongside the original definitions to form the basis of a new layer. Hence progress can be made through the successive definition and completion of layers, without any particular layer being specified *a priori*.
-
-Since Buchberger's <span style="font-variant:small-caps;">Theorema</span> system, which requires much manual definition, there has been a wave of more 'autonomous' TE systems: <span style="font-variant:small-caps;">IsaCoSy</span>[@johansson2009isacosy] and <span style="font-variant:small-caps;">Hipster</span>[@Hipster] target the Isabelle ITP; <span style="font-variant:small-caps;">QuickSpec</span>[@QuickSpec] and <span style="font-variant:small-caps;">HipSpec</span>[@Claessen_hipspec:automating] target the Haskell programming language. In these systems, the notion of a new "layer" is an equation which cannot be derived from the knowledge base through rewriting. This is a reasonable definition, yet to discover these equations each system relies on an undirected brute-force search. Whilst ensuring completeness and outperforming other ATPs on induction problems, this exponential search fundamentally limits their scalability beyond toy examples with a handful of definitions.
-
-Exponential problems, brute-force algorithms and approximate solutions have been studied extensively in the fields of **Artificial Intelligence** (AI) and **Machine Learning** (ML). In this work we introduce ML methods to existing TE systems in a conservative way. In particular, we use previous work from the <span style="font-variant:small-caps;">ML4PG</span> system (Machine Learning for Proof General) and its derivatives to break up large theories into small clusters of similar definitions, which are more manageable by existing TE systems yet rich enough to yield novel, non-trivial relationships.
+Theory structure has been studied by <span style="font-variant:small-caps;">ML4PG</span>[@DBLP:journals/corr/abs-1303-1419], using *clustering* to find statistical similarities and hierarchies among definitions. We investigate whether such clustering information can help TE systems navigate large theories more effectively.
 
 # Methodology
 
-Our approach does not modify existing systems. Instead, we provide a pre-processing layer which analyses a theory's definitions and produces smaller clusters which are more amenable to the brute-force approach. By carefully choosing the features used for comparison, we aim to preserve interesting relationships within these small clusters, whilst eliminating the least promising areas of the search space. This allows the technique to scale to much larger theories than are currently practical.
+Following the approach of <span style="font-variant:small-caps;">QuickSpec</span>, our "theories" are software libraries written in Haskell; a popular programming language where correctness is concerned. We divide these definitions into small clusters, using a similar technique to <span style="font-variant:small-caps;">ML4PG</span>. We then run <span style="font-variant:small-caps;">QuickSpec</span> on each cluster individually, to produce "facts" in the form of equalities relating the definitions. The facts for each cluster are then combined.
 
-We choose Haskell as both an implementation language and to represent our theories: definitions correspond to standard Haskell constants, whilst relationships are captured by boolean predicate functions (a sub-set of those used by QuickCheck).
+We compare the total running time and the resulting database against running <span style="font-variant:small-caps;">QuickSpec</span> on the whole, unclustered library. We observe the tradeoff between speed and completeness, for various library sizes.
 
-# RESULTS
+# Results
+
+We have developed an ML approach for analysing Haskell code, including a bespoke feature extraction method which, to our knowledge, is the first in the literature. The success of our clustering tool shows the suitability of Haskell for the same statistical approaches used to study other languages.
 
 # Future Work
 
-Wrapping existing systems allows meaningful comparisons to be made to previous work, which is important when tasks are open-ended and hard to quantify. However, the performance opportunities available to preprocessors and wrappers are limited compared to a more thorough symbiosis of symbolic and statistical techniques. For example, our feature extraction technique is oblivious to the equations discovered in previous exploration layers.
+Our tool can be improved with a more systematic consideration of the design decisions and heuristics used, but the preprocessor approach is inherently limited. A more thorough integration of our methodology into state-of-the-art TE systems would provide more opportunities for exploiting statistical information, and also to "close the loop" by using the TE database to inform the statistical algorithms.
 
 # References
