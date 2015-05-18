@@ -20,6 +20,8 @@ stdenv.mkDerivation {
     # Embedded code snippets
     #coq_mtac
     #treefeatures
+    ditaa
+    ditaaeps
     vim
     haskellPackages.ghc
     haskellPackages.QuickCheck
