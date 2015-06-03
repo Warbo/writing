@@ -3,38 +3,58 @@ title: Machine Learning for Formal Languages
 author: Chris Warburton
 ---
 
-# Machine Learning #
+# Premise Selection #
 
-Statistics
+Most widely used application, eg. Naive Bayes in Isabelle's Sledgehammer
 
-Underfitting
+Given a set of axioms, lemmas, theorems, etc. select those which are *relevant* to proving a particular goal
 
-Overfitting
+Prevents Automated Theorem Provers slowing down as more theorems are proved
 
-Feature Extraction
+# Strategy Selection #
 
-# Structure #
+Alter ATP parameters using evolutionary algorithms, eg. BliStr
 
-Convolution?
+Mainly applied to reproving and benchmarks (eg. TPTP), rather than "real work"
 
-Backpropagation through structure?
+# Inductive Functional Programming #
 
-Graph algorithms
+Derive a function from input/output pairs
 
-# Models #
+**or**
 
-Neural networks?
+Derive a value of a given type, using Curry Howard, eg. *MagicHaskeller*
 
-Support-vector machines? Probably not
+Uses Monte Carlo search to eliminate duplicates, similar to *QuickSpec*
 
-Bayesian models? Probably mention in passing
+# ML4PG #
 
-# Applications #
+Unsupervised clustering: carve up libraries based on similarity
 
-ML4PG
+Present users with similar definitions, and automata which reproduce proofs
 
-PageRank
+Mixes feature extraction with clustering
 
-impact factor?
+# Demo #
 
-Auto-encoders
+# ML4HS #
+
+Apply similar clustering as ML4PG to Haskell
+
+Use results to bias *theory exploration*, looking for theorems and typeclasses/instances
+
+*QuickSpec* uses Monte Carlo search, but only to approximate equality checking rather than for sampling the search space
+
+# Demo? #
+
+# Future Ideas #
+
+Auto-encoders for feature extraction, eg. as a benchmark
+
+PageRank-style graph algorithms to find "important" definitions
+
+Many-armed bandit strategies for concurrent search/exploration
+
+Data-mining proof/test libraries to model what programmers care about
+
+Inductive Functional Programming for theory exploration
