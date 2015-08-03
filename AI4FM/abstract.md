@@ -1,21 +1,44 @@
 ---
-title: Machine Learning for Theory Exploration
+title: Scaling Automated Theory Exploration
 author: Chris Warburton
-bibliography: /home/chris/Documents/ArchivedPapers/Bibtex.bib
+bibliography: /home/chris/Documents/ArchivedPapers/Bibtex.bi
 header-includes:
     - \usepackage[T1]{fontenc}
     - \usepackage{upquote}
----
 
 # Abstract #
 
-**Theory exploration** (TE) takes a *theory* (a collection of definitions) and *searches* for interesting theorems. Compared to the traditional state-then-prove approach to theorem proving, TE is more autonomous and has the potential to discover theorems beyond those conjectured by the user.
+**Theory exploration** (TE) takes a *theory* (a collection of definitions) and *searches* for interesting theorems. Compared to the traditional state-then-prove approach to theorem proving, TE has the capability of being more autonomous and discovering theorems beyond those conjectured by the user.
 
-Unfortunately, this lack of goals also makes it difficult to explore theories of a practical size. We suggest that machine learning techniques can mitigate this problem: using statistical analysis to infer what makes a theorem "interesting" and which areas of the search space to concentrate on.
+Unfortunately, this lack of explicit goals also makes exploring theories of a practical size difficult. We discuss challenges to automated theory exploration and suggest approaches to avoid or mitigate them.
 
 # Introduction #
 
-We consider the task of exploring software libraries in the Haskell programming language. Haskell is interesting to study, since its purity and algebraic structure make it amenable to a formal treatment, yet its emphasis on recursion and higher-order functions make it difficult to do so automatically.
+The framework of *theory exploration* (TE) is, by design, nothing more or less than software support for traditional Mathematical workflows; namely, searching for "interesting" consequences of definitions. Early implementations like <span style="font-variant:small-caps;">Theorema</span> emphasised interactivity, in a similar way to computer algebra systems like Mathematica (in which <span style="font-variant:small-caps;">Theorema<span> is implemented) or interactive theorem provers. Subsequent systems have investigated *automated* theory exploration, for tasks such as lemma discovery.
+
+Such automation is difficult for two reasons: as a search problem, TE has poor time complexity; secondly, the search criterion itself is underspecified: what constitutes an "interesting" result?
+
+# Defining "Interesting" #
+
+We use the term "interesting" to denote those theorems we would like a TE system to discover, which will be a small fraction of all derivable theorems. Various interestingess measures are surveyed in [@geng2006interestingness] concerning *inferred* rules in the context of data mining, which may be adapted for the *deduced* theorems in TE.
+
+One
+
+For example, Peano arithmetic contains trivial theorems such as $0 + 0 = 0$, $0 + S0 = S0$, $0 + SS0 = SS0$, etc. which we would prefer an exploration procedure to avoid, in favour of general laws such as $\forall x. 0 + x = x$
+
+This "interestingness" criterion is underspecified. Existing TE implementations choose algorithmically convenient approximations; for example, <span style="font-variant:small-caps;">IsaCoSy</span> discovers equations, which can be are used as rewrite rules uses irreducibility of terms to determine that an equation is interesting, which can be calculate. This avoids special cases of known theorems, like the examples above; assuming that the search procedure will eventually find the general form, rather than enumerating special cases forever.
+
+In general, we can list desirable properties of an "interestingness" measure:
+
+ - Inexpensive to calculate
+ - Prefers *informative* theorems, ie. those which are difficult or impossible to derive
+ -
+
+# Tackling Complexity #
+
+Theory exploration is a "bottom-up" process: we results are chosen by a derivation process, rather than generated rounded statements are generated from everything is well founded with a theory and deduce the Search problems have been studied extensively in the field of Artificial Intelligence. In t
+
+inherently We consider the task of exploring software libraries in the Haskell programming language. Haskell is interesting to study, since its purity and algebraic structure make it amenable to a formal treatment, yet its emphasis on recursion and higher-order functions make it difficult to do so automatically.
 
 Haskell's balance of correctness and usability means code is often subject to algebraic laws, either knowingly or unknowingly, which cannot be expressed in the language itself (without difficulty[@lindley2014hasochism], at least). Such laws may benefit library authors and users (eg. for comprehension, optimisation or simplification). This makes repositories of Haskell code like <span style="font-variant:small-caps;">Hackage</span> a tremendous source of rich, structured information.
 
