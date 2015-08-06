@@ -75,12 +75,10 @@ Automated theory exploration has been applied to libraries in Isabelle
 and Haskell, although we focus on the latter as its implementations are
 the most mature (demonstrated by the fact that \textsc{Hipster} explores
 Isabelle by first translating it to Haskell). Haskell is interesting to target,
-since its use of pure functions and algebraic datatypes causes many functions to
-follow algebraic laws. However, since Haskell's type system cannot encode such
-laws (without difficulty \cite{lindley2014hasochism}, at least); less
-effort is given to finding and stating them, compared to a theorem proving
-setting like Isabelle. Hence, Haskell provides much low-hanging fruit for a
-broad but shallow exploration to discover.
+since its use of pure functions and algebraic datatypes causes many programs to
+follow algebraic laws. However, since Haskell's type system cannot easily
+encode such laws, less effort is given to finding and stating them; compared to
+a theorem proving setting like Isabelle.
 
 Due to Haskell's relative popularity, there are also large code repositories
 such as \textsc{Hackage} available to explore. This gives several potential
