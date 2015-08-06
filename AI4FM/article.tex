@@ -51,86 +51,77 @@ interactive theorem provers. Subsequent systems have investigated
 
 By removing user interaction, automated TE systems require an algorithm
 for deciding whether to inform the user of a particular theorem or not; we refer
-to this search criterion as the theorem being ``interesting''.
+to this search criterion as the theorem being ``interesting''. In existing
+systems, this criterion is intimately connected to the
+search algorithm; such coupling improves efficiency, even for brute-force
+search, but makes it difficult to try alternative measures.
 
-In existing systems, this criterion is intimately connected to the
-search algorithm; this coupling improves efficiency, even for brute-force
-search. As an example, \textsc{IsaCoSy} \cite{johansson2009isacosy} discovers
+As an example, \textsc{IsaCoSy} \cite{johansson2009isacosy} discovers
 equations, which are defined as ``interesting'' if they cannot be simplified
 using previously discovered equations. The intuition for such criteria is to
 avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$,
-etc. when we already know $\forall x. 0 + x = x$. To work effectively, this
-requires general forms to be found \emph{before} special cases.
+etc. when we already know $\forall x. 0 + x = x$. Whilst elegantly implemented
+as a term rewriting system, to work effectively this requires general forms to
+be found \emph{before} special cases.
 
 In the following, we give an overview of the state of the art in automated
-theory exploration; identify potential improvements; and present our initial
-attempts to implement some of these ideas.
+theory exploration (\autoref{haskell}). We identify potential improvements to
+these systems (\autoref{improve}) and present our initial implementation
+attempts in the form of the \textsc{ML4HS} system (\autoref{ml4hs}).
 
-\section{Theory Exploration in Haskell}
+\section{Theory Exploration in Haskell}\label{haskell}
 
 Automated theory exploration has been applied to libraries in Isabelle
 and Haskell, although we focus on the latter as its implementations are
 the most mature (demonstrated by the fact that \textsc{Hipster} explores
 Isabelle by first translating it to Haskell). Haskell is interesting to target,
 since its use of pure functions and algebraic datatypes causes many functions to
-follow algebraic laws; however, since Haskell's type system cannot encode such
-laws (without difficulty \cite{lindley2014hasochism}, at least), less
-effort is given to finding and stating them; compared to a theorem proving
-setting like Isabelle, where these laws are often the main focus.
+follow algebraic laws. However, since Haskell's type system cannot encode such
+laws (without difficulty \cite{lindley2014hasochism}, at least); less
+effort is given to finding and stating them, compared to a theorem proving
+setting like Isabelle. Hence, Haskell provides much low-hanging fruit for a
+broad but shallow exploration to discover.
 
 Due to Haskell's relative popularity, there are also large code repositories
 such as \textsc{Hackage} available to explore. This gives several potential
-benefits: in the short term, existing library authors and users may be assisted
-in comprehending and maintaining their code \cite{QuickSpec}; more notably, TE
-could be used to data mine new abstractions, such as typeclasses, with relevance
-to real-world code.
+benefits: in the short term, applying TE to such repositories may assist
+existing library authors and users in comprehending and maintaining their code
+\cite{QuickSpec}; more notably, TE could be used to data mine new abstractions,
+such as typeclasses, with relevance to real-world applications.
 
 Currently, the most powerful TE system for Haskell is \textsc{HipSpec}.
-This uses \textsc{QuickSpec} to search through \emph{expressions}
-(combinations of the Haskell terms given by the theory), rather than
-searching through the space of equations or proofs directly. Expressions
-are grouped into equivalence classes, such that the \textsc{QuickCheck}
-counterexample finder cannot distinguish between the elements; equations
-relating the members of these classes are then conjectured, and sent to
-existing automated theorem provers to try and prove \cite{rosen2012proving}. This
-approach works well as a lemma generation system, making
-\textsc{HipSpec} a capable inductive theorem prover as well as a theory
+This uses the earlier \textsc{QuickSpec} system to search through
+\emph{expressions} (combinations of the Haskell terms given by the theory),
+rather than searching through the space of equations or proofs directly.
+Expressions are grouped into equivalence classes, such that the
+\textsc{QuickCheck} counterexample finder cannot distinguish between the
+elements; equations relating the members of these classes are then conjectured,
+and sent to existing automated theorem provers to try and prove
+\cite{rosen2012proving}. This approach works well as a lemma generation system,
+making \textsc{HipSpec} a capable inductive theorem prover as well as a theory
 exploration system \cite{claessen2013automating}.
 
-\section{Identifying Improvements}
-
-Even with a slow search algorithm, we can use a divide and conquor
-approach to limit the number of allowed combinations, either by using
-stricter types to prevent composition, or by partitioning the theory
-into small independently-searched sub-theories. Of course, such
-restrictions should strike a balance between the efficiency gained and
-the potential to forbid some interesting theorems.
+\section{Identifying Improvements}\label{improve}
 
 Given this state of the art, we identify the following as potential
-areas for improvement:
-
-For a more thorough treatment,
-surveys recent work on search algorithms and  surveys
-interestingness criteria in the context of data mining.
-
+areas for investigation:
 
 \begin{itemize}
 \item
-  Enumerating expressions is a brute-force approach. Identifying more scalable
-  alternatives to brute-force search is a well-studied area of Artificial
-  Intelligence and Machine Learning. In particular, there is potential in
-  applying heuristic algorithms like those surveyed in \cite{blum2011hybrid}.
+  More scalable alternatives to brute-force enumeration. This is a well-studied
+  area of Artificial Intelligence and Machine Learning. In particular, there is
+  potential in applying heuristic algorithms like those surveyed in
+  \cite{blum2011hybrid}.
 \item
-  Many ``interestingness'' criteria are surveyed in
-  \cite{geng2006interestingness}, but existing systems are tightly coupled to
-  one particular notion. Whilst pre- and post-processors could provide
-  additional filtering, there is merit in building a more loosely-coupled
-  alternative, for two reasons:
+  Using alternative ``interestingness'' criteria, like those surveyed in
+  \cite{geng2006interestingness}. In particular, we envision two problems with
+  large-scale exploration which may require more sophisticated criteria:
 
   \begin{itemize}
   \item
     As the number of irreducible equations grows, it may be desirable to
-    impose extra conditions of a more subjective nature.
+    impose extra conditions of a more subjective nature; e.g. to distinguish
+    useful relationships from incidental coincidences.
   \item
     Surprising, insightful equations may be discarded by current systems, if
     they are actually reducible in some complex, non-obvious way. A more
@@ -138,54 +129,56 @@ interestingness criteria in the context of data mining.
     rejections.
   \end{itemize}
 \item
-  HipSpec does not propose candidate equations by data mining
-  previous results; generalisation methods like anti-unification could
-  do this, and at the same time remove the requirement that general
-  forms must be enumerated early.
+  Data mining previous results; for example, using generalisation methods like
+  anti-unification \cite{bulychev2010anti}. This would make more efficient use
+  of data, and also remove the requirement that general forms be enumerated
+  early.
 \item
-  All type-safe combinations of the given expressions are tried, whilst
-  it may be discernable a priori that some combinations are not worth
-  considering (either because they are never related, or because their
-  relations are never interesting).
+  Divide and conquer approaches. Rather than try all type-safe combinations of
+  the given expressions, it may be discernable a priori that some combinations
+  are not worth considering (either because they are never related, or because
+  their relations are never interesting). In other words, automating the theory
+  selection process currently performed by the user.
 \end{itemize}
 
 We consider all of these worth investigating, although in this paper we
 focus on the last item.
 
-\section{The \textsc{ML4HS} Framework}
+\section{The \textsc{ML4HS} Framework}\label{ml4hs}
+
+\begin{figure}
+  \centering
+  \includegraphics[]{ml4hs}
+  \caption{An overview of the \textsc{ML4HS} system}
+  \label{ml4hsdia}
+\end{figure}
 
 We are implementing a system called \textsc{ML4HS} to investigate scalable
-automated theory exploration for Haskell. At this stage, we provide a
-pre-processor for \textsc{QuickSpec} which attempts to make exploration of large
-theories more tractable by splitting them into a collection of smaller theories.
+automated theory exploration for Haskell. The current form of \textsc{ML4HS} is
+a pre-processor for \textsc{QuickSpec} which attempts to make exploration of
+large theories more tractable by splitting them into a collection of smaller
+theories: the divide and conquer approach mentioned above. This is
+similar to reducing the search space in automated theorem proving via premise
+selection \cite{kuhlwein2012overview}. An overview of \textsc{ML4HS} is given in
+\autoref{ml4hsdia}. We have integrated our pre-processor with the \textsc{Cabal} and
+\textsc{Nix} package managers so that \textsc{ML4HS} can use regular Haskell
+packages as theories.
 
-Inspired by premise selection in automated theorem proving
-\cite{kuhlwein2012overview}, and similarity-based clustering method such as that
-of \textsc{ML4PG} \cite{journals/corr/abs-1302-6421}, we are investigating the
-hypothesis that similar expressions are more likely to be related by equational
-properties than dissimilar expressions. This has lead to a divide and conquor
-approach, shown in figure 1.
-
-Since our aim is to scale up theory exploration, our pre-processor also
-increases the level of automation compared to existing systems. We consider
-\textsc{Hackage} packages to be theories, and treat package management,
-downloading, compiling, dependency resolution, etc. as necessary tasks for a TE
-system such as \textsc{ML4HS} to implement.
-
-Not only does this eliminate the need to define theories manually, as a sub-set
-of available expressions, but may also be useful in its own right as a mechanism
-to execute arbitrary Haskell code from arbitrary modules in arbitrary packages.
+When selecting the components of each sub-theory, we want to keep together those
+expressions which combine to form interesting theorems, and separate those which
+combine in uninteresting ways. Our hypothesis is that similarity-based
+clustering of expressions, as found in \textsc{ML4PG}
+\cite{journals/corr/abs-1302-6421}, is an effective method for performing this
+division. Future experiments will test this by measuring throughput rates of
+\textsc{ML4HS} compared to \textsc{QuickSpec} and \textsc{HipSpec}.
 
 % Acknowledgements for colleagues, referees, ...
 % ==============================================
 \begin{acknowledge}
-I am grateful for those who have helped formulate these ideas through
-conversation, especially the HipSpec team at Chalmers University (Moa
-Johansson, Koen Claessen, Nick Smallbone, Dan Ros{\'e}n and Irene Lobo Valbuena)
-and my supervisor Katya Komendantskaya. I also wish to thank the implementors
-of the systems we are building on, including HipSpec, QuickSpec and
-QuickCheck on the theory exploration side, as well as GHC, Cabal and Nix
-on the infrastructure side.
+Thank you to my supervisor Katya Komendantskaya and members of the
+\textsc{HipSpec} team at Chalmers University (Moa Johansson, Koen Claessen, Nick
+Smallbone, Dan Ros{\'e}n and Irene Lobo Valbuena) for useful discussions of these
+ideas.
 \end{acknowledge}
 
 % Bibliography with BibTeX
