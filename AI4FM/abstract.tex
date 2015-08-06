@@ -1,85 +1,46 @@
-\documentclass[]{eceasst}
-\usepackage{lmodern}
-\usepackage{amssymb,amsmath}
-\usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-\else % if luatex or xelatex
-  \ifxetex
-    \usepackage{mathspec}
-    \usepackage{xltxtra,xunicode}
-  \else
-    \usepackage{fontspec}
-  \fi
-  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
-  \newcommand{\euro}{€}
-\fi
-% use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-% use microtype if available
-\IfFileExists{microtype.sty}{%
-\usepackage{microtype}
-\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-% \ifxetex
-%   \usepackage[setpagesize=false, % page size defined by xetex
-%               unicode=false, % unicode breaks when used with xetex
-%               xetex]{hyperref}
-% \else
-%   \usepackage[unicode=true]{hyperref}
-% \fi
-\hypersetup{breaklinks=true,
-            bookmarks=true,
-            pdfauthor={Chris Warburton},
-            pdftitle={Scaling Automated Theory Exploration},
-            colorlinks=true,
-            citecolor=blue,
-            urlcolor=blue,
-            linkcolor=magenta,
-            pdfborder={0 0 0}}
-\urlstyle{same}  % don't use monospace font for urls
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\documentclass{eceasst}
+% This is an empty ECEASST article that can be used as a template
+% by authors.
+% Just uncomment the appropriate frontmatter commands and provide
+% the parameters.
+
+% Required packages
+% =================
+% Your \usepackage commands go here.
+
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{0}
 
-\title{Scaling Automated Theory Exploration}
-\author{Chris Warburton}
-\date{}
-\usepackage[T1]{fontenc}
-\usepackage{upquote}
+% Volume frontmatter
+% ==================
+\input{frontmatter}
 
-% Redefines (sub)paragraphs to behave more like sections
-\ifx\paragraph\undefined\else
-\let\oldparagraph\paragraph
-\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
-\fi
-\ifx\subparagraph\undefined\else
-\let\oldsubparagraph\subparagraph
-\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
-\fi
-
-\begin{document}
-\maketitle
-
-\begin{abstract}
-
-In this paper we investigate the \textbf{theory exploration} (TE)
+% Article frontmatter
+% ===================
+\title{Scaling Automated Theory Exploration} % Title of the article
+%\short{} % Short title of the article (optional)
+\author{Chris Warburton\sponsor{}} % Authors and references to addresses
+\institute{ % Institutes with labels
+\email{cmwarburton@dundee.ac.uk}, \url{http://www.computing.dundee.ac.uk/about/staff/124}\\
+School of Computing\\
+University of Dundee}
+\abstract{
+We investigate the \textbf{theory exploration} (TE)
 paradigm for computer-assisted Mathematics and identify limitations and
-improvements of current approaches. Unlike the theorem-proving paradigm,
+improvements for current approaches. Unlike the theorem-proving paradigm,
 which requires user-provided conjectures, TE performs an open-ended
 search for theorems satisfying given criteria. We see promise in TE for
 identifying new abstractions and connections in libraries of software
 and proofs, but realising this potential requires more scalable
-algorithms than presently used.
+algorithms than presently used.} % Abstract of the article
+%\keywords{} % Keywords for the article
 
-\end{abstract}
+\begin{document}
+\maketitle
 
-\section{Introduction}\label{introduction}
+% Main part of your article
+% =========================
+\section{Introduction}
 
 The \emph{theory exploration} (TE) paradigm provides software support
 for traditional Mathematical workflows; namely, deriving ``interesting''
@@ -110,7 +71,7 @@ Machine Learning. For a more thorough treatment, \cite{geng2006interestingness}
 surveys recent work on search algorithms and \cite{blum2011hybrid} surveys
 interestingness criteria in the context of data mining.
 
-\section{Tackling Complexity}\label{tackling-complexity}
+\section{Tackling Complexity}
 
 Even with a slow search algorithm, we can use a divide and conquor
 approach to limit the number of allowed combinations, either by using
@@ -119,7 +80,7 @@ into small independently-searched sub-theories. Of course, such
 restrictions should strike a balance between the efficiency gained and
 the potential to forbid some interesting theorems.
 
-\section{Existing Work}\label{existing-work}
+\section{Existing Work}
 
 Automated theory exploration has been applied to libraries in Isabelle
 and Haskell, although we focus on the latter as its implementations are
@@ -149,7 +110,7 @@ approach works well as a lemma generation system, making
 \textsc{HipSpec} a capable inductive theorem prover as well as a theory
 exploration system \cite{claessen2013automating}.
 
-\section{Going Forward}\label{going-forward}
+\section{Going Forward}
 
 Given this state of the art, we identify the following as potential
 areas for improvement:
@@ -205,16 +166,21 @@ both eliminates the need to define theories manually, and may be useful
 in its own right as a mechanism to execute arbitrary Haskell code from
 arbitrary modules in arbitrary packages.
 
-\section{Acknowlegements}\label{acknowlegements}
-
+% Acknowledgements for colleagues, referees, ...
+% ==============================================
+\begin{acknowledge}
 I am grateful for those who have helped formulate these ideas through
 conversation, especially the HipSpec team at Chalmers University (Moa
-Johansson, Koen Claessen, Nick Smallbone and Dan Rosén) and my
-supervisor Katya Komendantskaya. I also wish to thank the implementors
+Johansson, Koen Claessen, Nick Smallbone, Dan Rosén and Irene Lobo Valbuena)
+and my supervisor Katya Komendantskaya. I also wish to thank the implementors
 of the systems we are building on, including HipSpec, QuickSpec and
 QuickCheck on the theory exploration side, as well as GHC, Cabal and Nix
 on the infrastructure side.
+\end{acknowledge}
 
-\bibliographystyle{plain} \bibliography{../Bibtex}
+% Bibliography with BibTeX
+% ========================
+\bibliographystyle{eceasst}
+\bibliography{../Bibtex}
 
 \end{document}
