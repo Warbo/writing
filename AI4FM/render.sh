@@ -11,6 +11,7 @@ function mdToLatex {
 
 function renderLatex {
     latex abstract
+    bibtex abstract
     latex abstract
     pdflatex abstract
 }

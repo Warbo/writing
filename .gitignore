@@ -1,1 +1,8 @@
 pandoc-templates
+*.pdf
+*.log
+*.dvi
+*.aux
+*.out
+*.bbl
+*.blg
