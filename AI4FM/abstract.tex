@@ -142,12 +142,12 @@ the potential to forbid some interesting theorems.
 
 Automated theory exploration has been applied to libraries in Isabelle
 and Haskell, although we focus on the latter as its implementations are
-the most mature (\textsc{Hipster} actually explores Isabelle by
-translating code to Haskell first!). Haskell is interesting to target,
-since its functional purity and algebraic structure make equational
-properties common; recursion and higher-order functions make automation
-non-trivial; and since these properties can't be expressed in Haskell
-itself (without difficulty \cite{lindley2014hasochism}, at least), less
+the most mature (demonstrated by \textsc{Hipster}, which explores Isabelle by
+translating code to Haskell first). Haskell is interesting to target,
+since its emphasis on pure functions and algebraic datatypes make it common for
+functions to obey equational properties; although Haskell is not a theorem prover,
+and hence cannot represent such equations . Also, the widespread use of
+recursion and higher-order functions makes automated deduction non-trivial
 effort is spent discovering and proving these properties compared to
 proof-oriented systems like Isabelle.
 
@@ -234,6 +234,6 @@ of the systems we are building on, including HipSpec, QuickSpec and
 QuickCheck on the theory exploration side, as well as GHC, Cabal and Nix
 on the infrastructure side.
 
-\bibliographystyle{plain} \bibliography{/home/chris/Documents/ArchivedPapers/Bibtex}
+\bibliographystyle{plain} \bibliography{../Bibtex}
 
 \end{document}

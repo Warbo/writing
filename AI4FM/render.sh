@@ -16,6 +16,16 @@ function renderLatex {
     pdflatex abstract
 }
 
+function clean {
+    rm abstract.aux
+    rm abstract.blg
+    rm abstract.log
+    rm abstract.pdf
+    rm abstract.bbl
+    rm abstract.dvi
+    rm abstract.out
+}
+
 function go {
     renderLatex
 }
