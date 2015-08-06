@@ -18,7 +18,7 @@
 %\short{} % Short title of the article (optional)
 \author{Chris Warburton\sponsor{}} % Authors and references to addresses
 \institute{ % Institutes with labels
-\email{cmwarburton@dundee.ac.uk}, \url{http://www.computing.dundee.ac.uk/about/staff/124}\\
+\email{cmwarburton@dundee.ac.uk}\\
 School of Computing\\
 University of Dundee}
 \abstract{
@@ -58,8 +58,8 @@ search algorithm; this coupling improves efficiency, even for brute-force
 search. As an example, \textsc{IsaCoSy} \cite{johansson2009isacosy} discovers
 equations, which are defined as ``interesting'' if they cannot be simplified
 using previously discovered equations. The intuition for such criteria is to
-avoid special cases of known theorems, such as \(0 + 0 = 0\), \(0 + 1 = 1\),
-etc. when we already know \(\forall x. 0 + x = x\). To work effectively, this
+avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$,
+etc. when we already know $\forall x. 0 + x = x$. To work effectively, this
 requires general forms to be found \emph{before} special cases.
 
 More generally, automated TE is an \emph{optimisation problem}; an area which
@@ -68,16 +68,11 @@ Machine Learning. For a more thorough treatment, \cite{geng2006interestingness}
 surveys recent work on search algorithms and \cite{blum2011hybrid} surveys
 interestingness criteria in the context of data mining.
 
-\section{Tackling Complexity}
+In the following, we give an overview of the state of the art in automated
+theory exploration; identify potential improvements; and present our initial
+attempts to implement some of these ideas.
 
-Even with a slow search algorithm, we can use a divide and conquor
-approach to limit the number of allowed combinations, either by using
-stricter types to prevent composition, or by partitioning the theory
-into small independently-searched sub-theories. Of course, such
-restrictions should strike a balance between the efficiency gained and
-the potential to forbid some interesting theorems.
-
-\section{Existing Work}
+\section{Theory Exploration in Haskell}
 
 Automated theory exploration has been applied to libraries in Isabelle
 and Haskell, although we focus on the latter as its implementations are
@@ -107,7 +102,14 @@ approach works well as a lemma generation system, making
 \textsc{HipSpec} a capable inductive theorem prover as well as a theory
 exploration system \cite{claessen2013automating}.
 
-\section{Going Forward}
+\section{Identifying Improvements}
+
+Even with a slow search algorithm, we can use a divide and conquor
+approach to limit the number of allowed combinations, either by using
+stricter types to prevent composition, or by partitioning the theory
+into small independently-searched sub-theories. Of course, such
+restrictions should strike a balance between the efficiency gained and
+the potential to forbid some interesting theorems.
 
 Given this state of the art, we identify the following as potential
 areas for improvement:
@@ -147,6 +149,8 @@ areas for improvement:
   \cite{kuhlwein2012overview}.
 \end{itemize}
 
+\section{The \textsc{ML4HS} Framework}
+
 We are implementing a system called \textsc{ML4HS} to investigate these
 ideas. Our initial hypothesis that expressions with similar definitions
 are more likely to be related by equational properties than those
@@ -166,7 +170,7 @@ arbitrary modules in arbitrary packages.
 \begin{acknowledge}
 I am grateful for those who have helped formulate these ideas through
 conversation, especially the HipSpec team at Chalmers University (Moa
-Johansson, Koen Claessen, Nick Smallbone, Dan Rosén and Irene Lobo Valbuena)
+Johansson, Koen Claessen, Nick Smallbone, Dan Ros{\'e}n and Irene Lobo Valbuena)
 and my supervisor Katya Komendantskaya. I also wish to thank the implementors
 of the systems we are building on, including HipSpec, QuickSpec and
 QuickCheck on the theory exploration side, as well as GHC, Cabal and Nix

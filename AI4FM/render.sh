@@ -6,24 +6,24 @@ function renderMd {
 }
 
 function mdToLatex {
-    pandoc -s --filter pandoc-citeproc -o abstract.tex abstract.md
+    pandoc -s --filter pandoc-citeproc -o article.tex article.md
 }
 
 function renderLatex {
-    latex abstract
-    bibtex abstract
-    latex abstract
-    pdflatex abstract
+    latex article
+    bibtex article
+    latex article
+    pdflatex article
 }
 
 function clean {
-    rm abstract.aux
-    rm abstract.blg
-    rm abstract.log
-    rm abstract.pdf
-    rm abstract.bbl
-    rm abstract.dvi
-    rm abstract.out
+    rm article.aux
+    rm article.blg
+    rm article.log
+    rm article.pdf
+    rm article.bbl
+    rm article.dvi
+    rm article.out
 }
 
 function go {
