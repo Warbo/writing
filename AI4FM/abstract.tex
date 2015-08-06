@@ -1,4 +1,4 @@
-\documentclass[]{article}
+\documentclass[]{eceasst}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
@@ -23,13 +23,13 @@
 \usepackage{microtype}
 \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
-\ifxetex
-  \usepackage[setpagesize=false, % page size defined by xetex
-              unicode=false, % unicode breaks when used with xetex
-              xetex]{hyperref}
-\else
-  \usepackage[unicode=true]{hyperref}
-\fi
+% \ifxetex
+%   \usepackage[setpagesize=false, % page size defined by xetex
+%               unicode=false, % unicode breaks when used with xetex
+%               xetex]{hyperref}
+% \else
+%   \usepackage[unicode=true]{hyperref}
+% \fi
 \hypersetup{breaklinks=true,
             bookmarks=true,
             pdfauthor={Chris Warburton},
@@ -92,42 +92,23 @@ interactive theorem provers. Subsequent systems have investigated
 \cite{Hipster}.
 
 By removing user interaction, automated TE systems require an algorithm
-for deciding whether a theorem is ``interesting''. In existing systems,
-this is intimately connected to the choice of search algorithm, to
-ensure tractability. For example, \textsc{IsaCoSy} \cite{johansson2009isacosy}
-discovers equations, which are defined as
-``interesting'' if they cannot be simplified using previously discovered
-equations. The intuition for such criteria is to avoid special cases of
-known theorems, such as \(0 + 0 = 0\), \(0 + 1 = 1\), etc. when we
-already know \(\forall x. 0 + x = x\). To work effectively, this
+for deciding whether to inform the user of a particular theorem or not; we refer
+to this search criterion as the theorem being ``interesting''.
+
+In existing systems, this criterion is intimately connected to the
+search algorithm; this coupling improves efficiency, even for brute-force
+search. As an example, \textsc{IsaCoSy} \cite{johansson2009isacosy} discovers
+equations, which are defined as ``interesting'' if they cannot be simplified
+using previously discovered equations. The intuition for such criteria is to
+avoid special cases of known theorems, such as \(0 + 0 = 0\), \(0 + 1 = 1\),
+etc. when we already know \(\forall x. 0 + x = x\). To work effectively, this
 requires general forms to be found \emph{before} special cases.
 
-TE is a ``bottom-up'' process: new theorems are derived from given
-knowledge and previous theorems. In particular, there is no special
-``goal'' theorem(s) as found in interactive theorem proving; all we have
-is our (proxy) ``interesting'' criterion, and the definitions of our
-theory. This makes theory exploration a \emph{combinatorial
-optimisation} problem, which is well studied in Artificial Intelligence
-and Machine Learning. Existing TE systems rely on complete, brute-force
-search techniques which do not scale to theories of a significant size;
-these could be replaced by a variety of faster, approximate algorithms,
-eg. those surveyed in \cite{blum2011hybrid}.
-
-Whilst efficient on a small scale, where we expect the chosen inputs to
-be related, we cannot expect an effective output criterion to coincide
-so readily with search algorithm and output criterion to be effective
-for large inputs containing many irrelevant connections. umbers of also
-consider data mining approaches, which infer general rules \emph{after}
-enumerating some number of special cases. A variety of
-``interestingness'' measures are used in domains such as data mining
-\cite{geng2006interestingness}, which may be adapted to a TE setting. These
-include objective measures, eg. based on information theory, and
-subjective measures which ask for the user's opinion. We can avoid
-asking users directly, by treating existing proof libraries and test
-suites as representative examples of what is interesting, and hence
-construct an oracle; such oracles have already been used for
-precision-recall experiments to evaluate the performance of
-\textsc{HipSpec} \cite{claessen2013automating}.
+More generally, automated TE is an \emph{optimisation problem}; an area which
+has been studied extensively in the fields of Artificial Intelligence and
+Machine Learning. For a more thorough treatment, \cite{geng2006interestingness}
+surveys recent work on search algorithms and \cite{blum2011hybrid} surveys
+interestingness criteria in the context of data mining.
 
 \section{Tackling Complexity}\label{tackling-complexity}
 
@@ -144,9 +125,9 @@ Automated theory exploration has been applied to libraries in Isabelle
 and Haskell, although we focus on the latter as its implementations are
 the most mature (demonstrated by \textsc{Hipster}, which explores Isabelle by
 translating code to Haskell first). Haskell is interesting to target,
-since its emphasis on pure functions and algebraic datatypes make it common for
-functions to obey equational properties; although Haskell is not a theorem prover,
-and hence cannot represent such equations . Also, the widespread use of
+since its emphasis on pure functions and algebraic datatypes make equational
+properties common; however, Haskell is not a theorem prover, and hence it cannot
+represent such as universally quantified equations. Also, the widespread use of
 recursion and higher-order functions makes automated deduction non-trivial
 effort is spent discovering and proving these properties compared to
 proof-oriented systems like Isabelle.
