@@ -42,8 +42,8 @@ algorithms than presently used.} % Abstract of the article
 The \emph{theory exploration} (TE) paradigm provides software support
 for traditional Mathematical workflows; namely, deriving ``interesting''
 consequences from formal definitions \cite{RISC1482}. Early
-implementations like \textsc{Theorema} \cite{buchberger2000theory} emphasised
-interactivity, in a similar way to computer algebra systems like
+implementations like \textsc{Theorema} \cite{buchberger2000theory} provided
+interactive environments, similar to computer algebra systems like
 \textsc{Mathematica} (in which \textsc{Theorema} is implemented) or
 interactive theorem provers. Subsequent systems have investigated
 \emph{automated} theory exploration, for tasks such as lemma discovery
@@ -157,10 +157,9 @@ a pre-processor for \textsc{QuickSpec} which attempts to make exploration of
 large theories more tractable by splitting them into a collection of smaller
 theories: the divide and conquer approach mentioned above. This is
 similar to reducing the search space in automated theorem proving via premise
-selection \cite{kuhlwein2012overview}. An overview of \textsc{ML4HS} is given in
-\autoref{ml4hsdia}. We have integrated our pre-processor with the \textsc{Cabal} and
-\textsc{Nix} package managers so that \textsc{ML4HS} can use regular Haskell
-packages as theories.
+selection \cite{kuhlwein2012overview}. The basic idea of \textsc{ML4HS} is shown
+in \autoref{ml4hsdia}: theories, in the form of Haskell packages, are split up
+and sent to concurrent instances of QuickSpec, and the results collated.
 
 When selecting the components of each sub-theory, we want to keep together those
 expressions which combine to form interesting theorems, and separate those which
