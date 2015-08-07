@@ -1,27 +1,195 @@
-\documentclass{eceasst}
-% This is an empty ECEASST article that can be used as a template
-% by authors.
-% Just uncomment the appropriate frontmatter commands and provide
-% the parameters.
+% This is LLNCS.DEM the demonstration file of
+% the LaTeX macro package from Springer-Verlag
+% for Lecture Notes in Computer Science,
+% version 2.4 for LaTeX2e as of 16. April 2010
+%
+\documentclass{llncs}
+%
+\usepackage{makeidx}  % allows for indexgeneration
+\usepackage{amsmath,hyperref}
+\usepackage{graphicx}
+\hypersetup{colorlinks=true}
+%
+\begin{document}
+%
+%\frontmatter          % for the preliminaries
+%
+\pagestyle{headings}  % switches on printing of running heads
+%\addtocmark{Hamiltonian Mechanics} % additional mark in the TOC
+%
 
-% Required packages
-% =================
-% Your \usepackage commands go here.
+% %
+% This textbook is intended for use by students of physics, physical
+% chemistry, and theoretical chemistry. The reader is presumed to have a
+% basic knowledge of atomic and quantum physics at the level provided, for
+% example, by the first few chapters in our book {\it The Physics of Atoms
+% and Quanta}. The student of physics will find here material which should
+% be included in the basic education of every physicist. This book should
+% furthermore allow students to acquire an appreciation of the breadth and
+% variety within the field of molecular physics and its future as a
+% fascinating area of research.
 
-% Volume frontmatter
-% ==================
-\input{frontmatter}
+% For the student of chemistry, the concepts introduced in this book will
+% provide a theoretical framework for that entire field of study. With the
+% help of these concepts, it is at least in principle possible to reduce
+% the enormous body of empirical chemical knowledge to a few basic
+% principles: those of quantum mechanics. In addition, modern physical
+% methods whose fundamentals are introduced here are becoming increasingly
+% important in chemistry and now represent indispensable tools for the
+% chemist. As examples, we might mention the structural analysis of
+% complex organic compounds, spectroscopic investigation of very rapid
+% reaction processes or, as a practical application, the remote detection
+% of pollutants in the air.
 
-% Article frontmatter
-% ===================
-\title{Scaling Automated Theory Exploration} % Title of the article
-%\short{} % Short title of the article (optional)
-\author{Chris Warburton\sponsor{}} % Authors and references to addresses
-\institute{ % Institutes with labels
-\email{cmwarburton@dundee.ac.uk}\\
-School of Computing\\
-University of Dundee}
-\abstract{
+% \vspace{1cm}
+% \begin{flushright}\noindent
+% April 1995\hfill Walter Olthoff\\
+% Program Chair\\
+% ECOOP'95
+% \end{flushright}
+% %
+% \chapter*{Organization}
+% ECOOP'95 is organized by the department of Computer Science, Univeristy
+% of \AA rhus and AITO (association Internationa pour les Technologie
+% Object) in cooperation with ACM/SIGPLAN.
+% %
+% \section*{Executive Commitee}
+% \begin{tabular}{@{}p{5cm}@{}p{7.2cm}@{}}
+% Conference Chair:&Ole Lehrmann Madsen (\AA rhus University, DK)\\
+% Program Chair:   &Walter Olthoff (DFKI GmbH, Germany)\\
+% Organizing Chair:&J\o rgen Lindskov Knudsen (\AA rhus University, DK)\\
+% Tutorials:&Birger M\o ller-Pedersen\hfil\break
+% (Norwegian Computing Center, Norway)\\
+% Workshops:&Eric Jul (University of Kopenhagen, Denmark)\\
+% Panels:&Boris Magnusson (Lund University, Sweden)\\
+% Exhibition:&Elmer Sandvad (\AA rhus University, DK)\\
+% Demonstrations:&Kurt N\o rdmark (\AA rhus University, DK)
+% \end{tabular}
+% %
+% \section*{Program Commitee}
+% \begin{tabular}{@{}p{5cm}@{}p{7.2cm}@{}}
+% Conference Chair:&Ole Lehrmann Madsen (\AA rhus University, DK)\\
+% Program Chair:   &Walter Olthoff (DFKI GmbH, Germany)\\
+% Organizing Chair:&J\o rgen Lindskov Knudsen (\AA rhus University, DK)\\
+% Tutorials:&Birger M\o ller-Pedersen\hfil\break
+% (Norwegian Computing Center, Norway)\\
+% Workshops:&Eric Jul (University of Kopenhagen, Denmark)\\
+% Panels:&Boris Magnusson (Lund University, Sweden)\\
+% Exhibition:&Elmer Sandvad (\AA rhus University, DK)\\
+% Demonstrations:&Kurt N\o rdmark (\AA rhus University, DK)
+% \end{tabular}
+% %
+% \begin{multicols}{3}[\section*{Referees}]
+% V.~Andreev\\
+% B\"arwolff\\
+% E.~Barrelet\\
+% H.P.~Beck\\
+% G.~Bernardi\\
+% E.~Binder\\
+% P.C.~Bosetti\\
+% Braunschweig\\
+% F.W.~B\"usser\\
+% T.~Carli\\
+% A.B.~Clegg\\
+% G.~Cozzika\\
+% S.~Dagoret\\
+% Del~Buono\\
+% P.~Dingus\\
+% H.~Duhm\\
+% J.~Ebert\\
+% S.~Eichenberger\\
+% R.J.~Ellison\\
+% Feltesse\\
+% W.~Flauger\\
+% A.~Fomenko\\
+% G.~Franke\\
+% J.~Garvey\\
+% M.~Gennis\\
+% L.~Goerlich\\
+% P.~Goritchev\\
+% H.~Greif\\
+% E.M.~Hanlon\\
+% R.~Haydar\\
+% R.C.W.~Henderso\\
+% P.~Hill\\
+% H.~Hufnagel\\
+% A.~Jacholkowska\\
+% Johannsen\\
+% S.~Kasarian\\
+% I.R.~Kenyon\\
+% C.~Kleinwort\\
+% T.~K\"ohler\\
+% S.D.~Kolya\\
+% P.~Kostka\\
+% U.~Kr\"uger\\
+% J.~Kurzh\"ofer\\
+% M.P.J.~Landon\\
+% A.~Lebedev\\
+% Ch.~Ley\\
+% F.~Linsel\\
+% H.~Lohmand\\
+% Martin\\
+% S.~Masson\\
+% K.~Meier\\
+% C.A.~Meyer\\
+% S.~Mikocki\\
+% J.V.~Morris\\
+% B.~Naroska\\
+% Nguyen\\
+% U.~Obrock\\
+% G.D.~Patel\\
+% Ch.~Pichler\\
+% S.~Prell\\
+% F.~Raupach\\
+% V.~Riech\\
+% P.~Robmann\\
+% N.~Sahlmann\\
+% P.~Schleper\\
+% Sch\"oning\\
+% B.~Schwab\\
+% A.~Semenov\\
+% G.~Siegmon\\
+% J.R.~Smith\\
+% M.~Steenbock\\
+% U.~Straumann\\
+% C.~Thiebaux\\
+% P.~Van~Esch\\
+% from Yerevan Ph\\
+% L.R.~West\\
+% G.-G.~Winter\\
+% T.P.~Yiou\\
+% M.~Zimmer\end{multicols}
+% %
+% \section*{Sponsoring Institutions}
+% %
+% Bernauer-Budiman Inc., Reading, Mass.\\
+% The Hofmann-International Company, San Louis Obispo, Cal.\\
+% Kramer Industries, Heidelberg, Germany
+% %
+% \tableofcontents
+% %
+\mainmatter              % start of the contributions
+%
+\title{Scaling Automated Theory Exploration}
+%
+%\titlerunning{Hamiltonian Mechanics}  % abbreviated title (for running head)
+%                                     also used for the TOC unless
+%                                     \toctitle is used
+%
+\author{Chris Warburton \and Ekaterina Komendantskaya}
+%
+%\authorrunning{Ivar Ekeland et al.} % abbreviated author list (for running head)
+%
+%%%% list of authors for the TOC (use if author list has to be modified)
+% \tocauthor{Ivar Ekeland, Roger Temam, Jeffrey Dean, David Grove,
+% Craig Chambers, Kim B. Bruce, and Elisa Bertino}
+%
+\institute{University of Dundee,\\
+\texttt{http://tocai.computing.dundee.ac.uk}}
+
+\maketitle              % typeset the title of the contribution
+
+\begin{abstract}
 We investigate the \textbf{theory exploration} (TE)
 paradigm for computer-assisted Mathematics and identify limitations and
 improvements for current approaches. Unlike the theorem-proving paradigm,
@@ -29,14 +197,10 @@ which requires user-provided conjectures, TE performs an open-ended
 search for theorems satisfying given criteria. We see promise in TE for
 identifying new abstractions and connections in libraries of software
 and proofs, but realising this potential requires more scalable
-algorithms than presently used.} % Abstract of the article
-%\keywords{} % Keywords for the article
-
-\begin{document}
-\maketitle
-
-% Main part of your article
-% =========================
+algorithms than presently used.
+\keywords{theory exploration, Haskell}
+\end{abstract}
+%
 \section{Introduction}
 
 The \emph{theory exploration} (TE) paradigm provides software support
@@ -169,17 +333,49 @@ clustering of expressions, as found in \textsc{ML4PG}
 division. Future experiments will test this by measuring throughput rates of
 \textsc{ML4HS} compared to \textsc{QuickSpec} and \textsc{HipSpec}.
 
-% Acknowledgements for colleagues, referees, ...
-% ==============================================
 \begin{acknowledge}
 Thank you to the \textsc{HipSpec} team at Chalmers University (Moa Johansson,
 Koen Claessen, Nick Smallbone, Dan Ros{\'e}n and Irene Lobo Valbuena) for useful
 discussions of these ideas.
 \end{acknowledge}
 
-% Bibliography with BibTeX
-% ========================
-\bibliographystyle{eceasst}
+\bibliographystyle{plain}
 \bibliography{../Bibtex}
+
+%
+% ---- Bibliography ----
+%
+\begin{thebibliography}{5}
+%
+\bibitem {clar:eke}
+Clarke, F., Ekeland, I.:
+Nonlinear oscillations and
+boundary-value problems for Hamiltonian systems.
+Arch. Rat. Mech. Anal. 78, 315--333 (1982)
+
+\bibitem {clar:eke:2}
+Clarke, F., Ekeland, I.:
+Solutions p\'{e}riodiques, du
+p\'{e}riode donn\'{e}e, des \'{e}quations hamiltoniennes.
+Note CRAS Paris 287, 1013--1015 (1978)
+
+\bibitem {mich:tar}
+Michalek, R., Tarantello, G.:
+Subharmonic solutions with prescribed minimal
+period for nonautonomous Hamiltonian systems.
+J. Diff. Eq. 72, 28--55 (1988)
+
+\bibitem {tar}
+Tarantello, G.:
+Subharmonic solutions for Hamiltonian
+systems via a $\bbbz_{p}$ pseudoindex theory.
+Annali di Matematica Pura (to appear)
+
+\bibitem {rab}
+Rabinowitz, P.:
+On subharmonic solutions of a Hamiltonian system.
+Comm. Pure Appl. Math. 33, 609--633 (1980)
+
+\end{thebibliography}
 
 \end{document}
