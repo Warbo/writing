@@ -10,9 +10,9 @@ function mdToLatex {
 }
 
 function renderLatex {
-    latex article
-    bibtex article
-    latex article
+    latex    article &&
+    bibtex   article &&
+    latex    article &&
     pdflatex article
 }
 

@@ -6,168 +6,19 @@
 \documentclass{llncs}
 %
 \usepackage{makeidx}  % allows for indexgeneration
-\usepackage{amsmath,hyperref}
+\usepackage{hyperref}
 \usepackage{graphicx}
-\hypersetup{colorlinks=true}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{enumitem}
+%\hypersetup{colorlinks=true}
 %
 \begin{document}
 %
 %\frontmatter          % for the preliminaries
 %
 \pagestyle{headings}  % switches on printing of running heads
-%\addtocmark{Hamiltonian Mechanics} % additional mark in the TOC
-%
 
-% %
-% This textbook is intended for use by students of physics, physical
-% chemistry, and theoretical chemistry. The reader is presumed to have a
-% basic knowledge of atomic and quantum physics at the level provided, for
-% example, by the first few chapters in our book {\it The Physics of Atoms
-% and Quanta}. The student of physics will find here material which should
-% be included in the basic education of every physicist. This book should
-% furthermore allow students to acquire an appreciation of the breadth and
-% variety within the field of molecular physics and its future as a
-% fascinating area of research.
-
-% For the student of chemistry, the concepts introduced in this book will
-% provide a theoretical framework for that entire field of study. With the
-% help of these concepts, it is at least in principle possible to reduce
-% the enormous body of empirical chemical knowledge to a few basic
-% principles: those of quantum mechanics. In addition, modern physical
-% methods whose fundamentals are introduced here are becoming increasingly
-% important in chemistry and now represent indispensable tools for the
-% chemist. As examples, we might mention the structural analysis of
-% complex organic compounds, spectroscopic investigation of very rapid
-% reaction processes or, as a practical application, the remote detection
-% of pollutants in the air.
-
-% \vspace{1cm}
-% \begin{flushright}\noindent
-% April 1995\hfill Walter Olthoff\\
-% Program Chair\\
-% ECOOP'95
-% \end{flushright}
-% %
-% \chapter*{Organization}
-% ECOOP'95 is organized by the department of Computer Science, Univeristy
-% of \AA rhus and AITO (association Internationa pour les Technologie
-% Object) in cooperation with ACM/SIGPLAN.
-% %
-% \section*{Executive Commitee}
-% \begin{tabular}{@{}p{5cm}@{}p{7.2cm}@{}}
-% Conference Chair:&Ole Lehrmann Madsen (\AA rhus University, DK)\\
-% Program Chair:   &Walter Olthoff (DFKI GmbH, Germany)\\
-% Organizing Chair:&J\o rgen Lindskov Knudsen (\AA rhus University, DK)\\
-% Tutorials:&Birger M\o ller-Pedersen\hfil\break
-% (Norwegian Computing Center, Norway)\\
-% Workshops:&Eric Jul (University of Kopenhagen, Denmark)\\
-% Panels:&Boris Magnusson (Lund University, Sweden)\\
-% Exhibition:&Elmer Sandvad (\AA rhus University, DK)\\
-% Demonstrations:&Kurt N\o rdmark (\AA rhus University, DK)
-% \end{tabular}
-% %
-% \section*{Program Commitee}
-% \begin{tabular}{@{}p{5cm}@{}p{7.2cm}@{}}
-% Conference Chair:&Ole Lehrmann Madsen (\AA rhus University, DK)\\
-% Program Chair:   &Walter Olthoff (DFKI GmbH, Germany)\\
-% Organizing Chair:&J\o rgen Lindskov Knudsen (\AA rhus University, DK)\\
-% Tutorials:&Birger M\o ller-Pedersen\hfil\break
-% (Norwegian Computing Center, Norway)\\
-% Workshops:&Eric Jul (University of Kopenhagen, Denmark)\\
-% Panels:&Boris Magnusson (Lund University, Sweden)\\
-% Exhibition:&Elmer Sandvad (\AA rhus University, DK)\\
-% Demonstrations:&Kurt N\o rdmark (\AA rhus University, DK)
-% \end{tabular}
-% %
-% \begin{multicols}{3}[\section*{Referees}]
-% V.~Andreev\\
-% B\"arwolff\\
-% E.~Barrelet\\
-% H.P.~Beck\\
-% G.~Bernardi\\
-% E.~Binder\\
-% P.C.~Bosetti\\
-% Braunschweig\\
-% F.W.~B\"usser\\
-% T.~Carli\\
-% A.B.~Clegg\\
-% G.~Cozzika\\
-% S.~Dagoret\\
-% Del~Buono\\
-% P.~Dingus\\
-% H.~Duhm\\
-% J.~Ebert\\
-% S.~Eichenberger\\
-% R.J.~Ellison\\
-% Feltesse\\
-% W.~Flauger\\
-% A.~Fomenko\\
-% G.~Franke\\
-% J.~Garvey\\
-% M.~Gennis\\
-% L.~Goerlich\\
-% P.~Goritchev\\
-% H.~Greif\\
-% E.M.~Hanlon\\
-% R.~Haydar\\
-% R.C.W.~Henderso\\
-% P.~Hill\\
-% H.~Hufnagel\\
-% A.~Jacholkowska\\
-% Johannsen\\
-% S.~Kasarian\\
-% I.R.~Kenyon\\
-% C.~Kleinwort\\
-% T.~K\"ohler\\
-% S.D.~Kolya\\
-% P.~Kostka\\
-% U.~Kr\"uger\\
-% J.~Kurzh\"ofer\\
-% M.P.J.~Landon\\
-% A.~Lebedev\\
-% Ch.~Ley\\
-% F.~Linsel\\
-% H.~Lohmand\\
-% Martin\\
-% S.~Masson\\
-% K.~Meier\\
-% C.A.~Meyer\\
-% S.~Mikocki\\
-% J.V.~Morris\\
-% B.~Naroska\\
-% Nguyen\\
-% U.~Obrock\\
-% G.D.~Patel\\
-% Ch.~Pichler\\
-% S.~Prell\\
-% F.~Raupach\\
-% V.~Riech\\
-% P.~Robmann\\
-% N.~Sahlmann\\
-% P.~Schleper\\
-% Sch\"oning\\
-% B.~Schwab\\
-% A.~Semenov\\
-% G.~Siegmon\\
-% J.R.~Smith\\
-% M.~Steenbock\\
-% U.~Straumann\\
-% C.~Thiebaux\\
-% P.~Van~Esch\\
-% from Yerevan Ph\\
-% L.R.~West\\
-% G.-G.~Winter\\
-% T.P.~Yiou\\
-% M.~Zimmer\end{multicols}
-% %
-% \section*{Sponsoring Institutions}
-% %
-% Bernauer-Budiman Inc., Reading, Mass.\\
-% The Hofmann-International Company, San Louis Obispo, Cal.\\
-% Kramer Industries, Heidelberg, Germany
-% %
-% \tableofcontents
-% %
 \mainmatter              % start of the contributions
 %
 \title{Scaling Automated Theory Exploration}
@@ -203,35 +54,42 @@ algorithms than presently used.
 %
 \section{Introduction}
 
-The \emph{theory exploration} (TE) paradigm provides software support
-for traditional Mathematical workflows; namely, deriving ``interesting''
-consequences from formal definitions \cite{RISC1482}. Early
-implementations like \textsc{Theorema} \cite{buchberger2000theory} provided
-interactive environments, similar to computer algebra systems like
-\textsc{Mathematica} (in which \textsc{Theorema} is implemented) or
-interactive theorem provers. Subsequent systems have investigated
-\emph{automated} theory exploration, for tasks such as lemma discovery
-\cite{Hipster}.
+Given a signature and a set of variables (collectively a \emph{theory}), then
+\emph{theory exploration} (TE) describes any process
+$(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)$ for producing
+terms of the theory which are well-formed, provable and satisfy some criterion
+referred to as ``interesting''. These conditions give rise to the following
+questions, which we use to characterise TE systems:
+\begin{description}
+\item [Q1] \label{Q1} How do we form terms?
+\item [Q2] \label{Q2} How do we guarantee well-formedness?
+\item [Q3] \label{Q3} How do we prove terms?
+\item [Q4] \label{Q4} What is considered ``interesting''?
+\end{description}
 
-By removing user interaction, automated TE systems require an algorithm
-for deciding whether to inform the user of a particular theorem or not; we refer
-to this search criterion as the theorem being ``interesting''. In existing
-systems, this criterion is intimately connected to the
-search algorithm; such coupling improves efficiency, even for brute-force
-search, but makes it difficult to try alternative measures.
+Early implementations like \textsc{Theorema} \cite{buchberger2000theory}
+provided interactive environments, similar to computer algebra systems and
+interactive theorem provers, to assist the user in finding theorems. In this
+setting, terms are formed by the user in whichever way they find interesting,
+whilst the software provides support for \textbf{Q2} and \textbf{Q3}.
 
-As an example, \textsc{IsaCoSy} \cite{johansson2009isacosy} discovers
-equations, which are defined as ``interesting'' if they cannot be simplified
+Subsequent systems have investigated \emph{automated} theory exploration, for
+tasks such as lemma discovery \cite{Hipster}. By removing user interaction,
+\textbf{Q1} and \textbf{Q4} must be solved by algorithms. In existing
+systems these are tightly coupled to improve efficiency, which makes it
+difficult to try different approaches independently.
+
+As an example, \textsc{QuickSpec} \cite{QuickSpec} discovers equations about
+Haskell code, which are defined as ``interesting'' if they cannot be simplified
 using previously discovered equations. The intuition for such criteria is to
-avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$,
-etc. when we already know $\forall x. 0 + x = x$. Whilst elegantly implemented
-as a term rewriting system, to work effectively this requires general forms to
-be found \emph{before} special cases.
+avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$, etc.
+when we already know $0 + x = x$. Whilst \textsc{Q4} is elegantly implemented
+with a congruence closure relation (version 1) and a term rewriting system
+(version 2), the term generation for \textsc{Q1} is performed by brute-force.
 
 In the following, we give an overview of the state of the art in automated
-theory exploration (\autoref{haskell}). We identify potential improvements to
-these systems (\autoref{improve}) and present our initial implementation
-attempts in the form of the \textsc{ML4HS} system (\autoref{ml4hs}).
+theory exploration, then present potential improvements and our initial attempts
+at implementation.
 
 \section{Theory Exploration in Haskell}\label{haskell}
 
@@ -242,140 +100,68 @@ Isabelle by first translating it to Haskell). Haskell is interesting to target,
 since its use of pure functions and algebraic datatypes causes many programs to
 follow algebraic laws. However, since Haskell's type system cannot easily
 encode such laws, less effort is given to finding and stating them; compared to
-a theorem proving setting like Isabelle.
+full theorem provers like Isabelle. Hence we imagine even a shallow exploration
+of code repositories such as \textsc{Hackage} could find many interesting
+theorems.
 
-Due to Haskell's relative popularity, there are also large code repositories
-such as \textsc{Hackage} available to explore. This gives several potential
-benefits: in the short term, applying TE to such repositories may assist
-existing library authors and users in comprehending and maintaining their code
-\cite{QuickSpec}; more notably, TE could be used to data mine new abstractions,
-such as typeclasses, with relevance to real-world applications.
-
-Currently, the most powerful TE system for Haskell is \textsc{HipSpec}.
-This uses the earlier \textsc{QuickSpec} system to search through
-\emph{expressions} (combinations of the Haskell terms given by the theory),
-rather than searching through the space of equations or proofs directly.
-Expressions are grouped into equivalence classes, such that the
-\textsc{QuickCheck} counterexample finder cannot distinguish between the
-elements; equations relating the members of these classes are then conjectured,
-and sent to existing automated theorem provers to try and prove
-\cite{rosen2012proving}. This approach works well as a lemma generation system,
-making \textsc{HipSpec} a capable inductive theorem prover as well as a theory
-exploration system \cite{claessen2013automating}.
-
-\section{Identifying Improvements}\label{improve}
-
-Given this state of the art, we identify the following as potential
-areas for investigation:
-
-\begin{itemize}
-\item
-  More scalable alternatives to brute-force enumeration. This is a well-studied
-  area of Artificial Intelligence and Machine Learning. In particular, there is
-  potential in applying heuristic algorithms like those surveyed in
-  \cite{blum2011hybrid}.
-\item
-  Using alternative ``interestingness'' criteria, like those surveyed in
-  \cite{geng2006interestingness}. In particular, we envision two problems with
-  large-scale exploration which may require more sophisticated criteria:
-
-  \begin{itemize}
-  \item
-    As the number of irreducible equations grows, it may be desirable to
-    impose extra conditions of a more subjective nature; e.g. to distinguish
-    useful relationships from incidental coincidences.
-  \item
-    Surprising, insightful equations may be discarded by current systems, if
-    they are actually reducible in some complex, non-obvious way. A more
-    subjective interestingness measure could be used to veto such
-    rejections.
-  \end{itemize}
-\item
-  Data mining previous results; for example, using generalisation methods like
-  anti-unification \cite{bulychev2010anti}. This would make more efficient use
-  of data, and also remove the requirement that general forms be enumerated
-  early.
-\item
-  Divide and conquer approaches. Rather than try all type-safe combinations of
-  the given expressions, it may be discernable a priori that some combinations
-  are not worth considering (either because they are never related, or because
-  their relations are never interesting). In other words, automating the theory
-  selection process currently performed by the user.
-\end{itemize}
-
-We consider all of these worth investigating, although in this paper we
-focus on the last item.
+Currently, the most powerful TE system for Haskell is \textsc{HipSpec}. This
+uses the earlier \textsc{QuickSpec} system to enumerate all type-correct
+combinations of the terms in the theory, group them into equivalence
+classes using the \textsc{QuickCheck} counterexample finder, then conjecture
+equations relating the members of these classes. Off-the-shelf automated theorem
+provers (ATPs) are used to prove these conjectures \cite{rosen2012proving}. This
+approach works well as a lemma generation system, making \textsc{HipSpec} a
+capable inductive theorem prover as well as a theory exploration system
+\cite{claessen2013automating}.
 
 \section{The \textsc{ML4HS} Framework}\label{ml4hs}
 
-\begin{figure}
-  \centering
-  \includegraphics[]{ml4hs}
-  \caption{An overview of the \textsc{ML4HS} system}
-  \label{ml4hsdia}
-\end{figure}
+We consider the use of type systems and ATPs as satisfactory solutions to
+\textbf{Q2} and \textbf{Q3}, respectively. For the other aspect, we identify
+the following potential improvements:
 
-We are implementing a system called \textsc{ML4HS} to investigate scalable
-automated theory exploration for Haskell. The current form of \textsc{ML4HS} is
-a pre-processor for \textsc{QuickSpec} which attempts to make exploration of
-large theories more tractable by splitting them into a collection of smaller
-theories: the divide and conquer approach mentioned above. This is
-similar to reducing the search space in automated theorem proving via premise
-selection \cite{kuhlwein2012overview}. The basic idea of \textsc{ML4HS} is shown
-in \autoref{ml4hsdia}: theories, in the form of Haskell packages, are split up
-and sent to concurrent instances of QuickSpec, and the results collated.
+\begin{description}
+\item [Q1]
+  Enumerating all type-correct terms is a brute-force solution to this question.
+  Scalable alternatives to brute-force algorithms are a well-studied area of
+  Artificial Intelligence and Machine Learning. In particular, there is
+  potential in applying heuristic algorithms like those surveyed in
+  \cite{blum2011hybrid}. We could also data-mine previous results using
+  generalisation methods like anti-unification \cite{bulychev2010anti}, and
+  use statistical methods to prioritise which elements of the theory we
+  investigate.
+\item [Q4]
+  Various ``interestingness'' criteria have been proposed, for example those
+  surveyed in \cite{geng2006interestingness}. Augmenting or replacing the
+  criteria may be useful, for example to distinguish useful relationships from
+  incidental coincidences; or to prevent surprising, insightful equations from
+  being discarded simply because they are reducible.
+\end{description}
 
-When selecting the components of each sub-theory, we want to keep together those
-expressions which combine to form interesting theorems, and separate those which
-combine in uninteresting ways. Our hypothesis is that similarity-based
-clustering of expressions, as found in \textsc{ML4PG}
-\cite{journals/corr/abs-1302-6421}, is an effective method for performing this
-division. Future experiments will test this by measuring throughput rates of
-\textsc{ML4HS} compared to \textsc{QuickSpec} and \textsc{HipSpec}.
+We are implementing a system called \textsc{ML4HS} to investigate the use of
+these ideas for a scalable automated theory exploration system for Haskell. In
+its current form, we are investigating the prioritisation of theory elements by
+augmenting \textsc{QuickSpec} with a pre-processor. Inspired by the use of
+premise selection \cite{kuhlwein2012overview} to reduce the search space in ATP,
+we select sub-sets of the given theory to explore, chosen to try and keep
+together those expressions which combine in interesting ways, and to separate
+those which combine in uninteresting ways.
 
-\begin{acknowledge}
+We hypothesise that similarity-based clustering of expressions, inspired by that
+of \textsc{ML4PG} \cite{journals/corr/abs-1212-3618}, is an effective method for
+performing this separation. Future experiments will test this by measuring
+throughput rates of \textsc{QuickSpec} with and without the \textsc{ML4HS}
+pre-processor, to see how the performance changes with the size of the theory,
+the elements of the theory (especially their types), and how much reduction we
+performed with our pre-processor.
+
+\section*{Acknowledgements}
+
 Thank you to the \textsc{HipSpec} team at Chalmers University (Moa Johansson,
 Koen Claessen, Nick Smallbone, Dan Ros{\'e}n and Irene Lobo Valbuena) for useful
 discussions of these ideas.
-\end{acknowledge}
 
 \bibliographystyle{plain}
 \bibliography{../Bibtex}
-
-%
-% ---- Bibliography ----
-%
-\begin{thebibliography}{5}
-%
-\bibitem {clar:eke}
-Clarke, F., Ekeland, I.:
-Nonlinear oscillations and
-boundary-value problems for Hamiltonian systems.
-Arch. Rat. Mech. Anal. 78, 315--333 (1982)
-
-\bibitem {clar:eke:2}
-Clarke, F., Ekeland, I.:
-Solutions p\'{e}riodiques, du
-p\'{e}riode donn\'{e}e, des \'{e}quations hamiltoniennes.
-Note CRAS Paris 287, 1013--1015 (1978)
-
-\bibitem {mich:tar}
-Michalek, R., Tarantello, G.:
-Subharmonic solutions with prescribed minimal
-period for nonautonomous Hamiltonian systems.
-J. Diff. Eq. 72, 28--55 (1988)
-
-\bibitem {tar}
-Tarantello, G.:
-Subharmonic solutions for Hamiltonian
-systems via a $\bbbz_{p}$ pseudoindex theory.
-Annali di Matematica Pura (to appear)
-
-\bibitem {rab}
-Rabinowitz, P.:
-On subharmonic solutions of a Hamiltonian system.
-Comm. Pure Appl. Math. 33, 609--633 (1980)
-
-\end{thebibliography}
 
 \end{document}
