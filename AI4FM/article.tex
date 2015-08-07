@@ -49,19 +49,19 @@ search for theorems satisfying given criteria. We see promise in TE for
 identifying new abstractions and connections in libraries of software
 and proofs, but realising this potential requires more scalable
 algorithms than presently used.
-\keywords{theory exploration, Haskell}
+%\keywords{theory exploration, Haskell}
 \end{abstract}
 %
 \section{Introduction}
 
-Given a signature and a set of variables (collectively a \emph{theory}), then
-\emph{theory exploration} (TE) describes any process
-$(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)$ for producing
-terms of the theory which are well-formed, provable and satisfy some criterion
-referred to as ``interesting''. These conditions give rise to the following
-questions, which we use to characterise TE systems:
+Given a signature $\Sigma$ and a set of variables $V$, we call the pair
+$(\Sigma, V)$ a \emph{theory} and use \emph{theory exploration} (TE) to refer
+to any process $(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)$
+for producing terms of the theory which are well-formed, provable and satisfy
+some criterion referred to as ``interesting''. These conditions give rise to the
+following questions, which we use to characterise TE systems:
 \begin{description}
-\item [Q1] \label{Q1} How do we form terms?
+\item [Q1] \label{Q1} How do we generate terms?
 \item [Q2] \label{Q2} How do we guarantee well-formedness?
 \item [Q3] \label{Q3} How do we prove terms?
 \item [Q4] \label{Q4} What is considered ``interesting''?
@@ -83,9 +83,13 @@ As an example, \textsc{QuickSpec} \cite{QuickSpec} discovers equations about
 Haskell code, which are defined as ``interesting'' if they cannot be simplified
 using previously discovered equations. The intuition for such criteria is to
 avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$, etc.
-when we already know $0 + x = x$. Whilst \textsc{Q4} is elegantly implemented
+when we already know $0 + x = x$. Whilst \textbf{Q4} is elegantly implemented
 with a congruence closure relation (version 1) and a term rewriting system
-(version 2), the term generation for \textsc{Q1} is performed by brute-force.
+(version 2), the term generation for \textbf{Q1} is performed by brute-force.
+
+Although \textsc{QuickSpec} only \emph{tests} its equations rather than
+proving them, it is still used as the exploration component of more rigorous
+systems like \textsc{HipSpec} and \textsc{Hipster}.
 
 In the following, we give an overview of the state of the art in automated
 theory exploration, then present potential improvements and our initial attempts
@@ -104,56 +108,50 @@ full theorem provers like Isabelle. Hence we imagine even a shallow exploration
 of code repositories such as \textsc{Hackage} could find many interesting
 theorems.
 
-Currently, the most powerful TE system for Haskell is \textsc{HipSpec}. This
-uses the earlier \textsc{QuickSpec} system to enumerate all type-correct
-combinations of the terms in the theory, group them into equivalence
-classes using the \textsc{QuickCheck} counterexample finder, then conjecture
-equations relating the members of these classes. Off-the-shelf automated theorem
-provers (ATPs) are used to prove these conjectures \cite{rosen2012proving}. This
-approach works well as a lemma generation system, making \textsc{HipSpec} a
-capable inductive theorem prover as well as a theory exploration system
-\cite{claessen2013automating}.
+Currently, the most powerful TE system for Haskell is \textsc{HipSpec}, which
+uses off-the-shelf automated theorem provers (ATPs) to verify the conjectures of
+\textsc{QuickSpec}. \textsc{QuickSpec}, in turn, enumerates all type-correct combinations
+of the terms in the theory up to some depth, groups them into equivalence
+classes using the \textsc{QuickCheck} counterexample finder, then conjectures
+equations relating the members of these classes. This approach works well as a
+lemma generation system, making \textsc{HipSpec} a capable inductive theorem
+prover as well as a theory exploration system \cite{claessen2013automating}.
 
 \section{The \textsc{ML4HS} Framework}\label{ml4hs}
 
-We consider the use of type systems and ATPs as satisfactory solutions to
-\textbf{Q2} and \textbf{Q3}, respectively. For the other aspect, we identify
-the following potential improvements:
+We consider \textbf{Q2} and \textbf{Q3} to be adequately solved by the existing
+use of type systems and ATPs, respectively. We identify the following potential
+improvements for the other questions:
 
 \begin{description}
 \item [Q1]
   Enumerating all type-correct terms is a brute-force solution to this question.
   Scalable alternatives to brute-force algorithms are a well-studied area of
-  Artificial Intelligence and Machine Learning. In particular, there is
-  potential in applying heuristic algorithms like those surveyed in
-  \cite{blum2011hybrid}. We could also data-mine previous results using
-  generalisation methods like anti-unification \cite{bulychev2010anti}, and
-  use statistical methods to prioritise which elements of the theory we
-  investigate.
+  Artificial Intelligence and Machine Learning. In particular, heuristic
+  search algorithms like those surveyed in \cite{blum2011hybrid} could be used.
+  We could also use Machine Learning methods to identify some sub-set of a given
+  theory, to prioritise over the rest.
 \item [Q4]
-  Various ``interestingness'' criteria have been proposed, for example those
-  surveyed in \cite{geng2006interestingness}. Augmenting or replacing the
-  criteria may be useful, for example to distinguish useful relationships from
-  incidental coincidences; or to prevent surprising, insightful equations from
-  being discarded simply because they are reducible.
+  Various alternative ``interestingness'' criteria have been proposed, for
+  example those surveyed in \cite{geng2006interestingness}. Augmenting or
+  replacing the criteria may be useful, for example to distinguish useful
+  relationships from incidental coincidences; or to prevent surprising,
+  insightful equations from being discarded because they can be simplified.
 \end{description}
 
-We are implementing a system called \textsc{ML4HS} to investigate the use of
-these ideas for a scalable automated theory exploration system for Haskell. In
-its current form, we are investigating the prioritisation of theory elements by
-augmenting \textsc{QuickSpec} with a pre-processor. Inspired by the use of
-premise selection \cite{kuhlwein2012overview} to reduce the search space in ATP,
+We are implementing a system called \textsc{ML4HS} to investigate these ideas.
+Its current form is a pre-processor for \textsc{QuickSpec} for prioritising
+theory elements. Inspired by the use of premise selection
+\cite{kuhlwein2012overview} to reduce the search space in ATP,
 we select sub-sets of the given theory to explore, chosen to try and keep
 together those expressions which combine in interesting ways, and to separate
 those which combine in uninteresting ways.
 
 We hypothesise that similarity-based clustering of expressions, inspired by that
-of \textsc{ML4PG} \cite{journals/corr/abs-1212-3618}, is an effective method for
-performing this separation. Future experiments will test this by measuring
-throughput rates of \textsc{QuickSpec} with and without the \textsc{ML4HS}
-pre-processor, to see how the performance changes with the size of the theory,
-the elements of the theory (especially their types), and how much reduction we
-performed with our pre-processor.
+of \textsc{ML4PG} \cite{journals/corr/abs-1212-3618} and related work in ACL2
+\cite{heras2013proof}, is an effective method for performing this separation.
+Future experiments will test this by comparing the throughput of
+\textsc{QuickSpec} with and without the \textsc{ML4HS} pre-processor.
 
 \section*{Acknowledgements}
 
