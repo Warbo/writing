@@ -1,14 +1,6 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i bash -p bash -p md2pdf
 
-function renderMd {
-    ARGS="--filter pandoc-citeproc" md2pdf
-}
-
-function mdToLatex {
-    pandoc -s --filter pandoc-citeproc -o article.tex article.md
-}
-
 function renderLatex {
     latex    article &&
     bibtex   article &&
@@ -17,17 +9,18 @@ function renderLatex {
 }
 
 function clean {
-    rm article.aux
-    rm article.blg
-    rm article.log
-    rm article.pdf
-    rm article.bbl
-    rm article.dvi
-    rm article.out
+    { rm article.aux;
+      rm article.blg;
+      rm article.log;
+      rm article.pdf;
+      rm article.bbl;
+      rm article.dvi;
+      rm article.out; } 2> /dev/null
+    return 0
 }
 
 function go {
-    renderLatex
+    renderLatex && clean
 }
 
 # Run once (default) or forever (if given any argument)
