@@ -1,20 +1,15 @@
-pdf : latex2
+pdf :
+	latex article
+	bibtex article
+	latex article
 	pdflatex article
 
-bibtex : latex
-	bibtex article
-
-latex :
-	latex article
-
-latex2 : bibtex
-	latex article
-
+.PHONY : clean
 clean :
-	rm article.aux
-	rm article.blg
-	rm article.log
-	rm article.pdf
-	rm article.bbl
-	rm article.dvi
-	rm article.out
+	rm -f article.aux
+	rm -f article.blg
+	rm -f article.log
+	rm -f article.pdf
+	rm -f article.bbl
+	rm -f article.dvi
+	rm -f article.out
