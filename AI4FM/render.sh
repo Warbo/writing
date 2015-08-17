@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i bash -p bash -p md2pdf
+#! nix-shell -i bash -p bash
 
 function renderLatex {
     latex    article &&
@@ -20,18 +20,15 @@ function clean {
 }
 
 function go {
-    renderLatex && clean
+    renderLatex
 }
 
 # Run once (default) or forever (if given any argument)
 
 go
 
-if [ "x$1" = "xloop" ]
-then
-    while true
-    do
-        sleep 2
-        go
-    done
-fi
+while [ "x$1" = "xloop" ]
+do
+    sleep 2
+    go
+done
