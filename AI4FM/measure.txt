@@ -1,0 +1,5745 @@
+SIZE 0
+== API ==
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+== Testing ==
+Depth 1: 13 terms, 1 tests, 12 evaluations, 13 classes, 0 raw equations.
+Depth 2: 13 terms, 1 tests, 12 evaluations, 13 classes, 0 raw equations.
+Depth 3: 13 terms, 1 tests, 12 evaluations, 13 classes, 0 raw equations.
+0 raw equations; 13 terms in universe.
+
+0.03
+SIZE 1
+== API ==
+-- functions --
+0 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+== Testing ==
+Depth 1: 15 terms, 2 tests, 18 evaluations, 15 classes, 0 raw equations.
+Depth 2: 15 terms, 3 tests, 20 evaluations, 15 classes, 0 raw equations.
+Depth 3: 15 terms, 3 tests, 20 evaluations, 15 classes, 0 raw equations.
+0 raw equations; 15 terms in universe.
+
+0.03
+SIZE 2
+== API ==
+-- functions --
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+== Testing ==
+Depth 1: 16 terms, 3 tests, 21 evaluations, 16 classes, 0 raw equations.
+Depth 2: 16 terms, 4 tests, 23 evaluations, 16 classes, 0 raw equations.
+Depth 3: 16 terms, 3 tests, 21 evaluations, 16 classes, 0 raw equations.
+0 raw equations; 16 terms in universe.
+
+0.03
+SIZE 3
+== API ==
+-- functions --
+(+) :: Int -> Int -> Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+== Testing ==
+Depth 1: 16 terms, 3 tests, 22 evaluations, 16 classes, 0 raw equations.
+Depth 2: 46 terms, 500 tests, 13051 evaluations, 31 classes, 15 raw equations.
+Depth 3: 256 terms, 500 tests, 113259 evaluations, 96 classes, 160 raw equations.
+160 raw equations; 96 terms in universe.
+
+== Equations about (+) ==
+  1: i1+i2 == i2+i1
+  2: i1+0 == i1
+  3: i1+(i2+i3) == i2+(i1+i3)
+
+0.42
+SIZE 4
+== API ==
+-- functions --
+(+), (*) :: Int -> Int -> Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+== Testing ==
+Depth 1: 16 terms, 4 tests, 23 evaluations, 16 classes, 0 raw equations.
+Depth 2: 76 terms, 500 tests, 24087 evaluations, 42 classes, 34 raw equations.
+Depth 3: 940 terms, 500 tests, 438477 evaluations, 350 classes, 590 raw equations.
+590 raw equations; 350 terms in universe.
+
+== Equations about (+) ==
+  1: i1+i2 == i2+i1
+  2: i1+0 == i1
+  3: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+  4: i1*i2 == i2*i1
+  5: i1*0 == 0
+  6: i1*1 == i1
+  7: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+  8: i1*(i2+i2) == i2*(i1+i1)
+  9: (i1*i2)+(i1*i3) == i1*(i2+i3)
+
+1.62
+SIZE 5
+== API ==
+-- functions --
+(!) :: Array Int Int -> Int -> Int
+(+), (*) :: Int -> Int -> Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+== Testing ==
+Depth 1: 16 terms, 3 tests, 21 evaluations, 16 classes, 0 raw equations.
+Depth 2: 82 terms, 500 tests, 24164 evaluations, 48 classes, 34 raw equations.
+Depth 3: 1447 terms, 1000 tests, 676692 evaluations, 612 classes, 835 raw equations.
+835 raw equations; 612 terms in universe.
+
+== Equations about (+) ==
+  1: i1+i2 == i2+i1
+  2: i1+0 == i1
+  3: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+  4: i1*i2 == i2*i1
+  5: i1*1 == i1
+  6: 0*0 == 0
+  7: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+  8: i1*(i2+i2) == i2*(i1+i1)
+  9: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 10: 0*(i1+i2) == 0
+
+2.67
+SIZE 6
+== API ==
+-- functions --
+(!) :: Array Int Int -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+== Testing ==
+Depth 1: 17 terms, 4 tests, 27 evaluations, 17 classes, 0 raw equations.
+Depth 2: 108 terms, 500 tests, 24207 evaluations, 74 classes, 34 raw equations.
+Depth 3: 19699 terms, 5810 tests, 6349082 evaluations, 16776 classes, 2923 raw equations.
+2923 raw equations; 16776 terms in universe.
+
+== Equations about put ==
+  1: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+  2: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+  3: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+  4: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+  5: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+  6: i1+i2 == i2+i1
+  7: i1+0 == i1
+  8: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+  9: i1*i2 == i2*i1
+ 10: i1*1 == i1
+ 11: 0*0 == 0
+ 12: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 13: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 14: i1*(i2+i2) == i2*(i1+i1)
+ 15: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 16: 0*(i1+i2) == 0
+ 17: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 18: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 19: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 20: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 21: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 22: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 23: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 24: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 25: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 26: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 27: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 28: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+299.03
+SIZE 7
+== API ==
+-- functions --
+(!) :: Array Int Int -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+[Int] (used in listArray)
+
+== Testing ==
+Depth 1: 17 terms, 3 tests, 25 evaluations, 17 classes, 0 raw equations.
+Depth 2: 108 terms, 500 tests, 25000 evaluations, 74 classes, 34 raw equations.
+Depth 3: 19699 terms, 4061 tests, 7589219 evaluations, 16259 classes, 3440 raw equations.
+3440 raw equations; 16259 terms in universe.
+
+== Equations about put ==
+  1: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+  2: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+  3: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+  4: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+  5: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+  6: i1+i2 == i2+i1
+  7: i1+0 == i1
+  8: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+  9: i1*i2 == i2*i1
+ 10: i1*1 == i1
+ 11: 0*0 == 0
+ 12: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 13: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 14: i1*(i2+i2) == i2*(i1+i1)
+ 15: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 16: 0*(i1+i2) == 0
+ 17: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 18: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 19: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 20: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 21: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 22: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 23: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 24: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 25: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 26: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 27: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 28: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+429.55
+SIZE 8
+== API ==
+-- functions --
+(!) :: Array Int Int -> Int -> Int
+elems :: Array Int Int -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 18 terms, 3 tests, 25 evaluations, 18 classes, 0 raw equations.
+Depth 2: 110 terms, 500 tests, 24574 evaluations, 76 classes, 34 raw equations.
+Depth 3: 19726 terms, 4000 tests, 6751690 evaluations, 16918 classes, 2808 raw equations.
+2808 raw equations; 16918 terms in universe.
+
+== Equations about put ==
+  1: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+  2: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+  3: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+  4: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+  5: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+  6: i1+i2 == i2+i1
+  7: i1+0 == i1
+  8: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+  9: i1*i2 == i2*i1
+ 10: i1*1 == i1
+ 11: 0*0 == 0
+ 12: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 13: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 14: i1*(i2+i2) == i2*(i1+i1)
+ 15: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 16: 0*(i1+i2) == 0
+ 17: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 18: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 19: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 20: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 21: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 22: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 23: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 24: put (a1!1) (i1*i1) (put i1 i2 a1) == put (a1!1) i1 (put i1 i2 a1)
+ 25: put 1 i1 a1!(a1!0) == put 1 i2 a1!(a1!0)
+ 26: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 27: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 28: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 29: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 30: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+ 31: put (a1!1) (a1!0) (put 1 0 a1) == put (a1!1) (a1!0) a1
+
+276.96
+SIZE 9
+== API ==
+-- functions --
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 18 terms, 3 tests, 23 evaluations, 18 classes, 0 raw equations.
+Depth 2: 111 terms, 500 tests, 24539 evaluations, 77 classes, 34 raw equations.
+Depth 3: 19752 terms, 7306 tests, 6119113 evaluations, 17443 classes, 2309 raw equations.
+2309 raw equations; 17443 terms in universe.
+
+== Equations about put ==
+  1: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+  2: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+  3: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+  4: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+  5: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+  6: i1+i2 == i2+i1
+  7: i1+0 == i1
+  8: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+  9: i1*i2 == i2*i1
+ 10: i1*1 == i1
+ 11: 0*0 == 0
+ 12: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 13: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 14: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 15: i1*(i2+i2) == i2*(i1+i1)
+ 16: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 17: 0*(i1+i2) == 0
+ 18: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 19: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 20: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 21: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 22: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 23: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 24: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 25: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 26: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 27: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 28: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 29: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+ 30: put (a1!0) (a1!1) (put 0 1 a1) == put (a1!0) (a1!1) a1
+
+163.91
+SIZE 10
+== API ==
+-- functions --
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+(||) :: Bool -> Bool -> Bool
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 19 terms, 3 tests, 26 evaluations, 19 classes, 0 raw equations.
+Depth 2: 121 terms, 500 tests, 30428 evaluations, 81 classes, 40 raw equations.
+Depth 3: 19789 terms, 4634 tests, 6048455 evaluations, 17232 classes, 2557 raw equations.
+2557 raw equations; 17232 terms in universe.
+
+== Equations about (||) ==
+  1: b1||b2 == b2||b1
+  2: b1||b1 == b1
+  3: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about put ==
+  4: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+  5: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+  6: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+  7: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+  8: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+  9: i1+i2 == i2+i1
+ 10: i1+0 == i1
+ 11: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 12: i1*i2 == i2*i1
+ 13: i1*1 == i1
+ 14: 0*0 == 0
+ 15: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 16: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 17: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 18: i1*(i2+i2) == i2*(i1+i1)
+ 19: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 20: 0*(i1+i2) == 0
+ 21: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 22: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 23: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 24: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 25: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 26: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 27: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 28: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 29: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 30: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 31: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 32: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+215.34
+SIZE 11
+== API ==
+-- functions --
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+(||), (&&) :: Bool -> Bool -> Bool
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 19 terms, 4 tests, 32 evaluations, 19 classes, 0 raw equations.
+Depth 2: 130 terms, 500 tests, 35112 evaluations, 84 classes, 46 raw equations.
+Depth 3: 19915 terms, 4000 tests, 6601515 evaluations, 16670 classes, 3245 raw equations.
+3245 raw equations; 16670 terms in universe.
+
+== Equations about (||) ==
+  1: b1||b2 == b2||b1
+  2: b1||b1 == b1
+  3: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  4: b1&&b2 == b2&&b1
+  5: b1&&b1 == b1
+  6: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about put ==
+  7: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+  8: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+  9: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 10: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 11: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 12: i1+i2 == i2+i1
+ 13: i1+0 == i1
+ 14: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 15: i1*i2 == i2*i1
+ 16: i1*1 == i1
+ 17: 0*0 == 0
+ 18: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 19: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 20: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 21: b1||(b1&&b2) == b1
+ 22: b1&&(b1||b2) == b1
+ 23: i1*(i2+i2) == i2*(i1+i1)
+ 24: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 25: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 26: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 27: 0*(i1+i2) == 0
+ 28: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 29: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 30: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 31: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 32: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 33: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 34: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 35: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 36: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 37: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 38: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 39: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+343.40
+SIZE 12
+== API ==
+-- functions --
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 19 terms, 4 tests, 33 evaluations, 19 classes, 0 raw equations.
+Depth 2: 133 terms, 500 tests, 35307 evaluations, 87 classes, 46 raw equations.
+Depth 3: 20053 terms, 8000 tests, 7251636 evaluations, 17117 classes, 2936 raw equations.
+2936 raw equations; 17117 terms in universe.
+
+== Equations about not ==
+  1: not (not b1) == b1
+
+== Equations about (||) ==
+  2: b1||b2 == b2||b1
+  3: b1||b1 == b1
+  4: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  5: b1&&b2 == b2&&b1
+  6: b1&&b1 == b1
+  7: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about put ==
+  8: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+  9: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 10: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 11: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 12: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 13: i1+i2 == i2+i1
+ 14: i1+0 == i1
+ 15: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 16: i1*i2 == i2*i1
+ 17: i1*1 == i1
+ 18: 0*0 == 0
+ 19: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 20: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 21: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 22: b1||(b1&&b2) == b1
+ 23: b1&&(b1||b2) == b1
+ 24: i1*(i2+i2) == i2*(i1+i1)
+ 25: b1||not b1 == b2||not b2
+ 26: b1&&not b1 == b2&&not b2
+ 27: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 28: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 29: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 30: 0*(i1+i2) == 0
+ 31: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 32: (b1&&b2)||not b1 == b2||not b1
+ 33: (b1||b2)&&not b1 == b2&&not b1
+ 34: not b1||not b2 == not (b1&&b2)
+ 35: not b1&&not b2 == not (b1||b2)
+ 36: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 37: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 38: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 39: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 40: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 41: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 42: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 43: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 44: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 45: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 46: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+264.60
+SIZE 13
+== API ==
+-- functions --
+True :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 20 terms, 3 tests, 30 evaluations, 20 classes, 0 raw equations.
+Depth 2: 149 terms, 500 tests, 42627 evaluations, 89 classes, 60 raw equations.
+Depth 3: 20160 terms, 4000 tests, 6199136 evaluations, 17555 classes, 2605 raw equations.
+2605 raw equations; 17555 terms in universe.
+
+== Equations about not ==
+  1: not (not b1) == b1
+
+== Equations about (||) ==
+  2: b1||b2 == b2||b1
+  3: b1||b1 == b1
+  4: b1||True == True
+  5: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  6: b1&&b2 == b2&&b1
+  7: b1&&b1 == b1
+  8: b1&&True == b1
+  9: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about put ==
+ 10: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 11: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 12: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 13: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 14: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 15: i1+i2 == i2+i1
+ 16: i1+0 == i1
+ 17: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 18: i1*i2 == i2*i1
+ 19: i1*1 == i1
+ 20: 0*0 == 0
+ 21: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 22: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 23: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 24: b1||(b1&&b2) == b1
+ 25: b1&&(b1||b2) == b1
+ 26: i1*(i2+i2) == i2*(i1+i1)
+ 27: b1||not b1 == True
+ 28: b1&&not b1 == not True
+ 29: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 30: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 31: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 32: 0*(i1+i2) == 0
+ 33: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 34: (b1||b2)&&not b1 == b2&&not b1
+ 35: not b1||not b2 == not (b1&&b2)
+ 36: not b1&&not b2 == not (b1||b2)
+ 37: b1||not True == b1
+ 38: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 39: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 40: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 41: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 42: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 43: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 44: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 45: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 46: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 47: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 48: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+172.45
+SIZE 14
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 21 terms, 4 tests, 40 evaluations, 21 classes, 0 raw equations.
+Depth 2: 169 terms, 500 tests, 53315 evaluations, 89 classes, 80 raw equations.
+Depth 3: 20161 terms, 5656 tests, 8023008 evaluations, 17500 classes, 2661 raw equations.
+2661 raw equations; 17500 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about put ==
+ 14: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 15: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 16: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 17: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 18: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 19: i1+i2 == i2+i1
+ 20: i1+0 == i1
+ 21: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 22: i1*i2 == i2*i1
+ 23: i1*1 == i1
+ 24: 0*0 == 0
+ 25: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 26: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 27: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 28: b1||(b1&&b2) == b1
+ 29: b1&&(b1||b2) == b1
+ 30: i1*(i2+i2) == i2*(i1+i1)
+ 31: b1||not b1 == True
+ 32: b1&&not b1 == False
+ 33: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 34: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 35: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 36: 0*(i1+i2) == 0
+ 37: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 38: not b1||not b2 == not (b1&&b2)
+ 39: not b1&&not b2 == not (b1||b2)
+ 40: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 41: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 42: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 43: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 44: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 45: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 46: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 47: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 48: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 49: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 50: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+185.77
+SIZE 15
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+-- WARNING: cannot test the following types; 
+            consider using 'fun' instead of 'blind' or using 'observe' --
+Int -> Int
+
+== Testing ==
+Depth 1: 22 terms, 3 tests, 38 evaluations, 22 classes, 0 raw equations.
+Depth 2: 179 terms, 500 tests, 53067 evaluations, 99 classes, 80 raw equations.
+Depth 3: 20691 terms, 6270 tests, 7401446 evaluations, 17887 classes, 2804 raw equations.
+2804 raw equations; 17887 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about put ==
+ 14: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 15: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 16: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 17: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 18: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 19: i1+i2 == i2+i1
+ 20: i1+0 == i1
+ 21: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 22: i1*i2 == i2*i1
+ 23: i1*1 == i1
+ 24: 0*0 == 0
+ 25: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 26: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 27: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 28: b1||(b1&&b2) == b1
+ 29: b1&&(b1||b2) == b1
+ 30: i1*(i2+i2) == i2*(i1+i1)
+ 31: b1||not b1 == True
+ 32: b1&&not b1 == False
+ 33: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 34: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 35: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 36: 0*(i1+i2) == 0
+ 37: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 38: not b1||not b2 == not (b1&&b2)
+ 39: not b1&&not b2 == not (b1||b2)
+ 40: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 41: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 42: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 43: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 44: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 45: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 46: put (i1*i1) (a1!i1) (put i1 0 a1) == put (i1*i1) (a1!i1) a1
+ 47: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 48: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 49: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 50: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 51: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+232.44
+SIZE 16
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+id :: Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+-- WARNING: cannot test the following types; 
+            consider using 'fun' instead of 'blind' or using 'observe' --
+Int -> Int
+
+== Testing ==
+Depth 1: 23 terms, 3 tests, 33 evaluations, 23 classes, 0 raw equations.
+Depth 2: 187 terms, 500 tests, 53031 evaluations, 107 classes, 80 raw equations.
+Depth 3: 21124 terms, 5942 tests, 7343706 evaluations, 17939 classes, 3185 raw equations.
+3185 raw equations; 17939 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about put ==
+ 14: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 15: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 16: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 17: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 18: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 19: i1+i2 == i2+i1
+ 20: i1+0 == i1
+ 21: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 22: i1*i2 == i2*i1
+ 23: i1*1 == i1
+ 24: 0*0 == 0
+ 25: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 26: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 27: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 28: b1||(b1&&b2) == b1
+ 29: b1&&(b1||b2) == b1
+ 30: i1*(i2+i2) == i2*(i1+i1)
+ 31: b1||not b1 == True
+ 32: b1&&not b1 == False
+ 33: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 34: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 35: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 36: 0*(i1+i2) == 0
+ 37: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 38: not b1||not b2 == not (b1&&b2)
+ 39: not b1&&not b2 == not (b1||b2)
+ 40: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 41: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 42: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 43: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 44: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 45: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 46: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 47: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 48: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 49: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 50: put (i1+i1) (a1!0) (put i1 1 a1) == put (i1+i1) (a1!0) (put i1 i1 a1)
+ 51: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+ 52: put (i1+i1) (a1!0) (put 0 1 a1) == put (i1+i1) (a1!0) (put 0 i1 a1)
+
+321.82
+SIZE 17
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+id :: Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 23 terms, 5 tests, 51 evaluations, 23 classes, 0 raw equations.
+Depth 2: 187 terms, 500 tests, 59607 evaluations, 98 classes, 89 raw equations.
+Depth 3: 20647 terms, 8637 tests, 7704893 evaluations, 17587 classes, 3060 raw equations.
+3060 raw equations; 17587 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 31: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 32: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 33: b1||(b1&&b2) == b1
+ 34: b1&&(b1||b2) == b1
+ 35: i1*(i2+i2) == i2*(i1+i1)
+ 36: b1||not b1 == True
+ 37: b1&&not b1 == False
+ 38: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 39: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 40: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 41: 0*(i1+i2) == 0
+ 42: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 43: not b1||not b2 == not (b1&&b2)
+ 44: not b1&&not b2 == not (b1||b2)
+ 45: (i1+).(i2+) == ((i1+i2)+)
+ 46: (i1*).(i2*) == ((i1*i2)*)
+ 47: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 48: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 49: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 50: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 51: (0*).(f1.f2) == (0*)
+ 52: (i1*).(1+) == (i1+).(i1*)
+ 53: (0*).(i1+) == (0*)
+ 54: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 55: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 56: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 57: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 58: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 59: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 60: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+ 61: put (a1!1) (a1!0) (put 0 i1 a1) == put (a1!1) (a1!0) a1
+ 62: put (a1!1) (a1!0) (put 1 0 a1) == put (a1!1) (a1!0) a1
+
+250.29
+SIZE 18
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+id :: Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 47 evaluations, 25 classes, 0 raw equations.
+Depth 2: 189 terms, 500 tests, 59938 evaluations, 100 classes, 89 raw equations.
+Depth 3: 20649 terms, 4793 tests, 7304990 evaluations, 17890 classes, 2759 raw equations.
+2759 raw equations; 17890 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about several functions ==
+ 31: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 32: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 33: b1||(b1&&b2) == b1
+ 34: b1&&(b1||b2) == b1
+ 35: i1*(i2+i2) == i2*(i1+i1)
+ 36: b1||not b1 == True
+ 37: b1&&not b1 == False
+ 38: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 39: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 40: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 41: 0*(i1+i2) == 0
+ 42: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 43: not b1||not b2 == not (b1&&b2)
+ 44: not b1&&not b2 == not (b1||b2)
+ 45: (i1+).(i2+) == ((i1+i2)+)
+ 46: (i1*).(i2*) == ((i1*i2)*)
+ 47: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 48: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 49: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 50: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 51: (0*).(f1.f2) == (0*)
+ 52: (i1*).(1+) == (i1+).(i1*)
+ 53: (0*).(i1+) == (0*)
+ 54: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 55: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 56: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 57: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 58: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 59: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 60: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+180.67
+SIZE 19
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+id :: Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 59 evaluations, 25 classes, 0 raw equations.
+Depth 2: 209 terms, 500 tests, 59926 evaluations, 120 classes, 89 raw equations.
+Depth 3: 21273 terms, 7526 tests, 6773109 evaluations, 17804 classes, 3469 raw equations.
+3469 raw equations; 17804 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about several functions ==
+ 32: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 33: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 34: b1||(b1&&b2) == b1
+ 35: b1&&(b1||b2) == b1
+ 36: i1*(i2+i2) == i2*(i1+i1)
+ 37: b1||not b1 == True
+ 38: b1&&not b1 == False
+ 39: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 40: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 41: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 42: 0*(i1+i2) == 0
+ 43: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 44: not b1||not b2 == not (b1&&b2)
+ 45: not b1&&not b2 == not (b1||b2)
+ 46: (i1+).(i2+) == ((i1+i2)+)
+ 47: (i1*).(i2*) == ((i1*i2)*)
+ 48: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 49: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 50: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 51: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 52: (0*).(f1.f2) == (0*)
+ 53: (i1*).(1+) == (i1+).(i1*)
+ 54: (0*).(i1+) == (0*)
+ 55: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 56: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 57: put 1 i1 a1!(a1!0) == put 1 i2 a1!(a1!0)
+ 58: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 59: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 60: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 61: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 62: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+350.37
+SIZE 20
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+id :: Int -> Int
+findMin :: Heap Int -> Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 51 evaluations, 25 classes, 0 raw equations.
+Depth 2: 213 terms, 500 tests, 60906 evaluations, 123 classes, 90 raw equations.
+Depth 3: 26073 terms, 8000 tests, 9763652 evaluations, 21830 classes, 4243 raw equations.
+4243 raw equations; 21830 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about findMin ==
+ 32: findMin nil == undefined
+
+== Equations about several functions ==
+ 33: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 34: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 35: b1||(b1&&b2) == b1
+ 36: b1&&(b1||b2) == b1
+ 37: i1*(i2+i2) == i2*(i1+i1)
+ 38: b1||not b1 == True
+ 39: b1&&not b1 == False
+ 40: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 41: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 42: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 43: 0*(i1+i2) == 0
+ 44: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 45: not b1||not b2 == not (b1&&b2)
+ 46: not b1&&not b2 == not (b1||b2)
+ 47: (i1+).(i2+) == ((i1+i2)+)
+ 48: (i1*).(i2*) == ((i1*i2)*)
+ 49: findMin (insert i1 nil) == i1
+ 50: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 51: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 52: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 53: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 54: (0*).(f1.f2) == (0*)
+ 55: (i1*).(1+) == (i1+).(i1*)
+ 56: (0*).(i1+) == (0*)
+ 57: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 58: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 59: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 60: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 61: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 62: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 63: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+630.01
+SIZE 21
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+id :: Int -> Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 6 tests, 62 evaluations, 25 classes, 0 raw equations.
+Depth 2: 217 terms, 500 tests, 61830 evaluations, 126 classes, 91 raw equations.
+Depth 3: 26190 terms, 5304 tests, 9569698 evaluations, 22501 classes, 3689 raw equations.
+3689 raw equations; 22501 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about findMin ==
+ 32: findMin nil == undefined
+
+== Equations about deleteMin ==
+ 33: deleteMin nil == undefined
+
+== Equations about several functions ==
+ 34: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 35: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 36: b1||(b1&&b2) == b1
+ 37: b1&&(b1||b2) == b1
+ 38: i1*(i2+i2) == i2*(i1+i1)
+ 39: b1||not b1 == True
+ 40: b1&&not b1 == False
+ 41: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 42: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 43: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 44: 0*(i1+i2) == 0
+ 45: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 46: not b1||not b2 == not (b1&&b2)
+ 47: not b1&&not b2 == not (b1||b2)
+ 48: (i1+).(i2+) == ((i1+i2)+)
+ 49: (i1*).(i2*) == ((i1*i2)*)
+ 50: findMin (insert i1 nil) == i1
+ 51: deleteMin (insert i1 nil) == nil
+ 52: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 53: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 54: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 55: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 56: (0*).(f1.f2) == (0*)
+ 57: (i1*).(1+) == (i1+).(i1*)
+ 58: (0*).(i1+) == (0*)
+ 59: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 60: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 61: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 62: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 63: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 64: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 65: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+439.34
+SIZE 22
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+id :: Int -> Int
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 11 tests, 61 evaluations, 25 classes, 0 raw equations.
+Depth 2: 233 terms, 500 tests, 70457 evaluations, 132 classes, 101 raw equations.
+Depth 3: 27465 terms, 8000 tests, 9165015 evaluations, 23331 classes, 4134 raw equations.
+4134 raw equations; 23331 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about merge ==
+ 32: merge h1 h2 == merge h2 h1
+ 33: merge h1 nil == h1
+ 34: merge h1 (merge h2 h3) == merge h2 (merge h1 h3)
+
+== Equations about findMin ==
+ 35: findMin nil == undefined
+
+== Equations about deleteMin ==
+ 36: deleteMin nil == undefined
+
+== Equations about several functions ==
+ 37: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 38: merge h1 (insert i1 h2) == insert i1 (merge h1 h2)
+ 39: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 40: b1||(b1&&b2) == b1
+ 41: b1&&(b1||b2) == b1
+ 42: i1*(i2+i2) == i2*(i1+i1)
+ 43: findMin (merge h1 h1) == findMin h1
+ 44: b1||not b1 == True
+ 45: b1&&not b1 == False
+ 46: merge h1 (deleteMin h1) == deleteMin (merge h1 h1)
+ 47: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 48: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 49: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 50: 0*(i1+i2) == 0
+ 51: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 52: not b1||not b2 == not (b1&&b2)
+ 53: not b1&&not b2 == not (b1||b2)
+ 54: (i1+).(i2+) == ((i1+i2)+)
+ 55: (i1*).(i2*) == ((i1*i2)*)
+ 56: findMin (insert i1 nil) == i1
+ 57: deleteMin (insert i1 nil) == nil
+ 58: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 59: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 60: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 61: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 62: (0*).(f1.f2) == (0*)
+ 63: (i1*).(1+) == (i1+).(i1*)
+ 64: (0*).(i1+) == (0*)
+ 65: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 66: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 67: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 68: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 69: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 70: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 71: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+324.02
+SIZE 23
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+id :: Int -> Int
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 53 evaluations, 25 classes, 0 raw equations.
+Depth 2: 237 terms, 500 tests, 70730 evaluations, 135 classes, 102 raw equations.
+Depth 3: 27687 terms, 4000 tests, 8844234 evaluations, 23042 classes, 4645 raw equations.
+4645 raw equations; 23042 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about hNull ==
+ 32: hNull nil == True
+
+== Equations about merge ==
+ 33: merge h1 h2 == merge h2 h1
+ 34: merge h1 nil == h1
+ 35: merge h1 (merge h2 h3) == merge h2 (merge h1 h3)
+
+== Equations about findMin ==
+ 36: findMin nil == undefined
+
+== Equations about deleteMin ==
+ 37: deleteMin nil == undefined
+
+== Equations about several functions ==
+ 38: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 39: merge h1 (insert i1 h2) == insert i1 (merge h1 h2)
+ 40: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 41: hNull (insert i1 h1) == False
+ 42: b1||(b1&&b2) == b1
+ 43: b1&&(b1||b2) == b1
+ 44: i1*(i2+i2) == i2*(i1+i1)
+ 45: hNull (merge h1 h1) == hNull h1
+ 46: findMin (merge h1 h1) == findMin h1
+ 47: b1||not b1 == True
+ 48: b1&&not b1 == False
+ 49: merge h1 (deleteMin h1) == deleteMin (merge h1 h1)
+ 50: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 51: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 52: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 53: 0*(i1+i2) == 0
+ 54: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 55: not b1||not b2 == not (b1&&b2)
+ 56: not b1&&not b2 == not (b1||b2)
+ 57: hNull h1&&hNull h2 == hNull (merge h1 h2)
+ 58: (i1+).(i2+) == ((i1+i2)+)
+ 59: (i1*).(i2*) == ((i1*i2)*)
+ 60: findMin (insert i1 nil) == i1
+ 61: deleteMin (insert i1 nil) == nil
+ 62: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 63: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 64: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 65: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 66: (0*).(f1.f2) == (0*)
+ 67: (i1*).(1+) == (i1+).(i1*)
+ 68: (0*).(i1+) == (0*)
+ 69: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 70: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 71: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 72: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 73: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 74: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 75: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+ 76: put (a1!1) (i1+i1) (put 0 0 a1) == put (a1!1) (i1+i1) (put 0 i1 a1)
+ 77: put (a1!1) (i1*i1) (put 0 0 a1) == put (a1!1) (i1*i1) (put 0 i1 a1)
+ 78: put (a1!1) (i1+1) (put 0 0 a1) == put (a1!1) (i1+1) (put 0 i1 a1)
+ 79: put (a1!1) (a1!0) (put 0 0 a1) == put (a1!1) (a1!0) a1
+ 80: put (a1!1) (a1!0) (put 1 0 a1) == put (a1!1) (a1!0) a1
+
+446.90
+SIZE 24
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+id :: Int -> Int
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+fromList :: [Int] -> Heap Int
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 52 evaluations, 25 classes, 0 raw equations.
+Depth 2: 237 terms, 500 tests, 71111 evaluations, 135 classes, 102 raw equations.
+Depth 3: 27689 terms, 4776 tests, 9791991 evaluations, 22549 classes, 5140 raw equations.
+5140 raw equations; 22549 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about hNull ==
+ 32: hNull nil == True
+
+== Equations about merge ==
+ 33: merge h1 h2 == merge h2 h1
+ 34: merge h1 nil == h1
+ 35: merge h1 (merge h2 h3) == merge h2 (merge h1 h3)
+
+== Equations about findMin ==
+ 36: findMin nil == undefined
+
+== Equations about deleteMin ==
+ 37: deleteMin nil == undefined
+
+== Equations about several functions ==
+ 38: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 39: merge h1 (insert i1 h2) == insert i1 (merge h1 h2)
+ 40: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 41: hNull (insert i1 h1) == False
+ 42: b1||(b1&&b2) == b1
+ 43: b1&&(b1||b2) == b1
+ 44: i1*(i2+i2) == i2*(i1+i1)
+ 45: hNull (merge h1 h1) == hNull h1
+ 46: findMin (merge h1 h1) == findMin h1
+ 47: b1||not b1 == True
+ 48: b1&&not b1 == False
+ 49: merge h1 (deleteMin h1) == deleteMin (merge h1 h1)
+ 50: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 51: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 52: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 53: 0*(i1+i2) == 0
+ 54: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 55: not b1||not b2 == not (b1&&b2)
+ 56: not b1&&not b2 == not (b1||b2)
+ 57: hNull h1&&hNull h2 == hNull (merge h1 h2)
+ 58: (i1+).(i2+) == ((i1+i2)+)
+ 59: (i1*).(i2*) == ((i1*i2)*)
+ 60: findMin (insert i1 nil) == i1
+ 61: deleteMin (insert i1 nil) == nil
+ 62: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 63: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 64: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 65: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 66: (0*).(f1.f2) == (0*)
+ 67: (i1*).(1+) == (i1+).(i1*)
+ 68: (0*).(i1+) == (0*)
+ 69: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 70: put (i1+i1) (i1*i1) (put 0 i2 a1) == put (i1+i1) i1 (put 0 i2 a1)
+ 71: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 72: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 73: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 74: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 75: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 76: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+605.03
+SIZE 25
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+id :: Int -> Int
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+fromList :: [Int] -> Heap Int
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 51 evaluations, 25 classes, 0 raw equations.
+Depth 2: 241 terms, 500 tests, 70842 evaluations, 139 classes, 102 raw equations.
+Depth 3: 27726 terms, 8000 tests, 8640648 evaluations, 23138 classes, 4588 raw equations.
+4588 raw equations; 23138 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about hNull ==
+ 32: hNull nil == True
+
+== Equations about merge ==
+ 33: merge h1 h2 == merge h2 h1
+ 34: merge h1 nil == h1
+ 35: merge h1 (merge h2 h3) == merge h2 (merge h1 h3)
+
+== Equations about findMin ==
+ 36: findMin nil == undefined
+
+== Equations about deleteMin ==
+ 37: deleteMin nil == undefined
+
+== Equations about several functions ==
+ 38: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 39: merge h1 (insert i1 h2) == insert i1 (merge h1 h2)
+ 40: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 41: hNull (insert i1 h1) == False
+ 42: b1||(b1&&b2) == b1
+ 43: b1&&(b1||b2) == b1
+ 44: i1*(i2+i2) == i2*(i1+i1)
+ 45: hNull (merge h1 h1) == hNull h1
+ 46: findMin (merge h1 h1) == findMin h1
+ 47: fromList (toList h1) == h1
+ 48: b1||not b1 == True
+ 49: b1&&not b1 == False
+ 50: merge h1 (deleteMin h1) == deleteMin (merge h1 h1)
+ 51: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 52: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 53: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 54: 0*(i1+i2) == 0
+ 55: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 56: not b1||not b2 == not (b1&&b2)
+ 57: not b1&&not b2 == not (b1||b2)
+ 58: hNull h1&&hNull h2 == hNull (merge h1 h2)
+ 59: (i1+).(i2+) == ((i1+i2)+)
+ 60: (i1*).(i2*) == ((i1*i2)*)
+ 61: findMin (insert i1 nil) == i1
+ 62: deleteMin (insert i1 nil) == nil
+ 63: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 64: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 65: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 66: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 67: (0*).(f1.f2) == (0*)
+ 68: (i1*).(1+) == (i1+).(i1*)
+ 69: (0*).(i1+) == (0*)
+ 70: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 71: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 72: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 73: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 74: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 75: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 76: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+442.00
+SIZE 26
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+id :: Int -> Int
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+fromList :: [Int] -> Heap Int
+sort :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 53 evaluations, 25 classes, 0 raw equations.
+Depth 2: 241 terms, 500 tests, 70526 evaluations, 139 classes, 102 raw equations.
+Depth 3: 27732 terms, 4000 tests, 9875482 evaluations, 23468 classes, 4264 raw equations.
+4264 raw equations; 23468 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about hNull ==
+ 32: hNull nil == True
+
+== Equations about merge ==
+ 33: merge h1 h2 == merge h2 h1
+ 34: merge h1 nil == h1
+ 35: merge h1 (merge h2 h3) == merge h2 (merge h1 h3)
+
+== Equations about findMin ==
+ 36: findMin nil == undefined
+
+== Equations about deleteMin ==
+ 37: deleteMin nil == undefined
+
+== Equations about several functions ==
+ 38: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 39: merge h1 (insert i1 h2) == insert i1 (merge h1 h2)
+ 40: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 41: hNull (insert i1 h1) == False
+ 42: b1||(b1&&b2) == b1
+ 43: b1&&(b1||b2) == b1
+ 44: i1*(i2+i2) == i2*(i1+i1)
+ 45: hNull (merge h1 h1) == hNull h1
+ 46: findMin (merge h1 h1) == findMin h1
+ 47: fromList (toList h1) == h1
+ 48: sort (indices a1) == indices a1
+ 49: sort (toList h1) == toList h1
+ 50: b1||not b1 == True
+ 51: b1&&not b1 == False
+ 52: merge h1 (deleteMin h1) == deleteMin (merge h1 h1)
+ 53: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 54: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 55: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 56: 0*(i1+i2) == 0
+ 57: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 58: not b1||not b2 == not (b1&&b2)
+ 59: not b1&&not b2 == not (b1||b2)
+ 60: hNull h1&&hNull h2 == hNull (merge h1 h2)
+ 61: (i1+).(i2+) == ((i1+i2)+)
+ 62: (i1*).(i2*) == ((i1*i2)*)
+ 63: findMin (insert i1 nil) == i1
+ 64: deleteMin (insert i1 nil) == nil
+ 65: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 66: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 67: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 68: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 69: (0*).(f1.f2) == (0*)
+ 70: (i1*).(1+) == (i1+).(i1*)
+ 71: (0*).(i1+) == (0*)
+ 72: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 73: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 74: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 75: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 76: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 77: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 78: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+317.19
+SIZE 27
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+fromList :: [Int] -> Heap Int
+sort :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 56 evaluations, 25 classes, 0 raw equations.
+Depth 2: 241 terms, 500 tests, 70782 evaluations, 139 classes, 102 raw equations.
+Depth 3: 27906 terms, 9473 tests, 9387163 evaluations, 23390 classes, 4516 raw equations.
+4516 raw equations; 23390 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about hNull ==
+ 32: hNull nil == True
+
+== Equations about merge ==
+ 33: merge h1 h2 == merge h2 h1
+ 34: merge h1 nil == h1
+ 35: merge h1 (merge h2 h3) == merge h2 (merge h1 h3)
+
+== Equations about findMin ==
+ 36: findMin nil == undefined
+
+== Equations about deleteMin ==
+ 37: deleteMin nil == undefined
+
+== Equations about several functions ==
+ 38: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 39: merge h1 (insert i1 h2) == insert i1 (merge h1 h2)
+ 40: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 41: hNull (insert i1 h1) == False
+ 42: b1||(b1&&b2) == b1
+ 43: b1&&(b1||b2) == b1
+ 44: i1*(i2+i2) == i2*(i1+i1)
+ 45: insertList i1 (toList h1) == toList (insert i1 h1)
+ 46: hNull (merge h1 h1) == hNull h1
+ 47: findMin (merge h1 h1) == findMin h1
+ 48: fromList (toList h1) == h1
+ 49: sort (indices a1) == indices a1
+ 50: sort (toList h1) == toList h1
+ 51: b1||not b1 == True
+ 52: b1&&not b1 == False
+ 53: merge h1 (deleteMin h1) == deleteMin (merge h1 h1)
+ 54: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 55: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 56: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 57: 0*(i1+i2) == 0
+ 58: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 59: not b1||not b2 == not (b1&&b2)
+ 60: not b1&&not b2 == not (b1||b2)
+ 61: hNull h1&&hNull h2 == hNull (merge h1 h2)
+ 62: (i1+).(i2+) == ((i1+i2)+)
+ 63: (i1*).(i2*) == ((i1*i2)*)
+ 64: findMin (insert i1 nil) == i1
+ 65: deleteMin (insert i1 nil) == nil
+ 66: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 67: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+ 68: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+ 69: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+ 70: (0*).(f1.f2) == (0*)
+ 71: (i1*).(1+) == (i1+).(i1*)
+ 72: (0*).(i1+) == (0*)
+ 73: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+ 74: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+ 75: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+ 76: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+ 77: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+ 78: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+ 79: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+
+422.19
+SIZE 28
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+fromList :: [Int] -> Heap Int
+sort :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 49 evaluations, 25 classes, 0 raw equations.
+Depth 2: 241 terms, 500 tests, 70855 evaluations, 139 classes, 102 raw equations.
+Depth 3: 27912 terms, 8164 tests, 9582981 evaluations, 23738 classes, 4174 raw equations.
+4174 raw equations; 23738 terms in universe.
+
+Command terminated by signal 2
+87.43
+SIZE 29
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+fromList :: [Int] -> Heap Int
+sort :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 8 tests, 61 evaluations, 25 classes, 0 raw equations.
+Depth 2: 241 terms, 500 tests, 70920 evaluations, 139 classes, 102 raw equations.
+Depth 3: 28086 terms, Command terminated by signal 2
+1.04
+SIZE 30
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists :: [Int] -> [Int] -> [Int]
+fromList :: [Int] -> Heap Int
+sort :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 47 evaluations, 25 classes, 0 raw equations.
+Depth 2: 241 terms, 500 tests, 70904 evaluations, 139 classes, 102 raw equations.
+Depth 3: 28122 terms, Command terminated by signal 2
+0.94
+SIZE 31
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists :: [Int] -> [Int] -> [Int]
+fromList :: [Int] -> Heap Int
+sort :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 49 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 32
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+fromList :: [Int] -> Heap Int
+sort :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 49 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 33
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 51 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 34
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 54 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 35
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 54 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 36
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 8 tests, 64 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 37
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 55 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 38
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 49 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 39
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 52 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 40
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 47 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 41
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 7 tests, 62 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 42
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 60 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 43
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 54 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 44
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 6 tests, 63 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 45
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 53 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 46
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 55 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 47
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 7 tests, 59 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 48
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 51 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 49
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 6 tests, 59 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 50
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 53 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 51
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 56 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 52
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 51 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 53
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 54 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 54
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 56 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 55
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 52 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 56
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 7 tests, 59 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 57
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 55 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 58
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 6 tests, 59 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 59
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 8 tests, 59 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 60
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 8 tests, 68 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 61
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 45 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 62
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 53 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 63
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 6 tests, 60 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 64
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 51 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 65
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 45 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 66
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 53 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 67
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 56 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 68
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: Command terminated by signal 2
+0.28
+SIZE 69
+Command terminated by signal 2
+0.01
+SIZE 70
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 7 tests, 61 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 71
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 51 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 72
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 57 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 73
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 54 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 74
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 49 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 75
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 47 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 76
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 8 tests, 64 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 77
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 56 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 78
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 62 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 79
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 54 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 80
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 9 tests, 62 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 81
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 61 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 82
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 49 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 83
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 62 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 84
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 58 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 85
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 4 tests, 55 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 86
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 53 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 87
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 3 tests, 49 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.08
+SIZE 88
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 63 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, Command terminated by signal 2
+0.06
+SIZE 89
+== API ==
+-- functions --
+True, False :: Bool
+(!) :: Array Int Int -> Int -> Int
+elems, indices :: Array Int Int -> [Int]
+not :: Bool -> Bool
+(||), (&&) :: Bool -> Bool -> Bool
+(.) :: (Int -> Int) -> (Int -> Int) -> Int -> Int
+map :: (Int -> Int) -> [Int] -> [Int]
+put :: Int -> Int -> Array Int Int -> Array Int Int
+(+), (*) :: Int -> Int -> Int
+insert :: Int -> Heap Int -> Heap Int
+insertList, deleteList :: Int -> [Int] -> [Int]
+id :: Int -> Int
+unit :: Int -> [Int]
+hNull :: Heap Int -> Bool
+merge :: Heap Int -> Heap Int -> Heap Int
+findMin :: Heap Int -> Int
+deleteMin :: Heap Int -> Heap Int
+toList :: Heap Int -> [Int]
+listArray :: (Int,Int) -> [Int] -> Array Int Int
+nullList :: [Int] -> Bool
+mergeLists, (++) :: [Int] -> [Int] -> [Int]
+length :: [Int] -> Int
+fromList :: [Int] -> Heap Int
+sort, reverse :: [Int] -> [Int]
+0, 1 :: Int
+nil :: Heap Int
+
+-- variables --
+a1 :: Array Int Int
+b1, b2, b3 :: Bool
+f1, f2, f3 :: Int -> Int
+i1, i2, i3 :: Int
+h1, h2, h3 :: Heap Int
+
+-- the following types are using non-standard equality --
+Int -> Int
+
+-- WARNING: the following types are uninhabited --
+(Int,Int) (used in listArray)
+
+-- WARNING: there are no variables of the following types; consider adding some --
+[Int]
+
+== Testing ==
+Depth 1: 25 terms, 5 tests, 58 evaluations, 25 classes, 0 raw equations.
+Depth 2: 246 terms, 500 tests, 70974 evaluations, 144 classes, 102 raw equations.
+Depth 3: 28926 terms, 6371 tests, 11311862 evaluations, 24195 classes, 4731 raw equations.
+4731 raw equations; 24195 terms in universe.
+
+== Equations about not ==
+  1: not True == False
+  2: not False == True
+  3: not (not b1) == b1
+
+== Equations about (||) ==
+  4: b1||b2 == b2||b1
+  5: b1||b1 == b1
+  6: b1||True == True
+  7: b1||False == b1
+  8: b1||(b2||b3) == b2||(b1||b3)
+
+== Equations about (&&) ==
+  9: b1&&b2 == b2&&b1
+ 10: b1&&b1 == b1
+ 11: b1&&True == b1
+ 12: b1&&False == False
+ 13: b1&&(b2&&b3) == b2&&(b1&&b3)
+
+== Equations about (.) ==
+ 14: f1.id == f1
+ 15: id.f1 == f1
+ 16: (f1.f2).f3 == f1.(f2.f3)
+
+== Equations about put ==
+ 17: put i1 i2 (put i1 i3 a1) == put i1 i2 a1
+ 18: put i1 i2 (put i3 i2 a1) == put i3 i2 (put i1 i2 a1)
+ 19: put i1 i2 (put i2 i1 a1) == put i2 i1 (put i1 i2 a1)
+ 20: put i1 i1 (put i2 i2 a1) == put i2 i2 (put i1 i1 a1)
+ 21: put 1 i1 (put 0 i2 a1) == put 0 i2 (put 1 i1 a1)
+
+== Equations about (+) ==
+ 22: i1+i2 == i2+i1
+ 23: i1+0 == i1
+ 24: (0+) == id
+ 25: i1+(i2+i3) == i2+(i1+i3)
+
+== Equations about (*) ==
+ 26: i1*i2 == i2*i1
+ 27: i1*1 == i1
+ 28: (1*) == id
+ 29: 0*0 == 0
+ 30: i1*(i2*i3) == i2*(i1*i3)
+
+== Equations about insert ==
+ 31: insert i1 (insert i2 h1) == insert i2 (insert i1 h1)
+
+== Equations about hNull ==
+ 32: hNull nil == True
+
+== Equations about merge ==
+ 33: merge h1 h2 == merge h2 h1
+ 34: merge h1 nil == h1
+ 35: merge h1 (merge h2 h3) == merge h2 (merge h1 h3)
+
+== Equations about findMin ==
+ 36: findMin nil == undefined
+
+== Equations about deleteMin ==
+ 37: deleteMin nil == undefined
+
+== Equations about several functions ==
+ 38: indices (put i1 i2 a1) == indices (put i1 i3 a1)
+ 39: merge h1 (insert i1 h2) == insert i1 (merge h1 h2)
+ 40: put i1 i1 a1!i2 == put i1 i2 a1!i2
+ 41: hNull (insert i1 h1) == False
+ 42: b1||(b1&&b2) == b1
+ 43: b1&&(b1||b2) == b1
+ 44: i1*(i2+i2) == i2*(i1+i1)
+ 45: insertList i1 (toList h1) == toList (insert i1 h1)
+ 46: insertList i1 (unit i2) == insertList i2 (unit i1)
+ 47: hNull (merge h1 h1) == hNull h1
+ 48: findMin (merge h1 h1) == findMin h1
+ 49: nullList (indices a1) == nullList (elems a1)
+ 50: nullList (unit i1) == False
+ 51: nullList (toList h1) == hNull h1
+ 52: length (indices a1) == length (elems a1)
+ 53: length (unit i1) == 1
+ 54: fromList (unit i1) == insert i1 nil
+ 55: fromList (toList h1) == h1
+ 56: sort (indices a1) == indices a1
+ 57: sort (unit i1) == unit i1
+ 58: sort (toList h1) == toList h1
+ 59: reverse (unit i1) == unit i1
+ 60: b1||not b1 == True
+ 61: b1&&not b1 == False
+ 62: deleteList i1 (unit i1) == toList nil
+ 63: merge h1 (deleteMin h1) == deleteMin (merge h1 h1)
+ 64: (b1&&b2)||(b1&&b3) == b1&&(b2||b3)
+ 65: (b1||b2)&&(b1||b3) == b1||(b2&&b3)
+ 66: (i1*i2)+(i1*i3) == i1*(i2+i3)
+ 67: 0*(i1+i2) == 0
+ 68: put i1 i1 a1!(a1!i1) == a1!(a1!i1)
+ 69: not b1||not b2 == not (b1&&b2)
+ 70: not b1&&not b2 == not (b1||b2)
+ 71: hNull h1&&hNull h2 == hNull (merge h1 h2)
+ 72: (i1+).(i2+) == ((i1+i2)+)
+ 73: (i1*).(i2*) == ((i1*i2)*)
+ 74: map (a1!) (unit i1) == unit (a1!i1)
+ 75: map (i1+) (unit i2) == unit (i1+i2)
+ 76: map (i1*) (unit i2) == unit (i1*i2)
+ 77: mergeLists (elems a1) (unit i1) == insertList i1 (elems a1)
+ 78: mergeLists (indices a1) (unit i1) == insertList i1 (indices a1)
+ 79: mergeLists (unit i1) (indices a1) == insertList i1 (indices a1)
+ 80: mergeLists (unit i1) (unit i2) == insertList i1 (unit i2)
+ 81: mergeLists (unit i1) (toList h1) == toList (insert i1 h1)
+ 82: mergeLists (toList h1) (indices a1) == mergeLists (indices a1) (toList h1)
+ 83: mergeLists (toList h1) (unit i1) == toList (insert i1 h1)
+ 84: mergeLists (toList h1) (toList h2) == toList (merge h1 h2)
+ 85: findMin (insert i1 nil) == i1
+ 86: deleteMin (insert i1 nil) == nil
+ 87: toList (insert i1 nil) == unit i1
+ 88: map f1 (toList nil) == toList nil
+ 89: deleteList i1 (toList nil) == toList nil
+ 90: map id (elems a1) == elems a1
+ 91: map id (indices a1) == indices a1
+ 92: map id (toList h1) == toList h1
+ 93: map (a1!) (indices a1) == elems a1
+ 94: deleteList (i1+i1) (unit i1) == deleteList 0 (unit i1)
+ 95: unit i1++unit i1 == insertList i1 (unit i1)
+ 96: length (toList nil) == 0
+ 97: reverse (toList nil) == toList nil
+ 98: put i1 i2 a1!(i1+1) == put i1 i3 a1!(i1+1)
+ 99: put i1 0 a1!(i1+i2) == put i1 i2 a1!(i1+i2)
+100: put 1 i1 a1!(i2*i1) == put 1 i2 a1!(i2*i1)
+101: put 1 i1 a1!(i2+i2) == put 1 i3 a1!(i2+i2)
+102: (0*).(f1.f2) == (0*)
+103: (i1*).(1+) == (i1+).(i1*)
+104: deleteList (i1+i1) (unit 0) == deleteList i1 (unit 0)
+105: deleteList (i1+i1) (unit 1) == unit 1
+106: deleteList (i1*i1) (unit 0) == deleteList i1 (unit 0)
+107: mergeLists (elems a1) (toList nil) == elems a1
+108: mergeLists (indices a1) (toList nil) == indices a1
+109: elems a1++toList nil == elems a1
+110: indices a1++toList nil == indices a1
+111: unit i1++toList nil == unit i1
+112: toList h1++toList nil == toList h1
+113: deleteList (i1+1) (unit i1) == unit i1
+114: (0*).(i1+) == (0*)
+115: mergeLists (toList nil) (elems a1) == elems a1
+116: toList nil++elems a1 == elems a1
+117: toList nil++indices a1 == indices a1
+118: toList nil++unit i1 == unit i1
+119: toList nil++toList h1 == toList h1
+120: put (i1*i1) i2 (put 1 0 a1) == put (i1*i1) i2 (put 1 i1 a1)
+121: put (i1+i1) (i1*i1) (put 1 i2 a1) == put (i1+i1) i1 (put 1 i2 a1)
+122: put 0 0 a1!(i1+i1) == put 0 i1 a1!(i1+i1)
+123: put 0 0 a1!(i1*i1) == put 0 i1 a1!(i1*i1)
+124: unit 0++unit 1 == insertList 0 (unit 1)
+125: put 0 i1 a1!(1+1) == put 0 i2 a1!(1+1)
+126: put (i1+i1) (a1!1) (put i1 1 a1) == put (i1+i1) (a1!1) (put i1 i1 a1)
+127: put (i1+i1) (a1!1) (put 0 1 a1) == put (i1+i1) (a1!1) (put 0 i1 a1)
+128: put (a1!1) (a1!0) (put 1 0 a1) == put (a1!1) (a1!0) a1
+
+397.04
