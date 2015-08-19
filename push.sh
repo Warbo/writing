@@ -6,9 +6,9 @@ then
     exit 1
 fi
 
-if [[ ! -e stp  || ! -e backups ]]
+if [[ ! -e stp ]]
 then
-    echo "Can't find rendered/ or backups/, aborting" >> /dev/stderr
+    echo "Can't find rendered/, aborting" >> /dev/stderr
     exit 1
 fi
 
