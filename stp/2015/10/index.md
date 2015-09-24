@@ -96,9 +96,23 @@ differential equations using the zip-operations.
 
 ### [Henning Basold][Henning]
 
-##### [Delft University of Technology][Delft], The Netherlands
+##### [Radboud University][Radboud], The Netherlands
 
-**Well-definedness and Observational Equivalence for Inductive-Coinductive Programs**
+**Using Coalgebras to Find the Productive Among the Lazy**
+
+*Abstract*
+
+In this talk, I will discuss how coalgebras can be used to establish
+equivalences and predicates for lazy programming languages, and how to
+use up-to techniques make the resulting proof methods tractable.
+
+More specifically, we will use a variation of the copattern language
+introduced by Abel et al., and show how to characterise a notion of
+observational equivalence and productivity for this language.
+Moreover, we will introduce some interesting up-to techniques to
+simplify proofs of productivity. Finally, if time permits, we use
+these techniques to obtain decision procedures for a fragment of the
+language.
 
 ### [Chris Warburton][Chris]
 
@@ -143,6 +157,48 @@ parallel head rewriting of a term with recursion.
 
 This is joint work with my PhD advisor Paul-André Melliès.
 
+### [Fredrik Nordvall Forsberg][Fredrik]
+
+##### [University of Strathclyde][Strathclyde], Scotland
+
+**The encode-decode method in HoTT, relationally**
+
+*Abstract*
+
+In Homotopy Type Theory (HoTT), the `encode-decode' method
+makes heavy use of explicit recursion over higher inductive types
+to construct, and prove properties of, homotopy equivalences.
+The idea is to construct an easier-to-understand family of codes describing
+some property of the homotopy equivalence in question, together with
+explicit encode and decode functions. The heart of the argument is then to
+show that encode and decode form an equivalence between the
+easy-to-understand codes and the desired property.
+
+We argue for the classical separation between specification and
+implementation, and hence for using relations to track the graphs of
+encode/decode functions. Our aim is to isolate the technicalities
+of their definitions, arising from higher path constructors, from their
+properties.
+
+We describe our technique in the calculation of the fundamental group of
+the circle, and comment on its applicability in the current Agda
+implementation of HoTT. (Joint work with James McKinna.)
+
+### [Franck Slama][Franck]
+
+##### [University of St Andrews][StAndrews], Scotland
+
+**Automatically proving equivalence by type-safe reflection**
+
+*Abstract*
+
+Dependently typed programming languages encourage us to index our inductive data types (like `A:Type`) over some indices (for instance, a `Nat`), in order to capture some properties (and `A` becomes of type `Nat -> Type`), as it is for example the case with vectors indexed over their length.
+But as soon as we start having indices, when defining functions, we run into the classical problem of producing a term of type `(A n)` when it is expected by the type checker to have type `(A n')`. Obviously, if the function is well defined, then the two indices `n` and `n'` should be equal (or somehow equivalent under certain axioms). But being equal doesn't mean that they are syntactically equal, and the type checker can't find the proof of equality on its own : it needs to be produced by hand by the user, usually leading to tons of proof obligations. If we want to encourage the writing of dependently typed data types and programs, we need to have some facilities for producing these proofs of equivalence automatically.
+
+In this talk, I'll present this problem in the dependently typed programming language Idris on a little example, and then show how a specialised reflexive tactic can be easily constructed in Idris for this specific example. The implementation relies on a type safe reflection mechanism, where we represent Idris expressions in a reflected form (indexed over the original expression), from which we can pull out the proof easily. I will then show how this idea can be generalised for the various kind of properties (or axioms) that might be available (for example : associativity, commutativity, distributivity...), leading to a hierarchy of reflexive tactics for Monoids, Commutative Monoids, Groups, Rings and so on, written in Idris, for proving different kind of equivalences. I'll also show briefly show each tactic reuses the other ones from the simplest structures, thus avoiding as much as possible the duplication of code.
+
+This is a joint work with Dr Edwin Brady.
+
 ## Schedule
 
 -------------- --------
@@ -153,28 +209,31 @@ This is joint work with my PhD advisor Paul-André Melliès.
 15:00 - 15:30  [Chris Warburton][Chris]
 15:30 - 16:00  [Charles Grellois][Charles]
 16:00 - 16:30  *Coffee*
-16:30 - 17:00  Talk 5
-17:00 - 17:30  Talk 6
+16:30 - 17:00  [Fredrik Nordvall Forsberg][Fredrik]
+17:00 - 17:30  [Franck Slama][Franck]
 18:30 -        Dinner at [DCA][DCA]
 -------------- -------
 
 ## Registration
 
-There are no registration fees, but *we require all attendees to [register by following this link][register].*
+There are no registration fees, but *we require all attendees to [register by following this link][register].* You can also contact the organisers [via email][contact].
 
-We still have slots available, so please consider volunteering a talk. It can be published work, work in progress, or  an "idea" talk - the STP audience appreciates all flavours of talks! You can send talk details via the [registration form][register] or [via email][contact].
-
-We particularly encourage PhD students and early-career researchers to present.
+All talk slots are now filled, many thanks to those who volunteered!
 
 [Helle]: http://homepage.tudelft.nl/c9d1n/
 [Henning]: http://cs.ru.nl/~hbasold/
 [Chris]: http://www.computing.dundee.ac.uk/about/staff/124
 [Charles]: http://research.grellois.fr/
+[Fredrik]: https://personal.cis.strath.ac.uk/fredrik.nordvall-forsberg/
+[Franck]: https://fs39.host.cs.st-andrews.ac.uk
 
 [Dundee]: http://www.dundee.ac.uk/
 [Delft]: http://www.tudelft.nl
 [PPS]: http://www.pps.univ-paris-diderot.fr
 [LIAFA]: http://www.liafa.jussieu.fr
+[Strathclyde]: http://www.strath.ac.uk/
+[Radboud]: http://www.ru.nl/english/
+[StAndrews]: https://www.st-andrews.ac.uk/
 
 [STP]: http://www.macs.hw.ac.uk/stp/
 [register]: https://docs.google.com/forms/d/1XcVQGrlJpgJe584TsneKNQ8x2HjBk40n_jhHIazn2nA/viewform?usp=send_form
