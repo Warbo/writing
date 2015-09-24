@@ -1,0 +1,249 @@
+\documentclass[]{article}
+
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{paralist}
+\usepackage{csquotes}
+\usepackage[affil-it]{authblk}
+
+\begin{document}
+
+\pagestyle{headings}  % switches on printing of running heads
+
+\title{Machine Learning Methods in Functional Programming and Interactive Theorem Proving}
+
+\author{Chris Warburton}
+
+\affil{University of Dundee,\\
+\texttt{http://tocai.computing.dundee.ac.uk}}
+
+\maketitle              % typeset the title of the contribution
+
+\begin{abstract}
+Since their inception, computers have been applied to automate and assist work in mathematics, with established fields including numerical computation, computer algebra, (online) communication and so on. Here we focus on their use in two areas: formal proof and statistics; and how new approaches are bringing these seemingly disparate disciplines closer together.
+\end{abstract}
+
+\section{Mechanised Proof}
+
+When computers are used to aid the development of formal proofs, it is usually within either the \emph{interactive theorem proving} (ITP) or \emph{automated theorem proving} (ATP) framework. Such theorem proving approaches are characterised as being \emph{goal-driven}: particular conjectures must be provided by the user before attempts are made to (dis)prove them. In addition to these traditional approaches, we also consider the recently proposed \emph{theory exploration} (TE) paradigm, which does not use (explicit) goals, and of which ATP and ITP are crucial components.
+
+\subsection{Interactive Theorem Proving}
+
+ITP systems are built around an automated \emph{proof checker}. This is a relatively simple task to mechanise \cite{boyer1994qed}, although care must be taken during implementation since bugs may cause inconsistencies to arise in the resulting logic TODO: Reference some example, eg. proof of false in Coq. A popular approach to mitigating this risk, as well as making meta-level analysis of the system more tractable, is known as the \emph{de Bruijn criterion}: implementing a very simple ``core'' checker, and having all other features be translated into a form checkable by this core \cite[\S~3]{barendregt2005challenge} TODO Maybe Chapter 18. Proof-Assistants Using Dependent Type Systems (Henk Barendregt, Herman Geuvers). instead?. This is the approach taken by, for example, the Isabelle and Coq systems \cite{nipkow2002isabelle} \cite{bertot2013interactive}.
+
+In the ITP setting, proving a conjecture is equivalent to producing an input to the checker which \begin{inparaenum}[a)]
+  \item is accepted and
+  \item has that conjecture as its conclusion.
+\end{inparaenum}
+
+TODO: How closely does Isabelle match the type-theoretic approach of Coq, Agda, etc.? Can we make this less ``fluffy''?
+
+Of course, \emph{producing} such proofs is much more difficult than checking them; as the name suggests, ITP leaves this task up to the user. To facilitate easier proving, many ITP systems such as Coq and Agda use a pure functional programming language as their proof format. Besides theoretical elegance, due to the \emph{Curry-Howard correspondence} \cite{wadler2015propositions}, there are practical benefits to turning theorem proving into programming. Firstly, many techniques developed in software engineering such as meta-programming (usually in the form of \emph{tactics}), encapsulation and modularity can be directly applied to the proving process. Secondly, the process of \emph{software verification}, a common task for formal proof, can be achieved in a very straightforward way: the software can be implemented inside the proof language, certified correct by the proof checker, then \emph{extracted} into an executable form.
+
+Despite these conveniences, ITP still requires enormous effort for non-trivial proof or verification tasks (e.g. see \cite{hales2015formal}). The most obvious way to mitigate this problem is by implementing powerful tactics to automate as much of a proof as possible. The most striking example of this approach is the \emph{sledgehammer} system in Isabelle/HOL \cite{journals/iandc/MengQP06}, which translates goals into a form suitable for a multitude of ATP systems and invokes them all in parallel to see if any can provide a proof which Isabelle's core checker will accept.
+
+\subsection{Automated Theorem Proving}
+
+ATP is the autonomous search for proofs in some logic. Every ATP system is built around a complete or partial decision procedure such as \emph{resolution} \cite[\S~9.6]{Russell:2003:AIM:773294}, usually augmented by heuristics and often adjustable using parameters. Most standalone ATP systems use a first-order logic \cite[\S~10]{Russell:2003:AIM:773294}, since many tasks in higher-order logics are undecidable (e.g. \cite{huet1973undecidability}).
+
+ATP is a classic field of research in artificial intelligence, dating back to the founding of the field at the 1956 Dartmouth conference. Even by that time Newell and Simon has developed their Logic Theory Machine \cite{newell1956logic}, which was subsequently able to prove theorems like those in Principia Mathematica \cite{newell1958elements}.
+
+In a similar way to ITP, the central problem of ATP is simple to state but unfeasible to execute: search through the space of provable statements until the given conjecture is found; the path from conjecture to the initial axioms consitutes the proof. However, this search space grows exponentially in the length of the proofs, which is unfortunate since proof length has been proposed as an approximate measure of how interesting a theorem is \cite[\S~10.2.1]{colton2012automated}.
+
+\subsection{Theory Exploration}
+
+Our main subject of investigation is the use of computers for augmenting and automating the process of \emph{theory exploration} (TE). This is the discovery of ``interesting'' patterns, relationships and structure in a formal system.
+
+Buchberger identifies TE as \textquote{building up (large) mathematical knowledge bases in an efficient, reliable, well-structured, re-usable, and flexible way} \cite{buchberger2004algorithm}, and considers it \textquote{the natural paradigm for using automated or computer-supported proving systems} \cite{buchberger2000theory}. In other words, the ITP and ATP approaches described above are fundamental components of any TE system, but the primary focus is on \emph{generating} conjectures.
+
+The most striking difference between TE and theorem proving is the lack of an explicit goal (e.g. a user-provided conjecture to prove). Instead, the \emph{implicit} goal is more open-ended: the discovery of ``interesting'' conclusions from the given premises. Of course, a key question to ask is what do we mean by ``interesting''? There is no single answer, although many approximate measures have been proposed. The choice of what counts as ``interesting'' has been used to classify various TE implementations \cite{warburtonscaling}, along with their approaches to term generation, well-formedness and proof.
+
+In the case of Buchberger's \texttt{Theorema}, the first self-confessed TE system, only the questions of well-formedness and proof were tackled; specifically by the use of types and ATP algorithms, respectively. Similar to the approach of ITP, the more difficult tasks (term generation and the determination of their interest) is left up to the user.
+
+\iffalse
+
+  task of theory exploration, and its existing software implementations, by Buchberger as complementary to  takes place after concrete definitions have been established (eg. by the process of \emph{theory formation})  identified by . Theory exploration is similar to \emph{experimental mathematics} process of identifying \emph{interesting} consequences of a given theory.
+
+
+
+ - Relation to Science
+  - Testable/falsifiable hypotheses are like evaluable terms (or, more generally, conjectures which can be decided, using a reasonable amount of resources).
+ - Relation to AI tasks: exploring surroundings, etc.
+
+Theory exploration must take place after \emph{theory formation}
+
+Major fields include computer algebra and theorem proving.
+
+- Statistics is another area that's less straightforward than normal numerical computing, since there is subjectivity and judgement involved in the answering of questions.
+
+Computer algebra systems, such as Mathematica, are
+There arithmetic, has a Initially used for ``computation'', ie. evaluation of expressions,
+especially in arithmetic numerical The application to evaluation
+
+Theory formation: Alison? Others.
+Theory exploration: Buchberger, Moa in Isabelle, Koen in Haskell. Others?
+Theorem proving: Well-trodden: first-order ATP, higher-order ITP, functional programming
+Communication: Latex, Wikis, APIs, communicating with aliens
+
+\subsection{Exploration in Artificial Intelligence and Machine Learning}
+
+The theme of goals and exploration which occur in theorem proving and TE have analogues in the domains of artificial intelligence (AI) and machine learning (ML). In  in an commonly appearing in the form of the \emph{exploration vs exploitation problem} in goal-driven systems.
+
+Machine Learning
+
+Symbolic AI: ATP, theory exploration?
+
+Integrating statistical and symbolic
+
+Machine learning over structured data:
+1D is common: parsing natural language
+2D is common; images
+Trees are fractal
+Backpropagation through structure
+LSTM with recursive structure
+Most work tries to identify structure; we already have it
+
+One way to apply fixed-size machine learning algorithms to arbitrarily-sized recursive structures is to use a \emph{distributed representation}. These mix information from all parts of a structure together into a fixed number of bits, storing an \emph{approximation} whose accuracy depends on the size of the value and the amount of storage used.
+
+CURRENT PROGRESS
+
+Divide and conquor for theory exploration
+Does it help?
+
+Clustering and feature extraction
+
+FUTURE WORK
+
+QuickSpec: extend or extinguish?
+
+Improve and find other use cases/scenarios for clustering and feature extraction
+
+Other directions for Theory Exploration?
+
+How about systems based on term rewriting, logic programming, etc.?
+
+\begin{abstract}
+We investigate the \textbf{theory exploration} (TE)
+paradigm for computer-assisted Mathematics and identify limitations and
+improvements for current approaches. Unlike the theorem-proving paradigm,
+which requires user-provided conjectures, TE performs an open-ended
+search for theorems satisfying given criteria. We see promise in TE for
+identifying new abstractions and connections in libraries of software
+and proofs, but realising this potential requires more scalable
+algorithms than presently used.
+\end{abstract}
+
+Given a signature $\Sigma$ and a set of variables $V$, we call the pair
+$(\Sigma, V)$ a \emph{theory} and use \emph{theory exploration} (TE) to refer
+to any process $(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)$
+for producing terms of the theory which are well-formed, provable and satisfy
+some criterion referred to as ``interesting''. These conditions give rise to the
+following questions, which we use to characterise TE systems:
+\begin{description}
+\item [Q1] \label{Q1} How do we generate terms?
+\item [Q2] \label{Q2} How do we guarantee well-formedness?
+\item [Q3] \label{Q3} How do we prove terms?
+\item [Q4] \label{Q4} What is considered ``interesting''?
+\end{description}
+
+Early implementations like \textsc{Theorema} \cite{buchberger2000theory}
+provided interactive environments, similar to computer algebra systems and
+interactive theorem provers, to assist the user in finding theorems. In this
+setting, terms are formed by the user in whichever way they find interesting,
+whilst the software provides support for \textbf{Q2} and \textbf{Q3}.
+
+Subsequent systems have investigated \emph{automated} theory exploration, for
+tasks such as lemma discovery \cite{Hipster}. By removing user interaction,
+\textbf{Q1} and \textbf{Q4} must be solved by algorithms. In existing
+systems these are tightly coupled to improve efficiency, which makes it
+difficult to try different approaches independently.
+
+As an example, \textsc{QuickSpec} \cite{QuickSpec} discovers equations about
+Haskell code, which are defined as ``interesting'' if they cannot be simplified
+using previously discovered equations. The intuition for such criteria is to
+avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$, etc.
+when we already know $0 + x = x$. Whilst \textbf{Q4} is elegantly implemented
+with a congruence closure relation (version 1) and a term rewriting system
+(version 2), the term generation for \textbf{Q1} is performed by brute-force.
+
+Although \textsc{QuickSpec} only \emph{tests} its equations rather than
+proving them, it is still used as the exploration component of more rigorous
+systems like \textsc{HipSpec} and \textsc{Hipster}.
+
+In the following, we give an overview of the state of the art in automated
+theory exploration, then present potential improvements and our initial attempts
+at implementation.
+
+\section{Theory Exploration in Haskell}\label{haskell}
+
+Automated theory exploration has been applied to libraries in Isabelle
+and Haskell, although we focus on the latter as its implementations are
+the most mature (demonstrated by the fact that \textsc{Hipster} explores
+Isabelle by first translating it to Haskell). Haskell is interesting to target,
+since its use of pure functions and algebraic datatypes causes many programs to
+follow algebraic laws. However, since Haskell's type system cannot easily
+encode such laws, less effort is given to finding and stating them; compared to
+full theorem provers like Isabelle. Hence we imagine even a shallow exploration
+of code repositories such as \textsc{Hackage} could find many interesting
+theorems.
+
+Currently, the most powerful TE system for Haskell is \textsc{HipSpec}, which
+uses off-the-shelf automated theorem provers (ATPs) to verify the conjectures of
+\textsc{QuickSpec}. \textsc{QuickSpec}, in turn, enumerates all type-correct combinations
+of the terms in the theory up to some depth, groups them into equivalence
+classes using the \textsc{QuickCheck} counterexample finder, then conjectures
+equations relating the members of these classes. This approach works well as a
+lemma generation system, making \textsc{HipSpec} a capable inductive theorem
+prover as well as a theory exploration system \cite{claessen2013automating}.
+
+\section{The \textsc{ML4HS} Framework}\label{ml4hs}
+
+We consider \textbf{Q2} and \textbf{Q3} to be adequately solved by the existing
+use of type systems and ATPs, respectively. We identify the following potential
+improvements for the other questions:
+
+\begin{description}
+\item [Q1]
+  Enumerating all type-correct terms is a brute-force solution to this question.
+  Scalable alternatives to brute-force algorithms are a well-studied area of
+  Artificial Intelligence and Machine Learning. In particular, heuristic
+  search algorithms like those surveyed in \cite{blum2011hybrid} could be used.
+  We could also use Machine Learning methods to identify some sub-set of a given
+  theory, to prioritise over the rest.
+\item [Q4]
+  Various alternative ``interestingness'' criteria have been proposed, for
+  example those surveyed in \cite{geng2006interestingness}. Augmenting or
+  replacing the criteria may be useful, for example to distinguish useful
+  relationships from incidental coincidences; or to prevent surprising,
+  insightful equations from being discarded because they can be simplified.
+\end{description}
+
+We are implementing a system called \textsc{ML4HS} to investigate these ideas.
+Its current form is a pre-processor for \textsc{QuickSpec} for prioritising
+theory elements. Inspired by the use of premise selection
+\cite{kuhlwein2012overview} to reduce the search space in ATP,
+we select sub-sets of the given theory to explore, chosen to try and keep
+together those expressions which combine in interesting ways, and to separate
+those which combine in uninteresting ways.
+
+We hypothesise that similarity-based clustering of expressions, inspired by that
+of \textsc{ML4PG} \cite{journals/corr/abs-1212-3618} and related work in ACL2
+\cite{heras2013proof}, is an effective method for performing this separation.
+Future experiments will test this by comparing the throughput of
+\textsc{QuickSpec} with and without the \textsc{ML4HS} pre-processor.
+
+\section*{Acknowledgements}
+
+Thank you to the \textsc{HipSpec} team at Chalmers University (Moa Johansson,
+Koen Claessen, Nick Smallbone, Dan Ros{\'e}n and Irene Lobo Valbuena) for useful
+discussions of these ideas.
+
+\fi
+
+\bibliographystyle{plain}
+\bibliography{../Bibtex}
+
+\end{document}
