@@ -12,4 +12,4 @@ do
     rm -f "${NAME}.${EXT}"
 done
 
-latex "$NAME" && bibtex "$NAME" && latex "$NAME" && pdflatex "$NAME"
+run "$NAME" && bibtex "$NAME" && run "$NAME" && run "$NAME"

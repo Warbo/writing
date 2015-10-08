@@ -4,7 +4,7 @@
 \usepackage{graphicx}
 \usepackage{mathtools}
 \usepackage{amssymb}
-\usepackage{enumitem}
+%\usepackage{enumitem}
 \usepackage{paralist}
 \usepackage{csquotes}
 \usepackage[affil-it]{authblk}
@@ -26,13 +26,57 @@
 Since their inception, computers have been applied to automate and assist work in mathematics, with established fields including numerical computation, computer algebra, (online) communication and so on. Here we focus on their use in two areas: formal proof and statistics; and how new approaches are bringing these seemingly disparate disciplines closer together.
 \end{abstract}
 
-\section{Mechanised Proof}
+\section{Introduction}
 
-When computers are used to aid the development of formal proofs, it is usually within either the \emph{interactive theorem proving} (ITP) or \emph{automated theorem proving} (ATP) framework. Such theorem proving approaches are characterised as being \emph{goal-driven}: particular conjectures must be provided by the user before attempts are made to (dis)prove them. In addition to these traditional approaches, we also consider the recently proposed \emph{theory exploration} (TE) paradigm, which does not use (explicit) goals, and of which ATP and ITP are crucial components.
+The automation of ``routine'' mathematical reasoning by computers is increasingly important for both mathematics and computer science. What has previously been seen as a pure research field of academic interest TODO: better wording [CITE] is becoming an indispensable tool at the cutting edge of these fields. The controversy surrounding Hales' TODO proof of the Kepler conjecture, and its subsequent formalisation [CITE], is perhaps the most famous example of mathematical results becoming too large and intricate to be feasibly verified, let alone discovered, without computer assistance.
+
+At the same time, the modern increasing reliance of a proof which relies on computers to such an extent that it is in cannot be understood  requirement
+ - Maths, verification, etc. are important
+ - Theorem proving: ATP and ITP
+
+Any theorem proving approach is fundamentally limited by its reliance on the user to provide the conjectures to be (dis)proved. We focus This
+
+ - (Automated) theory exploration
+ - Theory of ``interestingness'' is missing
+
+TODO: Include work trying to assign probability to formal sentences
+
+In \S\ref{background}, we formalise the notions of \emph{theory}, \emph{theory exploration} and \emph{interestingness}, along with neccessary background such as \emph{automated theorem proving}. In \S\ref{related} we review related work, including the application of statistical methods to formal systems and the use of pure exploration in artificial intelligence domains. \S\ref{current} summarises our recent work undertaken in this area, and \S\ref{future} presents future directions this can be taken.
+
+\section{Background}
+\label{background}
+
+\iffalse
+
+Before formalising To frame the concepts we will be building on, we first present an informal, simplistic picture. followed by individual define our terms in turn. Take a typical Gentzen-style judgement, e.g. in type theory:
+
+\[\Gamma \vdash p : S\]
+
+We can interpret this judgement as ``From context $\Gamma$, the proof $p$ of statement $S$ is derivable''. We can hang the components of a proof framework from the symbols of this judgement, in the following way:
+
+\begin{itemize}
+  \item We can use $\Gamma$ to represent a \emph{theory}; the extra-logical definitions whose consequences are to be explored. The field of \emph{theory formation}, also known as \emph{concept formation}, studies the discovery or invention of formal theories from informal sources, e.g. modelling scientific observations.
+  \item $S$ can represent our \emph{conjectures}
+  \item The witness $p$ represents a \emph{proof}. Discovering proofs \emph{theorem proving}
+  \item $\vdash$, the provability relation, can represent \emph{proof search}.
+  \item $:$ is a typing judgement, denoting that the term on its left-hand-side is an element of the type on its right-hand-side, or equivalently (via \emph{propositions as types}) that the proof object on its left is a witness of the proposition on its right. In our picture, this represents the process of \emph{proof checking} (or, equivalently, of type checking).
+
+The context for our investigation can be Constructing  Informally, we Roughly speaking,  this work, we focus on the conjecture-generation aspect of theory exploration. We define a theory exploration system as
+\end{itemize}
+
+TODO: Maybe focus on one language, system, set of algorithms, etc.? That way, we can make things concrete, rather than ``what about edge-case XYZ?''. HipSpec calls out to
+
+TODO: Background section
+
+TODO: Reword this, theory exploration is our main point. It is a research direction/area, etc. Don't define it negatively (``without goals''), define it positively. Maybe stop trying to encompass everyone's different demarcations, and have a ``for our purposes, ....''
+
+When computers are used to aid the development of formal proofs, it is usually within either the \emph{interactive theorem proving} (ITP) or \emph{automated theorem proving} (ATP) framework. These approaches are characterised as being \emph{goal-driven}: particular conjectures must be provided by the user before attempts are made to (dis)prove them. In this work we focus on the automation of the conjecture generation process itself, a task we refer to as \emph{theory exploration}. We can characterise theory
+
+This reliance on goals In addition to these traditional approaches, we also consider the related recently proposed \emph{theory exploration} (TE) paradigm, which does not use (explicit) goals, and of which ATP and ITP are crucial components.
 
 \subsection{Interactive Theorem Proving}
 
-ITP systems are built around an automated \emph{proof checker}. This is a relatively simple task to mechanise \cite{boyer1994qed}, although care must be taken during implementation since bugs may cause inconsistencies to arise in the resulting logic TODO: Reference some example, eg. proof of false in Coq. A popular approach to mitigating this risk, as well as making meta-level analysis of the system more tractable, is known as the \emph{de Bruijn criterion}: implementing a very simple ``core'' checker, and having all other features be translated into a form checkable by this core \cite[\S~3]{barendregt2005challenge} TODO Maybe Chapter 18. Proof-Assistants Using Dependent Type Systems (Henk Barendregt, Herman Geuvers). instead?. This is the approach taken by, for example, the Isabelle and Coq systems \cite{nipkow2002isabelle} \cite{bertot2013interactive}.
+The simplest approach to proof automation automated ITP systems are built around an automated \emph{proof checker}. This is a relatively simple task to mechanise \cite{boyer1994qed}, although care must be taken during implementation since bugs may cause inconsistencies to arise in the resulting logic (for example, TODO: Reference some example, eg. proof of false in Coq. A popular approach to mitigating this risk, as well as making meta-level analysis of the system more tractable, is known as the \emph{de Bruijn criterion}, which means the system \textquote{generates 'proof-objects' (of some form) that can be checked by an 'easy' algorithm} \cite[\S~2]{barendregt2001proof}  TODO Maybe Chapter 18. Proof-Assistants Using Dependent Type Systems (Henk Barendregt, Herman Geuvers). instead?. This is the approach taken by, for example, the Isabelle and Coq systems \cite{nipkow2002isabelle} \cite{bertot2013interactive}.
 
 In the ITP setting, proving a conjecture is equivalent to producing an input to the checker which \begin{inparaenum}[a)]
   \item is accepted and
@@ -40,34 +84,39 @@ In the ITP setting, proving a conjecture is equivalent to producing an input to 
 \end{inparaenum}
 
 TODO: How closely does Isabelle match the type-theoretic approach of Coq, Agda, etc.? Can we make this less ``fluffy''?
+      Maybe ``for our purposes'' focus on type-based ITP, untyped ATP, etc.?
 
-Of course, \emph{producing} such proofs is much more difficult than checking them; as the name suggests, ITP leaves this task up to the user. To facilitate easier proving, many ITP systems such as Coq and Agda use a pure functional programming language as their proof format. Besides theoretical elegance, due to the \emph{Curry-Howard correspondence} \cite{wadler2015propositions}, there are practical benefits to turning theorem proving into programming. Firstly, many techniques developed in software engineering such as meta-programming (usually in the form of \emph{tactics}), encapsulation and modularity can be directly applied to the proving process. Secondly, the process of \emph{software verification}, a common task for formal proof, can be achieved in a very straightforward way: the software can be implemented inside the proof language, certified correct by the proof checker, then \emph{extracted} into an executable form.
+Of course, \emph{producing} such proofs is much more difficult than checking them; as the name suggests, ITP leaves this task up to the user. To facilitate easier proving, many ITP systems such as Coq and Agda use a pure functional programming language as their proof format. This is theoretically elegant due to the \emph{Curry-Howard correspondence} \cite{wadler2015propositions}, there are practical benefits to turning theorem proving into programming. Firstly, many techniques developed in software engineering such as meta-programming (usually in the form of \emph{tactics}), encapsulation and modularity can be directly applied to the proving process. Secondly, the process of \emph{software verification}, a common task for formal proof, can be achieved in a very straightforward way: the software can be implemented inside the proof language, certified correct by the proof checker, then \emph{extracted} into an executable form.
 
-Despite these conveniences, ITP still requires enormous effort for non-trivial proof or verification tasks (e.g. see \cite{hales2015formal}). The most obvious way to mitigate this problem is by implementing powerful tactics to automate as much of a proof as possible. The most striking example of this approach is the \emph{sledgehammer} system in Isabelle/HOL \cite{journals/iandc/MengQP06}, which translates goals into a form suitable for a multitude of ATP systems and invokes them all in parallel to see if any can provide a proof which Isabelle's core checker will accept.
+Despite these conveniences, ITP still requires enormous effort for non-trivial proof or verification tasks (e.g. see \cite{hales2015formal}). The most obvious way to mitigate this problem is by implementing powerful tactics to automate as much of a proof as possible. The most striking example of this approach is the \emph{Sledgehammer} system in Isabelle/HOL \cite{journals/iandc/MengQP06}, which translates goals into a form suitable for a multitude of ATP systems and invokes them all in parallel to see if any can provide a proof which Isabelle's core checker will accept.
 
 \subsection{Automated Theorem Proving}
 
-ATP is the autonomous search for proofs in some logic. Every ATP system is built around a complete or partial decision procedure such as \emph{resolution} \cite[\S~9.6]{Russell:2003:AIM:773294}, usually augmented by heuristics and often adjustable using parameters. Most standalone ATP systems use a first-order logic \cite[\S~10]{Russell:2003:AIM:773294}, since many tasks in higher-order logics are undecidable (e.g. \cite{huet1973undecidability}).
+TODO: Traditionally, ATP describes.... We care about the algorithms (not UIs, languages, etc.)... We use ATP to refer to...
+ATP is the autonomous search for proofs in some logic. Every ATP system is built around a complete, partial or semi-decision procedure such as \emph{resolution} \cite[\S~9.6]{Russell:2003:AIM:773294}, usually augmented by heuristics and often adjustable using parameters. Most standalone TODO: EXPLAIN ATP systems use a sub-set of first-order logic \cite[\S~10]{Russell:2003:AIM:773294} to ensure (semi-)decidability, since many tasks in higher-order logics are undecidable (e.g. \cite{huet1973undecidability}).
 
+TODO: ATP isn't *contained in* AI; it overlaps with (eg. some ATP people may not like being called AI researchers)
 ATP is a classic field of research in artificial intelligence, dating back to the founding of the field at the 1956 Dartmouth conference. Even by that time Newell and Simon has developed their Logic Theory Machine \cite{newell1956logic}, which was subsequently able to prove theorems like those in Principia Mathematica \cite{newell1958elements}.
 
 In a similar way to ITP, the central problem of ATP is simple to state but unfeasible to execute: search through the space of provable statements until the given conjecture is found; the path from conjecture to the initial axioms consitutes the proof. However, this search space grows exponentially in the length of the proofs, which is unfortunate since proof length has been proposed as an approximate measure of how interesting a theorem is \cite[\S~10.2.1]{colton2012automated}.
 
 \subsection{Theory Exploration}
 
-Our main subject of investigation is the use of computers for augmenting and automating the process of \emph{theory exploration} (TE). This is the discovery of ``interesting'' patterns, relationships and structure in a formal system.
+Our main subject of investigation is the use of computers for augmenting and automating the process of \emph{theory exploration} (TE). This is the discovery of ``interesting'' patterns, relationships and structure in a formal system. TODO: ``discovery'' in which sense? ``patterns'': is ML4PG a system?
 
-Buchberger identifies TE as \textquote{building up (large) mathematical knowledge bases in an efficient, reliable, well-structured, re-usable, and flexible way} \cite{buchberger2004algorithm}, and considers it \textquote{the natural paradigm for using automated or computer-supported proving systems} \cite{buchberger2000theory}. In other words, the ITP and ATP approaches described above are fundamental components of any TE system, but the primary focus is on \emph{generating} conjectures.
+TODO: Definition of TE, rather than description. Maybe ``for our purposes''. Maybe just focus on the conjecture generation, rather than including theorem proving under the same umbrella.
 
-The most striking difference between TE and theorem proving is the lack of an explicit goal (e.g. a user-provided conjecture to prove). Instead, the \emph{implicit} goal is more open-ended: the discovery of ``interesting'' conclusions from the given premises. Of course, a key question to ask is what do we mean by ``interesting''? There is no single answer, although many approximate measures have been proposed. The choice of what counts as ``interesting'' has been used to classify various TE implementations \cite{warburtonscaling}, along with their approaches to term generation, well-formedness and proof.
+Buchberger identifies TE as \textquote{building up (large) mathematical knowledge bases in an efficient, reliable, well-structured, re-usable, and flexible way} \cite{buchberger2004algorithm}, and considers it \textquote{the natural paradigm for using automated or computer-supported proving systems} \cite{buchberger2000theory}. In this sense, the TE paradigm encompasses both the ITP and ATP approaches described above, but \emph{also} includes the necessary prior step of \emph{generating} (interactively or automatically) the conjectures to be proved (interactively or automatically).
+
+TODO: If we define TE and ATP/ITP more concretely, this is more of a comment; the difference is obvious
+The most striking difference between TE and theorem proving is the former's lack of an explicit goal (e.g. a user-provided conjecture to prove). Instead, the \emph{implicit} goal is more open-ended: the discovery of ``interesting'' conclusions from the given premises. Of course, a key question to ask is what do we mean by ``interesting''? There is no single answer, although many approximate measures have been proposed. The choice of what counts as ``interesting'' has been used to classify various TE implementations \cite{warburtonscaling}, along with their approaches to term generation, well-formedness and proof.
 
 In the case of Buchberger's \texttt{Theorema}, the first self-confessed TE system, only the questions of well-formedness and proof were tackled; specifically by the use of types and ATP algorithms, respectively. Similar to the approach of ITP, the more difficult tasks (term generation and the determination of their interest) is left up to the user.
 
-\iffalse
+TODO: expansion, eg. interactive vs automated.
+
 
   task of theory exploration, and its existing software implementations, by Buchberger as complementary to  takes place after concrete definitions have been established (eg. by the process of \emph{theory formation})  identified by . Theory exploration is similar to \emph{experimental mathematics} process of identifying \emph{interesting} consequences of a given theory.
-
-
 
  - Relation to Science
   - Testable/falsifiable hypotheses are like evaluable terms (or, more generally, conjectures which can be decided, using a reasonable amount of resources).
@@ -88,15 +137,85 @@ Theory exploration: Buchberger, Moa in Isabelle, Koen in Haskell. Others?
 Theorem proving: Well-trodden: first-order ATP, higher-order ITP, functional programming
 Communication: Latex, Wikis, APIs, communicating with aliens
 
-\subsection{Exploration in Artificial Intelligence and Machine Learning}
+TODO: Motivating theme/narrative. For example, interestingess measures for theory exploration
 
-The theme of goals and exploration which occur in theorem proving and TE have analogues in the domains of artificial intelligence (AI) and machine learning (ML). In  in an commonly appearing in the form of the \emph{exploration vs exploitation problem} in goal-driven systems.
+TODO: Related work section
+\section{Related Work}
+\label{related}
 
-Machine Learning
+\subsection{Conjecture Generation}
 
-Symbolic AI: ATP, theory exploration?
+The task of \emph{conjecture generation} lies at the heart of theory exploration, and
 
-Integrating statistical and symbolic
+\subsubsection{Lemma generation}
+
+\subsection{Exploration in Artificial Intelligence}
+
+TODO: https en.wikipedia.org/wiki/Discovery system
+
+Theorem proving is not the only area of AI to have automation extended from problem \emph{solving} to problem \emph{invention}. Here we consider similar approaches in a variety of domains, and identify techniques which could be re-purposed in the context of theory exploration.
+
+\subsubsection{Evolutionary Computation}
+
+\emph{Evolutionary computation} is an umbrella term for heuristic search algorithms which mimic the process of evolution by natural selection among a population of candidate solutions \cite{back1997evolutionary}. Whilst \emph{genetic algorithms} are perhaps the most well-known instance of evolutionary computation, their use of \emph{strings} to represent solutions causes complications in a domain like theory exploration, where recursive structures of unbounded depth arise. Thankfully these problems are not insurmountable, for example \emph{genetic programming} can operate on tree-structures natively \cite{banzhaf1998genetic}, which makes evolutionary computation a viable approach to the search component of theory exploration.
+
+Traditionally, evolutionary approaches assign solutions a \emph{fitness} value, using a user-supplied \emph{fitness function}. Fitness should correlate with how well a solution solves the user's problem; for example, the fitness of a solution to some engineering problem may depend on the estimated materials cost.
+
+The evolutionary analogue of theory exploration is to remove the (explicit) fitness function, just like we remove explicit goals to turn the theorem proving task into the theory exploration task. There are two main reasons for studying such purely-exploratory evolutionary systems: \emph{artificial life} and \emph{deceptive problems}. The former attempts to gain insight into the nature of life and biology through competition over limited resources. Whilst this may have utility in resource allocation, e.g. efficient scheduling of a portfolio of ATP programs, there is no direct connection to the search aspect of theory exploration, so we will not consider it further (note that similar resource-usage ideas can also be found in the literature on \emph{artificial economies}, e.g. \cite{baum2000evolution}).
+
+On the other hand, work on deceptive problems is highly relevant, as it has lead to studying \emph{exploration in general}, and hence provides insight for our narrower domain of theory exploration. Deceptive problems are those where \textquote{pursuing the objective may prevent the objective from being reached} \cite{lehman2011abandoning}, which is caused by the fitness (objective) function having many local optima which are easy to find (eg. by hill climbing), but few global optima which are hard to find. Many approaches to avoiding deception, such as \emph{niching methods} \cite{sareni1998fitness}, alter the output of the fitness function to promote \emph{diversity} and \emph{novelty}. For example, \emph{fitness sharing} promotes diversity by dividing up the fitness of identical or similar solutions, e.g. the result of a fitness function $f$ may be shared by two identical solutions $s_1$ and $s_2$, such that the augmented fitness $f'(s_1) = \frac{f(s_1)}{2}$ and $f'(s_2) = \frac{f(s_2)}{2}$. As always, there are many variations on this theme, such as how to judge similarity (e.g. ``genetically'' by comparing the solutions themselves, or ``phenotypically'' by comparing their fitness), but all strive to penalise duplication and hence promote diversity.
+
+Once we augment fitness functions, to a greater or lesser degree, an obvious question arises: what if the augmented function contains nothing of the original fitness? This is the pure exploration scenario we are interested in, which has been found to provide useful ``stepping stones'', even in objective-driven domains \cite{lehman2011abandoning}.
+
+TODO: Expand
+
+\subsubsection{Artificial Curiosity}
+
+\emph{Artificial curiosity} (AC) is the drive to seek out input or data which is in some sense ``interesting'' \cite{schmidhuber2006developmental}. As an unsupervised learning task, AC has no access to labels or meanings associated with its data; the only features it can learn are the structure and relationships between observations and actions. The aim of using an ``interestingness'' measure is to force the AC system away from inputs which are not amenable to learning; either because they are simple enough to be completely characterised already, or because they are so complex as to be unintelligible. This property is succinctly captured by the \emph{Wundt curve} TODO: Cite.
+
+One common approach to striking this balance is to measure some information-theoretic property of the system or data, and reward the learner accordingly. A survey of interestingness measures in artificial curiosity is given in \cite{oudeyer2007intrinsic}. Of particular interest is \emph{compression progress}: given a compressed representation of our previous observations, the ``progress'' is the space saved if we include the current observation. Observations which are incompressible or trivially compressible don't save any space, whilst observations which provide new information relevant to past experience can provide a saving. This can be translated to a theorem proving context very naturally: our observations are theorems and their proofs, new theorems and we select for useful generalisations which allow old special-case lemmas to be discarded.
+
+TODO: Coevolution
+
+Approaches to artificial curiosity mostly follow two themes: the definition of an explicit ``interestingness'' measure, from which rewards are calculated; or else the use of \emph{co-evolution} to \emph{emergent}.
+
+Whilst clearly of relevance to theory exploration, artificial curiosity is usually framed in the context of a \emph{reinforcement learning} and \emph{intrinsic reward}, especially in the field of developmental robotics. This requires non-trivial choices to be made in deciding which of its concepts are of relevance to our domain, and how they may be translated across. For example, much of developmental robotics studies continuous, real-valued sensorimotor signals which may not have any direct analogue in the manipulation of logical formulae. However, if we take a higher-level view, the study of such signals may provide insight for predicting and tuning the behaviour of off-the-shelf ATP algorithms. In this sense, the
+
+The most obvious contrast between developmental robotics and theory exploration is that the latter is not physically embodied (e.g. in a robot). Embodiment has been proposed as a necessary property of intelligent systems, as it provides \emph{grounding} \cite{anderson2003embodied}. Embodiment emerged as a response to the symbolic techniques of so-called \emph{Good Old Fashioned AI} (GOFAI), of which theorem proving is a classic example. In this sense, the fields of theory exploration and developmental robotics seem rather disconnected. Nevertheless, TE still exhibits a form of embodiment in two ways. Firstly, the abstract, mathematical domain being explored is not a model of some external, physical environment; the domain \emph{is} the environment; in other words, TE does not suffer from the same grounding problem as GOFAI. In particular, \emph{resource usage} is a critical factor in any search problem; if it weren't, then brute force would be a viable solution.
+
+\iffalse
+
+\subsubsection{Universal Drives}
+
+PhysRevLett.110.168702.pdf
+Omohundro? Too physical.
+\emph{Universal drives} are those
+
+ takes the heavily automated field of theorem proving   mbodies The attempt to automate earlier transition from goal-driven problem solving to goal-less exploration and problem invention is not unique to theorem proving; it has also been investigated occurred in  and exploration which occur in theorem proving and TE have analogues in the domains of artificial intelligence (AI) and machine learning (ML). In  in an commonly appearing in the form of the \emph{exploration vs exploitation problem} in goal-driven systems.
+
+\subsection{Statistics of Formal Systems}
+
+
+
+\subsubsection{Relevance}
+
+ML4PG
+ACL2(ml)
+Josef Urban
+Sledgehammer
+Naive Bayes
+
+\subsubsection{Concept Formation}
+
+Alan Bundy et al
+
+Eurisko, AM, etc.?
+
+Genetic programming? GP in finite algebras
+
+\subsubsection{Probability of Sentences}
+
+\subsubsection{Learning on Structured Data}
 
 Machine learning over structured data:
 1D is common: parsing natural language
@@ -106,16 +225,21 @@ Backpropagation through structure
 LSTM with recursive structure
 Most work tries to identify structure; we already have it
 
+Recurrent neural networks
+Backpropagation through structure
+
 One way to apply fixed-size machine learning algorithms to arbitrarily-sized recursive structures is to use a \emph{distributed representation}. These mix information from all parts of a structure together into a fixed number of bits, storing an \emph{approximation} whose accuracy depends on the size of the value and the amount of storage used.
 
-CURRENT PROGRESS
+\section{CURRENT PROGRESS}
+\label{current}
 
-Divide and conquor for theory exploration
+Divide and conquer for theory exploration
 Does it help?
 
 Clustering and feature extraction
 
-FUTURE WORK
+\section{FUTURE WORK}
+\label{future}
 
 QuickSpec: extend or extinguish?
 
@@ -240,7 +364,6 @@ Future experiments will test this by comparing the throughput of
 Thank you to the \textsc{HipSpec} team at Chalmers University (Moa Johansson,
 Koen Claessen, Nick Smallbone, Dan Ros{\'e}n and Irene Lobo Valbuena) for useful
 discussions of these ideas.
-
 \fi
 
 \bibliographystyle{plain}
