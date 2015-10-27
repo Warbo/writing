@@ -4,12 +4,17 @@
 NAME=report
 
 run() {
+    echo "RUNNING pdflatex"
     pdflatex -interaction=nonstopmode -halt-on-error --shell-escape "$1"
 }
 
-for EXT in aux bbl blg log out pdf
+for EXT in aux bbl blg dvi log out pdf
 do
     rm -f "${NAME}.${EXT}"
 done
 
-run "$NAME" && bibtex "$NAME" && run "$NAME" && run "$NAME"
+run "$NAME"           &&
+echo "RUNNING bibtex" &&
+bibtex "$NAME"        &&
+run "$NAME"           &&
+run "$NAME"

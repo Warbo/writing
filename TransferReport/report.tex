@@ -8,6 +8,7 @@
 \usepackage{paralist}
 \usepackage{csquotes}
 \usepackage[affil-it]{authblk}
+\usepackage{listings}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows,decorations.pathreplacing,calc}
 
@@ -32,156 +33,182 @@ Since their inception, computers have been applied to automate and assist work i
 
 As computers and software become more capable, and as our reliance on them increases, the importance of \emph{understanding}, \emph{predicting} and \emph{verifying} these systems grows; which is undermined by their ever-increasing complexity. Mathematics provides us with powerful, systematic methods of reasoning, which we can bring to bear on this challenge; in particular those of \emph{formal logic} and \emph{statistics}. By (partially) mechanising these approaches, in the fields of \emph{theorem proving} and \emph{machine learning}, respectively, we can leverage these increasing machine capabilities and direct them for the purpose of analysis. However, the question still remains: on what should we focus that analysis?
 
-In this work, we investigate the notion of \emph{interestingness} in the exploration of formal systems, especially software, as a way to make productive use of resources in an often intractable domain. Appeals to interestingness arise when more direct measures, such as utility, are not available; as an extreme example, we could this is analogous to for example, we could characterise the distinction between pure and applied mathematics. much work in pure mathematics could be considered For example, the inclusion of particular statements in a program or proof development can be easily justified by whether they contribute to the solution; however, in a \emph{library} there is no particular problem to be solved, in which case statements may instead be judged on how interesting they are. Appeals to interestingness abound in the history of computer-assisted reasoning; for example Lenat's 1977 description of the AM system using information to \textquote{concentrate upon the most interesting [concepts]} \cite{lenat1977automated}. Despite such widespread use of the term, there is no standard definition of what makes a formal object, whether it is an axiom, a conjecture, a proof, etc., ``interesting''; although many ad-hoc heuristics have been proposed.
+In this work, we investigate the notion of \emph{interestingness} in the exploration of formal systems (an area known as \emph{theory exploration}) as a way to make productive use of resources in an often intractable domain. To keep things concrete, we focus our formal analysis on equational formulae describing programs in the Haskell language, for reasons elaborated in \S \ref{haskell}. Conceptually, we maintain a broader view, and survey many related areas which may offer insights on the problem.
 
-We begin in \S \ref{background} by defining a formal framework for our investigation, and how it relates to the existing theorem proving landscape. In \S \ref{conceptformation} we consider those heuristics proposed in the literature to date, whilst \S \ref{related} casts a wider net to encompass pure exploration and interestingness in other domains of machine learning and artificial intelligence. We consider a selection of results from the theorem proving community in \S \ref{examples}, both to evaluate these heuristics and to identify common features. We discuss our present contributions in \S \ref{current} and future research directions in \S \ref{future}, before concluding in \S \ref{conclusion}.
+Appeals to interestingness arise when more direct measures, such as utility, are not available. For example, the inclusion of particular statements in a program or proof development can be easily justified based on its contribution to the overall solution; however, in a \emph{library} there is no particular problem being solved, in which case we must judge statements on less direct criteria, such as how ``interesting'' they may be to our users. Appeals to interestingness abound in the history of computer-assisted reasoning; for example, in 1971 Plotkin \cite{plotkin1971further} considered the task of \textquote{discovering theorems $T$ from a system of axioms $Ax$}, and in particular the questions \textquote{Under what conditions is $T$ an interesting, possible theorem in the system $Ax$?} and \textquote{Is there a way to generate (most) interesting possible theorems?}. Despite such widespread use of the term, there is no standard definition of what makes a formal object, whether it is an axiom, a conjecture, a proof, etc., ``interesting''; although many ad-hoc heuristics have been proposed.
+
+We begin our undertaking in \S \ref{background} by introducing the Haskell language, as well as the relevant fields of verification for context. We define a formal framework for our investigation, and show how it relates to the existing theorem proving landscape. A selection of theorem proving scenarios which \emph{require} exploration are discussed in \S \ref{examples}, whilst related work, including existing defintions of interestingness, is surveyed in \S \ref{relatedwork}. We also review the use of exploration in other fields of Artificial Intelligence and Machine Learning, where researchers are also experimenting with replacing \emph{explicit} goals and rewards with \emph{implicit} alternatives such as interestingness. Recent efforts in this area have lead to principled theories to emerge, mostly based around (algorithmic) information theory, which may be adapted to our theory exploration context.
+
+We discuss our present contributions in \S \ref{current} and future research directions in \S \ref{future}, before concluding in \S \ref{conclusion}.
 
 \section{Background}
 \label{background}
 
-We will focus our investigation on inductive theorems regarding programs in the Haskell language, since this is an area with existing work \cite{Claessen_hipspec:automating} against which we can compare our methods.
+Most work in mechanised, formal mathematics focuses on a \emph{theorem proving} paradigm, usually either \emph{interactive theorem proving} (ITP) or \emph{automated theorem proving} (ATP). Whilst the boundaries between these approaches can be somewhat blurred, we give precise definitions in \S \ref{itp} and \S \ref{atp}, respectively, and characterise both as being \emph{goal-driven}: particular conjectures must be provided as input to the process, and the output is either a proof, a refutation or ``don't know'' (in the case of incomplete procedures).
 
-\begin{figure}
-  \centering
-  \tikzstyle{decision} = [diamond, draw, fill=blue!20, text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
-  \tikzstyle{block} = [rectangle, draw, fill=blue!20, text width=5em, text centered, rounded corners, minimum height=4em]
-  \tikzstyle{line} = [draw, -latex']
-  \tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm, minimum height=2em]
+In this work, we instead adopt the paradigm of \emph{(automated) theory exploration}, discussed in \S \ref{theoryexploration}, which includes the ability to \emph{generate} conjectures, and hence output \emph{novel} theorems. Since many theories will admit an infinite number of trivial theorems (e.g. $\top$, $\top \land \top$, $(\top \land \top) \land \top$, \dots) we require some mechanism for avoiding such undesirable, yet provable, statements. This is the role of interestingness, which we can use to \emph{judge} a statement, in a potentially rich way, rather than merely constructing or failing to construct a proof.
 
-  \begin{tikzpicture}[node distance = 2cm, auto]
-    % Place nodes
-    \node [block] (cf) {Concept Formation};
-    \node [block, below of=cf] (cg) {Conjecture Generation};
-    \node [block, below of=cg] (tp) {Theorem Proving};
+Firstly, however, we give an overview of the Haskell programming language in \S \ref{haskell}. This allows us to establish many concepts in a straightforward software context, which we can then re-use in the potentially less-familiar realm of interactive theorem proving. We decided to focus on Haskell, as it has mature, state-of-the-art theory exploration implementations (\textsc{QuickSpec} \cite{QuickSpec} and \textsc{HipSpec} \cite{claessen2013automating}). This is evident even to users of Isabelle/HOL, which boasts its own \textsc{IsaCoSy} \cite{johansson2009isacosy} and \textsc{Hipster} \cite{Hipster} theory exploration systems, since \textsc{Hipster} is actually implemented by translating to Haskell and invoking \textsc{HipSpec}.
 
-    % Draw edges
-    \path [line] (cf) -- (cg);
-    \path [line] (cg) -- (tp);
+\subsection{Haskell}\label{haskell}
 
-    % Draw braces
-    \draw [decorate,decoration={brace,amplitude=10pt, mirror}]
-    (cf.north west) -- (tp.south west) node [black,midway,xshift=-1.5cm]
-    {\footnotesize ITP};
+\lstset{
+  frame=none,
+  xleftmargin=2pt,
+  stepnumber=1,
+  numbers=none,
+  numbersep=5pt,
+  numberstyle=\ttfamily\tiny\color[gray]{0.3},
+  belowcaptionskip=\bigskipamount,
+  captionpos=b,
+  escapeinside={*'}{'*},
+  language=haskell,
+  tabsize=2,
+  emphstyle={\bf},
+  commentstyle=\it,
+  stringstyle=\mdseries\rmfamily,
+  showspaces=false,
+  keywordstyle=\bfseries\rmfamily,
+  columns=flexible,
+  basicstyle=\small\sffamily,
+  showstringspaces=false,
+  morecomment=[l]\%,
+}
 
-    \draw [decorate,decoration={brace,amplitude=10pt}]
-    (tp.north east) -- (tp.south east) node [black,midway,xshift=0.3cm]
-    {\footnotesize ATP};
+\providecommand{\hs}[1]{\lstinline[language=Haskell]|#1|}
 
-    \draw [decorate,decoration={brace,amplitude=10pt}, xshift=5cm]
-    ($ (cg.north east) + (1,0) $) -- ($ (tp.south east) + (1,0) $)
-    node [black,midway, xshift=0.6cm] {\footnotesize Theory Exploration};
-  \end{tikzpicture}
-  \caption{Core stages of computer-assisted proof \label{proofprocess}}
-\end{figure}
+Haskell is a programming language which is well-suited to research; indeed, this was a goal of the language's creators \cite{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus; in fact the \textsc{GHC} compiler uses (variants of) the polymorphic $\lambda$-calculus \emph{System F} as an intermediate representation (referred to a \emph{GHC Core}). For a detailed exposition of the language syntax and semantics, you can consult the Haskell Language Report \cite{marlow2010haskell} \footnote{Version 2010 was current as this was written}; here we will focus on those language features which make it particularly suited for our formal reasoning purposes:
 
-\iffalse
+\begin{description}
 
-Before defining formalising To frame the concepts we will be building on, we first present an informal, simplistic picture. followed by individual define our terms in turn. Take a typical Gentzen-style judgement, e.g. in type theory:
+\item{Functional}: All control flow is performed by function abstraction and application, which we can reason about using standard rules of inference such as \emph{modus ponens}.
 
-\[\Gamma \vdash p : S\]
+\item{Pure}: Execution of actions (e.g. reading files) is separate to evaluation of expressions; hence our reasoning can safely ignore complicated external and non-local interactions.
 
-We can interpret this judgement as ``From context $\Gamma$, the proof $p$ of statement $S$ is derivable''. We can hang the components of a proof framework from the symbols of this judgement, in the following way:
+\item{Statically Typed}: Expression are constrained by \emph{types}, which can be used to eliminate unwanted combinations of values, and hence reduce search spaces; \emph{static} types can be deduced syntactically, without having to execute the code.
+
+\item{Non-strict}: If an evaluation strategy exists for $\beta$-normalising an expression (i.e. performing function calls) without diverging, then a non-strict evaluation strategy will not diverge when evaluating that expression. This is rather technical, but in simple terms it allows us to reason effectively about a Turing-complete language, where evaluation may not terminate. For example, when reasoning about \emph{pairs} of values \hs{(x, y)} and projection functions \hs{fst} and \hs{snd}, we might want to use an ``obvious'' rule such as $\forall \text{\hs{x y}}, \text{\hs{x}} = \text{\hs{fst (x, y)}}$. Haskell's non-strict semantics makes this equation valid; whilst it would \emph{not} be valid in the strict setting common to most other languages, where the expression \hs{fst (x, y)} will diverge if \hs{y} diverges (and hence alter the semantics, if \hs{x} doesn't diverge).
+
+\item{Algebraic Data Types}: These provide a rich grammar for building up user-defined data representations, and an inverse mechanism to inspect these data by \emph{pattern-matching}. For our purposes, the useful consequences of ADTs and pattern-matching include their amenability for inductive proofs and the fact they are \emph{closed}; i.e. an ADT's declaration specifies all of the normal forms for that type. This makes exhaustive case analysis trivial, which would be impossible for \emph{open} types (for example, consider classes in an object oriented language, where new subclasses can be introduced at any time).
+
+\item{Parametricity}: This allows Haskell \emph{values} to be parameterised over \emph{type-level} objects; provided those objects are never inspected. This has the \emph{practical} benefit of enabling \emph{polymorphism}: for example, we can write a polymorphic identity function \hs{id :: forall t. t -> t}. \footnote{Read ``\hs{a :: b}'' as ``\hs{a} has type \hs{b}'' and ``\hs{a -> b}'' as ``the type of functions from \hs{a} to \hs{b}''.} Conceptually, this function takes \emph{two} parameters: a type \hs{t} \emph{and} a value of type \hs{t}; yet only the latter is available in the function body, e.g. \hs{id x = x}. This inability to inspect type-level arguments gives us the \emph{theoretical} benefit of being able to characterise the behaviour of polymorphic functions from their type alone, a technique known as \emph{theorems for free} \cite{wadler1989theorems}.
+
+\item{Type classes}: Along with their various extensions, type classes are interfaces which specify a set of operations over a type (or other type-level object, such as a \emph{type constructor}). Many type classes also specify a set of \emph{laws} which their operations should obey but, lacking a simple mechanism to enforce this, laws are usually considered as documentation. As a simple example, we can define a type class \hs{Semigroup} with the following operation and associativity law:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+op :: forall t. Semigroup t => t -> t -> t
+\end{lstlisting}
+
+$$\forall \text{\hs{x y z}}, \text{\hs{op x (op y z)}} = \text{\hs{op (op x y) z}}$$
+
+The notation \hs{Semigroup t =>} is a \emph{type class constraint}, which restricts the possible types \hs{t} to only those which implement \hs{Semigroup}. \footnote{Alternatively, we can consider \hs{Semigroup t} as the type of ``implementations of \hs{Semigroup} for \hs{t}'', in which case \hs{=>} has a similar role to \hs{->} and we can consider \hs{op} to take \emph{four} parameters: a type \hs{t}, an implementation of \hs{Semigroup t} and two values of type \hs{t}. As with parameteric polymorphism, this extra \hs{Semigroup t} parameter is not available at the value level. Even if it were, we could not alter our behaviour by inspecting it, since Haskell only allows types to implement each type class in at most one way, so there would be no information to branch on.} There are many \emph{instances} of \hs{Semigroup} (types which may be substituted for \hs{t}), e.g. \hs{Integer} with \hs{op} performing addition. Many more examples can be found in the \emph{typeclassopedia} \cite{yorgey2009typeclassopedia}. This ability to constrain types, and the existence of laws, helps us reason about code generically, rather than repeating the same arguments for each particular pair of \hs{t} and \hs{op}.
+
+\item{Equational}: Haskell uses equations at the value level, for definitions; at the type level, for coercions; at the documentation level, for typeclass laws; and at the compiler level, for ad-hoc rewrite rules. This provides us with many \emph{sources} of equations, as well as many possible \emph{uses} for any equations we might discover. Along with their support in existing tools such as SMT solvers, this makes equational conjectures a natural target for our investigation.
+
+\end{description}
+
+Together, these features make Haskell code highly structured, amenable to logical analysis and subject to many algebraic laws. However, as mentioned with regards to type classes, Haskell itself is incapable of expressing or enforcing these laws (at least, without difficulty \cite{lindley2014hasochism}). This reduces the incentive to manually discover, state and prove theorems about Haskell code, e.g. in the style of interactive theorem proving (see \S \ref{itp}), as these results may be invalidated by seemingly innocuous code changes. We will revisit the second-class status of theorem proving in Haskell in our discussion of theory exploration (\S \ref{theoryexploration}), but we will remark that Haskell in thus in a unique position with regards to the discovery of interesting theorems. Namely that many discoveries may be available with very little work, simply because the code's authors are focused on \emph{software} development rather than \emph{proof} development. The same cannot be said, for example, of ITP systems; although our reasoning capabilities may be stronger in an ITP setting, much of the ``low hanging fruit'' will have already been found through the user's dedicated efforts, and hence TE would be more likely to fit into an automation role for the user, rather than providing truly unexpected new discoveries.
+
+Other empirical advantages to studying Haskell, compared to either other programming languages or theorem proving systems, include:
 
 \begin{itemize}
-  \item We can use $\Gamma$ to represent a \emph{theory}; the extra-logical definitions whose consequences are to be explored. The field of \emph{theory formation}, also known as \emph{concept formation}, studies the discovery or invention of formal theories from informal sources, e.g. modelling scientific observations.
-  \item $S$ can represent our \emph{conjectures}
-  \item The witness $p$ represents a \emph{proof}. Discovering proofs \emph{theorem proving}
-  \item $\vdash$, the provability relation, can represent \emph{proof search}.
-  \item $:$ is a typing judgement, denoting that the term on its left-hand-side is an element of the type on its right-hand-side, or equivalently (via \emph{propositions as types}) that the proof object on its left is a witness of the proposition on its right. In our picture, this represents the process of \emph{proof checking} (or, equivalently, of type checking).
 
-The context for our investigation can be Constructing  Informally, we Roughly speaking,  this work, we focus on the conjecture-generation aspect of theory exploration. We define a theory exploration system as
+\item The large amount of Haskell code which is freely available online, e.g. in repositories like \href{http://hackage.haskell.org}{Hackage}, with which we can experiment.
+
+\item The existence of conjecture generation and theory exploration systems for Haskell, such as \textsc{QuickSpec} and \textsc{HipSpec}, and counterexample finders like \textsc{QuickCheck}, \textsc{SmallCheck} and \textsc{SmartCheck}.
+
+\item The remarkable amount of infrastructure which exists for working with Haskell code, including package managers, compilers, interpreters, parsers, static analysers, etc.
+
 \end{itemize}
-
-\fi
-
-% TODO: Maybe focus on one language, system, set of algorithms, etc.? That way, we can make things concrete, rather than ``what about edge-case XYZ?''. HipSpec calls out to
-
-% TODO: Background section
-
-% TODO: Reword this, theory exploration is our main point. It is a research direction/area, etc. Don't define it negatively (``without goals''), define it positively. Maybe stop trying to encompass everyone's different demarcations, and have a ``for our purposes, ....''
-
-To set the scene for the formal definitions which follow, we first give an overview of our key terms and concepts, which are also depicted in figure \ref{proofprocess}. Most work in mechanised, formal mathematics focuses on a \emph{theorem proving} paradigm, usually either \emph{interactive theorem proving} (ITP) or \emph{automated theorem proving} (ATP). Whilst the boundaries between these approaches can be somewhat blurred, we give precise definitions in \S \ref{itp} and \S \ref{atp}, respectively, and characteris both as being \emph{goal-driven}: particular conjectures must be provided as input to the process, and the output is either a proof, a refutation or ``don't know'' (in the case of incomplete procedures). In this work, we push the focus back to the prior steps of \emph{concept formation} (\S \ref{conceptformation}) and \emph{conjecture generation} (\S \ref{conjecturegeneration}), which are characterised as being \emph{open-ended} and \emph{creative}, in that solutions must be judged (as interesting or not) rather than merely constructed.
 
 \subsection{Interactive Theorem Proving}
 \label{itp}
 
-The ITP process relies on a \emph{proof checker} $C$, which is a decision procedure for determining if a given proof object $P$ witnesses a given statement $S$:
+ITP is based around a \emph{proof checker} $C$, which is a decision procedure for determining if a given value $P$ (known as a \emph{proof object} or \emph{witness}) consititutes a proof of a given statement $S$:
 
-$$ C : (P \times S) \rightarrow Boolean $$
+$$ C \colon (P \times S) \rightarrow Boolean $$
 
-The ITP process then consists of finding an appropriate $P$ for the given \emph{goal} $S$, which is accepted by $C$:
+The process of ITP can hence be understood as the search for an appropriate $P$ for our \emph{goal} $S$:
 
-$$ ITP : (S \times C) \rightarrow \{ P | C(P, S) = True \} $$
+$$ ITP \colon (S \times C) \rightarrow \{ P \mid C(P, S) = True \} $$
 
-Automating a proof checker is relatively simple \cite{boyer1994qed}, although care must be taken during implementation since bugs may cause inconsistencies to arise in the resulting logic \iffalse (for example, TODO: Reference some example, eg. proof of false in Coq). \fi A popular approach to mitigating this risk, as well as making meta-level analysis of the system more tractable, is known as the \emph{de Bruijn criterion}, which means the system \textquote{generates 'proof-objects' (of some form) that can be checked by an 'easy' algorithm} \cite[\S~2]{barendregt2001proof}  \iffalse TODO Maybe Chapter 18. Proof-Assistants Using Dependent Type Systems (Henk Barendregt, Herman Geuvers). instead?. \fi This is the approach taken by, for example, the Isabelle and Coq systems \cite{nipkow2002isabelle} \cite{bertot2013interactive}.
+It just so happens that a useful way to implement such a system is via pure functional programming, with the result that many ITP systems (AKA \emph{proof assistants}) such as Coq and Agda appear very similar to languages like Haskell. In particular, we can represent statements $S$ as types and proofs $P$ as values, in which case the proof checker $C$ is simply a type-checker. There are some obvious quirks, such as the need to be \emph{total} (not Turing-complete) in order to ensure soundness, but overall many of the features we introduced for Haskell, such as parametricity, type classes and ADTs are directly translatable to the ITP setting.
 
+This coincidence is due to the \emph{Curry-Howard correspondence} \cite{wadler2015propositions}, which identifies programming languages with systems of logic. Functional programming languages correspond to intuitionistic logics, and are hence a natural fit for reasoning on computers. With additional axioms, we can extend these to more familiar classical logics, although these can make it harder to compute.
 
-% TODO: How closely does Isabelle match the type-theoretic approach of Coq, Agda, etc.? Can we make this less ``fluffy''?
-%      Maybe ``for our purposes'' focus on type-based ITP, untyped ATP, etc.?
+Most differences between functional programming and ITP stem from different \emph{expectations} of the user. In the case of Haskell, the desire for expressivity outweighs the desire for soundness, and hence its designers opted to make it Turing-complete. For an ITP language like Agda, soundness far outweighs the inconvenience of having to prove termination, so the opposite tradeoff is made. Similarly, since many ITP ``programs'' (proofs) will never be executed, the language can avoid optimisation in favour of simplicity (and hopefully correctness). This approach is summed up by the \emph{de Bruijn criterion}, which requires that the system \textquote{generates 'proof-objects' (of some form) that can be checked by an 'easy' algorithm} \cite[\S~2]{barendregt2001proof} \cite{barendregt2001proof}. One nice consequence of this approach, which is followed for example by Isabelle \cite{nipkow2002isabelle} and Coq \cite{bertot2013interactive}, is that the proof assistants themselves can become arbitrarily complex and even buggy, yet as long as the proof checker remains simple we can maintain a high degree of our confidence in the results.
 
-Of course, \emph{producing} such proofs is much more difficult than checking them; as the name suggests, ITP leaves this task up to the user. To facilitate easier proving, many ITP systems such as Coq and Agda use a pure functional programming language as their proof format. This is theoretically elegant due to the \emph{Curry-Howard correspondence} \cite{wadler2015propositions}, and there are also practical benefits to turning theorem proving into programming. Firstly, many techniques developed in software engineering such as meta-programming (usually in the form of \emph{tactics}), encapsulation and modularity can be directly applied to the proving process. Secondly, the process of \emph{software verification}, a common task for formal proof, can be achieved in a very straightforward way: the software can be implemented inside the proof language, certified correct by the proof checker, then \emph{extracted} into an executable form.
-
-Despite these conveniences, ITP still requires enormous effort for non-trivial proof or verification tasks (e.g. see \cite{hales2015formal}). One common way to mitigate this problem is by implementing powerful tactics to automate as much of a proof as possible \iffalse Adam Chlipala \fi. The most striking example of this approach is the \emph{Sledgehammer} system in Isabelle/HOL \cite{journals/iandc/MengQP06}, which invokes a multitude of ATP systems on (a translated form of) the current goal to see if any can provide a proof which Isabelle's core checker will accept.
+Their emphasis on \emph{interactivity}, mostly caused by operating in undecidable domains, means ITP can require an enormous effort for non-trivial proof or verification tasks (e.g. see \cite{hales2015formal}). One common way to mitigate this problem is by implementing powerful \emph{tactics}: meta-programs which automate as much of a proof as possible. The most striking example of such meta-programming is the \emph{Sledgehammer} component of Isabelle/HOL \cite{journals/iandc/MengQP06}, which invokes a multitude of ATP systems on (a translated form of) the current goal to see if any can provide a proof which Isabelle's core checker will accept.
 
 \subsection{Automated Theorem Proving}
-\label{itp}
+\label{atp}
 
-TODO: Traditionally, ATP describes.... We care about the algorithms (not UIs, languages, etc.)... We use ATP to refer to...
-ATP is the autonomous search for proofs in some logic. Every ATP system is built around a complete, partial or semi-decision procedure such as \emph{resolution} \cite[\S~9.6]{Russell:2003:AIM:773294}, usually augmented by heuristics and often adjustable using parameters. Most standalone TODO: EXPLAIN ATP systems use a sub-set of first-order logic \cite[\S~10]{Russell:2003:AIM:773294} to ensure (semi-)decidability, since many tasks in higher-order logics are undecidable (e.g. \cite{huet1973undecidability}).
+ATP systems are similar in principle to proof assistants, but are based around a \emph{proof search} algorithm rather than a proof checker. By using a fixed algorithm for proving, such as \emph{resolution} \cite[\S~9.6]{Russell:2003:AIM:773294} or \emph{superposition} \cite{bachmair1994rewrite}, ATP programs are limited to particular decidable or semi-decidable fragments of logic. In particular, most ATP systems (such as E \cite{schulz2013system} and Vampire \cite{riazanov2003implementing}) operate in classical first-order logic. This is the most striking difference from ITP systems (e.g. Coq, Agda and Isabelle) which operate in higher-order logics.
 
-TODO: ATP isn't *contained in* AI; it overlaps with (eg. some ATP people may not like being called AI researchers)
-ATP is a classic field of research in artificial intelligence, dating back to the founding of the field at the 1956 Dartmouth conference. Even by that time Newell and Simon has developed their Logic Theory Machine \cite{newell1956logic}, which was subsequently able to prove theorems like those in Principia Mathematica \cite{newell1958elements}.
+In addition to its interest to logicians, ATP has been actively researched in the field of artificial intelligence, dating back to the founding of the field at the 1956 Dartmouth conference. Even by that time Newell and Simon has developed their Logic Theory Machine \cite{newell1956logic}, which was subsequently able to prove theorems like those in Principia Mathematica \cite{newell1958elements}. The approaches now known as \emph{good old-fashioned AI} (GOFAI) were due in part to the success of automated theorem proving, as attempts were made to formulate many problems in a form amenable to first-order reasoning.
 
-In a similar way to ITP, the central problem of ATP is simple to state but unfeasible to execute: search through the space of provable statements until the given conjecture is found; the path from conjecture to the initial axioms consitutes the proof. However, this search space grows exponentially in the length of the proofs, which is unfortunate since proof length has been proposed as an approximate measure of how interesting a theorem is \cite[\S~10.2.1]{colton2012automated}.
+Recently there has been a trend away from this direction, towards statistical formulations amenable to machine learning, which we will review in \S \ref{related}.
 
 \subsection{Theory Exploration}
+\label{theoryexploration}
 
-Our main subject of investigation is the use of computers for augmenting and automating the process of \emph{theory exploration} (TE). This is the discovery of ``interesting'' patterns, relationships and structure in a formal system. TODO: ``discovery'' in which sense? ``patterns'': is ML4PG a system?
+The most striking difference between theory exploration (TE) and theorem proving is the former's lack of an explicit goal (e.g. a user-provided conjecture to prove). Instead, the \emph{implicit} goal is more open-ended: the discovery of ``interesting'' conclusions from the given premises. Of course, a key question to ask is what do we mean by ``interesting''? There is no single answer, although many approximate measures have been proposed. The choice of what counts as ``interesting'' has been used to classify various TE implementations \cite{warburtonscaling}, along with their approaches to term generation, well-formedness and proof.
 
-TODO: Definition of TE, rather than description. Maybe ``for our purposes''. Maybe just focus on the conjecture generation, rather than including theorem proving under the same umbrella.
+Following \cite{warburtonscaling}, we call a pair $(\Sigma, V)$, of a signature and a set of variables, a \emph{theory}. \emph{Theory exploration} then refers to any process $(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)$ for producing terms of the theory which are well-formed, provable and ``interesting''.
 
-Buchberger identifies TE as \textquote{building up (large) mathematical knowledge bases in an efficient, reliable, well-structured, re-usable, and flexible way} \cite{buchberger2004algorithm}, and considers it \textquote{the natural paradigm for using automated or computer-supported proving systems} \cite{buchberger2000theory}. In this sense, the TE paradigm encompasses both the ITP and ATP approaches described above, but \emph{also} includes the necessary prior step of \emph{generating} (interactively or automatically) the conjectures to be proved (interactively or automatically).
+The conditions of well-formedness and provability can be handled through the use of type systems and automated theorem provers. Hence the method of conjecture generation, and the determination of what is interesting, are the most important properties of any TE system.
 
-TODO: If we define TE and ATP/ITP more concretely, this is more of a comment; the difference is obvious
-The most striking difference between TE and theorem proving is the former's lack of an explicit goal (e.g. a user-provided conjecture to prove). Instead, the \emph{implicit} goal is more open-ended: the discovery of ``interesting'' conclusions from the given premises. Of course, a key question to ask is what do we mean by ``interesting''? There is no single answer, although many approximate measures have been proposed. The choice of what counts as ``interesting'' has been used to classify various TE implementations \cite{warburtonscaling}, along with their approaches to term generation, well-formedness and proof.
+Early implementations like \textsc{Theorema} \cite{buchberger2000theory} provided interactive environments, similar to computer algebra systems and interactive theorem provers, to assist the user in finding theorems. Like in the ITP approach, the relatively simple process of verification is automated, whilst the more difficult tasks (term generation and the determination of their interest) are left up to the user.
 
-In the case of Buchberger's \texttt{Theorema}, the first self-confessed TE system, only the questions of well-formedness and proof were tackled; specifically by the use of types and ATP algorithms, respectively. Similar to the approach of ITP, the more difficult tasks (term generation and the determination of their interest) is left up to the user.
+Subsequent systems have investigated \emph{automated} theory exploration, for tasks such as lemma discovery \cite{Hipster}. By removing user interaction, these properties must be implemented by algorithms. In existing systems these are tightly coupled to improve efficiency, which makes it difficult to try different approaches independently.
 
-TODO: expansion, eg. interactive vs automated.
+As an example, \textsc{QuickSpec} \cite{QuickSpec} discovers equations about Haskell code, which are defined as ``interesting'' if they cannot be simplified using previously discovered equations. The intuition for such criteria is to avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$, etc. when we already know $0 + x = x$. Whilst this interestingness judgement is elegantly implemented with a congruence closure relation (version 1) and a term rewriting system
+(version 2), the conjecture generation is performed in a brute-force way.
 
-  task of theory exploration, and its existing software implementations, by Buchberger as complementary to  takes place after concrete definitions have been established (eg. by the process of \emph{theory formation})  identified by . Theory exploration is similar to \emph{experimental mathematics} process of identifying \emph{interesting} consequences of a given theory.
+Although \textsc{QuickSpec} only \emph{tests} its equations rather than proving them, it is still used as the exploration component of more rigorous systems like \textsc{HipSpec} and \textsc{Hipster}.
 
- - Relation to Science
-  - Testable/falsifiable hypotheses are like evaluable terms (or, more generally, conjectures which can be decided, using a reasonable amount of resources).
- - Relation to AI tasks: exploring surroundings, etc.
+\textsc{HipSpec} is currently the most powerful TE system for Haskell, and also forms a major component of \textsc{Hipster}. It uses off-the-shelf ATP to verify the conjectures of \textsc{QuickSpec}. \textsc{QuickSpec}, in turn, enumerates all type-correct combinations of the terms in the theory up to some depth, groups them into equivalence classes using the \textsc{QuickCheck} counterexample finder, then conjectures equations relating the members of these classes. This approach works well as a lemma generation system, making \textsc{HipSpec} a capable inductive theorem prover as well as a theory exploration system \cite{claessen2013automating}, useful alongside automated test suites.
 
-Theory exploration must take place after \emph{theory formation}
+In fact, there are similarities between the way a TE system like \textsc{HipSpec} can generalise from proving \emph{particular} theorems to \emph{inventing} theorems to prove, and the way counterexample finders like \textsc{QuickCheck} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. There are likely lessons that each can learn from the other's approach to term generation.
 
-Major fields include computer algebra and theorem proving.
+% Theory exploration is similar to \emph{experimental mathematics}
 
-- Statistics is another area that's less straightforward than normal numerical computing, since there is subjectivity and judgement involved in the answering of questions.
+% - Relation to Science
+%  - Testable/falsifiable hypotheses are like evaluable terms (or, more generally, conjectures which can be decided, using a reasonable amount of resources).
+% - Relation to AI tasks: exploring surroundings, etc.
 
-Computer algebra systems, such as Mathematica, are
-There arithmetic, has a Initially used for ``computation'', ie. evaluation of expressions,
-especially in arithmetic numerical The application to evaluation
+% - Statistics is another area that's less straightforward than normal numerical computing, since there is subjectivity and judgement involved in the answering of questions.
 
-Theory formation: Alison? Others.
-Theory exploration: Buchberger, Moa in Isabelle, Koen in Haskell. Others?
-Theorem proving: Well-trodden: first-order ATP, higher-order ITP, functional programming
-Communication: Latex, Wikis, APIs, communicating with aliens
+% Theory formation: Alison? Others.
+% Theory exploration: Buchberger, Moa in Isabelle, Koen in Haskell. Others?
+% Theorem proving: Well-trodden: first-order ATP, higher-order ITP, functional programming
+% Communication: Latex, Wikis, APIs, communicating with aliens
 
-TODO: Motivating theme/narrative. For example, interestingess measures for theory exploration
-
-\section{Examples of Interesting Objects}
+\section{Exploration in Theorem Proving}
 \label{examples}
 
-Before exploring abstract definitions of interestingness, we can first consider some examples of theorems, lemmas and properties which occur in existing developments, to see what real users considered interesting enough to formalise. This will give an empirical basis for our intuitions, which we can compare with the definitions to follow.
+Before exploring abstract definitions of interestingness, we can first consider some scenarios which arise during formal proof where we are forced to generate conjectures. An analysis of these situations, and the subsequent theorems they produce, will contribute towards an empirical justification for what is interesting (at least from a utilitarian point of view) and inform out later exploration of the literature.
 
-\subsection{Generalisations}
+\subsection{Generalisation}
 
-When we \emph{generalise} a statement $S$, we obtain a new statement $S'$ of which $S$ is a special case. Proofs by induction often require generalisation, since the specific obligations which arise during the proof may be unsuitable for the inductive hypotheses which are available. However, we cannot blindly generalise all obligations we encounter, since \emph{over-generalising} results in obligations which are too strong to prove at all. We must therefore rely on heuristics to choose when and how to generalise, which can in part consider how interesting the generalisations are.
+When we \emph{generalise} a statement $S$, we obtain a new statement $S'$ of which $S$ is a special case. Proofs by induction often require generalisation, since the specific obligations which arise during the proof may be unsuitable for the inductive hypotheses which are available. However, we cannot blindly generalise all obligations we encounter, since \emph{over-generalising} results in obligations which are too strong to prove at all. We must therefore rely on heuristics to guide the generation of generalised conjectures, which we can view as a simple form of interestingness.
 
-As an example, we can take Boyer and Moore's proof of the associativity of multiplication in ACL2 \cite{boyer1983proof}:
+A classic example of generalisation occurs when we try to reason about \emph{tail-recursive} definitions \cite{kapur2003automatic}. Consider the following addition functions, defined for the Peano naturals \hs{Z :: Nat} and \hs{S :: Nat -> Nat}:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+plus :: Nat -> Nat -> Nat
+plus n  Z    = n
+plus n (S m) = S (plus n m)
+
+plus_tail :: Nat -> Nat -> Nat
+plus_tail n  Z    = n
+plus_tail n (S m) = plus_tail (S n) m
+\end{lstlisting}
+
+Both of these functions implement addition, but the \hs{plus_tail} variant is tail recursive: it does not modify the return value obtained through recursion (in the second clause), and hence we can \emph{replace} the caller's stack frame with the callee's, giving constant space usage. rather than pushing a new frame on top. Compare this to the use of recursion in \hs{plus}, where the value gets passed to the \hs{S} constructor; this manipulation requires the original stack frame to be available after the recursive call returns, and hence we must push a new frame for each iteration. ch recursive call, so that we can pop back to and hence we require the stack frame. In practical terms, the recursive call in \hs{plus_tail} can be implemented in constant space, since the we can discard the stack frames
+\fi
+
+As a concrete example, we can take Boyer and Moore's proof of the associativity of multiplication in ACL2 \cite{boyer1983proof}:
 
 $$(x * y) * z = x * (y * z)$$
 
@@ -201,11 +228,13 @@ ACL2 automatically generalises \eqref{eq:conc3} by replacing the repeated sub-te
   \label{eq:conc4}
 \end{equation}
 
-This generalised form is clearly the distributivity law for multiplication and addition, which can be proved separately to the original goal of associativity.
+This generalised form is clearly the distributivity law for multiplication and addition, which can be proved separately to the original goal of associativity. It would not be controversial to claim that this distributivity law is interesting in its own right (relative to associativity, at least), in addition to its usefulness in making this proof go through.
 
-\subsection{Auxilliary Lemmas}
+The ACL2 heuristics which lead to this result are described as
 
-Many of the above generalisations, such as  do not rely on context
+\subsection{Intention}
+
+One consideration when generating conjectures is the difference (if any) between theorems, lemmas, corollaries, etc. From a logical point of view, these are all equivalent; it Most proof assistants do not distinguish between these, although some (like Coq) may allow users to annotate their statements with label.
 
 \subsection{QuickCheck Properties}
 
@@ -284,6 +313,21 @@ Naive Bayes
 \subsubsection{Interestingness in Concept Formation}
 \label{conceptformation}
 
+TODO: \cite{Montano-Rivas.McCasland.Dixon.ea:2012}
+TODO: \cite{Piantadosi.Tenenbaum.Goodman:2012}
+TODO: \cite{Wille:2005}
+TODO: \cite{colton1999automatic}
+TODO: \cite{colton2000agent}
+TODO: \cite{colton2012automated}
+TODO: \cite{lenat1977automated}
+TODO: \cite{mullerunderstanding}
+TODO: \cite{zzzzz57269a963d945d8964c69b117f24e24c}
+TODO: \cite{Bundy.Cavallo.Dixon.ea:2015}
+TODO: \cite{johansson2009isacosy}
+TODO: \cite{spector2008genetic}
+
+However, this search space grows exponentially in the length of the proofs, which is unfortunate since proof length has been proposed as an approximate measure of how interesting a theorem is \cite[\S~10.2.1]{colton2012automated}.
+
 % Alan Bundy et al
 
 % Eurisko, AM, etc.?
@@ -292,7 +336,26 @@ Naive Bayes
 
 \subsubsection{Probability of Sentences}
 
-\subsubsection{Learning on Structured Data}
+The most important property of a logical formula is its truth value. Although we may be able to determine some truth values exactly, eg. using decision or semi-decision procedures, it may be more efficient to \emph{approximate} truth values. One straightforward extension of truth values is \emph{probabilities}, where we can assign probability $1$ to formulae which are known to be true, $0$ to formulae known to be false, and intermediate values to those which we do not yet know. This provides a   may be able to determine this truth value, it may not always be even an interesting formula
+TODO: \cite{Hutter.Lloyd.Ng.ea:2013}
+
+\subsubsection{Learning From Structured Data}
+
+One major difficulty with formal mathematics as a domain in which to apply statistical machine learning is the use of \emph{structure} to encode information in objects. In particular, \emph{trees} appear in many places: from inductive datatypes, to recursive function definitions; from theorem statements, to proof objects. Such nested structures may extend to arbitrary depth, which makes them difficult to represent with a fixed number of features, as is expected by most machine learning algorithms. Here we review a selection of solutions to this problem, and compare their distinguishing properties.
+
+The application of \emph{kernel methods} to structured information is discussed in \cite{Gartner2003}, where the input data (including sequences, trees and graphs) are represented using \emph{generative models}, such as hidden Markov models, and it is these models which are
+operate alloe If we for example, a statement like may from the nested form of logical  example, logical terms may be nested to arbitrary depths a large amount of information is represented   to a domain like formal mathematics is the question of how to deal with structure.
+
+
+TODO: \cite{Gartner2003}
+TODO: \cite{Oveisi.Oveisi.Erfanian.ea:2012}
+TODO: \cite{bakir2007predicting}
+TODO: \cite{conf/ijcai/Plate91}
+TODO: \cite{goller1996learning}
+TODO: \cite{kwasny1995tail}
+TODO: \cite{pollack1990recursive}
+TODO: \cite{zanzotto2012distributed}
+TODO: \cite{zzzzzba6c2484534f9d1105400e6d693a1d3b}
 
 Machine learning over structured data:
 1D is common: parsing natural language
@@ -355,7 +418,6 @@ Future experiments will test this by comparing the throughput of
 \label{future}
 
 \iffalse
-
 QuickSpec: extend or extinguish?
 
 Improve and find other use cases/scenarios for clustering and feature extraction
@@ -367,90 +429,6 @@ How about systems based on term rewriting, logic programming, etc.?
 
 \section{Conclusion}
 \label{conclusion}
-
-\iffalse
-
-\begin{abstract}
-We investigate the \textbf{theory exploration} (TE)
-paradigm for computer-assisted Mathematics and identify limitations and
-improvements for current approaches. Unlike the theorem-proving paradigm,
-which requires user-provided conjectures, TE performs an open-ended
-search for theorems satisfying given criteria. We see promise in TE for
-identifying new abstractions and connections in libraries of software
-and proofs, but realising this potential requires more scalable
-algorithms than presently used.
-\end{abstract}
-
-Given a signature $\Sigma$ and a set of variables $V$, we call the pair
-$(\Sigma, V)$ a \emph{theory} and use \emph{theory exploration} (TE) to refer
-to any process $(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)$
-for producing terms of the theory which are well-formed, provable and satisfy
-some criterion referred to as ``interesting''. These conditions give rise to the
-following questions, which we use to characterise TE systems:
-\begin{description}
-\item [Q1] \label{Q1} How do we generate terms?
-\item [Q2] \label{Q2} How do we guarantee well-formedness?
-\item [Q3] \label{Q3} How do we prove terms?
-\item [Q4] \label{Q4} What is considered ``interesting''?
-\end{description}
-
-Early implementations like \textsc{Theorema} \cite{buchberger2000theory}
-provided interactive environments, similar to computer algebra systems and
-interactive theorem provers, to assist the user in finding theorems. In this
-setting, terms are formed by the user in whichever way they find interesting,
-whilst the software provides support for \textbf{Q2} and \textbf{Q3}.
-
-Subsequent systems have investigated \emph{automated} theory exploration, for
-tasks such as lemma discovery \cite{Hipster}. By removing user interaction,
-\textbf{Q1} and \textbf{Q4} must be solved by algorithms. In existing
-systems these are tightly coupled to improve efficiency, which makes it
-difficult to try different approaches independently.
-
-As an example, \textsc{QuickSpec} \cite{QuickSpec} discovers equations about
-Haskell code, which are defined as ``interesting'' if they cannot be simplified
-using previously discovered equations. The intuition for such criteria is to
-avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$, etc.
-when we already know $0 + x = x$. Whilst \textbf{Q4} is elegantly implemented
-with a congruence closure relation (version 1) and a term rewriting system
-(version 2), the term generation for \textbf{Q1} is performed by brute-force.
-
-Although \textsc{QuickSpec} only \emph{tests} its equations rather than
-proving them, it is still used as the exploration component of more rigorous
-systems like \textsc{HipSpec} and \textsc{Hipster}.
-
-In the following, we give an overview of the state of the art in automated
-theory exploration, then present potential improvements and our initial attempts
-at implementation.
-
-\section{Theory Exploration in Haskell}\label{haskell}
-
-Automated theory exploration has been applied to libraries in Isabelle
-and Haskell, although we focus on the latter as its implementations are
-the most mature (demonstrated by the fact that \textsc{Hipster} explores
-Isabelle by first translating it to Haskell). Haskell is interesting to target,
-since its use of pure functions and algebraic datatypes causes many programs to
-follow algebraic laws. However, since Haskell's type system cannot easily
-encode such laws, less effort is given to finding and stating them; compared to
-full theorem provers like Isabelle. Hence we imagine even a shallow exploration
-of code repositories such as \textsc{Hackage} could find many interesting
-theorems.
-
-Currently, the most powerful TE system for Haskell is \textsc{HipSpec}, which
-uses off-the-shelf automated theorem provers (ATPs) to verify the conjectures of
-\textsc{QuickSpec}. \textsc{QuickSpec}, in turn, enumerates all type-correct combinations
-of the terms in the theory up to some depth, groups them into equivalence
-classes using the \textsc{QuickCheck} counterexample finder, then conjectures
-equations relating the members of these classes. This approach works well as a
-lemma generation system, making \textsc{HipSpec} a capable inductive theorem
-prover as well as a theory exploration system \cite{claessen2013automating}.
-
-\section*{Acknowledgements}
-
-Thank you to the \textsc{HipSpec} team at Chalmers University (Moa Johansson,
-Koen Claessen, Nick Smallbone, Dan Ros{\'e}n and Irene Lobo Valbuena) for useful
-discussions of these ideas.
-
-\fi
 
 \bibliographystyle{plain}
 \bibliography{../Bibtex}
