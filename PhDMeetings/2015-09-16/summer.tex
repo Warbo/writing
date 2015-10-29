@@ -1,0 +1,175 @@
+\documentclass{article}
+
+\begin{filecontents*}{\jobname.64}
+     /-------\
+     |Hackage|
+     \-------/
+         |
+         V
+   +----------+
+   |AST Plugin|
+   +----------+
+         |    /----\
+         |    |    |
+         V    V    |
+   +------------+  |
+   |AST database|  | annotate
+   +------------+  |
+         |    |    |
+         V    \----/
+   +------------+
+   |Monomorphise|
+   +------------+
+         |
+         V
+ +-----------------+
+ |Theory definition|
+ +-----------------+
+         |
+         V
++------------------+
+|Theory exploration|
++------------------+
+\end{filecontents*}
+
+\usepackage{graphicx}
+\begin{document}
+\title{Summer 2015 Report}
+
+\section{Theory Exploration System}\label{theory-exploration-system}
+
+A lot of my time over summer was spent on building/improving/fixing the wrapper
+around QuickSpec which I've dubbed \texttt{ML4HS}. Whilst theoretically
+straightforward, peculiarities of Haskell and its infrastructure (GHC,
+Cabal, etc.) has lead to several difficulties when trying to build
+QuickSpec signatures. The common theme is that it would be useful to
+have a function like
+\texttt{eval :: [PackageName] -> [ModuleName] -> Expr -> IO (Maybe Expr)}
+to (attempt to) evaluate Haskell code in the context of other packages
+and modules. This way, we could simply ignore values which lead to
+errors.
+
+Until someone implements such a thing, our QuickSpec integration
+is instead rather fragile: we must identify and remove any potentially
+troublesome values long before they reach QuickSpec, since most of the
+errors we encounter are unrecoverable:
+
+\begin{itemize}
+\item
+  Syntax errors. These can occur when extracting functions from Core,
+  since implicit values like type parameters and typeclass dictionaries
+  are reified to values with invalid Haskell names (eg.
+  \texttt{\$c\textless{}} for an implementation of
+  \texttt{<})
+\item
+  Type errors. These can occur when we try to add functions to a
+  signature which do not implement the required typeclasses
+  (\texttt{Ord} and \texttt{Typeable}).
+\item
+  Scope errors. These can occur if we try to use values which are not
+  exported.
+\item
+  GHC panics. These can occur due to mishandling of GHC's API.
+\item
+  All of the above, at the Template Haskell level (which we use for
+  monomorphising)
+\end{itemize}
+
+An extensive test suite for every compoenent has helped pin-down and eliminate
+most of the sources of errors. The one known bug is that we cannot look up the
+names of some packages during compilation: we have their \emph{package key}, but
+this is a hash referring to a particular compiled copy on disk; we would rather
+have the Hackage name, so we can identify dependencies across packages and
+across compilations. The function we currently use to look up names causes a GHC
+panic for some packages, although this hasn't been investigated yet.
+
+Conceptually, the project is quite straightforward:
+
+\immediate\write18{ditaa \jobname.64 \jobname-tmp.png}
+\fbox{\includegraphics[width=6cm]{\jobname-tmp.png}}
+
+We use a custom GHC plugin to render Core ASTs for top-level values as they are
+encountered. These ASTs are labelled with the value's name, its module name and
+its package name. This triple acts as a unique ID within the system. Inside the
+AST, any references to variables, data constructors or type constructors are
+rendered as s-expressions denoting the ID being referenced.
+
+These labelled ASTs are then fed through a series of \emph{annotation} scripts.
+Each one appends extra labels to the ASTs, including:
+
+\begin{itemize}
+  \item
+    The value's type
+  \item
+    The value's arity (between 0 and 5)
+  \item
+    The value's \emph{dependencies}, ie. the set of IDs it references.
+  \item
+    The value's \emph{feature vector}, as determined by one of several implementations.
+  \item
+    The value's \emph{cluster}, as determined by Weka based on the feature vectors
+\end{itemize}
+
+The dependency annotation was implemented by Ouanis, who has also made a simple
+script for topologically sorting the ASTs based on their dependencies.
+
+Currently, the \texttt{ML4HSFE} feature extraction script performs a similar
+AST-to-matrix transformation as ML4PG, replacing IDs by their cluster as given
+by the AST database. If an ID is not found, a default value (eg. ``0'') is used.
+
+To implement recurrent feature extraction, we simply need to perform Ouanis's
+sort operation on the database before performing feature extraction, and add extra
+calls to the clusterer after each simply-connected-component (ie. mutually-recursive set of functions) has been processed.
+
+\subsection{Going Forward}
+
+The \texttt{ML4HSFE} feature extractor is meant to emulate that of ML4PG (representing the AST nodes in a matrix). We can also use a feature extractor similar to the ACL2 approach (classifying AST nodes based on arities, etc. and using that as the matrix), or similar to Sledgehammer and the ATP work of Josef Urban (counting occurrences of each symbol; I already have a prototype of this).
+
+Moa is also interested in using the output of these tools, so I think it makes sense to release these, eg. to Hackage, sooner rather than later (they are already available from \texttt{chriswarbo.net/git} but may be difficult to install, as Ouanis found).
+
+\section{Reading}\label{reading}
+
+Over the summer I've read many papers, mostly in machine learning, to
+better understand the landscape of approaches, their relationships,
+history and the current state of the art.
+
+I've also started following Andrew Ng's machine learning lectures from
+Stanford.
+
+I've particularly focused on k-means and associated algorithms,
+specifically to understand the following:
+
+\begin{itemize}
+\item
+  How repeatable are its results? \cite{bottou1994convergence}
+\item
+  How to choose parameters, eg. the number of clusters
+  \cite{pelleg2000x} and their initial locations \cite{arthur2007k}?
+\item
+  How to ensure scalability/tractability? \cite{bahmani2012scalable}
+\end{itemize}
+
+I've also kept a few questions in mind regarding recurrent clustering
+(RC):
+
+\begin{itemize}
+\item
+  Can we guarantee convergence of RC?
+\item
+  How repeatable/replicable is RC (eg. do results vary widely based on
+  initial conditions)?
+\item
+  How does RC compare with in-lining of definitions?
+\end{itemize}
+
+As well as AI/ML methods, I've also looked into their application to
+Mathematics. From early theorem provers like the Geometry Theorem Prover (which uses counterexamples to eliminate obvious non-theorems before trying to prove them), to exploratory
+applications in universal algebra \cite{spector2008genetic}. Other
+reading has been ad-hoc, along the lines of either following citation
+chains or proceedings (eg. I've been working my way through the
+Journal of Machine Learning Research).
+
+\bibliographystyle{plain}
+\bibliography{Bibtex}
+
+\end{document}

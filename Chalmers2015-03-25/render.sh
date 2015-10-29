@@ -1,3 +1,4 @@
-#!/bin/sh
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p pandoc panpipe panhandle
 
-nix-shell --pure --command "md2pdf beamer"
+pandoc -t beamer -o slides.pdf slides.md

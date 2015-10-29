@@ -346,46 +346,88 @@ Once we augment fitness functions, to a greater or lesser degree, an obvious que
 \subsubsection{Artificial Curiosity}
 \label{curiosity}
 
-\emph{Artificial curiosity} (AC) is the drive to seek out input or data which is in some sense ``interesting'' \cite{schmidhuber2006developmental}. As an unsupervised learning task, AC has no access to labels or meanings associated with its data; the only features it can learn are the structure and relationships between observations and actions. The aim of using an ``interestingness'' measure is to force the AC system away from inputs which are not amenable to learning; either because they are simple enough to be completely characterised already, or because they are so complex as to be unintelligible. This property is succinctly captured by the \emph{Wundt curve} (see figure )
-
 \begin{figure}
-\centering
-\begin{tikzpicture}[scale=0.75]
-    %\node[anchor=south west,inner sep=0] at (0,0) {\includegraphics[width=\textwidth]{/home/chris/DELETEME/screenshot.png}};
-    \draw[black,ultra thick,->] (1,0.8) -- (1,  9)   node[midway, above, sloped] {HEDONIC VALUE};     % y axis
-    \draw[black,ultra thick,->] (1,4)   -- (11, 4);                                                   % x axis
-    \path                       (1,0.8) -- (11, 0.8) node[midway, below]         {AROUSAL POTENTIAL}; % x axis label
+  \centering
+  \begin{tikzpicture}[scale=0.75]
+      % The image, for reference
+      % \node[anchor=south west,inner sep=0] at (0,0) {\includegraphics[width=\textwidth]{wundt.png}};
 
-    \draw[black,ultra thick] (3, 4)
-         to[out=0,   in=240] (5.05, 6)
-         to[out=60,  in=180] (6.5,  8.2)
-         to[out=0,   in=105] (8.1,  6)
-         to[out=-75, in=120] (8.8,  4)
-         to[out=-60, in=150] (11.4, 0.8);
+      % Axes
+      \draw[black,ultra thick,->] (1,0.8) -- (1,  9)   node[midway, above, sloped] {HEDONIC VALUE};     % y axis
+      \draw[black,ultra thick,->] (1,4)   -- (11, 4);                                                   % x axis
+      \path                       (1,0.8) -- (11, 0.8) node[midway, below]         {AROUSAL POTENTIAL}; % x axis label
 
-    % This version is closer, but a little jagged
-    \iffalse
-    \draw[black,ultra thick] (3, 4)
-         to[out=0,   in=240] (5.05, 6)
-         to[out=60,  in=225] (6,    8)
-         to[out=45,  in=180] (6.5,  8.2)
-         to[out=0,   in=135] (7.2,  8)
-         to[out=-45, in=105] (8.1,  6)
-         to[out=-75, in=120] (8.8,  4)
-         to[out=-60, in=150] (11.4, 0.8);
-    \fi
-\end{tikzpicture}
+      % Curve. The numbers come from tracing over wundt.png
+      \draw[black,ultra thick] (3, 4)
+           to[out=0,   in=240] (5.05, 6)
+           to[out=60,  in=180] (6.5,  8.2)
+           to[out=0,   in=105] (8.1,  6)
+           to[out=-75, in=120] (8.8,  4)
+           to[out=-60, in=150] (11.4, 0.8);
 
-\caption{The Wundt curve, reproduced from \cite{berlyne1970novelty}. The author describes ``hedonic value'' and ``arousal potential'' as terms meant to cover \textquote{both reward value\dots and preference or pleasure}, and \textquote{all the stimulus properties that tend to raise arousal, including novelty and complexity}, respectively.}
+      % This version is closer, but a little jagged
+      \iffalse
+      \draw[black,ultra thick] (3, 4)
+           to[out=0,   in=240] (5.05, 6)
+           to[out=60,  in=225] (6,    8)
+           to[out=45,  in=180] (6.5,  8.2)
+           to[out=0,   in=135] (7.2,  8)
+           to[out=-45, in=105] (8.1,  6)
+           to[out=-75, in=120] (8.8,  4)
+           to[out=-60, in=150] (11.4, 0.8);
+      \fi
+  \end{tikzpicture}
 
-\label{wundt}
+  \caption{The Wundt curve, reproduced from \cite{berlyne1970novelty}. The axes ``hedonic value'' and ``arousal potential'' are described as covering \textquote{reward value\dots preference or pleasure}, and \textquote{all the stimulus properties that tend to raise arousal, including novelty and complexity}, respectively.}
+
+  \label{wundt}
 \end{figure}
 
-% TODO: Cite.
+\emph{Artificial curiosity} (AC) describes learning systems which are rewarded based on the interesting of the input or data they discover \cite{schmidhuber2006developmental}, and hence provides a general mechanism for converting goal-driven algorithms into exploration systems. As an unsupervised learning task, AC has no access to labels or meanings associated with this input; the only features it can learn are the structure and relationships inherent in the data. The aim of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in figure \ref{wundt}) \footnote{(In fact, many measures avoid negative values for simplicity, in which case we can just replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \cite{berlyne1970novelty}.
 
-One common approach to striking this balance is to measure some information-theoretic property of the system or data, and reward the learner accordingly. A survey of interestingness measures in artificial curiosity is given in \cite{oudeyer2007intrinsic}. Of particular interest is \emph{compression progress}: given a compressed representation of our previous observations, the ``progress'' is the space saved if we include the current observation. Observations which are incompressible or trivially compressible don't save any space, whilst observations which provide new information relevant to past experience can provide a saving. This can be translated to a theorem proving context very naturally: our observations are theorems and their proofs, new theorems and we select for useful generalisations which allow old special-case lemmas to be discarded.
+We can divide AC approaches into two groups: the first, which we call \emph{explicit}, send inputs which follow a Wundt curve to their learning algorithm; the second, the \emph{implicit} approaches, instead modify the \emph{output} of their learning algorithm, such that the behaviour follows a Wundt curve.
 
-TODO: Coevolution
+A framework encompassing many interestingness measures, referred to as \emph{implicit rewards} in the reinforcement learning context, is given in \cite{oudeyer2007intrinsic}.
+
+One particularly general measure is \emph{compression progress}, investigated in  given a compressed representation of our previous observations, the ``progress'' is the space saved if we include the current observation. Observations which are incompressible or trivially compressible don't save any space, whilst observations which provide new information relevant to past experience can provide a saving. This can be translated to a theorem proving context very naturally: our observations are theorems and their proofs, new theorems and we select for useful generalisations which allow old special-case lemmas to be discarded.
+
+% TODO: Examples
+% TODO: \cite{Schmidhuber1999} Bet
+
+Two sources of intrinsic reward are proposed in \cite{Hester.Stone:2012} for \emph{random forests}. A random forest is a population of decision trees, where each tree is trained on a sub-set of the available examples, each decision is made using a sub-set of the available features, and the predictions of every tree are averaged to obtain that of the forest \cite{randomforests}. The first intrinsic reward is the \emph{disagreement} between predictions; for a forest with $m$ models (trees), predicting features $x_1$ \dots $x_n$ of the state resulting from taking action $a$ in state $s$, we simply add up the Kullback-Leibler divergence $D_{\rm KL}$ of each prediction $P_1$ \dots $P_m$ from every other prediction:
+
+\begin{equation}
+  D(s,a) = \sum_{i = 1}^n \sum_{j = 1}^m \sum_{k = 1}^m D_{KL}(P_j(x_i|s,a) || P_k(x_i|s,a))
+\end{equation}
+
+$D(s,a)$ is an explicit AC reward, as it follows a Wundt curve as the complexity of transitions increases. For parts of the state space which have been fully learned, the models will agree on accurate predictions. For parts which are unlearnable, the models cannot infer any structure, and will converge to reporting the average of past observations; these predictions may not be accurate, but they will be in agreement. Hence it is the states which are amenable to learning which produce the largest disagreement.
+
+The second intrinsic reward is simply a measure of distance from previous observations, which pushes the system towards unseen states regardless of how learnable they are (similar to $R_{max}$. This is too simple to meet our definition of AC, but it does force the models to generalise their predictions to unexplored states, acting to increase disagreement in the forest.
+
+A key advantage of random forests is that their models are \emph{inspectable}: they not only give predictions, but also \emph{reasons} for those predictions (i.e. we can see which paths are taken through each decision tree). % TODO: The accuracy of these random forest models are compared
+
+% TODO: \cite{Kaplan2006}
+% TODO: \cite{Lipson2007}
+% TODO: \cite{Luciw2011}
+% TODO: \cite{Macedo2000}
+% TODO: \cite{Ramik.Sabourin.Madani:2013}
+% TODO: \cite{Roa.Kruijff.Jacobsson:2009}
+% TODO: \cite{Schaul.Sun.Wierstra.ea:2011}
+% TODO: \cite{Schmidhuber1999}
+% TODO: \cite{Schmidhuber:1991}
+% TODO: \cite{Scott1989}
+% TODO: \cite{Steunebrink.Koutnik.Thorisson.ea:2013}
+% TODO: \cite{maher2008achieving}
+% TODO: \cite{meyer1991possibility}
+% TODO: \cite{oudeyer2004intelligent}
+% TODO: \cite{oudeyer2014evolution}
+% TODO: \cite{schmidhuber2006developmental}
+
+\subsubsection{Implicit Artificial Curiosity}
+
+We refer to an AC system as being \emph{implicit} when the \emph{outputs} of multiple learning algorithms are combined, to produce Wundt-like behaviour in the overall system. % TODO: Examples
+
+% TODO: Coevolution
 
 Approaches to artificial curiosity mostly follow two themes: the definition of an explicit ``interestingness'' measure, from which rewards are calculated; or else the use of \emph{co-evolution} to \emph{emergent}.
 

@@ -6,9 +6,7 @@ let atCommit = name: rev: sha256:
                  inherit name rev sha256;
                  url  = "http://chriswarbo.net/git/${name}.git";
                };
-    hsPkgs = atCommit "haskell-te"
-                      "master"
-                      "1lg8p0p30dp6pvbi007hlpxk1bnyxhfazzvgyqrx837da43ymm7f";
+    hsPkgs = te-unstable;
     hs = hsPkgs.callPackage;
 
     # Source code to experiment on
@@ -22,10 +20,7 @@ let atCommit = name: rev: sha256:
                       "1w71h7b1i91fdbxv62m3cbq045n1fdfp54h6bra2ccdj2snibx3y"
                     )) {};
     hs2ast1       = hs (import hs2astSrc) {};
-    ml4hs1 = callPackage /home/chris/Programming/Haskell/ML4HS {
-               treefeatures = treefeatures1;
-               hs2ast = hs2ast1;
-             };
+    ml4hs1 = import /home/chris/Programming/ML4HS;
     ml4hs2        = (import (atCommit
                       "ml4hs"
                       "9e15ed8"
