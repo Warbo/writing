@@ -385,7 +385,7 @@ Once we augment fitness functions, to a greater or lesser degree, an obvious que
 
 \emph{Artificial curiosity} (AC) describes learning systems which are rewarded based on the interesting of the input or data they discover \cite{schmidhuber2006developmental}, and hence provides a general mechanism for converting goal-driven algorithms into exploration systems. As an unsupervised learning task, AC has no access to labels or meanings associated with this input; the only features it can learn are the structure and relationships inherent in the data. The aim of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in figure \ref{wundt}) \footnote{(In fact, many measures avoid negative values for simplicity, in which case we can just replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \cite{berlyne1970novelty}.
 
-We can divide AC approaches into two groups: the first, which we call \emph{explicit}, send inputs which follow a Wundt curve to their learning algorithm; the second, the \emph{implicit} approaches, instead modify the \emph{output} of their learning algorithm, such that the behaviour follows a Wundt curve.
+We can divide AC approaches into two groups: the first, which we call \emph{explicit}, send inputs which follow a Wundt curve to their learning algorithm; the second, the \emph{implicit} approaches, instead modify the \emph{output} of their learning algorithm(s), such that the overall system still follows a Wundt curve as an emergent property.
 
 A framework encompassing many interestingness measures, referred to as \emph{implicit rewards} in the reinforcement learning context, is given in \cite{oudeyer2007intrinsic}.
 
@@ -580,6 +580,6 @@ How about systems based on term rewriting, logic programming, etc.?
 \label{conclusion}
 
 \bibliographystyle{plain}
-\bibliography{/home/chris/Documents/ArchivedPapers/Bibtex}
+\bibliography{../Bibtex}
 
 \end{document}
