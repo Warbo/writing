@@ -11,6 +11,52 @@ Fixpoint plus_tail (n m : Nat) := match n with
                                       | S n' => plus_tail n' (S m)
                                   end.
 
+Fixpoint plus_tail2 (n m a : Nat) := match n with
+| Z => a
+| S n' => plus_tail2 n' m (S a)
+end.
+
+Fixpoint mult      (n m : Nat) := match n with
+                                      | Z    => Z
+                                      | S n' => plus m (mult n' m)
+                                  end.
+
+Fixpoint mult_tail (a n m : Nat) := match n with
+                                         | Z    => a
+                                         | S n' => mult_tail (plus a m) n' m
+                                     end.
+
+(* Solve equalities by beta-normalising both sides *)
+Ltac triv := try (simpl; reflexivity).
+
+Lemma bar : forall n m, plus n m = plus_tail2 n m Z.
+  induction n. simpl.
+
+
+Lemma foo : forall w x y z, plus w (mult_tail x y z) = mult_tail (plus w x) y z.
+  induction w; triv.
+  induction y; triv.
+  induction x. simpl.
+  intro z.
+  rewrite (IHw z y z).
+
+ rewrite IHw.
+  induction y; triv.
+  simpl. intros y z. rewrite IHx.
+  induction y; triv.
+  simpl. rewrite 
+
+Theorem mequiv : forall n m, mult n m = mult_tail Z n m.
+  induction n; triv.
+  simpl. intro m. rewrite IHn.
+  induction m; triv.
+
+ simpl. induction n; triv. simpl.
+  induction m; triv. simpl. rewrite IHm. reflexivity.
+
+plus m (mult_tail Z n m) = mult_tail m n m
+
+
 Theorem pcomm : forall n m, plus n m = plus m n.
 induction n.
 { induction m; simpl.
@@ -24,8 +70,6 @@ induction n.
 }
 Defined.
 
-(* Solve equalities by beta-normalising both sides *)
-Ltac triv := try (simpl; reflexivity).
 
 Lemma gen n m : plus (S n) m = plus n (S m).
   induction n; triv. (* Base case is trivial *)
