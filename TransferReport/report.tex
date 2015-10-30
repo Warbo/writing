@@ -23,7 +23,7 @@
 
 \pagestyle{headings}  % switches on printing of running heads
 
-\title{Machine Learning Methods in Functional Programming and Interactive Theorem Proving}
+\title{Interestingness Measures for Theory Exploration}
 
 \author{Chris Warburton}
 
@@ -204,11 +204,77 @@ When we \emph{generalise} a statement $S$, we obtain a new statement $S'$ of whi
 
 However, we cannot blindly generalise \emph{all} obligations we encounter, since \emph{over-generalising} results in obligations which are so strong that they are unprovable, or even false. We must therefore rely on heuristics to guide the generation of generalised conjectures, and hence perform a kind of exploration.
 
-\subsubsection{Tail-recursion}
+An informative example is given by Boyer and Moore of the associativity of multiplication in ACL2 \cite{boyer1983proof}:
 
-A classic example of generalisation occurs when we try to reason about \emph{tail-recursive} definitions \cite{kapur2003automatic}. Consider the following Coq functions, defined for the Peano naturals \coq{Z} and \coq{S}:
+$$(x * y) * z = x * (y * z)$$
 
-TODO: This is more of an auxiliary lemma than a generalisation
+During the course of the proof, the following obligation arises:
+
+\begin{equation}
+  \tag{conc3}
+  (y + (x * y)) * z = (y * z) + ((x * y) * z)
+  \label{eq:conc3}
+\end{equation}
+
+ACL2 automatically generalises \eqref{eq:conc3} by replacing the repeated sub-term $x * y$ with a fresh variable $w$:
+
+\begin{equation}
+  \tag{conc4}
+  (y + w) * z = (y * z) + (w * z)
+  \label{eq:conc4}
+\end{equation}
+
+This generalised form is clearly the distributivity law for multiplication and addition, which can be proved separately to the original goal of associativity. It would not be controversial to claim that this distributivity law is interesting in its own right (relative to associativity, at least), in addition to its usefulness in making this proof go through.
+
+% TODO: Describe the ACL2 heuristics
+
+Generalisation also occurs frequently when reasoning about \emph{tail-recursive} definitions \cite{kapur2003automatic}. \footnote{A tail-recursive function can be executed in constant space using a loop, whereas recursion in non-tail positions may require a growing number of stack frames or nested closures. See \S \ref{auxiliarylemmas} for example definitions of each type.}
+
+\subsection{Analogy}
+
+One way to characterise the interestingness of a statement is by \emph{analogy} to existing interesting statements. By finding lemmas analogous to those of a different theory, we may be able to re-use tactics and other forms of meta-programming across both.
+
+Existing theory exploration systems have been successfully applied to this problem, however the use of pure exploration misses opportunities to \emph{focus} the search, since we know which lemmas are used in those theories where a technique succeeded. If we can find an analogy to map from such solved problems to our unsolved goal, we can infer the approximate form of the lemmas we require, and target these specifically.
+
+The approach taken by \textsc{ACL2(ml)} is to find lemmas which may be relevant to solving a goal $G$ by making analogies via unsupervised clustering \cite{Heras.Komendantskaya.Johansson.ea:2013}. These clusters are used in two ways:
+
+\begin{itemize}
+
+  \item First, we use the cluster $C_G$ containing $G$ to identify analogous theorems.
+
+  \item For each theorem $T \in C_G \setminus \{G\}$, we consider those symbols $S_T$ which occur in $T$ but not in $G$. Our analogous lemmas are those used to prove $T$, mutated such that symbols $s \in S_T$ are replaced by members of the cluster $C_s$ containing $s$.
+
+\end{itemize}
+
+The running examples for demonstrating \textsc{ACL2(ml)} are equivalence theorems for tail-recursive and non-tail-recursive calculations, as well as the effect of repeating certain list operations:
+
+\begin{itemize}
+
+  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{fact-tail}(n) = \texttt{fact}(n)$ where \texttt{natp} is the predicate that $n$ is a natural number, whilst \texttt{fact-tail} and \texttt{fact} are tail-recursive and non-tail-recursive implementations of factorial, respectively.
+
+  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{power-tail}(n) = \texttt{power}(n)$,  where \texttt{power-tail} and \texttt{power} calculate powers of 2.
+
+  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{fib-tail}(n) = \texttt{fib}(n)$,  where \texttt{fib-tail} and \texttt{fib} calculate fibonacci numbers.
+
+  \item $\forall x, \texttt{nat-listp}(x) \rightarrow \texttt{sort}(\texttt{sort}(x)) = \texttt{sort}(x)$, for list-of-natural-numbers predicate \texttt{nat-listp} and list-sorting function \texttt{sort}.
+
+  \item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{rev}(\texttt{rev}(x)) = x$, where \texttt{true-listp} ensures that $x$ is a valid singly-linked list structure and \texttt{rev} is list reversal.
+
+  \item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{int}(x, x) = x$, where \texttt{int} is the intersection of lists (i.e. a list of elements common to each).
+
+\end{itemize}
+
+\subsection{Auxiliary Lemmas} \label{auxiliarylemmas}
+
+One consideration when generating conjectures is the difference between theorems, lemmas, corollaries, etc. From a logical point of view, these are all equivalent, and hence most proof assistants do not distinguish between them. However, their \emph{intention} may be different: in a sense, theorems are the interesting results; whilst lemmas are useful results, required for proving the theorems.
+
+Some systems, like Coq, allow users to \emph{label} each statement as being a \coq{Theorem}, a \coq{Lemma}, etc. despite their internal representations being the same. This shows us immediately that lemmas outnumber theorems; in the Coq standard library there are over five times as many lemmas as theorems \footnote{The latest version as of writing is \texttt{coq-8.4pl6} which, when excluding comments, includes 1492 occurences of \coq{Theorem} and 7594 of \coq{Lemma} in its \texttt{theories/} directory.}.
+
+% TODO: Analyse them
+
+% TODO: Theory exploration as lemma generation; give example from a HipSpec paper
+
+We can find a need for auxiliary lemmas, once again, in the context of tail-recursive functions. Consider proving the (pointwise) equality of the following Coq functions, defined for the Peano naturals \coq{Z} and \coq{S}:
 
 \begin{lstlisting}[language=ML, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
 Inductive Nat : Set := Z : Nat
@@ -237,7 +303,7 @@ plus_tail n  Z    = n
 plus_tail n (S m) = plus_tail (S n) m
 \fi
 
-Both of these functions implement addition, but the \coq{plus_tail} variant is tail-recursive; i.e. it can be implemented in constant space using a loop. However, if we want to \emph{prove} that the definitions are (pointwise) equal, we run into difficulties. In particular, when the inductive step requires us to prove \coq{plus (S n) m = plus n (S m)} (which seems reasonable), we cannot make this go through using another inductive argument.
+Both of these functions implement addition, but the \coq{plus_tail} variant is tail-recursive. However, if we want to \emph{prove} that the definitions are (pointwise) equal, we run into difficulties. In particular, when the inductive step requires us to prove \coq{plus (S n) m = plus n (S m)} (which seems reasonable), we cannot make this go through using another inductive argument.
 
 \iffalse
 
@@ -275,7 +341,7 @@ IHn : forall x, plus (S n') x = plus_tail (S n') x
 
 We are forced to abandon the proof, despite such a reasonable-looking intermediate goal.
 
-In fact, if we attempt to prove that goal \emph{in isolation}, we can make the proof go through; even though it is stronger due to the absence of the \coq{IHn} assumption. We can then specialise this lemma to make our original proof of equivalence go through.
+In fact, if we attempt to prove that goal \emph{separately}, we can use a straightforward argument by induction; even though it is actually \emph{stronger} due to the absence of the \coq{IHn} assumption. Using this separate result as a lemma, the pointwise equality is proven easily.
 
 \iffalse
 
@@ -298,42 +364,6 @@ Defined.
 \end{lstlisting}
 
 \fi
-
-\subsubsection{Associativity}
-
-An informative example is given by Boyer and Moore of the associativity of multiplication in ACL2 \cite{boyer1983proof}:
-
-$$(x * y) * z = x * (y * z)$$
-
-During the course of the proof, the following obligation arises:
-
-\begin{equation}
-  \tag{conc3}
-  (y + (x * y)) * z = (y * z) + ((x * y) * z)
-  \label{eq:conc3}
-\end{equation}
-
-ACL2 automatically generalises \eqref{eq:conc3} by replacing the repeated sub-term $x * y$ with a fresh variable $w$:
-
-\begin{equation}
-  \tag{conc4}
-  (y + w) * z = (y * z) + (w * z)
-  \label{eq:conc4}
-\end{equation}
-
-This generalised form is clearly the distributivity law for multiplication and addition, which can be proved separately to the original goal of associativity. It would not be controversial to claim that this distributivity law is interesting in its own right (relative to associativity, at least), in addition to its usefulness in making this proof go through.
-
-% TODO: Describe the ACL2 heuristics
-
-\subsection{Auxiliary Lemmas}
-
-One consideration when generating conjectures is the difference between theorems, lemmas, corollaries, etc. From a logical point of view, these are all equivalent, and hence most proof assistants do not distinguish between them. However, their \emph{intention} may be different, and hence some systems, like Coq, allow users to \emph{label} each statement as being a \coq{Theorem}, a \coq{Lemma}, etc. despite their internal representations being the same.
-
-One striking observation is that lemmas outnumber theorems; in the Coq standard library there are over five times as many lemmas as theorems \footnote{The latest version as of writing is \texttt{coq-8.4pl6} which, when excluding comments, includes 1492 occurences of \coq{Theorem} and 7594 of \coq{Lemma} in its \texttt{theories/} directory.}.
-
-% TODO: Analyse them
-
-% TODO: Theory exploration as lemma generation; give example from a HipSpec paper
 
 \subsection{Tests}
 
