@@ -198,6 +198,18 @@ Although \textsc{QuickSpec} only \emph{tests} its equations rather than proving 
 
 In fact, there are similarities between the way a TE system like \textsc{HipSpec} can generalise from proving \emph{particular} theorems to \emph{inventing} theorems, and the way counterexample finders like \textsc{QuickCheck} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. There are likely lessons that each can learn from the other's approach to term generation.
 
+We identify the following areas for researching potential improvements in existing TE systems such as \textsc{HipSpec}:
+
+\begin{description}
+\item{Term generation}:
+  Enumerating all type-correct terms is a brute-force solution to this question. Scalable alternatives to brute-force algorithms are a well-studied area of Artificial Intelligence and Machine Learning \iffalse TODO: Related work reference \fi. In particular, heuristic search algorithms like those surveyed in \cite{blum2011hybrid} could be used.
+  We could also use Machine Learning methods like those used for \emph{relevance filtering} \ref{relevance} to identify some sub-set of a given theory, to prioritise over the rest.
+
+\item{Interestingness}
+  Various alternative interestingness criteria have been proposed, which we survey in \S \ref{relatedwork}. Augmenting or replacing the criteria may be useful, for example to distinguish useful relationships from incidental coincidences; or to prevent surprising, insightful equations from being discarded because they can be simplified.
+\end{description}
+
+
 % Theory exploration is similar to \emph{experimental mathematics}
 
 % - Relation to Science
@@ -535,7 +547,11 @@ Omohundro? Too physical.
 
 The core problem of assigning ``interestingness'' to logical formulae is the application of statistical reasoning to the discrete, semantically-rich domain of formal systems. This problem has been tackled from various directions for a variety of reasons; here we summarise those contributions which seem of particular importance for theory exploration.
 
-\subsubsection{Relevance}
+\subsubsection{Relevance Filtering}
+\label{relevance}
+
+% TODO
+\cite{kuhlwein2012overview}
 
 The combinatorial nature of formal systems causes many proof search methods, such as resolution, to have exponential complexity \cite{haken1985intractability}; hence even a modest size increase can turn a trivial problem into an intractable one. Finding efficient alternatives for such algorithms, especially those which are NP-complete (e.g. determining satisfiability) or co-NP-complete (e.g. determining tautologies), seems unlikely, as it would imply progress on the famously intractable open problems of $\text{P} = \text{NP}$ and $\text{NP} = \text{co-NP}$. On the other hand, we can turn this difficulty around: a modest \emph{decrease} in size may turn an intractable problem into a solvable one. We can ensure that the solutions to these reduced problems coincide with the original if we only remove \emph{redundant} information. This leads to the idea of \emph{relevance filtering}.
 
@@ -564,8 +580,12 @@ Recently, a variety of alternative algorithms have also been investigated, inclu
 \end{description}
 
 \subsubsection{Clustering}
+\label{clustering}
+
 % TODO: ML4PG
-% TODO: ACL2(ml)
+\cite{journals/corr/abs-1212-3618}
+% TODO: ACL2(ml) (also examples section)
+\cite{heras2013proof}
 
 \subsubsection{Probability of Sentences}
 
@@ -590,6 +610,7 @@ The most important property of a logical formula is its truth value. Although we
 \cite{johansson2009isacosy}
 \cite{spector2008genetic}
 \cite{colton2012automated}
+ \cite{geng2006interestingness}
 % TODO: How does https en.wikipedia.org/wiki/Discovery system relate?
 
 % However, this search space grows exponentially in the length of the proofs, which is unfortunate since proof length has been proposed as an approximate measure of how interesting a theorem is \cite[\S~10.2.1]{colton2012automated}.
@@ -847,7 +868,7 @@ Such data is useful for multiple purposes:
 
   \item{Reflection}: As mentioned above, \textsc{HipSpec} uses the GHC API to obtain definitions of Haskell terms, which are then converted for use by theorem provers. Although we have not yet investigated this use, it seems likely that the output of \textsc{AstPlugin} would provide a more comprehensive and robust alternative to the GHC API approach.
 
-  \item{Counterexample Generation}: As mentioned in \S \ref{tests}, there are many Haskell property checkers, which differ mostly in the way they generate values for testing. Since our theory exploration tools are built on these property checkers, we rely on the existence of value generators for all of the types in our theory; yet existing approaches to deriving such generators (e.g. as found in the \texttt{derive} package) rely on choose between constructors, recursively. As demonstrated in \S \ref{haskell}, a type's constructors may not be exported, in which case these methods fail; not to mention the exponential complexity of such recursive branching. It seems that a database of inspectable Haskell functions may be useful for solving this problem, although we have not yet performed experiments in this area.
+  \item{Counterexample Generation}: As mentioned in \S \ref{tests}, there are many Haskell property checkers, which differ mostly in the way they generate values for testing. Since our theory exploration tools are built on these property checkers, we rely on the existence of value generators for at least some of the types in our theory; yet existing approaches to deriving such generators (e.g. as found in the \texttt{derive} package) rely on choosing an arbitrary constructor then recursing. As demonstrated in \S \ref{haskell}, a type's constructors might not be exported, in which case these methods fail. Also, the exponential complexity of such naive recursion makes these generators unusable in many cases. It seems that a database of inspectable Haskell functions may be useful for solving this problem in a more practical way, although we have not yet performed experiments in this area.
 \end{itemize}
 
 \subsection{\textsc{MLSpec}}\label{mlspec}
@@ -869,37 +890,14 @@ Our \textsc{MLSpec} tool can automatically build theories suitable for explorati
 
 \subsection{\textsc{ML4HS}}\label{ml4hs}
 
-We identify the following potential improvements for existing TE systems such as \textsc{HipSpec}:
+\textsc{ML4HS} is our top-level theory exploration framework, combining \textsc{AstPlugin}, \textsc{TreeFeatures}, the \textsc{Weka} machine learning library and \textsc{MLSpec}.
 
-\begin{description}
-\item{Term generation}:
-  Enumerating all type-correct terms is a brute-force solution to this question.
-  Scalable alternatives to brute-force algorithms are a well-studied area of
-  Artificial Intelligence and Machine Learning. In particular, heuristic
-  search algorithms like those surveyed in \cite{blum2011hybrid} could be used.
-  We could also use Machine Learning methods to identify some sub-set of a given
-  theory, to prioritise over the rest.
-\item{Interestingness}
-  Various alternative interestingness criteria have been proposed, for
-  example those surveyed in \cite{geng2006interestingness}. Augmenting or
-  replacing the criteria may be useful, for example to distinguish useful
-  relationships from incidental coincidences; or to prevent surprising,
-  insightful equations from being discarded because they can be simplified.
-\end{description}
+Inspired by the use of premise selection (see \S \ref{relevance}) to reduce the search space in ATP,
+we select sub-sets of the given theory to explore, chosen to try and keep together those expressions which combine in interesting ways, and to separate those which combine in uninteresting ways.
 
-We are implementing a system called \textsc{ML4HS} to investigate these ideas.
-Its current form is a pre-processor for \textsc{QuickSpec} for prioritising
-theory elements. Inspired by the use of premise selection
-\cite{kuhlwein2012overview} to reduce the search space in ATP,
-we select sub-sets of the given theory to explore, chosen to try and keep
-together those expressions which combine in interesting ways, and to separate
-those which combine in uninteresting ways.
+We hypothesise that similarity-based clustering of expressions, inspired by those of \textsc{ML4PG}  and related work in \textsc{ACL2(ml)} (see \S \ref{clustering}), is an effective method for performing this separation.
 
-We hypothesise that similarity-based clustering of expressions, inspired by that
-of \textsc{ML4PG} \cite{journals/corr/abs-1212-3618} and related work in ACL2
-\cite{heras2013proof}, is an effective method for performing this separation.
-Future experiments will test this by comparing the throughput of
-\textsc{QuickSpec} with and without the \textsc{ML4HS} pre-processor.
+% TODO: Future experiments will test this by comparing the throughput of \textsc{QuickSpec} with and without the \textsc{ML4HS} pre-processor.
 
 % Divide and conquer for theory exploration
 % Does it help?
