@@ -4,11 +4,13 @@
 \usepackage{graphicx}
 \usepackage{mathtools}
 \usepackage{amssymb}
+\usepackage[T1]{fontenc}
 %\usepackage{enumitem}
 \usepackage{paralist}
 \usepackage{csquotes}
 \usepackage[affil-it]{authblk}
 \usepackage{listings}
+\usepackage{fixltx2e}
 
 % Treat paragraph as subsubsubsection
 \usepackage{titlesec}
@@ -111,6 +113,24 @@ $$\forall \text{\hs{x y z}}, \text{\hs{op x (op y z)}} = \text{\hs{op (op x y) z
 The notation \hs{Semigroup t =>} is a \emph{type class constraint}, which restricts the possible types \hs{t} to only those which implement \hs{Semigroup}. \footnote{Alternatively, we can consider \hs{Semigroup t} as the type of ``implementations of \hs{Semigroup} for \hs{t}'', in which case \hs{=>} has a similar role to \hs{->} and we can consider \hs{op} to take \emph{four} parameters: a type \hs{t}, an implementation of \hs{Semigroup t} and two values of type \hs{t}. As with parameteric polymorphism, this extra \hs{Semigroup t} parameter is not available at the value level. Even if it were, we could not alter our behaviour by inspecting it, since Haskell only allows types to implement each type class in at most one way, so there would be no information to branch on.} There are many \emph{instances} of \hs{Semigroup} (types which may be substituted for \hs{t}), e.g. \hs{Integer} with \hs{op} performing addition. Many more examples can be found in the \emph{typeclassopedia} \cite{yorgey2009typeclassopedia}. This ability to constrain types, and the existence of laws, helps us reason about code generically, rather than repeating the same arguments for each particular pair of \hs{t} and \hs{op}.
 
 \item{Equational}: Haskell uses equations at the value level, for definitions; at the type level, for coercions; at the documentation level, for typeclass laws; and at the compiler level, for ad-hoc rewrite rules. This provides us with many \emph{sources} of equations, as well as many possible \emph{uses} for any equations we might discover. Along with their support in existing tools such as SMT solvers, this makes equational conjectures a natural target for our investigation.
+
+\item{Modularity}: Haskell has a module system, where each module may specify an \emph{export list} containing the names which should be made available for other modules to import. When such a list is given, any expressions \emph{not} on the list are considered \emph{private} to that module, and are hence inaccessible from elsewhere. This mechanism allows modules to provide more guarantees than are available just in their types. For example, a module may represent email addresses in the following way:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth, upquote=true]
+module Email (Email(), at, render) where
+
+data Email = E String String
+
+render :: Email -> String
+render (E u h) = u ++ "@" ++ h
+
+at :: String -> String -> Maybe Email
+at "" h  = Nothing
+at u  "" = Nothing
+at u  h  = Just (E u h)
+\end{lstlisting}
+
+The \hs{Email} type guarantees that its elements have both a user part and a host part (modulo divergence), but it does not provide any guarantees about those parts. We also define the \hs{at} function, a so-called ``smart constructor'', which has the additional guarantee that the \hs{Email}s it returns contain non-empty \hs{String}s. By ommitting the \hs{E} constructor from the export list on the first line \footnote{The syntax \hs{Email()} means we're exporting the \hs{Email} type, but not any of its constructors.}, the only way \emph{other} modules can create an \hs{Email} is by using \hs{at}, which forces the non-empty guarantee to hold globally.
 
 \end{description}
 
@@ -365,7 +385,7 @@ Defined.
 
 \fi
 
-\subsection{Tests}
+\subsection{Tests} \label{tests}
 
 Since we are working in the domain of Haskell programs, an abundant source of statements are available in the form of \emph{tests}. For manually-written tests, the effort required to write them implies that they must be of some interest to their author. Many forms of test are \emph{not} suitable for our purposes, such as \emph{unit tests} which are always trivially provable by $\beta$-reduction; or \emph{integration tests}, which depend on the behaviour of the external environment. One reason to study Haskell is its widespread use of \emph{property checking}, which does give us useful data. Many Haskell property checkers exist, based on random testing (\textsc{QuickCheck} \cite{claessen2011quickcheck} and \textsc{SmartCheck} \cite{pike2014smartcheck}), enumeration (\textsc{SmallCheck} \cite{runciman2008smallcheck}), observation (\textsc{Lazy SmallCheck} \cite{reich2013advances}) and logic programming (\textsc{SparseCheck} \cite{sparsecheck}).
 
@@ -450,7 +470,7 @@ Once we augment fitness functions, to a greater or lesser degree, an obvious que
 
 We can divide AC approaches into two groups: the first, which we call \emph{explicit}, send inputs which follow a Wundt curve to their learning algorithm; the second, the \emph{implicit} approaches, instead modify the \emph{output} of their learning algorithm(s), such that the overall system follows a Wundt curve as an emergent property.
 
-A framework encompassing many interestingness measures, referred to as \emph{implicit rewards} in the reinforcement learning context, is given in \cite{oudeyer2007intrinsic}.
+A framework encompassing many explicit interestingness measures is given in \cite{oudeyer2007intrinsic}, as \emph{implicit rewards} in the context of reinforcement learning.
 
 One particularly general measure is \emph{compression progress}: given a compressed representation of our previous observations, the ``progress'' is the space saved if we include the current observation. Observations which are incompressible or trivially compressible don't save any space, whilst observations which provide new information relevant to past experience can provide a saving. This can be translated to a theorem proving context very naturally: our observations are theorems and their proofs, whilst new theorems which generalise known results will allow us to compress their proofs.
 
@@ -582,7 +602,7 @@ The most important property of a logical formula is its truth value. Although we
 
 One major difficulty with formal mathematics as a domain in which to apply statistical machine learning is the use of \emph{structure} to encode information in objects. In particular, \emph{trees} appear in many places: from inductive datatypes, to recursive function definitions; from theorem statements, to proof objects. Such nested structures may extend to arbitrary depth, which makes them difficult to represent with a fixed number of features, as is expected by most machine learning algorithms. Here we review a selection of solutions to this problem, and compare their distinguishing properties.
 
-\paragraph{Feature Extraction}
+\paragraph{Feature Extraction}\label{featureextraction}
 
 \emph{Feature extraction} is a common pre-processing step for machine learning (ML). Rather than feeding ``raw'' data straight into our ML algorithm, we only learn a sample of \emph{relevant} details, known as \emph{features}. This has two benefits:
 
@@ -687,6 +707,8 @@ Backpropagation through structure
 
 \section{Contributions}\label{current}
 
+Most of the work carried out so far has been either preliminary investigations, to determine if a particular approach is worth pursuing; or at an infrastructure level to support experimentation.
+
 \subsection{Circular Convolution}\label{circularconvolution}
 
 We have investigated the reduction to a fixed-size of tree structures of the following form (where \hs{FV} denotes a feature vector):
@@ -774,11 +796,76 @@ Coq will also interpret the standard output of the command, to generate terms an
 
 \subsection{\texttt{nix-eval}}\label{nixeval}
 
+To facilitate theorem proving and machine learning, our theory exploration experiments require access to the \emph{definitions} of the terms under investigation. This is difficult, as many terms are functions, which Haskell does not let us inspect. This limitation can be worked around by programming at a meta-level: manipulating \emph{representations} of Haskell expressions, rather than the expressions themselves. To retain our ability to \emph{evaluate} expressions, we then need a mechanism to transform these representations into the expressions they represent; this usually takes the form of an \texttt{eval} function.
+
+\texttt{eval} is a common feature in languages such as Python and Javascript, where extra source files can be imported dynamically. In that case \texttt{eval} can be implemented easily by representing expressions as strings, then treating those strings as if they were the content of a file being imported.
+
+On the other hand, Haskell does not natively support dynamic importing of extra source files, making implementation of \texttt{eval} trickier. Comprehensive implementations do exist, such as \texttt{hint}, which are effectively wrappers around GHC, but all are limited to using the Haskell modules which are already installed on the system. Since we want to explore \emph{arbitrary} Haskell code, this is not enough for our purposes.
+
+We have implemented a library called \texttt{nix-eval}, which provides an \hs{eval} function for Haskell expressions which may reference packages that are not installed on the system. These packages will be automatically downloaded and installed into a sandbox when a call to \hs{eval} is forced.
+
+\texttt{nix-eval} is build on top of the Nix package manager and GHC. Nix provides a language for defining packages, a \texttt{cabal2nix} tool for generating Nix package definitions from those of Haskell's Cabal tool, and a \texttt{nix-shell} tool for evaluating arbitrary shell commands in a sandbox containing arbitrary packages.
+
+The internal representation of \texttt{nix-eval} includes a list of package names, a list of module names, a list of GHC options and a string containing Haskell code. When evaluated, \texttt{nix-shell} is invoked to create a sandbox containing an instance of GHC and the Haskell packages listed in the expression. GHC is invoked in this sandbox using the \texttt{runhaskell} command, along with any options given in the expression. The code to be evaluated is prepended with \hs{import} statements for each required module, and wrapped in a simple \hs{main} function for printing the result of its evaluation to standard output. The expression, therefore, must have type \hs{String}; although this is not enforced statically.
+
+The type of the \hs{eval} function is \hs{Expr -> IO (Maybe String)}, where \hs{Expr} is the type of expressions described above. The \hs{IO} wrapper comes from our invocation of external tools, and \hs{Maybe String} allows us to represent failure in a clean way. The restriction of expressions to \hs{String}s is not onerous; some concrete type is required, to communicate results from the GHC invocation, but we consider the particular choice of encoding to be out of scope for \texttt{nix-eval}. It would be a straightforward exercise to wrap our \hs{eval} function in a generic encoding mechanism, e.g. using JSON.
+
 \subsection{\textsc{ASTPlugin}}\label{astplugin}
 
-The Glasgow Haskell Compiler provides a library interface to its operation, which we can use to parse Haskell code into tree structures. It also provides a \emph{renaming} transformation, which makes all names unique; either by prefixing them with the name of the module which defines them, or by suffixing the name with a number.
+The Glasgow Haskell Compiler provides mechanisms for parsing Haskell code into tree structures, and a \emph{renaming} transformation which makes all names unique; either by prefixing them with the name of the module which defines them, or by suffixing the name with a number. This allows us to spot repeated use of a term, across multiple modules and packages, with a simple syntactic equality check.
+
+Since we are interested in comparing definitions based on the terms they reference, building our framework on top of GHC seems like a promising approach. Indeed, \textsc{HipSpec} already invokes GHC's API to obtain the definitions of Haskell functions, in order to transform them into a form suitable for ATP systems. However, our initial experiments showed that this technique is too fragile for use on many real Haskell projects.
+
+This is due to many projects having a complex module structure, requiring particular GHC flags to be given, or using pre-processors such as \texttt{cpp} and Template Haskell to generate parts of their code. All of this complexity means that invoking GHC ``manually'' via its API is unlikely to obtain the definitions we require.
+
+Thankfully there is one implementation detail which most Haskell packages agree on: the Cabal build system. All of the above complexities can be specified in a package's ``Cabal file'', such that the \texttt{cabal configure} and \texttt{cabal build} commands are very likely to work for most packages, without any extra effort. This shifted our focus to augmenting GHC and Cabal, such that definitions can be collected during the normal Haskell build process.
+
+GHC provides a plugin mechanism for manipulating its Core representation, intended for optimisation passes, which we use to inspect definitions as they are being compiled. We provide a plugin called \textsc{AstPlugin} which implements an optimisation pass which returns its argument unchanged, but which also emits a serialised version of the definition to the console.
+
+There are several complications in the implementation of \textsc{AstPlugin}. We are working with Core, which as a variant of System F\textsubscript{C} \cite{sulzmann2007system} has slightly different syntax and semantics to Haskell. This is mostly a benefit, since Core is a much simpler language than Haskell and its representation is relatively stable compared to many existing representations of Haskell (which often change to support various language extensions). Three areas which make Core more difficult to handle are:
+
+\begin{description}
+  \item{Type variables}: In \S \ref{haskell} we saw that parametric polymorphism can be thought of as values being parameterised by type-level objects. In System F, this is represented explicitly by a special binding form $\Lambda$, distinct from the $\lambda$ binding form for value parameters. Core also has explicit bindings for type-level objects, although for simplicity it uses the same $\lambda$ representation for both types and values. This difference from Haskell, which only has explicit binding of values, alters function properties like arity.
+
+  \item{Unified namespace}: Haskell has distinct namespaces for values, types, data constructors, etc. Since Core does not make these distinctions, names may become ambiguous. For example, a type parameter \hs{t} may be confused with a function argument \hs{t}. To prevent this, overlapping namespaces are distinguished by prefices which are distinct from the available names; for example a type class constraint \hs{Ord t} may give rise to a binder \texttt{$\lambda$ \$dOrd} in Core. This causes difficulties when looking up names, as these prefixed forms do not easily map back to the Haskell source.
+
+  \item{Violating encapsulation}: As discussed in \S \ref{haskell}, Haskell allows names to be \emph{private} to a module. When compiling Core, we have full access to private definitions, as well as references to private names from within other definitions. Hence the definitions we receive from \textsc{AstPlugin} will include private values which we cannot import into a theory exploration tool.
+\end{description}
+
+In practice, we work around these issues with a post-processing stage: for each named definition appearing in the output of \textsc{AstPlugin}, we attempt to type-check a Haskell expression which imports that name and passes it to \textsc{QuickSpec}. Those which fail, due to the reasons above and others, are discarded.
+
+The result of building a Haskell package with \textsc{AstPlugin} is a database of Haskell definitions, similar in some respects to \textsc{Hoogle}. Definitions are indexed by a combination of their package name, module name and binding name. The definitions themselves are s-expressions representing the Core AST, with non-local references replaced by a combination of package name, module name and binding name (AKA database keys). Each definition also has an associated arity and type, obtained during the post-processing step mentioned above.
+
+Such data is useful for multiple purposes:
+
+\begin{itemize}
+  \item{Dependency tracking}: We have a tool which annotates each definition with its dependencies, i.e. those (package, module, name) combinations which it references. Definitions are then topologically sorted into dependency order, as this is required for our recurrent clustering technique.
+
+  \item{Machine learning}: The Core s-expressions are used as input to our machine learning approaches, for guiding theory exploration using statistical properties of the theory being explored. As mentioned in \S \ref{featureextraction}, it is inefficient to apply intensive machine learning algorithms directly to high-dimensional data representations, so we use various feature extraction algorithms to reduce their dimensionality.
+
+  \item{Theory exploration}: The \textsc{MLSpec} tool, described below, uses the output of \textsc{AstPlugin} to construct theories suitable for \textsc{QuickSpec} to explore.
+
+  \item{Reflection}: As mentioned above, \textsc{HipSpec} uses the GHC API to obtain definitions of Haskell terms, which are then converted for use by theorem provers. Although we have not yet investigated this use, it seems likely that the output of \textsc{AstPlugin} would provide a more comprehensive and robust alternative to the GHC API approach.
+
+  \item{Counterexample Generation}: As mentioned in \S \ref{tests}, there are many Haskell property checkers, which differ mostly in the way they generate values for testing. Since our theory exploration tools are built on these property checkers, we rely on the existence of value generators for all of the types in our theory; yet existing approaches to deriving such generators (e.g. as found in the \texttt{derive} package) rely on choose between constructors, recursively. As demonstrated in \S \ref{haskell}, a type's constructors may not be exported, in which case these methods fail; not to mention the exponential complexity of such recursive branching. It seems that a database of inspectable Haskell functions may be useful for solving this problem, although we have not yet performed experiments in this area.
+\end{itemize}
 
 \subsection{\textsc{MLSpec}}\label{mlspec}
+
+When investigating heuristic methods like those of machine learning, it is important to use as much realistic data as possible to predict the system's performance on real tasks. One bottleneck for theory exploration is the lack of theories which are available to explore: we must manually select a set of terms to explore, and sometimes specify variables too.
+
+Our \textsc{MLSpec} tool can automatically build theories suitable for exploration by \textsc{QuickSpec}, based on the databases constructed by \textsc{AstPlugin} described above. Features of \textsc{MLSpec} include:
+
+\begin{itemize}
+  \item{Monomorphising}: Given values of polymorphic type, e.g. \hs{safeHead :: forall t. [t] -> Maybe t} and \hs{[] :: forall t. [t]}, a testing-based system like \textsc{QuickSpec} is unable to evaluate expressions such as \hs{safeHead [] :: forall t. Maybe t} without instantiating the variable \hs{t} to a specific type. Such an instantiation is called \emph{monomorphising}, and in the case of \textsc{MLSpec} we build on previous work in \textsc{QuickCheck} by attempting to instantiate all type variables to \hs{Integer}. We discard those cases where this is invalid, such as variable \emph{type constructors} (e.g. \hs{forall c. c Bool -> c Bool}) or incompatible class constraints (e.g. \hs{forall t. IsString t => t}).
+
+  \item{Qualification}: All names are \emph{qualified} (prefixed by their module's name), to avoid most ambiguity. There is still the possibility that multiple packages will declare modules of the same name, in which case the exploration process will abort.
+
+  \item{Variable definition}: Once a \textsc{QuickSpec} theory has been defined containing all of the given terms, we inspect the types it references and append three variables for each to the theory (enough to discover laws such as associativity, but not too many to overflow the limit of \textsc{QuickSpec}'s exhaustive search).
+
+  \item{Sandboxing}: \textsc{MLSpec} is built on top of \texttt{nix-eval}, which allows the theory being explored to reference packages which aren't yet installed on the system.
+
+\end{itemize}
 
 \subsection{\textsc{ML4HS}}\label{ml4hs}
 
