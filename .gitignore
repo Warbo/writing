@@ -6,3 +6,4 @@ pandoc-templates
 *.out
 *.bbl
 *.blg
+Bibtex.bib~*
