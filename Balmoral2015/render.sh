@@ -1,5 +1,6 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i bash -p bash haskellPackages.Agda
+#! nix-shell -i bash -p bash haskellPackages.Agda graphviz
+
 # --self-contained
 HTML_ARGS="-w dzslides --standalone --filter panpipe --filter panhandle"
 
