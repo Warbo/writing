@@ -41,7 +41,6 @@ in stdenv.mkDerivation {
     # Document rendering tools
     pandoc
     haskellPackages.pandoc-citeproc
-    texLiveFull
     (hs (atCommit "panpipe"
                   "a3a40e9"
                   "0sajlq926yr4684vbzmjh2209fnmrx1p1lqfbhxj5j0h166424ak") {})
