@@ -13,6 +13,16 @@ do
     rm -f "${NAME}.${EXT}"
 done
 
+# Get styles, if we haven't already
+[[ -e "mathpartir.sty" ]] ||
+wget "http://cristal.inria.fr/~remy/latex/mathpartir.sty"
+
+[[ -e "mmm.sty" ]] ||
+wget "http://www.ccs.neu.edu/course/csg264/latex/mmm.sty"
+
+[[ -e "psfig.sty" ]] ||
+wget "http://anorien.csc.warwick.ac.uk/mirrors/CTAN/graphics/psfig/psfig.sty"
+
 run "$NAME"           &&
 echo "RUNNING bibtex" &&
 bibtex "$NAME"        &&
