@@ -24,6 +24,41 @@
 
 \DeclareMathOperator{\md5}{MD5}
 
+\lstset{
+  frame=none,
+  xleftmargin=2pt,
+  stepnumber=1,
+  numbers=none,
+  numbersep=5pt,
+  numberstyle=\ttfamily\tiny\color[gray]{0.3},
+  belowcaptionskip=\bigskipamount,
+  captionpos=b,
+  escapeinside={*'}{'*},
+  language=haskell,
+  tabsize=2,
+  emphstyle={\bf},
+  commentstyle=\it,
+  stringstyle=\mdseries\rmfamily,
+  showspaces=false,
+  keywordstyle=\bfseries\rmfamily,
+  columns=flexible,
+  basicstyle=\small\sffamily,
+  showstringspaces=false,
+  morecomment=[l]\%,
+}
+
+\providecommand{\hs}[1]{\lstinline[language=Haskell]|#1|}
+
+\newenvironment{haskell}
+  {
+    \begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+  }
+  {
+    \end{lstlisting}
+  }
+
+\providecommand{\coq}[1]{\lstinline[language=ML]|#1|}
+
 \begin{document}
 
 \pagestyle{headings}  % switches on printing of running heads
@@ -49,15 +84,7 @@ Intro + motivation
 
 About 2 pages
 
-Functional programming is important (motivation)
-
-introduce running example
-
 Haskell is a mainstream FP language (motivation)
-
-Important to test (example)
-
-Tests are not sufficient (example)
 
 QuickCheck (example)
 
@@ -66,7 +93,57 @@ How to come up with the properties
 Mention theory exploration
 \fi
 
-As computers and software become more capable, and as our reliance on them increases, the importance of \emph{understanding}, \emph{predicting} and \emph{verifying} these systems grows; which is undermined by their ever-increasing complexity. Mathematics provides us with powerful, systematic methods of reasoning, which we can bring to bear on this challenge; in particular those of \emph{formal logic} and \emph{statistics}. By (partially) mechanising these approaches, in the fields of \emph{theorem proving} and \emph{machine learning}, respectively, we can leverage these increasing machine capabilities and direct them for the purpose of analysis. However, the question still remains: on what should we focus that analysis?
+As computers and software become more capable, and as our reliance on them increases, the importance of \emph{understanding}, \emph{predicting} and \emph{verifying} these systems grows; which is undermined by their ever-increasing complexity. The \emph{functional programming} paradigm has been proposed for addressing these issues \cite{hughes1989functional}, in part by constructing programs which are more amenable to mathematical analysis. For example, by separating \emph{computation} from \emph{effects}, we can analyse each in isolation; in particular, pure computations can be evaluated without fear of damaging side-effects, and results are repeatable (since there can be no dependence on external state).
+
+Whilst use of pure functional programming languages, like Haskell and Idris, is relatively rare, their features are well suited to common software engineering practices like \emph{unit testing}; where tasks are broken down into small, easily-specified ``units'', and tested in isolation for a variety of use-cases. These ideas are thus spreading to mainstream software engineering, in a more dilute form; seen, for example, in the recent inclusion of first-class functions in Java \cite{gosling2015java} and C++ \cite{willcock2006lambda}.
+
+Although unit testing is the de facto industry standard for quality assurance in non-critical systems, the level of confidence it provides is rather low, and totally inadequate for many (e.g. life-) critical systems. To see why, consider the following Haskell function, along with some unit tests (see \ref{haskell} for more details on Haskell):
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+  factorial 0 = 1
+  factorial n = n * factorial (n-1)
+
+  fact_base      = factorial 0 == factorial 1
+  fact_increases = factorial 4 >  factorial 3
+  fact_div       = div (factorial 5) (factorial 4) == 5
+\end{lstlisting}
+
+The intent of the function is to map an input $n$ to an output $n!$. The tests check a few properties of the implementation, including the base case, that the function is monotonically increasing, and a relationship between adjacent outputs. However, these tests will \emph{not} expose a serious problem with the implementation: it diverges on half of its possible inputs!
+
+All of Haskell's built-in numeric types allow negative numbers, which this implementation doesn't take into account. Whilst this is a rather trivial example, it highlights a common problem: unit tests are insufficient to expose incorrect assumptions. In this case, our assumption that numbers are positive has caused a bug in the implementation \emph{and} limited the tests we've written.
+
+If we do manage spot this error, we might capture it in a \emph{regression test} and update the definition of \hs{factorial} to handle negative numbers, e.g. by taking their absolute value:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+factorial 0 = 1
+factorial n = let nPos = abs n
+               in nPos * factorial (nPos - 1)
+
+fact_neg = factorial (-1) == factorial 1
+\end{lstlisting}
+
+However, this is \emph{still} not enough: since this function only uses generic numeric operations, it will be polymorphic; allowing all numeric types\footnote{Its type will be of the form \hs{forall t. Num t => t -> t}, where \hs{Num} constrains the type variable \hs{t} to be numeric. There will also be extra contraints like \hs{Eq} due to the use of \hs{==} in the unit tests.}. If we provide a fractional value, the function will again diverge. Clearly, by choosing what to test we are biasing the test suite towards those cases we've already taken into account, whilst neglecting the problems we did not expect.
+
+Haskell offers a partial solution to this problem in the form of \emph{property checking}. Tools such as \textsc{QuickCheck} separate tests into three components: a \emph{property} to check, a source of values to check and a stopping criterion. Here is how we might restate our unit tests as properties:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+fact_base = factorial 0 == factorial 1 -- Unchanged; unit tests are valid (albeit limited) properties
+
+fact_increases n = factorial (n+1) >= factorial n  -- >= since factorial 1 == factorial 0
+
+fact_div n = factorial (n+1) `div` factorial n == n+1
+
+fact_neg n = factorial (n * -1) == factorial n
+\end{lstlisting}
+
+Turning particular values (like \hs{5} and \hs{4}) into parameters tells \textsc{QuickCheck} to \emph{universally quantify} them, i.e. a unit test stating $factorial(-1) = factorial(1)$ becomes a property stating $\forall n, factorial(n \times -1) = factorial(n)$.
+
+%TODO example, eg. int -> int -> int requires 2^64 * 2^64 cases for full coverage
+%     NO! we want random tests first; show something with edge-cases; what about assuming Ints are positive? what about %assuming Int when it's actually Num
+
+\iffalse
+
+Mathematics provides us with powerful, systematic methods of reasoning, which we can bring to bear on this challenge; in particular those of \emph{formal logic} and \emph{statistics}. By (partially) mechanising these approaches, in the fields of \emph{theorem proving} and \emph{machine learning}, respectively, we can leverage these increasing machine capabilities and direct them for the purpose of analysis. However, the question still remains: on what should we focus that analysis?
 
 In this work, we investigate the notion of \emph{interestingness} in the exploration of formal systems (an area known as \emph{theory exploration}) as a way to make productive use of resources in an often intractable domain. To keep things concrete, we focus our formal analysis on equational formulae describing programs in the Haskell language, for reasons elaborated in \S \ref{haskell}. Conceptually, we maintain a broader view, and survey many related areas which may offer insights on the problem.
 
@@ -75,6 +152,8 @@ Appeals to interestingness arise when more direct measures, such as utility, are
 We begin our undertaking in \S \ref{background} by introducing the Haskell language, as well as the relevant fields of verification for context. We define a formal framework for our investigation, and show how it relates to the existing theorem proving landscape. A selection of theorem proving scenarios which \emph{require} exploration are discussed in \S \ref{examples}, whilst related work, including existing defintions of interestingness, is surveyed in \S \ref{related}. We also review the use of exploration in other fields of Artificial Intelligence and Machine Learning, where researchers are experimenting with replacing \emph{explicit} goals and rewards with \emph{implicit} alternatives such as interestingness. Recent efforts in this area have lead to the emergence of principled theories, mostly based around (algorithmic) information theory, which may be adapted to our theory exploration context.
 
 We discuss our present contributions in \S \ref{current} and future research directions in \S \ref{future}, before concluding in \S \ref{conclusion}.
+
+\fi
 
 \section{Background}
 \label{background}
@@ -85,7 +164,7 @@ TODO
 Background
 
 2.1 Introduce language signature
- a) subset of Haskell
+ a) subset of Haskell DONE
  b) stuff from QuickCheck/Spec
 
 2.2? Machine learning and feature extraction
@@ -95,6 +174,7 @@ Background
 \fi
 
 \subsection{Haskell}
+\label{haskell}
 
 \newcommand{\fc}{System F\textsubscript{C}}
 
@@ -131,104 +211,15 @@ Background
   \label{coresyntax}
 \end{figure}
 
-The full Haskell language is rather complex, so we focus instead on \emph{Core}, an intermediate representation of the Glasgow Haskell Compiler (GHC) based on \fc. For a full treatment of \fc, and its use in GHC, see \citep[Appendix C]{sulzmann2007system}. The sub-set of Core we consider is shown in figure \ref{coresyntax}; compared to the full language \footnote{The current version being present in GHC 7.10.2}, we erase types, use a custom  various forms of literal simplifications include perform type erasure
+The full Haskell language is rather complex, so we focus instead on \emph{Core}, an intermediate representation of the Glasgow Haskell Compiler (GHC) based on \fc. For a full treatment of \fc, and its use in GHC, see \citep[Appendix C]{sulzmann2007system}. The sub-set of Core we consider is shown in figure \ref{coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} we erase types and use a custom representation of names. There are also several other forms of literal (machine words of various sizes, individual characters, etc.) which we omit for brevity, as their treatment is similar to those of strings and numerals.
 
-We follow it is capable of expressing just as is capable of used as an intermediate which the Glasgow Haskell Compiler (GHC) target by
+\iffalse
 
 Most work in mechanised, formal mathematics focuses on a \emph{theorem proving} paradigm, usually either \emph{interactive theorem proving} (ITP) or \emph{automated theorem proving} (ATP). Whilst the boundaries between these approaches can be somewhat blurred, we give precise definitions in \S \ref{itp} and \S \ref{atp}, respectively, and characterise both as being \emph{goal-driven}: particular conjectures must be provided as input to the process, and the output is either a proof, a refutation or ``don't know'' (in the case of incomplete procedures).
 
 In this work, we instead adopt the paradigm of \emph{(automated) theory exploration}, discussed in \S \ref{theoryexploration}, which includes the ability to \emph{generate} conjectures, and hence output \emph{novel} theorems. Since many theories will admit an infinite number of trivial theorems (e.g. $\top$, $\top \land \top$, $(\top \land \top) \land \top$, \dots) we require some mechanism for avoiding such undesirable, yet provable, statements. This is the role of interestingness, which we can use to \emph{judge} a statement, in a potentially rich way, rather than merely constructing or failing to construct a proof.
 
-Firstly, however, we give an overview of the Haskell programming language in \S \ref{haskell}. This allows us to establish many concepts in a straightforward software context, which we can then re-use in the potentially less-familiar realm of interactive theorem proving. We decided to focus on Haskell as it has mature, state-of-the-art theory exploration implementations (\textsc{QuickSpec} \citep{QuickSpec} and \textsc{HipSpec} \citep{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \citep{Hipster} system, is actually implemented by translating to Haskell and invoking \textsc{HipSpec}.
-
-\subsection{Haskell}\label{haskell}
-
-\lstset{
-  frame=none,
-  xleftmargin=2pt,
-  stepnumber=1,
-  numbers=none,
-  numbersep=5pt,
-  numberstyle=\ttfamily\tiny\color[gray]{0.3},
-  belowcaptionskip=\bigskipamount,
-  captionpos=b,
-  escapeinside={*'}{'*},
-  language=haskell,
-  tabsize=2,
-  emphstyle={\bf},
-  commentstyle=\it,
-  stringstyle=\mdseries\rmfamily,
-  showspaces=false,
-  keywordstyle=\bfseries\rmfamily,
-  columns=flexible,
-  basicstyle=\small\sffamily,
-  showstringspaces=false,
-  morecomment=[l]\%,
-}
-
-\providecommand{\hs}[1]{\lstinline[language=Haskell]|#1|}
-
-Haskell is a programming language which is well-suited to research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus; in fact the \textsc{GHC} compiler uses (variants of) the polymorphic $\lambda$-calculus \emph{System F} as an intermediate representation (referred to as \emph{GHC Core}). For a detailed exposition of the language syntax and semantics, you can consult the Haskell Language Report \citep{marlow2010haskell} \footnote{Version 2010 was current as this was written} or a textbook such as \citep{thompson1999haskell}; here we will focus on those language features which make it particularly suited for our formal reasoning purposes:
-
-\begin{description}
-
-\item{Functional}: All control flow is performed by function abstraction and application, which we can reason about using standard rules of inference such as \emph{modus ponens}.
-
-\item{Pure}: Execution of actions (e.g. reading files) is separate to evaluation of expressions; hence our reasoning can safely ignore complicated external and non-local interactions.
-
-\item{Statically Typed}: Expression are constrained by \emph{types}, which can be used to eliminate unwanted combinations of values, and hence reduce search spaces; \emph{static} types can be deduced syntactically, without having to execute the code.
-
-\item{Non-strict}: If an evaluation strategy exists for $\beta$-normalising an expression (i.e. performing function calls) without diverging, then a non-strict evaluation strategy will not diverge when evaluating that expression. This is rather technical, but in simple terms it allows us to reason effectively about a Turing-complete language, where evaluation may not terminate. For example, when reasoning about \emph{pairs} of values \hs{(x, y)} and projection functions \hs{fst} and \hs{snd}, we might want to use an ``obvious'' rule such as $\forall \text{\hs{x y}}, \text{\hs{x}} = \text{\hs{fst (x, y)}}$. Haskell's non-strict semantics makes this equation valid; whilst it would \emph{not} be valid in the strict setting common to most other languages, where the expression \hs{fst (x, y)} will diverge if \hs{y} diverges (and hence alter the semantics, if \hs{x} doesn't diverge).
-
-\item{Algebraic Data Types}: These provide a rich grammar for building up user-defined data representations, and an inverse mechanism to inspect these data by \emph{pattern-matching}. For our purposes, the useful consequences of ADTs and pattern-matching include their amenability for inductive proofs and the fact they are \emph{closed}; i.e. an ADT's declaration specifies all of the normal forms for that type. This makes exhaustive case analysis trivial, which would be impossible for \emph{open} types (for example, consider classes in an object oriented language, where new subclasses can be introduced at any time).
-
-\item{Parametricity}: This allows Haskell \emph{values} to be parameterised over \emph{type-level} objects; provided those objects are never inspected. This has the \emph{practical} benefit of enabling \emph{polymorphism}: for example, we can write a polymorphic identity function \hs{id :: forall t. t -> t}. \footnote{Read ``\hs{a :: b}'' as ``\hs{a} has type \hs{b}'' and ``\hs{a -> b}'' as ``the type of functions from \hs{a} to \hs{b}''.} Conceptually, this function takes \emph{two} parameters: a type \hs{t} \emph{and} a value of type \hs{t}; yet only the latter is available in the function body, e.g. \hs{id x = x}. This inability to inspect type-level arguments gives us the \emph{theoretical} benefit of being able to characterise the behaviour of polymorphic functions from their type alone, a technique known as \emph{theorems for free} \citep{wadler1989theorems}.
-
-\item{Type classes}: Along with their various extensions, type classes are interfaces which specify a set of operations over a type (or other type-level object, such as a \emph{type constructor}). Many type classes also specify a set of \emph{laws} which their operations should obey but, lacking a simple mechanism to enforce this, laws are usually considered as documentation. As a simple example, we can define a type class \hs{Semigroup} with the following operation and associativity law:
-
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-op :: forall t. Semigroup t => t -> t -> t
-\end{lstlisting}
-
-$$\forall \text{\hs{x y z}}, \text{\hs{op x (op y z)}} = \text{\hs{op (op x y) z}}$$
-
-The notation \hs{Semigroup t =>} is a \emph{type class constraint}, which restricts the possible types \hs{t} to only those which implement \hs{Semigroup}. \footnote{Alternatively, we can consider \hs{Semigroup t} as the type of ``implementations of \hs{Semigroup} for \hs{t}'', in which case \hs{=>} has a similar role to \hs{->} and we can consider \hs{op} to take \emph{four} parameters: a type \hs{t}, an implementation of \hs{Semigroup t} and two values of type \hs{t}. As with parameteric polymorphism, this extra \hs{Semigroup t} parameter is not available at the value level. Even if it were, we could not alter our behaviour by inspecting it, since Haskell only allows types to implement each type class in at most one way, so there would be no information to branch on.} There are many \emph{instances} of \hs{Semigroup} (types which may be substituted for \hs{t}), e.g. \hs{Integer} with \hs{op} performing addition. Many more examples can be found in the \emph{typeclassopedia} \citep{yorgey2009typeclassopedia}. This ability to constrain types, and the existence of laws, helps us reason about code generically, rather than repeating the same arguments for each particular pair of \hs{t} and \hs{op}.
-
-\item{Equational}: Haskell uses equations at the value level, for definitions; at the type level, for coercions; at the documentation level, for typeclass laws; and at the compiler level, for ad-hoc rewrite rules. This provides us with many \emph{sources} of equations, as well as many possible \emph{uses} for any equations we might discover. Along with their support in existing tools such as SMT solvers, this makes equational conjectures a natural target for our investigation.
-
-\item{Modularity}: Haskell has a module system, where each module may specify an \emph{export list} containing the names which should be made available for other modules to import. When such a list is given, any expressions \emph{not} on the list are considered \emph{private} to that module, and are hence inaccessible from elsewhere. This mechanism allows modules to provide more guarantees than are available just in their types. For example, a module may represent email addresses in the following way:
-
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth, upquote=true]
-module Email (Email(), at, render) where
-
-data Email = E String String
-
-render :: Email -> String
-render (E u h) = u ++ "@" ++ h
-
-at :: String -> String -> Maybe Email
-at "" h  = Nothing
-at u  "" = Nothing
-at u  h  = Just (E u h)
-\end{lstlisting}
-
-The \hs{Email} type guarantees that its elements have both a user part and a host part (modulo divergence), but it does not provide any guarantees about those parts. We also define the \hs{at} function, a so-called ``smart constructor'', which has the additional guarantee that the \hs{Email}s it returns contain non-empty \hs{String}s. By ommitting the \hs{E} constructor from the export list on the first line \footnote{The syntax \hs{Email()} means we're exporting the \hs{Email} type, but not any of its constructors.}, the only way \emph{other} modules can create an \hs{Email} is by using \hs{at}, which forces the non-empty guarantee to hold globally.
-
-\end{description}
-
-Together, these features make Haskell code highly structured, amenable to logical analysis and subject to many algebraic laws. However, as mentioned with regards to type classes, Haskell itself is incapable of expressing or enforcing these laws (at least, without difficulty \citep{lindley2014hasochism}). This reduces the incentive to manually discover, state and prove theorems about Haskell code, e.g. in the style of interactive theorem proving (see \S \ref{itp}), as these results may be invalidated by seemingly innocuous code changes. We will revisit the second-class status of theorem proving in Haskell in our discussion of theory exploration (\S \ref{theoryexploration}), but we will remark that Haskell is thus in a unique position with regards to the discovery of interesting theorems. Namely that many discoveries may be available with very little work, simply because the code's authors are focused on \emph{software} development rather than \emph{proof} development. The same cannot be said, for example, of ITP systems; although our reasoning capabilities may be stronger in an ITP setting, much of the ``low hanging fruit'' will have already been found through the user's dedicated efforts, and hence TE would be more likely to fit into an automation role for the user, rather than providing truly unexpected new discoveries.
-
-Other empirical advantages to studying Haskell, compared to either other programming languages or theorem proving systems, include:
-
-\begin{itemize}
-
-\item The large amount of Haskell code which is freely available online, e.g. in repositories like \href{http://hackage.haskell.org}{Hackage}, with which we can experiment.
-
-\item The existence of conjecture generation and theory exploration systems for Haskell, such as \textsc{QuickSpec} and \textsc{HipSpec}, and counterexample finders like \textsc{QuickCheck}, \textsc{SmallCheck} and \textsc{SmartCheck}.
-
-\item The remarkable amount of infrastructure which exists for working with Haskell code, including package managers, compilers, interpreters, parsers, static analysers, etc.
-
-\end{itemize}
+\fi
 
 \subsection{Interactive Theorem Proving}
 \label{itp}
@@ -311,8 +302,6 @@ We identify the following areas for researching potential improvements in existi
 Before exploring abstract definitions of interestingness, we can first consider some scenarios which arise during formal proof where we are forced to generate conjectures. An analysis of these situations, and the subsequent theorems they produce, will contribute towards an empirical justification for what is interesting (at least from a utilitarian point of view) and inform our later exploration of the literature.
 
 \subsection{Generalisation}
-
-\providecommand{\coq}[1]{\lstinline[language=ML]|#1|}
 
 When we \emph{generalise} a statement $S$, we obtain a new statement $S'$ of which $S$ is a special case. Although it seems counterintuitive, a generalised statement can sometimes be \emph{easier} to prove than the original. This arises often in inductive proofs, since the specific obligations which arise in the proof may be incompatible with the available inductive hypotheses.
 
@@ -406,6 +395,7 @@ Fixpoint plus_tail (n m : Nat) := match n with
 \end{lstlisting}
 
 \iffalse
+
 Haskell equivalent:
 
 plus :: Nat -> Nat -> Nat
@@ -415,6 +405,7 @@ plus      n (S m) = S (plus n m)
 plus_tail :: Nat -> Nat -> Nat
 plus_tail n  Z    = n
 plus_tail n (S m) = plus_tail (S n) m
+
 \fi
 
 Both of these functions implement addition, but the \coq{plus_tail} variant is tail-recursive. However, if we want to \emph{prove} that the definitions are (pointwise) equal, we run into difficulties. In particular, when the inductive step requires us to prove \coq{plus (S n) m = plus n (S m)} (which seems reasonable), we cannot make this go through using another inductive argument.
@@ -688,6 +679,73 @@ Hypothetical use cases?
 
 \section{Related Work}
 \label{related}
+
+\subsection{Haskell}
+\label{haskelldesc}
+
+Firstly, however, we give an overview of the Haskell programming language in \S \ref{haskell}. This allows us to establish many concepts in a straightforward software context, which we can then re-use in the potentially less-familiar realm of interactive theorem proving. We decided to focus on Haskell as it has mature, state-of-the-art theory exploration implementations (\textsc{QuickSpec} \citep{QuickSpec} and \textsc{HipSpec} \citep{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \citep{Hipster} system, is actually implemented by translating to Haskell and invoking \textsc{HipSpec}.
+
+Haskell is a programming language which is well-suited to research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus; in fact the \textsc{GHC} compiler uses (variants of) the polymorphic $\lambda$-calculus \emph{System F} as an intermediate representation (referred to as \emph{GHC Core}). For a detailed exposition of the language syntax and semantics, you can consult the Haskell Language Report \citep{marlow2010haskell} \footnote{Version 2010 was current as this was written} or a textbook such as \citep{thompson1999haskell}; here we will focus on those language features which make it particularly suited for our formal reasoning purposes:
+
+\begin{description}
+
+\item{Functional}: All control flow is performed by function abstraction and application, which we can reason about using standard rules of inference such as \emph{modus ponens}.
+
+\item{Pure}: Execution of actions (e.g. reading files) is separate to evaluation of expressions; hence our reasoning can safely ignore complicated external and non-local interactions.
+
+\item{Statically Typed}: Expression are constrained by \emph{types}, which can be used to eliminate unwanted combinations of values, and hence reduce search spaces; \emph{static} types can be deduced syntactically, without having to execute the code.
+
+\item{Non-strict}: If an evaluation strategy exists for $\beta$-normalising an expression (i.e. performing function calls) without diverging, then a non-strict evaluation strategy will not diverge when evaluating that expression. This is rather technical, but in simple terms it allows us to reason effectively about a Turing-complete language, where evaluation may not terminate. For example, when reasoning about \emph{pairs} of values \hs{(x, y)} and projection functions \hs{fst} and \hs{snd}, we might want to use an ``obvious'' rule such as $\forall \text{\hs{x y}}, \text{\hs{x}} = \text{\hs{fst (x, y)}}$. Haskell's non-strict semantics makes this equation valid; whilst it would \emph{not} be valid in the strict setting common to most other languages, where the expression \hs{fst (x, y)} will diverge if \hs{y} diverges (and hence alter the semantics, if \hs{x} doesn't diverge).
+
+\item{Algebraic Data Types}: These provide a rich grammar for building up user-defined data representations, and an inverse mechanism to inspect these data by \emph{pattern-matching}. For our purposes, the useful consequences of ADTs and pattern-matching include their amenability for inductive proofs and the fact they are \emph{closed}; i.e. an ADT's declaration specifies all of the normal forms for that type. This makes exhaustive case analysis trivial, which would be impossible for \emph{open} types (for example, consider classes in an object oriented language, where new subclasses can be introduced at any time).
+
+\item{Parametricity}: This allows Haskell \emph{values} to be parameterised over \emph{type-level} objects; provided those objects are never inspected. This has the \emph{practical} benefit of enabling \emph{polymorphism}: for example, we can write a polymorphic identity function \hs{id :: forall t. t -> t}. \footnote{Read ``\hs{a :: b}'' as ``\hs{a} has type \hs{b}'' and ``\hs{a -> b}'' as ``the type of functions from \hs{a} to \hs{b}''.} Conceptually, this function takes \emph{two} parameters: a type \hs{t} \emph{and} a value of type \hs{t}; yet only the latter is available in the function body, e.g. \hs{id x = x}. This inability to inspect type-level arguments gives us the \emph{theoretical} benefit of being able to characterise the behaviour of polymorphic functions from their type alone, a technique known as \emph{theorems for free} \citep{wadler1989theorems}.
+
+\item{Type classes}: Along with their various extensions, type classes are interfaces which specify a set of operations over a type (or other type-level object, such as a \emph{type constructor}). Many type classes also specify a set of \emph{laws} which their operations should obey but, lacking a simple mechanism to enforce this, laws are usually considered as documentation. As a simple example, we can define a type class \hs{Semigroup} with the following operation and associativity law:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+op :: forall t. Semigroup t => t -> t -> t
+\end{lstlisting}
+
+$$\forall \text{\hs{x y z}}, \text{\hs{op x (op y z)}} = \text{\hs{op (op x y) z}}$$
+
+The notation \hs{Semigroup t =>} is a \emph{type class constraint}, which restricts the possible types \hs{t} to only those which implement \hs{Semigroup}. \footnote{Alternatively, we can consider \hs{Semigroup t} as the type of ``implementations of \hs{Semigroup} for \hs{t}'', in which case \hs{=>} has a similar role to \hs{->} and we can consider \hs{op} to take \emph{four} parameters: a type \hs{t}, an implementation of \hs{Semigroup t} and two values of type \hs{t}. As with parameteric polymorphism, this extra \hs{Semigroup t} parameter is not available at the value level. Even if it were, we could not alter our behaviour by inspecting it, since Haskell only allows types to implement each type class in at most one way, so there would be no information to branch on.} There are many \emph{instances} of \hs{Semigroup} (types which may be substituted for \hs{t}), e.g. \hs{Integer} with \hs{op} performing addition. Many more examples can be found in the \emph{typeclassopedia} \citep{yorgey2009typeclassopedia}. This ability to constrain types, and the existence of laws, helps us reason about code generically, rather than repeating the same arguments for each particular pair of \hs{t} and \hs{op}.
+
+\item{Equational}: Haskell uses equations at the value level, for definitions; at the type level, for coercions; at the documentation level, for typeclass laws; and at the compiler level, for ad-hoc rewrite rules. This provides us with many \emph{sources} of equations, as well as many possible \emph{uses} for any equations we might discover. Along with their support in existing tools such as SMT solvers, this makes equational conjectures a natural target for our investigation.
+
+\item{Modularity}: Haskell has a module system, where each module may specify an \emph{export list} containing the names which should be made available for other modules to import. When such a list is given, any expressions \emph{not} on the list are considered \emph{private} to that module, and are hence inaccessible from elsewhere. This mechanism allows modules to provide more guarantees than are available just in their types. For example, a module may represent email addresses in the following way:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth, upquote=true]
+module Email (Email(), at, render) where
+
+data Email = E String String
+
+render :: Email -> String
+render (E u h) = u ++ "@" ++ h
+
+at :: String -> String -> Maybe Email
+at "" h  = Nothing
+at u  "" = Nothing
+at u  h  = Just (E u h)
+\end{lstlisting}
+
+The \hs{Email} type guarantees that its elements have both a user part and a host part (modulo divergence), but it does not provide any guarantees about those parts. We also define the \hs{at} function, a so-called ``smart constructor'', which has the additional guarantee that the \hs{Email}s it returns contain non-empty \hs{String}s. By ommitting the \hs{E} constructor from the export list on the first line \footnote{The syntax \hs{Email()} means we're exporting the \hs{Email} type, but not any of its constructors.}, the only way \emph{other} modules can create an \hs{Email} is by using \hs{at}, which forces the non-empty guarantee to hold globally.
+
+\end{description}
+
+Together, these features make Haskell code highly structured, amenable to logical analysis and subject to many algebraic laws. However, as mentioned with regards to type classes, Haskell itself is incapable of expressing or enforcing these laws (at least, without difficulty \citep{lindley2014hasochism}). This reduces the incentive to manually discover, state and prove theorems about Haskell code, e.g. in the style of interactive theorem proving (see \S \ref{itp}), as these results may be invalidated by seemingly innocuous code changes. We will revisit the second-class status of theorem proving in Haskell in our discussion of theory exploration (\S \ref{theoryexploration}), but we will remark that Haskell is thus in a unique position with regards to the discovery of interesting theorems. Namely that many discoveries may be available with very little work, simply because the code's authors are focused on \emph{software} development rather than \emph{proof} development. The same cannot be said, for example, of ITP systems; although our reasoning capabilities may be stronger in an ITP setting, much of the ``low hanging fruit'' will have already been found through the user's dedicated efforts, and hence TE would be more likely to fit into an automation role for the user, rather than providing truly unexpected new discoveries.
+
+Other empirical advantages to studying Haskell, compared to either other programming languages or theorem proving systems, include:
+
+\begin{itemize}
+
+\item The large amount of Haskell code which is freely available online, e.g. in repositories like \href{http://hackage.haskell.org}{Hackage}, with which we can experiment.
+
+\item The existence of conjecture generation and theory exploration systems for Haskell, such as \textsc{QuickSpec} and \textsc{HipSpec}, and counterexample finders like \textsc{QuickCheck}, \textsc{SmallCheck} and \textsc{SmartCheck}.
+
+\item The remarkable amount of infrastructure which exists for working with Haskell code, including package managers, compilers, interpreters, parsers, static analysers, etc.
+
+\end{itemize}
 
 \iffalse
 
