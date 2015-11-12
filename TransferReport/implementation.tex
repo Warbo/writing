@@ -1,0 +1,177 @@
+\section{Implementation}
+
+Most of the work carried out so far has been either preliminary investigations, to determine if a particular approach is worth pursuing; or at an infrastructure level to support experimentation.
+
+\subsection{Circular Convolution}\label{circularconvolution}
+
+We have investigated the reduction to a fixed-size of tree structures of the following form (where \hs{FV} denotes a feature vector):
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+data Tree = Leaf FV
+          | Branch FV Tree Tree
+\end{lstlisting}
+
+Just like in the non-recursive case, the simplest way to reduce our dimensionality is to truncate. To reduce an arbitrary \hs{t :: Tree} to a maximum depth \hs{d > 0}, we can use \hs{reduceD d t} where:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+reduceD 1 (Branch fv l r) = Leaf   fv
+reduceD n (Leaf   fv)     = Leaf   fv
+reduceD n (Branch fv l r) = Branch fv (reduceD (n-1) l)
+                                      (reduceD (n-1) r)
+\end{lstlisting}
+
+This is simple, but suffers two problems:
+
+\begin{itemize}
+ \item We must choose a conservatively large \hs{d}, since we're throwing away information
+ \item The number of feature vectors grows exponentially as \hs{d} increases
+\end{itemize}
+
+The first problem can't be avoided when truncating, but the second can be mitigated by truncating the \emph{width} of the tree as well, to some \hs{w > 0}. One way to truncate the width is tabulating the tree's feature vectors, then truncating the table to \hs{w} $\times$ \hs{d}, as ML4PG does.
+
+\iffalse
+
+We can do this with \hs{tabulate w d t}:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+tabulate w d t = take d (map (take w) (tabulate' t))
+
+tabulate' (Leaf   fv)     = [fv] : []
+tabulate' (Branch fv l r) = [fv] : merge (tabulate' l) (tabulate' r)
+
+merge    []     ys  = ys
+merge    xs     []  = xs
+merge (x:xs) (y:ys) = (x ++ y) : merge xs ys
+\end{lstlisting}
+
+\fi
+
+Rather than truncating our trees, we can \emph{combine} the feature vectors of leaves into their parents, and hence \emph{fold} the tree up to any finite depth. Following \citep{zanzotto2012distributed} we have investigated the use of \emph{circular convolution} (\hs{cc}) as our combining function. Hence, to reduce \hs{t :: Tree} to a single feature vector, we can use \hs{reduceC t} where:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+reduceC (Leaf fv)       = fv
+reduceC (Branch fv l r) = cc fv (cc (reduceC l) (reduceC r))
+\end{lstlisting}
+
+Circular convolution has the following desirable properties:
+
+\begin{description}
+
+  \item{Non-commutative}: \hs{cc a b} $\not\approx$ \hs{cc b a}, hence we can distinguish between \hs{Branch fv a b} and \hs{Branch fv b a}
+
+  \item{Non-associative}: \hs{cc a (cc b c)} $\not\approx$ \hs{cc (cc a b) c}, hence we can distinguish between \hs{Branch v1 a (Branch v2 b c)} and \hs{Branch v1 (Branch v2 a b) c)}.
+
+\end{description}
+
+Here we use $\not\approx$ to represent that these quantities differ \emph{with high probability}, based on empirical testing. This is the best we can do, since the type of combining functions \hs{(FV, FV) -> FV} has a co-domain strictly smaller than its domain, and hence it must discard some information. In the case of circular convolution, the remaining information is spread out among the bits in the resulting feature, which is known as a \emph{distributed representation} \citep{conf/ijcai/Plate91}.
+
+Distributed representations mix information from all parts of a structure together into a fixed number of bits, storing an \emph{approximation} whose accuracy depends on the size of the value and the amount of storage used.
+
+\subsubsection{Extracting Features from XML}
+
+This method of folding with circular convolution has been implemented in the Haskell program \textsc{Tree Features} \footnote{Available online at \href{http://chriswarbo.net/git/tree-features}{http://chriswarbo.net/tree-features}. The application parses arbitrary trees of XML and uses binary features, ie. feature vectors are bit vectors.
+
+To calculate the initial feature of an XML element, before any folding occurs, we concatenate its name and attributes to produce a string \hss}. The feature is then:
+
+\begin{equation}
+feature(n) = 2^{\md5(s) \pmod{L}}
+\end{equation}
+
+Where $\md5$ is the MD5 hash algorithm and $L$ is the length of the desired vector, given as a commandline argument. The result of $feature(s)$ is a bit vector of length $L$, containing only a single $1$. Due to the use of a hashing function, the position of that $1$ can be deterministically calculated from the input $s$, yet the \emph{a priori} probability of each position is effectively uniform.
+
+In other words, the hash introduces unwanted patterns which are \emph{theoretically} learnable, but in practice a strong hash can be treated as irreversible and hence unlearnable.
+
+\subsubsection{Application to Coq}
+
+Prior to 2014-09-08, the Coq proof assistant provided a rudimentary XML import/export feature, which we can use to access tree structures for learning. We achieve this by using the \coq{external} primitive of the Ltac tactic language: \coq{external "treefeatures" "32" t1 t2 t3.} will generate an XML tree representing the Coq terms \coq{t1}, \coq{t2} and \coq{t3}, and send it to the standard input of a \texttt{treefeatures} invocation, using a vector length argument of 32.
+
+Coq will also interpret the standard output of the command, to generate terms and tactics. This functionality isn't yet used by \textsc{Tree Features}, but it is clear that a feedback loop can be constructed, allowing the construction of powerful \textsc{Ltac} tactics which invoke external machine learning systems.
+
+\subsection{\texttt{nix-eval}}\label{nixeval}
+
+To facilitate theorem proving and machine learning, our theory exploration experiments require access to the \emph{definitions} of the terms under investigation. This is difficult, as many terms are functions, which Haskell does not let us inspect. This limitation can be worked around by programming at a meta-level: manipulating \emph{representations} of Haskell expressions, rather than the expressions themselves. To retain our ability to \emph{evaluate} expressions, we then need a mechanism to transform these representations into the expressions they represent; this usually takes the form of an \texttt{eval} function.
+
+\texttt{eval} is a common feature in languages such as Python and Javascript, where extra source files can be imported dynamically. In that case \texttt{eval} can be implemented easily by representing expressions as strings, then treating those strings as if they were the content of a file being imported.
+
+On the other hand, Haskell does not natively support dynamic importing of extra source files, making implementation of \texttt{eval} trickier. Comprehensive implementations do exist, such as \texttt{hint}, which are effectively wrappers around GHC, but all are limited to using the Haskell modules which are already installed on the system. Since we want to explore \emph{arbitrary} Haskell code, this is not enough for our purposes.
+
+We have implemented a library called \texttt{nix-eval}, which provides an \hs{eval} function for Haskell expressions which may reference packages that are not installed on the system. These packages will be automatically downloaded and installed into a sandbox when a call to \hs{eval} is forced.
+
+\texttt{nix-eval} is build on top of the Nix package manager and GHC. Nix provides a language for defining packages, a \texttt{cabal2nix} tool for generating Nix package definitions from those of Haskell's Cabal tool, and a \texttt{nix-shell} tool for evaluating arbitrary shell commands in a sandbox containing arbitrary packages.
+
+The internal representation of \texttt{nix-eval} includes a list of package names, a list of module names, a list of GHC options and a string containing Haskell code. When evaluated, \texttt{nix-shell} is invoked to create a sandbox containing an instance of GHC and the Haskell packages listed in the expression. GHC is invoked in this sandbox using the \texttt{runhaskell} command, along with any options given in the expression. The code to be evaluated is prepended with \hs{import} statements for each required module, and wrapped in a simple \hs{main} function for printing the result of its evaluation to standard output. The expression, therefore, must have type \hs{String}; although this is not enforced statically.
+
+The type of the \hs{eval} function is \hs{Expr -> IO (Maybe String)}, where \hs{Expr} is the type of expressions described above. The \hs{IO} wrapper comes from our invocation of external tools, and \hs{Maybe String} allows us to represent failure in a clean way. The restriction of expressions to \hs{String}s is not onerous; some concrete type is required, to communicate results from the GHC invocation, but we consider the particular choice of encoding to be out of scope for \texttt{nix-eval}. It would be a straightforward exercise to wrap our \hs{eval} function in a generic encoding mechanism, e.g. using JSON.
+
+\subsection{\textsc{ASTPlugin}}\label{astplugin}
+
+The Glasgow Haskell Compiler provides mechanisms for parsing Haskell code into tree structures, and a \emph{renaming} transformation which makes all names unique; either by prefixing them with the name of the module which defines them, or by suffixing the name with a number. This allows us to spot repeated use of a term, across multiple modules and packages, with a simple syntactic equality check.
+
+Since we are interested in comparing definitions based on the terms they reference, building our framework on top of GHC seems like a promising approach. Indeed, \hspec already invokes GHC's API to obtain the definitions of Haskell functions, in order to transform them into a form suitable for ATP systems. However, our initial experiments showed that this technique is too fragile for use on many real Haskell projects.
+
+This is due to many projects having a complex module structure, requiring particular GHC flags to be given, or using pre-processors such as \texttt{cpp} and Template Haskell to generate parts of their code. All of this complexity means that invoking GHC ``manually'' via its API is unlikely to obtain the definitions we require.
+
+Thankfully there is one implementation detail which most Haskell packages agree on: the Cabal build system. All of the above complexities can be specified in a package's ``Cabal file'', such that the \texttt{cabal configure} and \texttt{cabal build} commands are very likely to work for most packages, without any extra effort. This shifted our focus to augmenting GHC and Cabal, such that definitions can be collected during the normal Haskell build process.
+
+GHC provides a plugin mechanism for manipulating its Core representation, intended for optimisation passes, which we use to inspect definitions as they are being compiled. We provide a plugin called \textsc{AstPlugin} which implements an optimisation pass which returns its argument unchanged, but which also emits a serialised version of the definition to the console.
+
+There are several complications in the implementation of \textsc{AstPlugin}. We are working with Core, which as a variant of System F\textsubscript{C} \citep{sulzmann2007system} has slightly different syntax and semantics to Haskell. This is mostly a benefit, since Core is a much simpler language than Haskell and its representation is relatively stable compared to many existing representations of Haskell (which often change to support various language extensions). Three areas which make Core more difficult to handle are:
+
+\begin{description}
+  \item{Type variables}: In \S \ref{haskell} we saw that parametric polymorphism can be thought of as values being parameterised by type-level objects. In System F, this is represented explicitly by a special binding form $\Lambda$, distinct from the $\lambda$ binding form for value parameters. Core also has explicit bindings for type-level objects, although for simplicity it uses the same $\lambda$ representation for both types and values. This difference from Haskell, which only has explicit binding of values, alters function properties like arity.
+
+  \item{Unified namespace}: Haskell has distinct namespaces for values, types, data constructors, etc. Since Core does not make these distinctions, names may become ambiguous. For example, a type parameter \hs{t} may be confused with a function argument \hs{t}. To prevent this, overlapping namespaces are distinguished by prefices which are distinct from the available names; for example a type class constraint \hs{Ord t} may give rise to a binder \texttt{$\lambda$ \$dOrd} in Core. This causes difficulties when looking up names, as these prefixed forms do not easily map back to the Haskell source.
+
+  \item{Violating encapsulation}: As discussed in \S \ref{haskell}, Haskell allows names to be \emph{private} to a module. When compiling Core, we have full access to private definitions, as well as references to private names from within other definitions. Hence the definitions we receive from \textsc{AstPlugin} will include private values which we cannot import into a theory exploration tool.
+\end{description}
+
+In practice, we work around these issues with a post-processing stage: for each named definition appearing in the output of \textsc{AstPlugin}, we attempt to type-check a Haskell expression which imports that name and passes it to \qspec. Those which fail, due to the reasons above and others, are discarded.
+
+The result of building a Haskell package with \textsc{AstPlugin} is a database of Haskell definitions, similar in some respects to \textsc{Hoogle}. Definitions are indexed by a combination of their package name, module name and binding name. The definitions themselves are s-expressions representing the Core AST, with non-local references replaced by a combination of package name, module name and binding name (AKA database keys). Each definition also has an associated arity and type, obtained during the post-processing step mentioned above.
+
+Such data is useful for multiple purposes:
+
+\begin{itemize}
+  \item{Dependency tracking}: We have a tool which annotates each definition with its dependencies, i.e. those (package, module, name) combinations which it references. Definitions are then topologically sorted into dependency order, as this is required for our recurrent clustering technique.
+
+  \item{Machine learning}: The Core s-expressions are used as input to our machine learning approaches, for guiding theory exploration using statistical properties of the theory being explored. As mentioned in \S \ref{featureextraction}, it is inefficient to apply intensive machine learning algorithms directly to high-dimensional data representations, so we use various feature extraction algorithms to reduce their dimensionality.
+
+  \item{Theory exploration}: The \textsc{MLSpec} tool, described below, uses the output of \textsc{AstPlugin} to construct theories suitable for \qspec to explore.
+
+  \item{Reflection}: As mentioned above, \hspec uses the GHC API to obtain definitions of Haskell terms, which are then converted for use by theorem provers. Although we have not yet investigated this use, it seems likely that the output of \textsc{AstPlugin} would provide a more comprehensive and robust alternative to the GHC API approach.
+
+  \item{Counterexample Generation}: As mentioned in \S \ref{tests}, there are many Haskell property checkers, which differ mostly in the way they generate values for testing. Since our theory exploration tools are built on these property checkers, we rely on the existence of value generators for at least some of the types in our theory; yet existing approaches to deriving such generators (e.g. as found in the \texttt{derive} package) rely on choosing an arbitrary constructor then recursing. As demonstrated in \S \ref{haskell}, a type's constructors might not be exported, in which case these methods fail. Also, the exponential complexity of such naive recursion makes these generators unusable in many cases. It seems that a database of inspectable Haskell functions may be useful for solving this problem in a more practical way, although we have not yet performed experiments in this area.
+\end{itemize}
+
+\subsection{\textsc{MLSpec}}\label{mlspec}
+
+When investigating heuristic methods like those of machine learning, it is important to use as much realistic data as possible to predict the system's performance on real tasks. One bottleneck for theory exploration is the lack of theories which are available to explore: we must manually select a set of terms to explore, and sometimes specify variables too.
+
+Our \textsc{MLSpec} tool can automatically build theories suitable for exploration by \qspec, based on the databases constructed by \textsc{AstPlugin} described above. Features of \textsc{MLSpec} include:
+
+\begin{itemize}
+  \item{Monomorphising}: Given values of polymorphic type, e.g. \hs{safeHead :: forall t. [t] -> Maybe t} and \hs{[] :: forall t. [t]}, a testing-based system like \qspec is unable to evaluate expressions such as \hs{safeHead [] :: forall t. Maybe t} without instantiating the variable \hs{t} to a specific type. Such an instantiation is called \emph{monomorphising}, and in the case of \textsc{MLSpec} we build on previous work in \qcheck by attempting to instantiate all type variables to \hs{Integer}. We discard those cases where this is invalid, such as variable \emph{type constructors} (e.g. \hs{forall c. c Bool -> c Bool}) or incompatible class constraints (e.g. \hs{forall t. IsString t => t}).
+
+  \item{Qualification}: All names are \emph{qualified} (prefixed by their module's name), to avoid most ambiguity. There is still the possibility that multiple packages will declare modules of the same name, in which case the exploration process will abort.
+
+  \item{Variable definition}: Once a \qspec theory has been defined containing all of the given terms, we inspect the types it references and append three variables for each to the theory (enough to discover laws such as associativity, but not too many to overflow the limit of \qspec's exhaustive search).
+
+  \item{Sandboxing}: \textsc{MLSpec} is built on top of \texttt{nix-eval}, which allows the theory being explored to reference packages which aren't yet installed on the system.
+
+\end{itemize}
+
+\subsection{\textsc{ML4HS}}\label{ml4hs}
+
+\textsc{ML4HS} is our top-level theory exploration framework, combining \textsc{AstPlugin}, \textsc{TreeFeatures}, the \textsc{Weka} machine learning library and \textsc{MLSpec}.
+
+Inspired by the use of premise selection (see \S \ref{relevance}) to reduce the search space in ATP,
+we select sub-sets of the given theory to explore, chosen to try and keep together those expressions which combine in interesting ways, and to separate those which combine in uninteresting ways.
+
+We hypothesise that similarity-based clustering of expressions, inspired by those of \textsc{ML4PG}  and related work in \textsc{ACL2(ml)} (see \S \ref{clustering}), is an effective method for performing this separation.
+
+% TODO: Future experiments will test this by comparing the throughput of \qspec with and without the \textsc{ML4HS} pre-processor.
+
+% Divide and conquer for theory exploration
+% Does it help?
+
+% Clustering and feature extraction

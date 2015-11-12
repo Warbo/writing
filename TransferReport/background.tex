@@ -1,0 +1,206 @@
+\section{Background}
+\label{background}
+
+\iffalse
+TODO
+
+Background
+
+2.1 Introduce language signature
+ a) subset of Haskell DONE
+ b) stuff from QuickCheck/Spec
+
+2.2? Machine learning and feature extraction
+~1 page
+
+2.3: QuickSpec, HipSpec
+\fi
+
+\subsection{Testing}
+
+Although unit testing is the de facto industry standard for quality assurance in non-critical systems, the level of confidence it provides is rather low, and totally inadequate for many (e.g. life-) critical systems. To see why, consider the following Haskell function, along with some unit tests (see \ref{haskell} for more details on Haskell):
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+factorial 0 = 1
+factorial n = n * factorial (n-1)
+
+fact_base      = factorial 0 == factorial 1
+fact_increases = factorial 3 <= factorial 4
+fact_div       = factorial 4 == factorial 5 `div` 5
+\end{lstlisting}
+
+The intent of the function is to map an input $n$ to an output $n!$. The tests check a few properties of the implementation, including the base case, that the function is monotonically increasing, and a relationship between adjacent outputs. However, these tests will \emph{not} expose a serious problem with the implementation: it diverges on half of its possible inputs!
+
+All of Haskell's built-in numeric types allow negative numbers, which this implementation doesn't take into account. Whilst this is a rather trivial example, it highlights a common problem: unit tests are insufficient to expose incorrect assumptions. In this case, our assumption that numbers are positive has caused a bug in the implementation \emph{and} limited the tests we've written.
+
+If we do manage to spot this error, we might capture it in a \emph{regression test} and update the definition of \hs{factorial} to handle negative numbers, e.g. by taking their absolute value:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+factorial 0 = 1
+factorial n = let nPos = abs n
+               in nPos * factorial (nPos - 1)
+
+fact_neg = factorial 1 == factorial (-1)
+\end{lstlisting}
+
+However, this is \emph{still} not enough: since this function only uses generic numeric operations, it will be polymorphic; allowing all numeric types\footnote{Its type will be of the form \hs{forall t. Num t => t -> t}, where \hs{Num t} constrains the type variable \hs{t} to be numeric. There will also be extra contraints like \hs{Eq} due to the use of \hs{==} in the unit tests.}. If we provide a fractional value, the function will again diverge. Clearly, by choosing what to test we are biasing the test suite towards those cases we've already taken into account, whilst neglecting the problems we did not expect.
+
+Haskell offers a partial solution to this problem in the form of \emph{property checking}\footnote{See section \ref{propertychecking} for more information}. Tools such as \qcheck{} separate tests into three components: a \emph{property} to check, which unlike a unit test may contain \emph{free variables}; a source of values to instantiate these free variables; and a stopping criterion. Here is how we might restate our unit tests as properties:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+fact_base        = factorial 0 == factorial 1
+fact_increases n = factorial n <= factorial (n+1)
+fact_div       n = factorial n == factorial (n+1) `div` (n+1)
+fact_neg       n = factorial n == factorial (-n)
+\end{lstlisting}
+
+The free variables (all called \hs{n} in this case) are abstracted as function parameters; these parameters are implicitly \emph{universally quantified}, i.e. we've gone from a unit test asserting $factorial(3) \leq factorial(4)$ to a property asserting $\forall n, factorial(n) \leq factorial(n+1)$. Notice that unit tests like \hs{fact_base} are valid properties; they just assert rather weak statements.
+
+To check these properties, \qcheck{} treats closed terms (like \hs{fact_base}) just like unit tests: pass if they evaluate to \hs{True}, fail otherwise. For open terms, a random selection of values are generated and passed in via the function parameter; the results are then treated in the same way as closed terms. The default stopping criterion for \qcheck{} (for each test) is when a single generated test fails, or when 100 generated tests pass.
+
+The ability to state \emph{universal} properties in this way avoids some of the bias we encountered with closed values. In the \hs{factorial} example, this manifests in two ways:
+
+\begin{itemize}
+  \item \qcheck{} cannot test polymorphic functions; they type must be \emph{monomorphised} first (instantiated to a particular concrete type). This is a technical limitation, since \qcheck{} must know which type of values to generate, but in our example it would bring the issue with fractional values to our attention.
+
+  \item The generators used by \qcheck{} depend only on the \emph{type} of value they are generating: since \hs{Int} includes positive and negative values, the \hs{Int} generator will output both. This will expose the problem with negative numbers, which we weren't expecting.
+\end{itemize}
+
+Property checking is certainly an improvement over unit testing, but the problem of tests being biased towards expected cases remains, since we are manually specifying the properties to be checked.
+
+We can reduce this bias further through the use of \emph{theory exploration} tools, such as \qspec{} and \hspec{}. These programs \emph{discover} properties of a ``theory'' (e.g. a library), through a combination of brute-force enumeration, random testing and (in the case of \hspec{}) automated theorem proving.\footnote{See section \ref{atp} for more information on automated theorem proving.}
+
+\iffalse
+
+Mathematics provides us with powerful, systematic methods of reasoning, which we can bring to bear on this challenge; in particular those of \emph{formal logic} and \emph{statistics}. By (partially) mechanising these approaches, in the fields of \emph{theorem proving} and \emph{machine learning}, respectively, we can leverage these increasing machine capabilities and direct them for the purpose of analysis. However, the question still remains: on what should we focus that analysis?
+
+In this work, we investigate the notion of \emph{interestingness} in the exploration of formal systems (an area known as \emph{theory exploration}) as a way to make productive use of resources in an often intractable domain. To keep things concrete, we focus our formal analysis on equational formulae describing programs in the Haskell language, for reasons elaborated in \S \ref{haskell}. Conceptually, we maintain a broader view, and survey many related areas which may offer insights on the problem.
+
+Appeals to interestingness arise when more direct measures, such as utility, are not available. For example, the inclusion of particular statements in a program or proof development can be easily justified based on their contribution to the overall solution; however, in a \emph{library} there is no particular problem being solved, in which case we must judge statements on less direct criteria, such as how ``interesting'' they may be to our users. Appeals to interestingness abound in the history of computer-assisted reasoning; for example, in 1971 Plotkin \citep{plotkin1971further} considered the task of \textquote{discovering theorems $T$ from a system of axioms $Ax$}, and in particular the questions \textquote{Under what conditions is $T$ an interesting, possible theorem in the system $Ax$?} and \textquote{Is there a way to generate (most) interesting possible theorems?}. Despite such widespread use of the term, there is no standard definition of what makes a formal object, whether it is an axiom, a conjecture, a proof, etc., ``interesting''; although many ad-hoc heuristics have been proposed.
+
+We begin our undertaking in \S \ref{background} by introducing the Haskell language, as well as the relevant fields of verification for context. We define a formal framework for our investigation, and show how it relates to the existing theorem proving landscape. A selection of theorem proving scenarios which \emph{require} exploration are discussed in \S \ref{examples}, whilst related work, including existing defintions of interestingness, is surveyed in \S \ref{related}. We also review the use of exploration in other fields of Artificial Intelligence and Machine Learning, where researchers are experimenting with replacing \emph{explicit} goals and rewards with \emph{implicit} alternatives such as interestingness. Recent efforts in this area have lead to the emergence of principled theories, mostly based around (algorithmic) information theory, which may be adapted to our theory exploration context.
+
+We discuss our present contributions in \S \ref{current} and future research directions in \S \ref{future}, before concluding in \S \ref{conclusion}.
+
+\fi
+
+\subsection{Haskell}
+\label{haskell}
+
+\begin{figure}
+  \begin{equation*}
+    \begin{split}
+      expr\    \rightarrow\ & \texttt{Var}\ id                                       \\
+                         |\ & \texttt{Lit}\ literal                                  \\
+                         |\ & \texttt{App}\ expr\ expr                               \\
+                         |\ & \texttt{Lam}\ id\ expr                                 \\
+                         |\ & \texttt{Let}\ bind\ expr                               \\
+                         |\ & \texttt{Case}\ expr\ id\ \left[ alt \right]            \\
+      id\      \rightarrow\ & \texttt{Local}\ \mathcal{L}                            \\
+                         |\ & \texttt{Global}\ \mathcal{G} \\
+      literal\ \rightarrow\ & \texttt{LitNum}\ \mathcal{N}                           \\
+                         |\ & \texttt{LitStr}\ \mathcal{S}                           \\
+      alt\     \rightarrow\ & ( altcon,\ id,\ expr )                                 \\
+      altcon\  \rightarrow\ & \texttt{DataAlt}\ id                                   \\
+                         |\ & \texttt{LitAlt}\ literal                               \\
+                         |\ & \texttt{Default}                                       \\
+      bind\    \rightarrow\ & \texttt{NonRec}\ id\ expr                              \\
+                         |\ & \texttt{Rec}\ [ ( id,\ expr ) ]
+    \end{split}
+  \end{equation*}
+  where:
+  \begin{tabular}[t]{l @{ $=$ } l}
+    $\mathcal{S}$ & string literals    \\
+    $\mathcal{N}$ & numeric literals   \\
+    $\mathcal{L}$ & local identifiers  \\
+    $\mathcal{G}$ & global identifiers
+  \end{tabular}
+
+  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
+  \label{coresyntax}
+\end{figure}
+
+The full Haskell language is rather complex, so we focus instead on \emph{Core}, an intermediate representation of the Glasgow Haskell Compiler (GHC) based on \fc. For a full treatment of \fc, and its use in GHC, see \citep[Appendix C]{sulzmann2007system}. The sub-set of Core we consider is shown in figure \ref{coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} we erase types and use a custom representation of names. There are also several other forms of literal (machine words of various sizes, individual characters, etc.) which we omit for brevity, as their treatment is similar to those of strings and numerals.
+
+\iffalse
+
+Most work in mechanised, formal mathematics focuses on a \emph{theorem proving} paradigm, usually either \emph{interactive theorem proving} (ITP) or \emph{automated theorem proving} (ATP). Whilst the boundaries between these approaches can be somewhat blurred, we give precise definitions in \S \ref{itp} and \S \ref{atp}, respectively, and characterise both as being \emph{goal-driven}: particular conjectures must be provided as input to the process, and the output is either a proof, a refutation or ``don't know'' (in the case of incomplete procedures).
+
+In this work, we instead adopt the paradigm of \emph{(automated) theory exploration}, discussed in \S \ref{theoryexploration}, which includes the ability to \emph{generate} conjectures, and hence output \emph{novel} theorems. Since many theories will admit an infinite number of trivial theorems (e.g. $\top$, $\top \land \top$, $(\top \land \top) \land \top$, \dots) we require some mechanism for avoiding such undesirable, yet provable, statements. This is the role of interestingness, which we can use to \emph{judge} a statement, in a potentially rich way, rather than merely constructing or failing to construct a proof.
+
+\fi
+
+\subsection{Interactive Theorem Proving}
+\label{itp}
+
+ITP is based around a \emph{proof checker} $C$, which is a decision procedure for determining if a given value $P$ (known as a \emph{proof object} or \emph{witness}) consititutes a proof of a given statement $S$:
+
+$$ C \colon (P \times S) \rightarrow Boolean $$
+
+The process of ITP can hence be understood as the search for an appropriate $P$ for our \emph{goal} $S$:
+
+$$ ITP \colon (S \times C) \rightarrow \{ P \mid C(P, S) = True \} $$
+
+It just so happens that a useful way to implement such a system is via pure functional programming, with the result that many ITP systems (AKA \emph{proof assistants}) such as Coq and Agda appear very similar to languages like Haskell. In particular, we can represent statements $S$ as types and proofs $P$ as values, in which case the proof checker $C$ is simply a type-checker. There are some obvious quirks, such as the need to be \emph{total} (not Turing-complete) in order to ensure soundness, but overall many of the features we introduced for Haskell, such as parametricity, type classes and ADTs are directly translatable to the ITP setting.
+
+This coincidence is due to the \emph{Curry-Howard correspondence} \citep{wadler2015propositions}, which identifies programming languages with systems of logic. Functional programming languages correspond to intuitionistic logics, and are hence a natural fit for reasoning on computers. With additional axioms, we can extend these to more familiar classical logics, although these can make it harder to compute.
+
+Most differences between functional programming and ITP stem from different \emph{expectations} of the user. In the case of Haskell, the desire for expressivity outweighs the desire for soundness, and hence its designers opted to make it Turing-complete. For an ITP language like Agda, soundness far outweighs the inconvenience of having to prove termination, so the opposite tradeoff is made. Similarly, since many ITP ``programs'' (proofs) will never be executed, the language can avoid optimisation in favour of simplicity (and hopefully correctness). This approach is summed up by the \emph{de Bruijn criterion}, which requires that the system \textquote{generates 'proof-objects' (of some form) that can be checked by an 'easy' algorithm} \cite[\S~2]{barendregt2001proof}. One nice consequence of this approach, which is followed for example by Isabelle \citep{nipkow2002isabelle} and Coq \citep{bertot2013interactive}, is that the proof assistants themselves can become arbitrarily complex and even buggy, yet as long as the proof checker remains simple we can maintain a high degree of confidence in the results.
+
+Their emphasis on \emph{interactivity}, mostly caused by operating in undecidable domains, means ITP can require an enormous effort for non-trivial proof or verification tasks (e.g. see \citep{hales2015formal}). One common way to mitigate this problem is by implementing powerful \emph{tactics}: meta-programs which automate as much of a proof as possible. The most striking example of such meta-programming is the \emph{Sledgehammer} component of Isabelle/HOL \citep{journals/iandc/MengQP06}, which invokes a multitude of ATP systems on (a translated form of) the current goal to see if any can provide a proof which Isabelle's core checker will accept.
+
+\subsection{Automated Theorem Proving}
+\label{atp}
+
+ATP systems are similar in principle to proof assistants, but are based around a \emph{proof search} algorithm rather than a proof checker. By using a fixed algorithm for proving, such as \emph{resolution} \cite[\S~9.6]{Russell:2003:AIM:773294} or \emph{superposition} \citep{bachmair1994rewrite}, ATP programs are limited to particular decidable or semi-decidable fragments of logic. In particular, most ATP systems (such as E \citep{schulz2013system} and Vampire \citep{riazanov2003implementing}) operate in classical first-order logic. This is the most striking difference from ITP systems (e.g. Coq, Agda and Isabelle) which operate in higher-order logics.
+
+In addition to its interest to logicians, ATP has been actively researched in the field of artificial intelligence, dating back to the founding of the field at the 1956 Dartmouth conference. Even by that time Newell and Simon had developed their Logic Theory Machine \citep{newell1956logic}, which was subsequently able to prove theorems like those in Principia Mathematica \citep{newell1958elements}. The approaches now known as \emph{good old-fashioned AI} (GOFAI) were due in part to the success of automated theorem proving, as attempts were made to formulate many problems in a way amenable to these powerful first-order reasoners.
+
+Recently there has been a trend away from this direction, towards statistical formulations amenable to machine learning, which we will review in \S \ref{related}.
+
+\subsection{Theory Exploration}
+\label{theoryexploration}
+
+The most striking difference between theory exploration (TE) and theorem proving is the former's lack of an explicit goal (e.g. a user-provided conjecture to prove). Instead, the \emph{implicit} goal is more open-ended: the discovery of ``interesting'' conclusions from the given premises. Of course, a key question to ask is what do we mean by ``interesting''? There is no single answer, although many approximate measures have been proposed. The choice of what counts as interesting has been used to classify various TE implementations \citep{warburtonscaling}, along with their approaches to term generation, well-formedness and proof.
+
+Following \citep{warburtonscaling}, we call a pair $(\Sigma, V)$, of a signature and a set of variables, a \emph{theory}. \emph{Theory exploration} then refers to any process $(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)$ for producing terms of the theory which are well-formed, provable and ``interesting''.
+
+The conditions of well-formedness and provability can be handled through the use of type systems and automated theorem provers. Hence the method of conjecture generation, and the determination of what is interesting, are the most important properties of any TE system.
+
+Early implementations like \textsc{Theorema} \citep{buchberger2000theory} provided interactive environments, similar to computer algebra systems and interactive theorem provers, to assist the user in finding theorems. Like in the ITP approach, the relatively simple process of verification is automated, whilst the more difficult tasks (term generation and the determination of their interest) are left up to the user.
+
+Subsequent systems have investigated \emph{automated} theory exploration, for tasks such as lemma discovery \citep{Hipster}. By removing user interaction, these properties must be implemented by algorithms. In existing systems these are tightly coupled to improve efficiency, which makes it difficult to try different approaches independently.
+
+As an example, \qspec{} \citep{QuickSpec} discovers equations about Haskell code, which are defined as ``interesting'' if they cannot be simplified using previously discovered equations. The intuition for such criteria is to avoid special cases of known theorems, such as $0 + 0 = 0$, $0 + 1 = 1$, etc. when we already know $0 + x = x$. Whilst this interestingness judgement is elegantly implemented with a congruence closure relation (version 1) and a term rewriting system
+(version 2), the conjecture generation is performed in a brute-force way.
+
+Although \qspec{} only \emph{tests} its equations rather than proving them, it is still used as the exploration component of more rigorous systems like \hspec{} and \textsc{Hipster}.
+
+\hspec{} is currently the most powerful TE system for Haskell, and also forms a major component of \textsc{Hipster}. It uses off-the-shelf ATP programs (including AltErgo, Vampire, Z3, E, SPASS and CVC4) to verify the conjectures of \qspec{}. \qspec{}, in turn, enumerates all type-correct combinations of the terms in the theory up to some depth, groups them into equivalence classes using the \qcheck{} counterexample finder, then conjectures equations relating the members of these classes. This approach works well as a lemma generation system, making \hspec{} a capable inductive theorem prover as well as a theory exploration system \citep{claessen2013automating}. \hspec{} is also compatible with Haskell's existing testing infrastructure, such that an invocation of \texttt{cabal test} can run \hspec{} alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and \textsc{Criterion}.
+
+In fact, there are similarities between the way a TE system like \hspec{} can generalise from proving \emph{particular} theorems to \emph{inventing} theorems, and the way counterexample finders like \qcheck{} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. There are likely lessons that each can learn from the other's approach to term generation.
+
+We identify the following areas for researching potential improvements in existing TE systems such as \hspec{}:
+
+\begin{description}
+\item{Term generation}:
+  Enumerating all type-correct terms is a brute-force solution to this question. Scalable alternatives to brute-force algorithms are a well-studied area of Artificial Intelligence and Machine Learning \iffalse TODO: Related work reference \fi. In particular, heuristic search algorithms like those surveyed in \citep{blum2011hybrid} could be used.
+  We could also use Machine Learning methods like those used for \emph{relevance filtering} \ref{relevance} to identify some sub-set of a given theory, to prioritise over the rest.
+
+\item{Interestingness}
+  Various alternative interestingness criteria have been proposed, which we survey in \S \ref{relatedwork}. Augmenting or replacing the criteria may be useful, for example to distinguish useful relationships from incidental coincidences; or to prevent surprising, insightful equations from being discarded because they can be simplified.
+\end{description}
+
+
+% Theory exploration is similar to \emph{experimental mathematics}
+
+% - Relation to Science
+%  - Testable/falsifiable hypotheses are like evaluable terms (or, more generally, conjectures which can be decided, using a reasonable amount of resources).
+% - Relation to AI tasks: exploring surroundings, etc.
+
+% - Statistics is another area that's less straightforward than normal numerical computing, since there is subjectivity and judgement involved in the answering of questions.
+
+% Theory formation: Alison? Others.
+% Theory exploration: Buchberger, Moa in Isabelle, Koen in Haskell. Others?
+% Theorem proving: Well-trodden: first-order ATP, higher-order ITP, functional programming
+% Communication: Latex, Wikis, APIs, communicating with aliens
