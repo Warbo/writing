@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \usepackage{mathtools}
 \usepackage{amssymb}
+\usepackage{algorithm2e}
 \usepackage[T1]{fontenc}
 %\usepackage{enumitem}
 \usepackage{paralist}
@@ -55,15 +56,13 @@
 
 \providecommand{\hs}[1]{\lstinline[language=Haskell]|#1|}
 
-\newenvironment{haskell}
-  {
-    \begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-  }
-  {
-    \end{lstlisting}
-  }
-
 \providecommand{\coq}[1]{\lstinline[language=ML]|#1|}
+
+\lstnewenvironment{haskell}{%
+  \lstset{language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+
+\lstnewenvironment{coqblock}{%
+  \lstset{language=ML, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
 
 \begin{document}
 

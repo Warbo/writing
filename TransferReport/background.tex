@@ -2,12 +2,11 @@
 \label{background}
 
 \iffalse
-TODO
+TODO{2015-11-14}
 
 Background
 
 2.1 Introduce language signature
- a) subset of Haskell DONE
  b) stuff from QuickCheck/Spec
 
 2.2? Machine learning and feature extraction
@@ -16,7 +15,59 @@ Background
 2.3: QuickSpec, HipSpec
 \fi
 
-\subsection{Testing}
+\iffalse
+
+Mathematics provides us with powerful, systematic methods of reasoning, which we can bring to bear on this challenge; in particular those of \emph{formal logic} and \emph{statistics}. By (partially) mechanising these approaches, in the fields of \emph{theorem proving} and \emph{machine learning}, respectively, we can leverage these increasing machine capabilities and direct them for the purpose of analysis. However, the question still remains: on what should we focus that analysis?
+
+In this work, we investigate the notion of \emph{interestingness} in the exploration of formal systems (an area known as \emph{theory exploration}) as a way to make productive use of resources in an often intractable domain. To keep things concrete, we focus our formal analysis on equational formulae describing programs in the Haskell language, for reasons elaborated in \S \ref{haskell}. Conceptually, we maintain a broader view, and survey many related areas which may offer insights on the problem.
+
+Appeals to interestingness arise when more direct measures, such as utility, are not available. For example, the inclusion of particular statements in a program or proof development can be easily justified based on their contribution to the overall solution; however, in a \emph{library} there is no particular problem being solved, in which case we must judge statements on less direct criteria, such as how ``interesting'' they may be to our users. Appeals to interestingness abound in the history of computer-assisted reasoning; for example, in 1971 Plotkin \citep{plotkin1971further} considered the task of \textquote{discovering theorems $T$ from a system of axioms $Ax$}, and in particular the questions \textquote{Under what conditions is $T$ an interesting, possible theorem in the system $Ax$?} and \textquote{Is there a way to generate (most) interesting possible theorems?}. Despite such widespread use of the term, there is no standard definition of what makes a formal object, whether it is an axiom, a conjecture, a proof, etc., ``interesting''; although many ad-hoc heuristics have been proposed.
+
+We begin our undertaking in \S \ref{background} by introducing the Haskell language, as well as the relevant fields of verification for context. We define a formal framework for our investigation, and show how it relates to the existing theorem proving landscape. A selection of theorem proving scenarios which \emph{require} exploration are discussed in \S \ref{examples}, whilst related work, including existing defintions of interestingness, is surveyed in \S \ref{related}. We also review the use of exploration in other fields of Artificial Intelligence and Machine Learning, where researchers are experimenting with replacing \emph{explicit} goals and rewards with \emph{implicit} alternatives such as interestingness. Recent efforts in this area have lead to the emergence of principled theories, mostly based around (algorithmic) information theory, which may be adapted to our theory exploration context.
+
+We discuss our present contributions in \S \ref{current} and future research directions in \S \ref{future}, before concluding in \S \ref{conclusion}.
+
+\fi
+
+\subsection{Haskell}
+\label{haskell}
+
+\begin{figure}
+  \begin{equation*}
+    \begin{split}
+      expr\    \rightarrow\ & \texttt{Var}\ id                                       \\
+                         |\ & \texttt{Lit}\ literal                                  \\
+                         |\ & \texttt{App}\ expr\ expr                               \\
+                         |\ & \texttt{Lam}\ \mathcal{L}\ expr                        \\
+                         |\ & \texttt{Let}\ bind\ expr                               \\
+                         |\ & \texttt{Case}\ expr\ \mathcal{L}\ \left[ alt \right]   \\
+      id\      \rightarrow\ & \texttt{Local}\ \mathcal{L}                            \\
+                         |\ & \texttt{Global}\ \mathcal{G}                           \\
+      literal\ \rightarrow\ & \texttt{LitNum}\ \mathcal{N}                           \\
+                         |\ & \texttt{LitStr}\ \mathcal{S}                           \\
+      alt\     \rightarrow\ & ( altcon,\ [\mathcal{L}],\ expr )                      \\
+      altcon\  \rightarrow\ & \texttt{DataAlt}\ \mathcal{G}                          \\
+                         |\ & \texttt{LitAlt}\ literal                               \\
+                         |\ & \texttt{Default}                                       \\
+      bind\    \rightarrow\ & \texttt{NonRec}\ \mathcal{L}\ expr                     \\
+                         |\ & \texttt{Rec}\ [ ( \mathcal{L},\ expr ) ]
+    \end{split}
+  \end{equation*}
+  where:
+  \begin{tabular}[t]{l @{ $=$ } l}
+    $\mathcal{S}$ & string literals    \\
+    $\mathcal{N}$ & numeric literals   \\
+    $\mathcal{L}$ & local identifiers  \\
+    $\mathcal{G}$ & global identifiers
+  \end{tabular}
+
+  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
+  \label{coresyntax}
+\end{figure}
+
+The full Haskell language is rather complex, so we focus instead on \emph{Core}, an intermediate representation of the Glasgow Haskell Compiler (GHC) based on \fc. For a full treatment of \fc, and its use in GHC, see \citep[Appendix C]{sulzmann2007system}. The sub-set of Core we consider is shown in figure \ref{coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} we erase types and use a custom representation of names. There are also several other forms of literal (machine words of various sizes, individual characters, etc.) which we omit for brevity, as their treatment is similar to those of strings and numerals.
+
+\subsection{QuickCheck}
 
 Although unit testing is the de facto industry standard for quality assurance in non-critical systems, the level of confidence it provides is rather low, and totally inadequate for many (e.g. life-) critical systems. To see why, consider the following Haskell function, along with some unit tests (see \ref{haskell} for more details on Haskell):
 
@@ -72,58 +123,6 @@ We can reduce this bias further through the use of \emph{theory exploration} too
 
 \iffalse
 
-Mathematics provides us with powerful, systematic methods of reasoning, which we can bring to bear on this challenge; in particular those of \emph{formal logic} and \emph{statistics}. By (partially) mechanising these approaches, in the fields of \emph{theorem proving} and \emph{machine learning}, respectively, we can leverage these increasing machine capabilities and direct them for the purpose of analysis. However, the question still remains: on what should we focus that analysis?
-
-In this work, we investigate the notion of \emph{interestingness} in the exploration of formal systems (an area known as \emph{theory exploration}) as a way to make productive use of resources in an often intractable domain. To keep things concrete, we focus our formal analysis on equational formulae describing programs in the Haskell language, for reasons elaborated in \S \ref{haskell}. Conceptually, we maintain a broader view, and survey many related areas which may offer insights on the problem.
-
-Appeals to interestingness arise when more direct measures, such as utility, are not available. For example, the inclusion of particular statements in a program or proof development can be easily justified based on their contribution to the overall solution; however, in a \emph{library} there is no particular problem being solved, in which case we must judge statements on less direct criteria, such as how ``interesting'' they may be to our users. Appeals to interestingness abound in the history of computer-assisted reasoning; for example, in 1971 Plotkin \citep{plotkin1971further} considered the task of \textquote{discovering theorems $T$ from a system of axioms $Ax$}, and in particular the questions \textquote{Under what conditions is $T$ an interesting, possible theorem in the system $Ax$?} and \textquote{Is there a way to generate (most) interesting possible theorems?}. Despite such widespread use of the term, there is no standard definition of what makes a formal object, whether it is an axiom, a conjecture, a proof, etc., ``interesting''; although many ad-hoc heuristics have been proposed.
-
-We begin our undertaking in \S \ref{background} by introducing the Haskell language, as well as the relevant fields of verification for context. We define a formal framework for our investigation, and show how it relates to the existing theorem proving landscape. A selection of theorem proving scenarios which \emph{require} exploration are discussed in \S \ref{examples}, whilst related work, including existing defintions of interestingness, is surveyed in \S \ref{related}. We also review the use of exploration in other fields of Artificial Intelligence and Machine Learning, where researchers are experimenting with replacing \emph{explicit} goals and rewards with \emph{implicit} alternatives such as interestingness. Recent efforts in this area have lead to the emergence of principled theories, mostly based around (algorithmic) information theory, which may be adapted to our theory exploration context.
-
-We discuss our present contributions in \S \ref{current} and future research directions in \S \ref{future}, before concluding in \S \ref{conclusion}.
-
-\fi
-
-\subsection{Haskell}
-\label{haskell}
-
-\begin{figure}
-  \begin{equation*}
-    \begin{split}
-      expr\    \rightarrow\ & \texttt{Var}\ id                                       \\
-                         |\ & \texttt{Lit}\ literal                                  \\
-                         |\ & \texttt{App}\ expr\ expr                               \\
-                         |\ & \texttt{Lam}\ id\ expr                                 \\
-                         |\ & \texttt{Let}\ bind\ expr                               \\
-                         |\ & \texttt{Case}\ expr\ id\ \left[ alt \right]            \\
-      id\      \rightarrow\ & \texttt{Local}\ \mathcal{L}                            \\
-                         |\ & \texttt{Global}\ \mathcal{G} \\
-      literal\ \rightarrow\ & \texttt{LitNum}\ \mathcal{N}                           \\
-                         |\ & \texttt{LitStr}\ \mathcal{S}                           \\
-      alt\     \rightarrow\ & ( altcon,\ id,\ expr )                                 \\
-      altcon\  \rightarrow\ & \texttt{DataAlt}\ id                                   \\
-                         |\ & \texttt{LitAlt}\ literal                               \\
-                         |\ & \texttt{Default}                                       \\
-      bind\    \rightarrow\ & \texttt{NonRec}\ id\ expr                              \\
-                         |\ & \texttt{Rec}\ [ ( id,\ expr ) ]
-    \end{split}
-  \end{equation*}
-  where:
-  \begin{tabular}[t]{l @{ $=$ } l}
-    $\mathcal{S}$ & string literals    \\
-    $\mathcal{N}$ & numeric literals   \\
-    $\mathcal{L}$ & local identifiers  \\
-    $\mathcal{G}$ & global identifiers
-  \end{tabular}
-
-  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
-  \label{coresyntax}
-\end{figure}
-
-The full Haskell language is rather complex, so we focus instead on \emph{Core}, an intermediate representation of the Glasgow Haskell Compiler (GHC) based on \fc. For a full treatment of \fc, and its use in GHC, see \citep[Appendix C]{sulzmann2007system}. The sub-set of Core we consider is shown in figure \ref{coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} we erase types and use a custom representation of names. There are also several other forms of literal (machine words of various sizes, individual characters, etc.) which we omit for brevity, as their treatment is similar to those of strings and numerals.
-
-\iffalse
-
 Most work in mechanised, formal mathematics focuses on a \emph{theorem proving} paradigm, usually either \emph{interactive theorem proving} (ITP) or \emph{automated theorem proving} (ATP). Whilst the boundaries between these approaches can be somewhat blurred, we give precise definitions in \S \ref{itp} and \S \ref{atp}, respectively, and characterise both as being \emph{goal-driven}: particular conjectures must be provided as input to the process, and the output is either a proof, a refutation or ``don't know'' (in the case of incomplete procedures).
 
 In this work, we instead adopt the paradigm of \emph{(automated) theory exploration}, discussed in \S \ref{theoryexploration}, which includes the ability to \emph{generate} conjectures, and hence output \emph{novel} theorems. Since many theories will admit an infinite number of trivial theorems (e.g. $\top$, $\top \land \top$, $(\top \land \top) \land \top$, \dots) we require some mechanism for avoiding such undesirable, yet provable, statements. This is the role of interestingness, which we can use to \emph{judge} a statement, in a potentially rich way, rather than merely constructing or failing to construct a proof.
@@ -161,6 +160,22 @@ Recently there has been a trend away from this direction, towards statistical fo
 \subsection{Theory Exploration}
 \label{theoryexploration}
 
+\begin{figure}
+  \begin{equation*}
+    \begin{split}
+      name\   =\ & N_1\ |\ \dots\ |\ N_n                               \\
+      type\   =\ & T_1\ |\ \dots\ |\ T_m\ |\ type \rightarrow type   \\
+      sig\    =\ & \{(n_i | (name, type); sig                                     \\
+      expr_{\mathcal{s}}\ =\ & v    : t\ \text{if}\ v : t \in s                        \\
+              |\ & f\ x : b\ \text{if}\ f : a \in expr_s \wedge x : a \in expr_s \\
+      conj_s\ =\ & \{ a =_t b \mid a : t \in expr_s \wedge b : t \in expr_s \}
+    \end{split}
+  \end{equation*}
+
+  \caption{General model of \qspec{} conjecture generation, given a signature $\Sigma$ containing names $N_i$ and types $T_i$.}
+  \label{coresyntax}
+\end{figure}
+
 The most striking difference between theory exploration (TE) and theorem proving is the former's lack of an explicit goal (e.g. a user-provided conjecture to prove). Instead, the \emph{implicit} goal is more open-ended: the discovery of ``interesting'' conclusions from the given premises. Of course, a key question to ask is what do we mean by ``interesting''? There is no single answer, although many approximate measures have been proposed. The choice of what counts as interesting has been used to classify various TE implementations \citep{warburtonscaling}, along with their approaches to term generation, well-formedness and proof.
 
 Following \citep{warburtonscaling}, we call a pair $(\Sigma, V)$, of a signature and a set of variables, a \emph{theory}. \emph{Theory exploration} then refers to any process $(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)$ for producing terms of the theory which are well-formed, provable and ``interesting''.
@@ -184,7 +199,7 @@ We identify the following areas for researching potential improvements in existi
 
 \begin{description}
 \item{Term generation}:
-  Enumerating all type-correct terms is a brute-force solution to this question. Scalable alternatives to brute-force algorithms are a well-studied area of Artificial Intelligence and Machine Learning \iffalse TODO: Related work reference \fi. In particular, heuristic search algorithms like those surveyed in \citep{blum2011hybrid} could be used.
+  Enumerating all type-correct terms is a brute-force solution to this question. Scalable alternatives to brute-force algorithms are a well-studied area of Artificial Intelligence and Machine Learning \iffalse TODO{2015-11-15}: Related work reference \fi. In particular, heuristic search algorithms like those surveyed in \citep{blum2011hybrid} could be used.
   We could also use Machine Learning methods like those used for \emph{relevance filtering} \ref{relevance} to identify some sub-set of a given theory, to prioritise over the rest.
 
 \item{Interestingness}
