@@ -4,9 +4,7 @@
 \subsection{Haskell}
 \label{haskelldesc}
 
-Firstly, however, we give an overview of the Haskell programming language in \S \ref{haskell}. This allows us to establish many concepts in a straightforward software context, which we can then re-use in the potentially less-familiar realm of interactive theorem proving. We decided to focus on Haskell as it has mature, state-of-the-art theory exploration implementations (\qspec{} \citep{QuickSpec} and \hspec{} \citep{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \citep{Hipster} system, is actually implemented by translating to Haskell and invoking \hspec{}.
-
-Haskell is a programming language which is well-suited to research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus; in fact the \textsc{GHC} compiler uses (variants of) the polymorphic $\lambda$-calculus \emph{System F} as an intermediate representation (referred to as \emph{GHC Core}). For a detailed exposition of the language syntax and semantics, you can consult the Haskell Language Report \citep{marlow2010haskell} \footnote{Version 2010 was current as this was written} or a textbook such as \citep{thompson1999haskell}; here we will focus on those language features which make it particularly suited for our formal reasoning purposes:
+Haskell is a convenient choice for our purposes for several reasons. Here we discuss the relevant language features from a high-level:
 
 \begin{description}
 
@@ -297,48 +295,6 @@ The most important property of a logical formula is its truth value. Although we
 
 One major difficulty with formal mathematics as a domain in which to apply statistical machine learning is the use of \emph{structure} to encode information in objects. In particular, \emph{trees} appear in many places: from inductive datatypes, to recursive function definitions; from theorem statements, to proof objects. Such nested structures may extend to arbitrary depth, which makes them difficult to represent with a fixed number of features, as is expected by most machine learning algorithms. Here we review a selection of solutions to this problem, and compare their distinguishing properties.
 
-\paragraph{Feature Extraction}\label{featureextraction}
-
-\emph{Feature extraction} is a common pre-processing step for machine learning (ML). Rather than feeding ``raw'' data straight into our ML algorithm, we only learn a sample of \emph{relevant} details, known as \emph{features}. This has two benefits:
-
-\begin{itemize}
-  \item \emph{Feature vectors} (ordered sets of features) are chosen to be more compact than the data they're extracted from: feature extraction is \emph{lossy compression}. This reduces the size of the ML problem, improving efficiency (e.g. running time).
-  \item We avoid learning irrelevant details such as the encoding system used, improving \emph{data} efficiency (the number of samples required to spot a pattern).
-\end{itemize}
-
-Another benefit of feature extraction is to \emph{normalise} the input data to a fixed-size representation. Many ML algorithms only work with fixed-size inputs; for example, the popular \emph{backpropagation} \citep{Russell:2003:AIM:773294} algorithm works on models with \emph{fixed} topology (e.g. \emph{artificial neural networks} with fixed connections between nodes). This requires some form of pre-processing in domains where the size of each input is not known, may vary or may even be unbounded.
-
-For example, in the case of \emph{online} learning we must make predictions/decisions before seeing all of the inputs. Unbounded input appears in domains such as programming and theorem proving, where individual term may be trees of unbounded depth. In these situations we need a mapping from arbitrary inputs to a fixed representation which is amenable to learning.
-
-As an example, say we want to learn relationships between the following program fragments:
-
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-data Maybe a = Nothing | Just a
-
-data Either a b = Left a | Right b
-\end{lstlisting}
-
-We might hope our algorithm discovers relationships like:
-
-\begin{itemize}
-  \item Both are valid Haskell code.
-  \item Both describe datatypes.
-  \item Both datatypes have two constructors.
-  \item \hs{Either} is a generalisation of \hs{Maybe} (we can define \hs{Maybe a = Either () a} and \hs{Nothing = Left ()}).
-  \item There is a symmetry in \hs{Either}: \hs{Either a b} is equivalent to \hs{Either b a} if we swap occurences of \hs{Left} and \hs{Right}.
-  \item It is trivial to satisfy \hs{Maybe} (using \hs{Nothing}).
-  \item It is not trivial to satisfy \hs{Either}; we require an \hs{a} or a \hs{b}.
-\end{itemize}
-
-However, this is too optimistic. Without our domain-knowledge of Haskell, an ML algorithm cannot impose any structure on these fragments, and will treat them as strings of bits. Our high-level hopes are obscured by low-level details: the desirable patterns of Haskell types are mixed with undesirable patterns of ASCII bytes, of letter frequency in English words, and so on.
-
-In theory we could throw more computing resources and data at a problem, but available hardware and corpora are always limited. Instead, feature extraction lets us narrow the ML problem to what we, with our domain knowlege, consider important.
-
-There is no \emph{fundamental} difference between raw representations and features: the identity function is a valid feature extractor. Likewise, there is no crisp distinction between feature extraction and machine learning: a sufficiently-powerful learner doesn't require feature extraction, and a sufficiently-powerful feature extractor doesn't require any learning! \footnote{Consider a classification problem, to assign a label $l \in L$ to each input. If we only extract a single feature $f \in L$, we have solved the classification problem without using a separate learning step.}
-
-Rather, the terms are distinguished for purely \emph{practical} reasons: by separating feature extraction from learning, we can distinguish straightforward, fast data transformation (feature extraction) from complex, slow statistical analysis (learning). This allows for modularity, separation of concerns, and in particular allows ``off-the-shelf'' ML to be re-used across a variety of different domains.
-
-Even if we have no domain knowledge, we can still use a feature extraction phase to improve efficiency: first we learn a compact representation for our data, for example using \emph{autoencoding}; then we use that encoder as a feature extractor for our main learning task. This stacking of one learning algorithm on top of another, especially with greedy learning of each layer, has lead to the recent trend of \emph{deep learning}.
 
 \paragraph{Truncation and Padding}
 
@@ -399,3 +355,31 @@ Recurrent neural networks
 Backpropagation through structure
 
 \fi
+
+\subsection{Interactive Theorem Proving}
+\label{itp}
+
+ITP is based around a \emph{proof checker} $C$, which is a decision procedure for determining if a given value $P$ (known as a \emph{proof object} or \emph{witness}) consititutes a proof of a given statement $S$:
+
+$$ C \colon (P \times S) \rightarrow Boolean $$
+
+The process of ITP can hence be understood as the search for an appropriate $P$ for our \emph{goal} $S$:
+
+$$ ITP \colon (S \times C) \rightarrow \{ P \mid C(P, S) = True \} $$
+
+It just so happens that a useful way to implement such a system is via pure functional programming, with the result that many ITP systems (AKA \emph{proof assistants}) such as Coq and Agda appear very similar to languages like Haskell. In particular, we can represent statements $S$ as types and proofs $P$ as values, in which case the proof checker $C$ is simply a type-checker. There are some obvious quirks, such as the need to be \emph{total} (not Turing-complete) in order to ensure soundness, but overall many of the features we introduced for Haskell, such as parametricity, type classes and ADTs are directly translatable to the ITP setting.
+
+This coincidence is due to the \emph{Curry-Howard correspondence} \citep{wadler2015propositions}, which identifies programming languages with systems of logic. Functional programming languages correspond to intuitionistic logics, and are hence a natural fit for reasoning on computers. With additional axioms, we can extend these to more familiar classical logics, although these can make it harder to compute.
+
+Most differences between functional programming and ITP stem from different \emph{expectations} of the user. In the case of Haskell, the desire for expressivity outweighs the desire for soundness, and hence its designers opted to make it Turing-complete. For an ITP language like Agda, soundness far outweighs the inconvenience of having to prove termination, so the opposite tradeoff is made. Similarly, since many ITP ``programs'' (proofs) will never be executed, the language can avoid optimisation in favour of simplicity (and hopefully correctness). This approach is summed up by the \emph{de Bruijn criterion}, which requires that the system \textquote{generates 'proof-objects' (of some form) that can be checked by an 'easy' algorithm} \cite[\S~2]{barendregt2001proof}. One nice consequence of this approach, which is followed for example by Isabelle \citep{nipkow2002isabelle} and Coq \citep{bertot2013interactive}, is that the proof assistants themselves can become arbitrarily complex and even buggy, yet as long as the proof checker remains simple we can maintain a high degree of confidence in the results.
+
+Their emphasis on \emph{interactivity}, mostly caused by operating in undecidable domains, means ITP can require an enormous effort for non-trivial proof or verification tasks (e.g. see \citep{hales2015formal}). One common way to mitigate this problem is by implementing powerful \emph{tactics}: meta-programs which automate as much of a proof as possible. The most striking example of such meta-programming is the \emph{Sledgehammer} component of Isabelle/HOL \citep{journals/iandc/MengQP06}, which invokes a multitude of ATP systems on (a translated form of) the current goal to see if any can provide a proof which Isabelle's core checker will accept.
+
+\subsection{Automated Theorem Proving}
+\label{atp}
+
+ATP systems are similar in principle to proof assistants, but are based around a \emph{proof search} algorithm rather than a proof checker. By using a fixed algorithm for proving, such as \emph{resolution} \cite[\S~9.6]{Russell:2003:AIM:773294} or \emph{superposition} \citep{bachmair1994rewrite}, ATP programs are limited to particular decidable or semi-decidable fragments of logic. In particular, most ATP systems (such as E \citep{schulz2013system} and Vampire \citep{riazanov2003implementing}) operate in classical first-order logic. This is the most striking difference from ITP systems (e.g. Coq, Agda and Isabelle) which operate in higher-order logics.
+
+In addition to its interest to logicians, ATP has been actively researched in the field of artificial intelligence, dating back to the founding of the field at the 1956 Dartmouth conference. Even by that time Newell and Simon had developed their Logic Theory Machine \citep{newell1956logic}, which was subsequently able to prove theorems like those in Principia Mathematica \citep{newell1958elements}. The approaches now known as \emph{good old-fashioned AI} (GOFAI) were due in part to the success of automated theorem proving, as attempts were made to formulate many problems in a way amenable to these powerful first-order reasoners.
+
+Recently there has been a trend away from this direction, towards statistical formulations amenable to machine learning, which we will review in \S \ref{related}.

@@ -19,14 +19,14 @@ As computers and software become more capable, and as our reliance on them incre
 
 Whilst use of pure functional programming languages, like Haskell and Idris, is relatively rare, their features are well suited to common software engineering practices like \emph{unit testing}; where tasks are broken down into small, easily-specified ``units'', and tested in isolation for a variety of use-cases. Functional ideas are thus spreading to mainstream software engineering in a more dilute form; seen, for example, in the recent inclusion of first-class functions in Java \cite{gosling2015java} and C++ \cite{willcock2006lambda}.
 
-Functional programming is also well suited to more radical practices, such as \emph{property checking} and \emph{theorem proving}, which are promising methods for increasing confidence in software, yet are currently prohibitively expensive. Here we investigate how the recent \emph{theory exploration} approach can lower the effort required to pursue these goals, and in particular how machine learning techniques can mitigate the costs of the combinatorial algorithms involved.
+Functional programming is also well suited to more radical practices, such as \emph{property checking} (as popularised by \qcheck{}) and \emph{theorem proving}, which are promising methods for increasing confidence in software, yet can be prohibitively expensive. Here we investigate how the recent \emph{theory exploration} approach can lower the effort required to pursue these goals, and in particular how machine learning techniques can mitigate the costs of the combinatorial algorithms involved.
 
-\iffalse
-TODO
 Our contributions are:
 
 \begin{itemize}
   \item A framework for applying theory exploration tools such as \qspec{} to Haskell's existing package system.
-  \item A
+  \item A feature extraction method for transforming Haskell expressions into a form amenable to off-the-shelf machine learning algorithms.
+  \item A comparison of our methods with existing approaches, both for theory exploration in Haskell, and for machine learning in other languages.
 \end{itemize}
-\fi
+
+We begin in \S \ref{background} by providing a formal context for analysing Haskell expressions (\S \ref{haskell}) and the results of theory exploration systems like \qspec{} (\S \ref{theoryexploration}). We give a brief overview of testing approaches and how they relate to Haskell (\S \ref{quickcheck}), as well as the machine learning approaches we are building on (\S \ref{featureextraction}). We discuss our contributions in more depth in \S \ref{contributions}, and provide implementation details \S \ref{implementation}. A variety of related work is surveyed in \S \ref{related}, and we give several potential directions for future research in \S \ref{future} before concluding in \S \ref{conclusion}.

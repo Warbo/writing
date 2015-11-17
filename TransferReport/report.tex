@@ -32,6 +32,7 @@
   numbers=none,
   numbersep=5pt,
   numberstyle=\ttfamily\tiny\color[gray]{0.3},
+  columns=flexible,
   belowcaptionskip=\bigskipamount,
   captionpos=b,
   escapeinside={*'}{'*},
@@ -39,11 +40,11 @@
   tabsize=2,
   emphstyle={\bf},
   commentstyle=\it,
-  stringstyle=\mdseries\rmfamily,
+  stringstyle=\mdseries\ttfamily,
   showspaces=false,
-  keywordstyle=\bfseries\rmfamily,
-  columns=flexible,
-  basicstyle=\small\sffamily,
+  keepspaces=true,
+  keywordstyle=\bfseries\ttfamily,
+  basicstyle=\small\ttfamily,
   showstringspaces=false,
   morecomment=[l]\%,
 }
@@ -68,7 +69,7 @@
 
 \pagestyle{headings}  % switches on printing of running heads
 
-\title{Interestingness Measures for Theory Exploration}
+\title{Improving Haskell Theory Exploration}
 
 \author{Chris Warburton}
 
@@ -78,18 +79,17 @@
 \maketitle              % typeset the title of the contribution
 
 \begin{abstract}
-Since their inception, computers have been applied to automate and assist work in mathematics, with established fields including numerical computation, computer algebra, (online) communication and so on. Here we focus on their use in two areas: formal proof and statistics; and how new approaches are bringing these seemingly disparate disciplines closer together.
+Theory Exploration is a promising approach to improving the quality and understanding of software, above that available through testing, in languages which are amenable to formal analysis such as those based on pure functional programming. Current techniques are limited by their computational cost, which we mitigate through a divide and conquer approach: reducing the problem size whilst using a machine learning approach to preserve relevant details.
 \end{abstract}
 
 \input{intro.tex}
 \input{background.tex}
-\input{examples.tex}
 \input{contributions.tex}
 \input{implementation.tex}
 
+\iffalse
 \section{First Results}
 
-\iffalse
 TODO
 
 Future work?
@@ -105,17 +105,6 @@ Hypothetical use cases?
 TODO
 
 interestingness
-\fi
-
-\iffalse
-
-QuickSpec: extend or extinguish?
-
-Improve and find other use cases/scenarios for clustering and feature extraction
-
-Other directions for Theory Exploration?
-
-How about systems based on term rewriting, logic programming, etc.?
 \fi
 
 \section{Conclusion}

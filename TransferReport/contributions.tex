@@ -1,10 +1,5 @@
 \section{Contributions}
-\label{current}
-
-\iffalse
-TODO
-Good analysis of differences with ML4PG/ACL2ML
-\fi
+\label{contributions}
 
 \subsection{Recurrent Clustering}
 \label{recurrentclustering}
@@ -30,36 +25,53 @@ Ideally we would like something in between these two extremes, which requires a 
 Recurrent clustering tackles this problem in a straightforward way: we look up the expressions \emph{referenced by} each identifier, and use \emph{their} similarity in place of the identifiers'. This gives rise to a recursive process, where feature extraction is interleaved with multiple rounds of clustering. For this recursive process to be well-founded, we impose a topological ordering on expressions based on their dependencies (the expressions they reference). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and several mutually-recursive expressions may appear at the same level.
 
 \subsubsection{Algorithm}
+\label{algorithm}
 
 \begin{figure}
-  \begin{haskell}
-    type Env = [Local]
-    type Db  = [(Global, Int)]
+  \begin{lstlisting}[language=Haskell, xleftmargin=.1\textwidth, xrightmargin=.1\textwidth]
+    data RoseTree a = Node a [RoseTree a]
 
-    data RoseTree a = Rose a [RoseTree a]
+    eRT :: [Local] -> [[Global]] -> Expr -> RoseTree Feature
+    eRT env db e = case e of
+      Var (Global i) -> Node (lookupG db  i) []
+      Var (Local  i) -> Node (lookupL env i) []
+      Lit (LitNum _) -> Node sLITNUM []
+      Lit (LitStr _) -> Node sLITSTR []
+      Lam  i  e      -> Node sLAM [eRT (i:env) db e]
+      App  e1 e2     -> Node sAPP [eRT    env  db e1,
+                                   eRT    env  db e2]
+      Let  bs e      -> Node sLET (map (bRT (ids bs:env) db) bs ++
+                                        eRT (ids bs:env) db  e
+      Case e i alts  -> Node sCASE (eRT    env  db  e :
+                               map (aRT (i:env) db) alts)
 
-    exprTree :: Env -> Db -> Expr -> RoseTree Int
-    exprTree env db e = case e of
-      Var (Global i) -> Rose (fromMaybe sUNKNOWN (lookup db  i)) []
-      Var (Local  i) -> Rose (fromMaybe sUNKNOWN (lookup env i)) []
-      Lit (LitNum _) -> Rose (sLITNUM) []
-      Lit (LitStr _) -> Rose (sLITSTR) []
-      App  e1 e2     -> Rose (sAPP) [exprTree    env  db e1,
-                                     exprTree    env  db e2]
-      Lam  i  e      -> Rose (sLAM) [exprTree (i:env) db e1]
-      Let  bs e      -> Rose (sLET)
-      Case e i alts  -> Rose (sCASE) (exprTree env db e : map (altTree (i:env) db) alts)
+    aRT :: [Local] -> [[Global]] -> Alt -> RoseTree Feature
+    aRT env db alt = case alt of
+      (DataAlt _, vs, e) -> eRT (vs ++ env) db e
+      (LitAlt  _, _,  e) -> eRT env db e
+      (Default,   _,  e) -> eRT env db e
 
-    altTree :: Env -> Db -> Alt -> Rose Int
-    altTree env db alt = case alt of
-      (DataAlt _, vs, e) -> exprTree (vs ++ env) db e
-      (LitAlt  _, _,  e) -> exprTree env db e
-      (Default,   _,  e) -> exprTree env db e
+    bRT :: [Local] -> [[Global]] -> Bind -> RoseTree Feature
+    bRT env db b = case b of
+      NonRec i e -> eRT env db e
+      Rec es     -> Node sREC (map (eRT env db . snd) es)
 
-    closedTree :: Db -> Core -> RoseTree Int
-    closedTree = exprTree []
-  \end{haskell}
-  \caption{Feature extraction for Haskell Core, using recurrent clustering an k-means.}
+    level :: Int -> RoseTree Feature -> [Feature]
+    level 0 (Node x xs) = [x]
+    level n (Node x xs) = concatMap (level (n-1)) xs
+
+    rt :: [[Global]] -> Expr -> [Feature]
+    rt db e = concat (pad cols (map (`level` eRT [] db e) [0..rows]))
+
+    recurrentCluster :: [[(Global, Expr)]] -> [[Global]]
+    recurrentCluster = go ([],[])
+      where go (fs, db) []       = db
+            go (fs, db) (es:ess) = let fs' = fs ++ map (extract db) es
+                                       db' = kMeans fs'
+                                    in go (fs', db') ess
+            extract db (i, e) = (i, rt db e)
+  \end{lstlisting}
+  \caption{Feature extraction for Haskell Core. We send named expressions to \hs{recurrentCluster}, topologically sorted: if an element contains multiple \hs{(Global, Expr)} pairs, they are mutually-recursive. Syntax trees are first converted into \hs{RoseTree}s of \hs{Feature}s, these trees are converted to matrices, then flattened into feature vectors, then \hs{kMeans} clusters the feature vectors. The result is a list of clusters, naming their elements. More details are given in \S \ref{algorithm}.}
   \label{featureextractionalgorithm}
 \end{figure}
 
@@ -68,8 +80,10 @@ Our feature extraction algorithm is given in figure \ref{featureextractionalgori
 \begin{itemize}
   \item Since they are comparatively rare, we ignore the particular value of each literal.
   \item Since we are currently focused on expressions, we ignore particular data constructors and types.
-  \item If we cannot find a particular identifier, we use the sentinel value \hs{sUNKNOWN}. In practice, this only occurs for mutually-recursive references, since the toplogical sort will populate the \hs{db} with all other global identifiers, and local identifiers which don't occur in the environment would be rejected as invalid Haskell before the translation to Core.
-  \item
+  \item The \hs{lookupL} and \hs{lookupG} functions return the index containing their argument, if found. In the case of \hs{lookupL}, this acts as a de Bruijn index to give alpha-equivalent terms equal feature vectors. For \hs{lookupG}, this is the ID of the cluster it appears in; this ensures that references to similar expressions result in similar features.
+  \item \hs{lookupL} and \hs{lookupG} return a sentinel value \hs{sUNKNOWN} if the given ID is not found. In practice, this only occurs for global, mutually-recursive references, since the toplogical sort will populate the \hs{db} with all other global identifiers, and local identifiers which don't occur in the environment would be rejected as invalid Haskell before the translation to Core.
+  \item The \hs{Feature} type is abstract, but in practice it will be \hs{Float}.
+  \item Our algorithm contains several parameters, including \hs{rows} and \hs{cols} which determine how to truncate the matrices (defaults are 30). The \hs{kMeans} function also contains a parameter for the cluster number; we set this as $\sqrt{n}$ where $n$ is the number of feature vectors being clustered.
 \end{itemize}
 
 \subsubsection{Comparison}
@@ -93,11 +107,6 @@ Fixpoint even n := match n with
 
 However, this is relatively uncommon and unsupported by ML4PG.
 
-\iffalse
-TODO
-Replacing mutually-recursive calls (i.e. unknown global references) by the \hs{sUNKNOWN} sentinel, has the effect of denotes an has a similar effect to a consistently
-\fi
-
 The more interesting differences come from our handling (or lack thereof) for types. Coq and ACL2 are at opposite ends of the typing spectrum, with the former treating types as first class entities of the language whilst the latter is untyped (or \emph{unityped}). In both cases, we have a \emph{single} language to analyse, by ML4PG and ACL2(ml) respectively.\footnote{ML4PG can also analyse Coq's \textsc{Ltac} meta-language. Haskell has its own meta-language, Template Haskell, but here we only consider the regular Haskell which it generates.}
 
 The situation is different for Haskell, where the type level is distinct from the value level, and there are strict rules for how they can influence each other. In particular, Haskell values can depend on types (via the type class mechanism) but types cannot depend on values.
@@ -105,8 +114,8 @@ The situation is different for Haskell, where the type level is distinct from th
 In our initial approach, we restrict ourselves to the value level. This has several consequences:
 
 \begin{itemize}
-  \item We cannot distinguish between data constructors, other than using exact equality.
-  \item The arity of Since Core uses a single \texttt{Lam} abstraction for both value- and type-level parameters, there may be spurious after erasure rather than the Our Core expressions may contain type-level operation
+  \item Although they are values, we cannot distinguish between data constructors, other than using exact equality.
+  \item Since Core uses a single \texttt{Lam} abstraction for both value- and type-level parameters, we cannot completely erase type-level parameters unless they are fully applied. This can cause a function's Core arity to be greater than its Haskell arity.
 \end{itemize}
 
-effectively a collection contains  As a sub-set of Common Lisp, ACL2 is an untyped language; whilst Coq makes heavy use of types as first-class values.  Haskell differs from both (the ACL2 sub-set of) Common Lisp and Coq (by ML4PG) analyses an untyped language, Haskell effectively lives between the two extremes of untyped programming (as analysed by ACL2(ml)) and dependently typed programming (Coq (which is dependently typed) a sense, Haskell ACL2(ml)
+There is certainly promise in including types in our analysis, by pairing every term with its type as in ML4PG. This will allow fine-grained distinction of expressions which are otherwise identical, especially data constructors.
