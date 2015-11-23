@@ -1,8 +1,8 @@
 \section{Related Work}
-\label{related}
+\label{sec:related}
 
 \subsection{Haskell}
-\label{haskelldesc}
+\label{sec:haskelldesc}
 
 Haskell is a convenient choice for our purposes for several reasons. Here we discuss the relevant language features from a high-level:
 
@@ -52,7 +52,7 @@ The \hs{Email} type guarantees that its elements have both a user part and a hos
 
 \end{description}
 
-Together, these features make Haskell code highly structured, amenable to logical analysis and subject to many algebraic laws. However, as mentioned with regards to type classes, Haskell itself is incapable of expressing or enforcing these laws (at least, without difficulty \citep{lindley2014hasochism}). This reduces the incentive to manually discover, state and prove theorems about Haskell code, e.g. in the style of interactive theorem proving (see \S \ref{itp}), as these results may be invalidated by seemingly innocuous code changes. We will revisit the second-class status of theorem proving in Haskell in our discussion of theory exploration (\S \ref{theoryexploration}), but we will remark that Haskell is thus in a unique position with regards to the discovery of interesting theorems. Namely that many discoveries may be available with very little work, simply because the code's authors are focused on \emph{software} development rather than \emph{proof} development. The same cannot be said, for example, of ITP systems; although our reasoning capabilities may be stronger in an ITP setting, much of the ``low hanging fruit'' will have already been found through the user's dedicated efforts, and hence TE would be more likely to fit into an automation role for the user, rather than providing truly unexpected new discoveries.
+Together, these features make Haskell code highly structured, amenable to logical analysis and subject to many algebraic laws. However, as mentioned with regards to type classes, Haskell itself is incapable of expressing or enforcing these laws (at least, without difficulty \citep{lindley2014hasochism}). This reduces the incentive to manually discover, state and prove theorems about Haskell code, e.g. in the style of interactive theorem proving (see \S \ref{sec:itp}), as these results may be invalidated by seemingly innocuous code changes. We will revisit the second-class status of theorem proving in Haskell in our discussion of theory exploration (\S \ref{sec:theoryexploration}), but we will remark that Haskell is thus in a unique position with regards to the discovery of interesting theorems. Namely that many discoveries may be available with very little work, simply because the code's authors are focused on \emph{software} development rather than \emph{proof} development. The same cannot be said, for example, of ITP systems; although our reasoning capabilities may be stronger in an ITP setting, much of the ``low hanging fruit'' will have already been found through the user's dedicated efforts, and hence TE would be more likely to fit into an automation role for the user, rather than providing truly unexpected new discoveries.
 
 Other empirical advantages to studying Haskell, compared to either other programming languages or theorem proving systems, include:
 
@@ -109,7 +109,7 @@ In this way, the fitness function $f$ is used to assign comparable quantities to
 Once we begin this process of augmenting fitness functions, or abandoning their use as objectives, an obvious question arises: what happens if our new function contains nothing of the original? This kind of pure exploration scenario leads to a variety of ideas for \emph{instrinsic} fitness, such as novelty \citep{lehman2011abandoning}, which can lead to learning useful ``stepping stones'' even in objective-driven domains. Such intrinsic notions of fitness are direct analogues of the interestingness measures we seek for theory exploration.
 
 \subsubsection{Artificial Curiosity}
-\label{curiosity}
+\label{sec:curiosity}
 
 \begin{figure}
   \centering
@@ -145,12 +145,12 @@ Once we begin this process of augmenting fitness functions, or abandoning their 
 
   \caption{The Wundt curve, reproduced from \citep{berlyne1970novelty}. The axes ``hedonic value'' and ``arousal potential'' are described as covering \textquote{reward value\dots preference or pleasure}, and \textquote{all the stimulus properties that tend to raise arousal, including novelty and complexity}, respectively.}
 
-  \label{wundt}
+  \label{fig:wundt}
 \end{figure}
 
 \emph{Artificial curiosity} (AC) describes active learning systems which are rewarded based on how interesting the input or data they discover is \citep{schmidhuber2006developmental}. Although framed in the context of \emph{reinforcement learning}, this is clearly relevant to our theory exploration setting.
 
-As an unsupervised learning task, AC has no access to labels or meanings associated with its input; the only features it can learn are the structure and relationships inherent in the data, which is very much what we would like a theory exploration system to do. The unifying principle of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in figure \ref{wundt}) \footnote{In practice, many measures avoid negative values for simplicity, in which cases we replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \citep{berlyne1970novelty}.
+As an unsupervised learning task, AC has no access to labels or meanings associated with its input; the only features it can learn are the structure and relationships inherent in the data, which is very much what we would like a theory exploration system to do. The unifying principle of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in figure \ref{fig:wundt}) \footnote{In practice, many measures avoid negative values for simplicity, in which cases we replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \citep{berlyne1970novelty}.
 
 We can divide AC approaches into two groups: the first, which we call \emph{explicit}, send inputs which follow a Wundt curve to their learning algorithm; the second, the \emph{implicit} approaches, instead modify the \emph{output} of their learning algorithm(s), such that the overall system follows a Wundt curve as an emergent property.
 
@@ -220,7 +220,7 @@ Omohundro? Too physical.
 The core problem of assigning ``interestingness'' to logical formulae is the application of statistical reasoning to the discrete, semantically-rich domain of formal systems. This problem has been tackled from various directions for a variety of reasons; here we summarise those contributions which seem of particular importance for theory exploration.
 
 \subsubsection{Relevance Filtering}
-\label{relevance}
+\label{sec:relevance}
 
 % TODO
 \citep{kuhlwein2012overview}
@@ -252,7 +252,7 @@ Recently, a variety of alternative algorithms have also been investigated, inclu
 \end{description}
 
 \subsubsection{Clustering}
-\label{clustering}
+\label{sec:clustering}
 
 % TODO: ML4PG
 \citep{journals/corr/abs-1212-3618}
@@ -267,7 +267,7 @@ The most important property of a logical formula is its truth value. Although we
 \citep{Hutter.Lloyd.Ng.ea:2013}
 
 \subsubsection{Interestingness in Concept Formation}
-\label{conceptformation}
+\label{sec:conceptformation}
 
 % TODO:
 \citep{Montano-Rivas.McCasland.Dixon.ea:2012}
@@ -357,7 +357,7 @@ Backpropagation through structure
 \fi
 
 \subsection{Interactive Theorem Proving}
-\label{itp}
+\label{sec:itp}
 
 ITP is based around a \emph{proof checker} $C$, which is a decision procedure for determining if a given value $P$ (known as a \emph{proof object} or \emph{witness}) consititutes a proof of a given statement $S$:
 
@@ -376,10 +376,10 @@ Most differences between functional programming and ITP stem from different \emp
 Their emphasis on \emph{interactivity}, mostly caused by operating in undecidable domains, means ITP can require an enormous effort for non-trivial proof or verification tasks (e.g. see \citep{hales2015formal}). One common way to mitigate this problem is by implementing powerful \emph{tactics}: meta-programs which automate as much of a proof as possible. The most striking example of such meta-programming is the \emph{Sledgehammer} component of Isabelle/HOL \citep{journals/iandc/MengQP06}, which invokes a multitude of ATP systems on (a translated form of) the current goal to see if any can provide a proof which Isabelle's core checker will accept.
 
 \subsection{Automated Theorem Proving}
-\label{atp}
+\label{sec:atp}
 
 ATP systems are similar in principle to proof assistants, but are based around a \emph{proof search} algorithm rather than a proof checker. By using a fixed algorithm for proving, such as \emph{resolution} \cite[\S~9.6]{Russell:2003:AIM:773294} or \emph{superposition} \citep{bachmair1994rewrite}, ATP programs are limited to particular decidable or semi-decidable fragments of logic. In particular, most ATP systems (such as E \citep{schulz2013system} and Vampire \citep{riazanov2003implementing}) operate in classical first-order logic. This is the most striking difference from ITP systems (e.g. Coq, Agda and Isabelle) which operate in higher-order logics.
 
 In addition to its interest to logicians, ATP has been actively researched in the field of artificial intelligence, dating back to the founding of the field at the 1956 Dartmouth conference. Even by that time Newell and Simon had developed their Logic Theory Machine \citep{newell1956logic}, which was subsequently able to prove theorems like those in Principia Mathematica \citep{newell1958elements}. The approaches now known as \emph{good old-fashioned AI} (GOFAI) were due in part to the success of automated theorem proving, as attempts were made to formulate many problems in a way amenable to these powerful first-order reasoners.
 
-Recently there has been a trend away from this direction, towards statistical formulations amenable to machine learning, which we will review in \S \ref{related}.
+Recently there has been a trend away from this direction, towards statistical formulations amenable to machine learning, which we will review in \S \ref{sec:related}.

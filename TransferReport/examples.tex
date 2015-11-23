@@ -1,5 +1,5 @@
 \section{Exploration in Theorem Proving}
-\label{examples}
+\label{sec:examples}
 
 Before exploring abstract definitions of interestingness, we can first consider some scenarios which arise during formal proof where we are forced to generate conjectures. An analysis of these situations, and the subsequent theorems they produce, will contribute towards an empirical justification for what is interesting (at least from a utilitarian point of view) and inform our later exploration of the literature.
 
@@ -33,7 +33,7 @@ This generalised form is clearly the distributivity law for multiplication and a
 
 % TODO: Describe the ACL2 heuristics
 
-Generalisation also occurs frequently when reasoning about \emph{tail-recursive} definitions \citep{kapur2003automatic}. \footnote{A tail-recursive function can be executed in constant space using a loop, whereas recursion in non-tail positions may require a growing number of stack frames or nested closures. See \S \ref{auxiliarylemmas} for example definitions of each type.}
+Generalisation also occurs frequently when reasoning about \emph{tail-recursive} definitions \citep{kapur2003automatic}. \footnote{A tail-recursive function can be executed in constant space using a loop, whereas recursion in non-tail positions may require a growing number of stack frames or nested closures. See \S \ref{sec:auxiliarylemmas} for example definitions of each type.}
 
 \subsection{Analogy}
 
@@ -69,7 +69,8 @@ The running examples for demonstrating \textsc{ACL2(ml)} are equivalence theorem
 
 \end{itemize}
 
-\subsection{Auxiliary Lemmas} \label{auxiliarylemmas}
+\subsection{Auxiliary Lemmas}
+\label{sec:auxiliarylemmas}
 
 One consideration when generating conjectures is the difference between theorems, lemmas, corollaries, etc. From a logical point of view, these are all equivalent, and hence most proof assistants do not distinguish between them. However, their \emph{intention} may be different: in a sense, theorems are the interesting results; whilst lemmas are useful results, required for proving the theorems.
 
@@ -172,7 +173,8 @@ Defined.
 
 \fi
 
-\subsection{Tests} \label{tests}
+\subsection{Tests}
+\label{sec:tests}
 
 Since we are working in the domain of Haskell programs, an abundant source of statements are available in the form of \emph{tests}. For manually-written tests, the effort required to write them implies that they must be of some interest to their author. Many forms of test are \emph{not} suitable for our purposes, such as \emph{unit tests} which are always trivially provable by $\beta$-reduction; or \emph{integration tests}, which depend on the behaviour of the external environment. One reason to study Haskell is its widespread use of \emph{property checking}, which does give us useful data. Many Haskell property checkers exist, based on random testing (\qcheck{} \citep{claessen2011quickcheck} and \textsc{SmartCheck} \citep{pike2014smartcheck}), enumeration (\textsc{SmallCheck} \citep{runciman2008smallcheck}), observation (\textsc{Lazy SmallCheck} \citep{reich2013advances}) and logic programming (\textsc{SparseCheck} \citep{sparsecheck}).
 

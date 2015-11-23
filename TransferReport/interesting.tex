@@ -21,17 +21,17 @@ Since their inception, computers have been applied to automate and assist work i
 
 As computers and software become more capable, and as our reliance on them increases, the importance of \emph{understanding}, \emph{predicting} and \emph{verifying} these systems grows; which is undermined by their ever-increasing complexity. Mathematics provides us with powerful, systematic methods of reasoning, which we can bring to bear on this challenge; in particular those of \emph{formal logic} and \emph{statistics}. By (partially) mechanising these approaches, in the fields of \emph{theorem proving} and \emph{machine learning}, respectively, we can leverage these increasing machine capabilities and direct them for the purpose of analysis. However, the question still remains: on what should we focus that analysis?
 
-In this work, we investigate the notion of \emph{interestingness} in the exploration of formal systems (an area known as \emph{theory exploration}) as a way to make productive use of resources in an often intractable domain. To keep things concrete, we focus our formal analysis on equational formulae describing programs in the Haskell language, for reasons elaborated in \S \ref{haskell}. Conceptually, we maintain a broader view, and survey many related areas which may offer insights on the problem.
+In this work, we investigate the notion of \emph{interestingness} in the exploration of formal systems (an area known as \emph{theory exploration}) as a way to make productive use of resources in an often intractable domain. To keep things concrete, we focus our formal analysis on equational formulae describing programs in the Haskell language, for reasons elaborated in \S \ref{sec:haskell}. Conceptually, we maintain a broader view, and survey many related areas which may offer insights on the problem.
 
 Appeals to interestingness arise when more direct measures, such as utility, are not available. For example, the inclusion of particular statements in a program or proof development can be easily justified based on their contribution to the overall solution; however, in a \emph{library} there is no particular problem being solved, in which case we must judge statements on less direct criteria, such as how ``interesting'' they may be to our users. Appeals to interestingness abound in the history of computer-assisted reasoning; for example, in 1971 Plotkin \cite{plotkin1971further} considered the task of \textquote{discovering theorems $T$ from a system of axioms $Ax$}, and in particular the questions \textquote{Under what conditions is $T$ an interesting, possible theorem in the system $Ax$?} and \textquote{Is there a way to generate (most) interesting possible theorems?}. Despite such widespread use of the term, there is no standard definition of what makes a formal object, whether it is an axiom, a conjecture, a proof, etc., ``interesting''; although many ad-hoc heuristics have been proposed.
 
-We begin our undertaking in \S \ref{background} by introducing the Haskell language, as well as the relevant fields of verification for context. We define a formal framework for our investigation, and show how it relates to the existing theorem proving landscape. A selection of theorem proving scenarios which \emph{require} exploration are discussed in \S \ref{examples}, whilst related work, including existing defintions of interestingness, is surveyed in \S \ref{related}. We also review the use of exploration in other fields of Artificial Intelligence and Machine Learning, where researchers are experimenting with replacing \emph{explicit} goals and rewards with \emph{implicit} alternatives such as interestingness. Recent efforts in this area have lead to the emergence of principled theories, mostly based around (algorithmic) information theory, which may be adapted to our theory exploration context.
+We begin our undertaking in \S \ref{sec:background} by introducing the Haskell language, as well as the relevant fields of verification for context. We define a formal framework for our investigation, and show how it relates to the existing theorem proving landscape. A selection of theorem proving scenarios which \emph{require} exploration are discussed in \S \ref{sec:examples}, whilst related work, including existing defintions of interestingness, is surveyed in \S \ref{sec:related}. We also review the use of exploration in other fields of Artificial Intelligence and Machine Learning, where researchers are experimenting with replacing \emph{explicit} goals and rewards with \emph{implicit} alternatives such as interestingness. Recent efforts in this area have lead to the emergence of principled theories, mostly based around (algorithmic) information theory, which may be adapted to our theory exploration context.
 
-We discuss our present contributions in \S \ref{current} and future research directions in \S \ref{future}, before concluding in \S \ref{conclusion}.
+We discuss our present contributions in \S \ref{sec:current} and future research directions in \S \ref{sec:future}, before concluding in \S \ref{sec:conclusion}.
 
 \begin{description}
 \item{Interestingness}
-  Various alternative interestingness criteria have been proposed, which we survey in \S \ref{relatedwork}. Augmenting or replacing the criteria may be useful, for example to distinguish useful relationships from incidental coincidences; or to prevent surprising, insightful equations from being discarded because they can be simplified.
+  Various alternative interestingness criteria have been proposed, which we survey in \S \ref{sec:relatedwork}. Augmenting or replacing the criteria may be useful, for example to distinguish useful relationships from incidental coincidences; or to prevent surprising, insightful equations from being discarded because they can be simplified.
 \end{description}
 
 % Theory exploration is similar to \emph{experimental mathematics}
@@ -48,7 +48,7 @@ We discuss our present contributions in \S \ref{current} and future research dir
 % Communication: Latex, Wikis, APIs, communicating with aliens
 
 \section{Exploration in Theorem Proving}
-\label{examples}
+\label{sec:examples}
 
 Before exploring abstract definitions of interestingness, we can first consider some scenarios which arise during formal proof where we are forced to generate conjectures. An analysis of these situations, and the subsequent theorems they produce, will contribute towards an empirical justification for what is interesting (at least from a utilitarian point of view) and inform our later exploration of the literature.
 
@@ -84,7 +84,7 @@ This generalised form is clearly the distributivity law for multiplication and a
 
 % TODO: Describe the ACL2 heuristics
 
-Generalisation also occurs frequently when reasoning about \emph{tail-recursive} definitions \cite{kapur2003automatic}. \footnote{A tail-recursive function can be executed in constant space using a loop, whereas recursion in non-tail positions may require a growing number of stack frames or nested closures. See \S \ref{auxiliarylemmas} for example definitions of each type.}
+Generalisation also occurs frequently when reasoning about \emph{tail-recursive} definitions \cite{kapur2003automatic}. \footnote{A tail-recursive function can be executed in constant space using a loop, whereas recursion in non-tail positions may require a growing number of stack frames or nested closures. See \S \ref{sec:auxiliarylemmas} for example definitions of each type.}
 
 \subsection{Analogy}
 
@@ -120,7 +120,7 @@ The running examples for demonstrating \textsc{ACL2(ml)} are equivalence theorem
 
 \end{itemize}
 
-\subsection{Auxiliary Lemmas} \label{auxiliarylemmas}
+\subsection{Auxiliary Lemmas} \label{sec:auxiliarylemmas}
 
 One consideration when generating conjectures is the difference between theorems, lemmas, corollaries, etc. From a logical point of view, these are all equivalent, and hence most proof assistants do not distinguish between them. However, their \emph{intention} may be different: in a sense, theorems are the interesting results; whilst lemmas are useful results, required for proving the theorems.
 
@@ -221,7 +221,7 @@ Defined.
 
 \fi
 
-\subsection{Tests} \label{tests}
+\subsection{Tests} \label{sec:tests}
 
 Since we are working in the domain of Haskell programs, an abundant source of statements are available in the form of \emph{tests}. For manually-written tests, the effort required to write them implies that they must be of some interest to their author. Many forms of test are \emph{not} suitable for our purposes, such as \emph{unit tests} which are always trivially provable by $\beta$-reduction; or \emph{integration tests}, which depend on the behaviour of the external environment. One reason to study Haskell is its widespread use of \emph{property checking}, which does give us useful data. Many Haskell property checkers exist, based on random testing (\textsc{QuickCheck} \cite{claessen2011quickcheck} and \textsc{SmartCheck} \cite{pike2014smartcheck}), enumeration (\textsc{SmallCheck} \cite{runciman2008smallcheck}), observation (\textsc{Lazy SmallCheck} \cite{reich2013advances}) and logic programming (\textsc{SparseCheck} \cite{sparsecheck}).
 
@@ -232,7 +232,7 @@ Here we consider the 10 most-downloaded packages from \textsc{Hackage} (as of 20
 % TODO: Analysis
 
 \section{Related Work}
-\label{related}
+\label{sec:related}
 
 \iffalse
 
@@ -277,7 +277,7 @@ In this way, the fitness function $f$ is used to assign comparable quantities to
 Once we begin this process of augmenting fitness functions, or abandoning their use as objectives, an obvious question arises: what happens if our new function contains nothing of the original? This kind of pure exploration scenario leads to a variety of ideas for \emph{instrinsic} fitness, such as novelty \cite{lehman2011abandoning}, which can lead to learning useful ``stepping stones'' even in objective-driven domains. Such intrinsic notions of fitness are direct analogues of the interestingness measures we seek for theory exploration.
 
 \subsubsection{Artificial Curiosity}
-\label{curiosity}
+\label{sec:curiosity}
 
 \begin{figure}
   \centering
@@ -313,12 +313,12 @@ Once we begin this process of augmenting fitness functions, or abandoning their 
 
   \caption{The Wundt curve, reproduced from \cite{berlyne1970novelty}. The axes ``hedonic value'' and ``arousal potential'' are described as covering \textquote{reward value\dots preference or pleasure}, and \textquote{all the stimulus properties that tend to raise arousal, including novelty and complexity}, respectively.}
 
-  \label{wundt}
+  \label{fig:wundt}
 \end{figure}
 
 \emph{Artificial curiosity} (AC) describes active learning systems which are rewarded based on how interesting the input or data they discover is \cite{schmidhuber2006developmental}. Although framed in the context of \emph{reinforcement learning}, this is clearly relevant to our theory exploration setting.
 
-As an unsupervised learning task, AC has no access to labels or meanings associated with its input; the only features it can learn are the structure and relationships inherent in the data, which is very much what we would like a theory exploration system to do. The unifying principle of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in figure \ref{wundt}) \footnote{In practice, many measures avoid negative values for simplicity, in which cases we replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \cite{berlyne1970novelty}.
+As an unsupervised learning task, AC has no access to labels or meanings associated with its input; the only features it can learn are the structure and relationships inherent in the data, which is very much what we would like a theory exploration system to do. The unifying principle of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in figure \ref{fig:wundt}) \footnote{In practice, many measures avoid negative values for simplicity, in which cases we replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \cite{berlyne1970novelty}.
 
 We can divide AC approaches into two groups: the first, which we call \emph{explicit}, send inputs which follow a Wundt curve to their learning algorithm; the second, the \emph{implicit} approaches, instead modify the \emph{output} of their learning algorithm(s), such that the overall system follows a Wundt curve as an emergent property.
 
@@ -388,7 +388,7 @@ Omohundro? Too physical.
 The core problem of assigning ``interestingness'' to logical formulae is the application of statistical reasoning to the discrete, semantically-rich domain of formal systems. This problem has been tackled from various directions for a variety of reasons; here we summarise those contributions which seem of particular importance for theory exploration.
 
 \subsubsection{Relevance Filtering}
-\label{relevance}
+\label{sec:relevance}
 
 % TODO
 \cite{kuhlwein2012overview}
@@ -420,7 +420,7 @@ Recently, a variety of alternative algorithms have also been investigated, inclu
 \end{description}
 
 \subsubsection{Clustering}
-\label{clustering}
+\label{sec:clustering}
 
 % TODO: ML4PG
 \cite{journals/corr/abs-1212-3618}
@@ -435,7 +435,7 @@ The most important property of a logical formula is its truth value. Although we
 \cite{Hutter.Lloyd.Ng.ea:2013}
 
 \subsubsection{Interestingness in Concept Formation}
-\label{conceptformation}
+\label{sec:conceptformation}
 
 % TODO:
 \cite{Montano-Rivas.McCasland.Dixon.ea:2012}
@@ -463,7 +463,7 @@ The most important property of a logical formula is its truth value. Although we
 
 One major difficulty with formal mathematics as a domain in which to apply statistical machine learning is the use of \emph{structure} to encode information in objects. In particular, \emph{trees} appear in many places: from inductive datatypes, to recursive function definitions; from theorem statements, to proof objects. Such nested structures may extend to arbitrary depth, which makes them difficult to represent with a fixed number of features, as is expected by most machine learning algorithms. Here we review a selection of solutions to this problem, and compare their distinguishing properties.
 
-\paragraph{Feature Extraction}\label{featureextraction}
+\paragraph{Feature Extraction}\label{sec:featureextraction}
 
 \emph{Feature extraction} is a common pre-processing step for machine learning (ML). Rather than feeding ``raw'' data straight into our ML algorithm, we only learn a sample of \emph{relevant} details, known as \emph{features}. This has two benefits:
 
