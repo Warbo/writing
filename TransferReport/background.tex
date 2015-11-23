@@ -168,49 +168,18 @@ Our approach to scaling up these Haskell theory exploration tools takes inspirat
 
 Despite the idea's promise, we cannot simply invoke existing premise selection algorithms in our theory exploration setting. The reason is that theory exploration has no distinct \emph{goal} to compare expressions against. Instead, we are interested in relationships between \emph{any} terms generated from a signature, and hence we must consider the relevance of \emph{all terms} to \emph{all other terms}. A natural fit for such problems is \emph{clustering}, which attempts to group similar inputs together in an unsupervised way. See \S \ref{sec:clustering} for more information.
 
-Our hypothesis is that clustering methods, as found in systems like ML4PG and ACL2(ml), can be used as relevance filters to break up large signatures into smaller sets more amenable to brute force enumeration.
-
-\iffalse TODO: Signatures or terms? \fi
+Our hypothesis is that clustering methods, as found in systems like ML4PG and ACL2(ml), can be used as relevance filters to break up large signatures into smaller ones more amenable to brute force enumeration.
 
 \iffalse TODO: I would play up the clustering intelligence. Clustering is not just about breaking up, it is about discovering significant patterns in data. By forgetting this, you make motivation for your work sound too ``small'' \fi
 
-Both of these approaches, premise selection and clustering, use \emph{machine learning} (ML) algorithms to analyse (logical or software) \iffalse TODO: software vs logical expr? \fi expressions, and hence rely on \emph{feature extraction} to transform the data into a suitable representation and remove irrelevant details. This has two benefits:
+Both of these approaches, premise selection and clustering, use \emph{machine learning} (ML) algorithms to analyse expressions, and hence rely on \emph{feature extraction} to transform the data into a suitable representation and remove irrelevant details. This has two benefits:
 
 \begin{itemize}
-  \item \emph{Feature vectors} (ordered lists of features) are chosen to be more compact \iffalse TODO: unclear \fi than the data they're extracted from: feature extraction is \emph{lossy compression}. This reduces the size of the machine learning problem, improving efficiency (e.g. running time).
+  \item \emph{Feature vectors} (ordered lists of features) are chosen to represent the relevant information in a more compressed form than the raw data (for example, replacing descriptive identifier names with sequential numbers). This reduces the input size of the machine learning problem, improving efficiency (e.g. running time).
   \item We avoid learning irrelevant details, such as the text encoding system used, improving \emph{data} efficiency (the number of samples required to spot a pattern).
 \end{itemize}
 
 Another benefit of feature extraction is to \emph{normalise} the input data to a fixed-size representation. Many ML algorithms only work with inputs of a uniform size; feature extraction allows us to use these algorithms in domains where the size of each input is not known, may vary or may even be unbounded.
-
-As an example, say we want to learn relationships between the following program fragments:
-
-\begin{haskell}
-data Maybe a = Nothing | Just a
-
-data Either a b = Left a | Right b
-\end{haskell}
-
-We might hope our algorithm discovers relationships like:
-
-\begin{itemize}
-  \item Both are valid Haskell code.
-  \item Both describe datatypes.
-  \item Both datatypes have two constructors.
-  \item \hs{Either} is a generalisation of \hs{Maybe} (we can define \hs{Maybe a = Either () a} and \hs{Nothing = Left ()}).
-  \item There is a symmetry in \hs{Either}: \hs{Either a b} is equivalent to \hs{Either b a} if we swap occurences of \hs{Left} and \hs{Right}.
-  \item It is trivial to satisfy \hs{Maybe} (using \hs{Nothing}).
-  \item It is not trivial to satisfy \hs{Either}; we require an \hs{a} or a \hs{b}.
-\end{itemize}
-
-However, this is too optimistic. Without our domain-knowledge of Haskell, an ML algorithm cannot impose any structure on these fragments, and will treat them as strings of bits. \iffalse TODO: It depends on your feature extraction, and why bits? \fi Our high-level hopes are obscured by low-level details: the desirable patterns of Haskell types are mixed with undesirable patterns of ASCII bytes, of letter frequency in English words, and so on.
-\iffalse TODO: I do not see this has to be this way\fi
-
-In theory we could throw more computing resources and data at a problem, but available hardware and corpora are always limited. Instead, feature extraction lets us narrow the ML problem to what we, with our domain knowlege, consider important.
-
-There is no \emph{fundamental} difference between raw representations and features: the identity function is a valid feature extractor. Likewise, there is no crisp distinction between feature extraction and machine learning: a sufficiently-powerful learner doesn't require feature extraction, and a sufficiently-powerful feature extractor doesn't require any learning! \iffalse TODO: not sure that's the right argument for a more-or-less common observation that ML & FE are coming together \fi \footnote{Consider a classification problem, to assign a label $l \in L$ to each input. If we only extract a single feature $f \in L$, we have solved the classification problem without using a separate learning step.}
-
-Rather, the terms are distinguished for purely \emph{practical} reasons: by separating feature extraction from learning, we can distinguish straightforward, fast data transformation (feature extraction) from complex, slow statistical analysis (learning). This allows for modularity, separation of concerns, and in particular allows ``off-the-shelf'' ML to be re-used across a variety of different domains.
 
 In our case, we will use a novel feature extraction algorithm, described in \S \ref{sec:recurrentclustering}, to transform expressions in Haskell Core into a fixed size representation, suitable for clustering via the standard \emph{k-means} algorithm.
 
@@ -247,7 +216,6 @@ In our case, we will use a novel feature extraction algorithm, described in \S \
   \label{fig:featureextractionpic}
 \end{figure}
 
-\iffalse
 \subsection{Clustering}
+\label{sec:clustering}
 % TODO
-\fi
