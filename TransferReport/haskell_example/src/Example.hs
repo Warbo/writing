@@ -30,3 +30,21 @@ negative  f = f (-1) ==    f 1
 factorial2 0 = 1
 factorial2 n = let nPos = abs n
                 in nPos * factorial2 (nPos - 1)
+
+f1_tail :: Int -> Int
+f1_tail = go 1
+  where go acc 0 = acc
+        go acc n = go (n*acc) (n-1)
+
+f2_tail :: Int -> Int
+f2_tail = go 1
+  where go acc 0 = acc
+        go acc n = let nPos = abs n in go (nPos*acc) (nPos-1)
+
+f1 :: Int -> Int
+f1 = factorial1
+
+f2 :: Int -> Int
+f2 = factorial2
+
+foo n = -n

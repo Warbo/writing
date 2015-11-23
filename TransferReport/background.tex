@@ -101,26 +101,56 @@ We can reduce this bias further through the use of \emph{theory exploration} too
 \subsection{Theory Exploration}
 \label{sec:theoryexploration}
 
-\begin{figure}
-  \begin{equation*}
-    \begin{split}
-      names\       =\ & \{ N_1, \dots, N_n \}                                                                  \\
-      types\       =\ & \{ T_1, \dots, T_m \} \cup \{a \rightarrow b \mid a \in types \wedge b \in types \} \\
-      exprs\       =\ & names \cup \{ f\ x \mid f \in exprs \wedge x \in exprs \wedge f : a \rightarrow b \wedge x : a \} \\
-      classes\     =\ & \{c \mid \forall x y \in c, x \in exprs \wedge y \in exprs \wedge x =_{QC} y \} \\
-      conjectures\ =\ & \bigcup_{c \in classes}\{ \ulcorner a = b \urcorner \mid a \in c \wedge b \in c \}
-    \end{split}
-  \end{equation*}
+\newcommand{\blank}{\cdot}
 
-  \caption{General model of \qspec{} conjecture generation, given a signature $\Sigma$ containing names $N_1$ to $N_n$ and types $T_1$ to $T_m$. We use $a =_{QC} b$ to denote that $a$ and $b$ are indistinguishable by \qcheck{}, and use $\ulcorner \dots \urcorner$ for quasiquotation.}
-  \label{fig:qspecmodel}
-\end{figure}
+In this work we focus on the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. The method of conjecture generation is a key characteristic of any theory exploration system, although all existing implementations rely on brute force enumeration to some degree.
 
-In this work we focus on the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. In \citep{warburtonscaling} we identify the method of conjecture generation as a key characteristic of any theory exploration system, and in particular lament the existing reliance on brute force methods.
+We focus on \qspec{} \citep{QuickSpec}, which conjectures equations about Haskell code (these may be fed into another tool, such as \hspec{}, for proving). These conjectures are arrived at through the following stages:
 
-We focus on \qspec{} \citep{QuickSpec}, which discovers equations about Haskell code. These are found through the process modelled in figure \ref{fig:qspecmodel}: \iffalse TODO: Figure just shows the syntax, it does not model any process \fi given a typed signature $\Sigma$, \qspec{} enumerates all type-correct combinations of terms from $\Sigma$ up to some depth; it then groups them into equivalence classes using the \qcheck{} counterexample finder, then conjectures equations relating the members of these classes.
+\begin{enumerate}
+  \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the functions and constants from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$. To ensure the list is finite, function applications are only nested up to a specified depth (e.g. 3).
+  \item The elements of $terms$ are grouped into equivalence classes, based on their type.
+  \item Each variable is instantiated to particular value, generated randomly by \qcheck{}.
+  \item For each class, the members are compared (using a pre-specified function, such as equality \hs{==}) to see if these instantiations have caused an observable difference between members. If so, the class is split up to separate such members.
+  \item The previous steps of variable instantiation and comparison are repeated until the classes stabilise (i.e. no differences have been observed for some specified number of repetitions).
+  \item A set of equations are then conjectured, relating each class's members.
+\end{enumerate}
 
-The resulting set of $conjectures$ can be used in several ways: it can be simplified for direct presentation to the user, sent to a more rigorous system like \hspec{} and \textsc{Hipster} for proving, or even serve as a background theory for an automated theorem prover \citep{claessen2013automating}.
+Such $conjectures$ can be used in several ways: they can be simplified for direct presentation to the user (by removing any equation which is a can be derived from the others by rewriting), sent to a more rigorous system like \hspec{} or \textsc{Hipster} for proving, or even serve as a background theory for an automated theorem prover \citep{claessen2013automating}.
+
+As an example, we can consider a simple signature for Peano numerals, addition and multiplication:
+
+\begin{align*}
+  \Sigma_{\mathbb{N}} = \{ & 0     && : \mathbb{N}, \\
+                        & succ  && : \mathbb{N} \rightarrow \mathbb{N}, \\
+                        & plus  && : \mathbb{N} \rightarrow \mathbb{N} \rightarrow \mathbb{N}, \\
+                        & times && : \mathbb{N} \rightarrow \mathbb{N} \rightarrow \mathbb{N}\}
+\end{align*}
+
+Together with a set of variables, say $V_{\mathbb{N}} = \{x, y, z\}$, \qspec{}'s enumeration will resemble the following:
+
+\begin{multline}
+  terms_{\mathbb{N}} = \{0,\ succ,\ plus,\ times,\ x,\ y,\ succ(0),\ succ(x),\ succ(y),\ succ(z), \\
+                    plus(0,\blank),\ plus(x, \blank),\ \dots \}
+\end{multline}
+
+Notice that our functions are curried, where $f(x,\blank)$ indicates \emph{partial application} of $f$ to $x$. This is required as the construction of $terms$ applies functions to one argument at a time.
+
+These terms will be grouped into three classes, for $\mathbb{N}$, $\mathbb{N} \rightarrow \mathbb{N}$ and $\mathbb{N} \rightarrow \mathbb{N} \rightarrow \mathbb{N}$. As the variables $x$, $y$ and $z$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until equations such as the following are conjectured (after simplification):
+
+% To reproduce, run 'quickSpec nat' in haskell_example/src/QuickSpecExample.hs
+\begin{align*}
+                      plus(x, y) &= plus(y, x)
+                      plus(x, 0) &= x
+             plus(x, plus(y, z)) &= plus(y, plus(x, z))
+                     times(x, y) &= times(y, x)
+                     times(x, 0) &= 0
+           times(x, times(y, z)) &= times(y, times(x, z))
+                plus(x, succ(y)) &= succ(plus(x, y))
+               times(x, succ(y)) &= plus(x, times(x, y))
+            times(x, plus(y, y)) &= times(y, plus(x, x))
+  plus(times(x, y), times(x, z)) &= times(x, plus(y, z))
+\end{align*}
 
 \qspec{} (and \hspec{}) is also compatible with Haskell's existing testing infrastructure, such that an invocation of \texttt{cabal test} can run these tools alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and \textsc{Criterion}.
 
@@ -136,7 +166,7 @@ We attempt to mitigate the cost of running \qspec{}, by providing a machine lear
 
 Our approach to scaling up these Haskell theory exploration tools takes inspiration from two sources. The first is premise selection, which makes expensive algorithms used in theorem proving more practical by limiting the size of their inputs. We describe this approach in more details in \S \ref{sec:relevance}. Premise selection is a practical tool, used in production systems like the \emph{Sledgehammer} component of the Isabelle/HOL theorem prover.
 
-Despite the idea's promise, we cannot simply invoke existing premise selection algorithms in our theory exploration setting. The reason is that theory exploration has no distinct \emph{goal} to compare expressions against. Instead, we are interested in relationships between \emph{any} components of a theory, and hence we must consider the relevance of \emph{everything} to \emph{everything else}. \iffalse TODO: every term in the given signature? \fi A natural fit for such problems is \emph{clustering}, which attempts to group similar inputs together in an unsupervised way. See \S \ref{sec:clustering} for more information.
+Despite the idea's promise, we cannot simply invoke existing premise selection algorithms in our theory exploration setting. The reason is that theory exploration has no distinct \emph{goal} to compare expressions against. Instead, we are interested in relationships between \emph{any} terms generated from a signature, and hence we must consider the relevance of \emph{all terms} to \emph{all other terms}. A natural fit for such problems is \emph{clustering}, which attempts to group similar inputs together in an unsupervised way. See \S \ref{sec:clustering} for more information.
 
 Our hypothesis is that clustering methods, as found in systems like ML4PG and ACL2(ml), can be used as relevance filters to break up large signatures into smaller sets more amenable to brute force enumeration.
 
