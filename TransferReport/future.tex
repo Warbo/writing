@@ -1,0 +1,25 @@
+\section{Future Work}
+\label{sec:future}
+
+\subsection{Extensions}
+\label{sec:preprocessing}
+
+Our use of clustering to pre-process \qcheck{} signatures necessarily involves many decisions and tradeoffs to be made. There are many alternative approaches which are ripe for investigation:
+
+\begin{itemize}
+  \item Improvements to our feature extraction algorithm, in particular to handle types.
+  \item Alternative clustering algorithms.
+  \item \emph{Feature learning} uses machine learning algorithms in place of hand-coded feature extraction algorithms such as ours. A comparison of our hand-picked features against a selection of learned representations would be a useful indication of the importance that understanding the expression language may or may not have on identifying salient aspects of expressions.
+  \item
+\end{itemize}
+
+\subsection{Interestingness}
+\label{sec:interestingness}
+
+It is important to consider the question: \emph{what if we are right?} What if a more efficient theory exploration system were possible, capable of reading huge amounts of code and producing an  abundance of theorems? How could the output be made manageable, by finding the needles we are interested in among the haystack of potential laws?
+
+The criteria of what is considered \emph{interesting} is a key property of a theory exploration system. \qspec{}'s approach, briefly mentioned in \S \ref{sec:theoryexploration}, is to discard equations which are direct consequences of others; those which remain are considered interesting.
+
+A variety of such ad-hoc heuristics can be found in systems for concept formation
+
+ conjecture generation systems, like those described in \S \ref{sec:conceptformation}, use a variety of ad-hoc heuristics to
