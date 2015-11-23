@@ -129,7 +129,7 @@ In fact, there are similarities between the way a TE system like \qspec{} can ge
 We attempt to mitigate the cost of running \qspec{}, by providing a machine learning layer analogous to that of premise selection in theorem proving. Of particular concern is the set of expressions $exprs$, which grows exponentially as the size of the expressions increases, and hence slows down the rest of the algorithm. Although complete, the current enumeration approach is wasteful: many combinations are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. The key idea of premise selection is to make such choices automatically, by only including those expressions which are considered \emph{relevant} to the problem.
 
 \iffalse TODO: Not immediately clear how the problem of reducing the set of expressions relates to premise selection \fi
-\iffalse TODO: This detailed comparison with premise selection is opaque without definiing/explaining what premise selection is \fi
+\iffalse TODO: This detailed comparison with premise selection is opaque without defining/explaining what premise selection is \fi
 
 \subsection{Clustering and Feature Extraction}
 \label{sec:featureextraction}
@@ -144,10 +144,10 @@ Our hypothesis is that clustering methods, as found in systems like ML4PG and AC
 
 \iffalse TODO: I would play up the clustering intelligence. Clustering is not just about breaking up, it is about discovering significant patterns in data. By forgetting this, you make motivation for your work sound too ``small'' \fi
 
-Both of these approaches, premise selection and clustering, use \emph{machine learning} (ML) algorithms to analyse (logical or software) expressions, and hence rely on \emph{feature extraction} to transform the data into a suitable representation and remove irrelevant details. This has two benefits:
+Both of these approaches, premise selection and clustering, use \emph{machine learning} (ML) algorithms to analyse (logical or software) \iffalse TODO: software vs logical expr? \fi expressions, and hence rely on \emph{feature extraction} to transform the data into a suitable representation and remove irrelevant details. This has two benefits:
 
 \begin{itemize}
-  \item \emph{Feature vectors} (ordered sets of features) are chosen to be more compact than the data they're extracted from: feature extraction is \emph{lossy compression}. This reduces the size of the machine learning problem, improving efficiency (e.g. running time).
+  \item \emph{Feature vectors} (ordered lists of features) are chosen to be more compact \iffalse TODO: unclear \fi than the data they're extracted from: feature extraction is \emph{lossy compression}. This reduces the size of the machine learning problem, improving efficiency (e.g. running time).
   \item We avoid learning irrelevant details, such as the text encoding system used, improving \emph{data} efficiency (the number of samples required to spot a pattern).
 \end{itemize}
 
@@ -173,15 +173,18 @@ We might hope our algorithm discovers relationships like:
   \item It is not trivial to satisfy \hs{Either}; we require an \hs{a} or a \hs{b}.
 \end{itemize}
 
-However, this is too optimistic. Without our domain-knowledge of Haskell, an ML algorithm cannot impose any structure on these fragments, and will treat them as strings of bits. Our high-level hopes are obscured by low-level details: the desirable patterns of Haskell types are mixed with undesirable patterns of ASCII bytes, of letter frequency in English words, and so on.
+However, this is too optimistic. Without our domain-knowledge of Haskell, an ML algorithm cannot impose any structure on these fragments, and will treat them as strings of bits. \iffalse TODO: It depends on your feature extraction, and why bits? \fi Our high-level hopes are obscured by low-level details: the desirable patterns of Haskell types are mixed with undesirable patterns of ASCII bytes, of letter frequency in English words, and so on.
+\iffalse TODO: I do not see this has to be this way\fi
 
 In theory we could throw more computing resources and data at a problem, but available hardware and corpora are always limited. Instead, feature extraction lets us narrow the ML problem to what we, with our domain knowlege, consider important.
 
-There is no \emph{fundamental} difference between raw representations and features: the identity function is a valid feature extractor. Likewise, there is no crisp distinction between feature extraction and machine learning: a sufficiently-powerful learner doesn't require feature extraction, and a sufficiently-powerful feature extractor doesn't require any learning! \footnote{Consider a classification problem, to assign a label $l \in L$ to each input. If we only extract a single feature $f \in L$, we have solved the classification problem without using a separate learning step.}
+There is no \emph{fundamental} difference between raw representations and features: the identity function is a valid feature extractor. Likewise, there is no crisp distinction between feature extraction and machine learning: a sufficiently-powerful learner doesn't require feature extraction, and a sufficiently-powerful feature extractor doesn't require any learning! \iffalse TODO: not sure that's the right argument for a more-or-less common observation that ML & FE are coming together \fi \footnote{Consider a classification problem, to assign a label $l \in L$ to each input. If we only extract a single feature $f \in L$, we have solved the classification problem without using a separate learning step.}
 
 Rather, the terms are distinguished for purely \emph{practical} reasons: by separating feature extraction from learning, we can distinguish straightforward, fast data transformation (feature extraction) from complex, slow statistical analysis (learning). This allows for modularity, separation of concerns, and in particular allows ``off-the-shelf'' ML to be re-used across a variety of different domains.
 
 In our case, we will use a novel feature extraction algorithm, described in \S \ref{sec:recurrentclustering}, to transform expressions in Haskell Core into a fixed size representation, suitable for clustering via the standard \emph{k-means} algorithm.
+
+\iffalse TODO: I have had a look now at section 5. I do not think feature extraction and clustering is explained/defined there, either. Seeing your contribution is feature extraction algorithms, you need to define feature vectors and clusters *here* \fi
 
 \begin{figure}
   \centering

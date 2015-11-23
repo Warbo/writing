@@ -22,10 +22,21 @@ Two simple methods for comparison are to ignore identifiers completely, or to co
 
 Ideally we would like something in between these two extremes, which requires a more sophisticated notion of similarity for identifiers. In the above example, we may intuitively consider \texttt{(\&\&)} and \texttt{(++)} to be closer to each other than to \texttt{map}; both in terms of \emph{definition} (e.g. only the former can be specified by pattern-matching on their first argument), and by their \emph{properties} (e.g. only the former can form monoids).
 
-Recurrent clustering tackles this problem in a straightforward way: we look up the expressions \emph{referenced by} each identifier, and use \emph{their} similarity in place of the identifiers'. This gives rise to a recursive process, where feature extraction is interleaved with multiple rounds of clustering. For this recursive process to be well-founded, we impose a topological ordering on expressions based on their dependencies (the expressions they reference). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and several mutually-recursive expressions may appear at the same level.
+Recurrent clustering tackles this problem in a straightforward way: \iffalse TODO: What would be a non-straightforward way? \fi we look up the expressions \emph{referenced by} each identifier, and use \emph{their} similarity in place of the identifiers'. This gives rise to a recursive process, where feature extraction is interleaved with multiple rounds of clustering. For this recursive process to be well-founded, we impose a topological ordering on expressions based on their dependencies (the expressions they reference). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and several mutually-recursive expressions may appear at the same level.
 
 \subsubsection{Algorithm}
 \label{sec:algorithm}
+
+\iffalse TODO: Not sure if you want to give a more conceptual explanation of the algorithm than the code in this figure? \fi
+
+\iffalse TODO: Connect this to figure 1 in your explanations \fi
+
+\iffalse TODO:
+ 1: Tree representation
+ 2. Feature vectors vs feature values
+ 3. Recurrence
+ 4. k-means algorithm
+\fi
 
 \begin{figure}
   \begin{lstlisting}[language=Haskell, xleftmargin=.1\textwidth, xrightmargin=.1\textwidth]
@@ -73,6 +84,7 @@ Recurrent clustering tackles this problem in a straightforward way: we look up t
   \end{lstlisting}
   \caption{Feature extraction for Haskell Core. We send named expressions to \hs{recurrentCluster}, topologically sorted: if an element contains multiple \hs{(Global, Expr)} pairs, they are mutually-recursive. Syntax trees are first converted into \hs{RoseTree}s of \hs{Feature}s, these trees are converted to matrices, then flattened into feature vectors, then \hs{kMeans} clusters the feature vectors. The result is a list of clusters, naming their elements. More details are given in \S \ref{sec:algorithm}.}
   \label{fig:featureextractionalgorithm}
+  \iffalse TODO: Split this up, get rid of float warning \fi
 \end{figure}
 
 Our feature extraction algorithm is given in figure \ref{fig:featureextractionalgorithm}. Here we highlight some key features:
