@@ -12,7 +12,7 @@ psfig.sty :
 
 cmd := pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
 
-report.pdf : ../Bibtex.bib background.tex evaluation.tex implementation.tex intro.tex report.tex contributions.tex examples.tex related.tex psfig.sty mmm.sty mathpartir.sty
+report.pdf : ../Bibtex.bib background.tex evaluation.tex implementation.tex intro.tex report.tex contributions.tex related.tex psfig.sty mmm.sty mathpartir.sty
 	$(cmd)
 	echo "RUNNING bibtex"
 	bibtex report

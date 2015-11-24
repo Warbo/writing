@@ -79,30 +79,17 @@
 \maketitle              % typeset the title of the contribution
 
 \begin{abstract}
-Theory Exploration is a promising approach to improving the quality and understanding of software, above that available through testing, in languages which are amenable to formal analysis such as those based on pure functional programming. Current techniques \iffalse TODO: it sounds as if you are talking about techniques of "formal analysis" here rather than techniques of TE. Reformulate. \fi are limited by their computational cost \iffalse TODO: Unclear what that means in this context. Computations of what is costly? why? same for "problem size" below \fi, which we mitigate through a divide and conquer approach: reducing the problem size whilst using a machine learning approach to preserve relevant details.
+Theory Exploration is a promising approach to improving the quality and understanding of software, above that available through testing, in languages which are amenable to formal analysis such as those based on pure functional programming. Current theory exploration techniques are limited by their use of exponential time algorithms, which we mitigate by intelligently reducing the size of large inputs, using machine learning to preserve the relationships needed for successful exploration.
 \end{abstract}
 
 \input{intro.tex}
 \input{background.tex}
 \input{contributions.tex}
 \input{implementation.tex}
-
-\iffalse
-\section{First Results}
-
-TODO
-
-Future work?
-Hypothetical use cases?
-\fi
-
 \input{related.tex}
 \input{evaluation.tex}
 \input{future.tex}
 \iffalse TODO: Section that brings back ML discussion to TE is missing \fi
-
-\section{Conclusion}
-\label{sec:conclusion}
 
 \bibliographystyle{plain}
 \bibliography{../Bibtex}
