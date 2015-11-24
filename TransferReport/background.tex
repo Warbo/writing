@@ -13,6 +13,7 @@
                          |\ & \texttt{Lam}\ \mathcal{L}\ expr                        \\
                          |\ & \texttt{Let}\ bind\ expr                               \\
                          |\ & \texttt{Case}\ expr\ \mathcal{L}\ \left[ alt \right]   \\
+                         |\ & \texttt{Type}                                          \\
       id\      \rightarrow\ & \texttt{Local}\ \mathcal{L}                            \\
                          |\ & \texttt{Global}\ \mathcal{G}                           \\
       literal\ \rightarrow\ & \texttt{LitNum}\ \mathcal{N}                           \\
@@ -37,16 +38,16 @@
   \label{fig:coresyntax}
 \end{figure}
 
-We decided to focus our theory exploration research on Haskell as it has mature, state-of-the-art implementations (\qspec{} \citep{QuickSpec} and \hspec{} \citep{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \citep{Hipster} system, is actually implemented by translating to Haskell and invoking \hspec{}.
+We decided to focus on theory exploration in the Haskell programming language as it has mature, state-of-the-art implementations (\qspec{} \citep{QuickSpec} and \hspec{} \citep{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \citep{Hipster} system, is actually implemented by translating to Haskell and invoking \hspec{}.
 
-Haskell is a programming language which is well-suited to research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus; in fact an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, is based on a variant of the polymorphic $\lambda$-calculus known as \fc{}. For simplicity, we will focus on this Core language rather than the relatively large and complex syntax of Haskell proper. For a full treatment of \fc{} and its use in GHC, see \citep[Appendix C]{sulzmann2007system}.
+Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \citep[Appendix C]{sulzmann2007system}.
 
-The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major changes are to erase types and use a custom representation of names. There are also several other forms of literal (machine words of various sizes, individual characters, etc.) which we omit for brevity, as their treatment is similar to those of strings and numerals.
+The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major changes are to ignore type hints (explicit casts are removed, whilst particular types/kinds/coercions are all represented by \texttt{Type}) and to use a custom representation of names. We also omit several other forms of literal (machine words of various sizes, individual characters, etc.) for brevity, as their treatment is similar to those of strings and numerals.
 
 \subsection{QuickCheck}
 \label{sec:quickcheck}
 
-Although unit testing is the de facto industry standard for quality assurance in non-critical systems, the level of confidence it provides is rather low, and totally inadequate for many (e.g. life-) critical systems. To see why, consider the following Haskell function, along with some unit tests (see \ref{sec:haskell} for more details on Haskell):
+Although unit testing is the de facto industry standard for quality assurance in non-critical systems, the level of confidence it provides is rather low, and totally inadequate for many (e.g. life-) critical systems. To see why, consider the following Haskell function, along with some unit tests:
 
 \begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
 factorial 0 = 1
@@ -96,27 +97,27 @@ The ability to state \emph{universal} properties in this way avoids some of the 
 
 Property checking is certainly an improvement over unit testing, but the problem of tests being biased towards expected cases remains, since we are manually specifying the properties to be checked.
 
-We can reduce this bias further through the use of \emph{theory exploration} tools, such as \qspec{} and \hspec{}. These programs \emph{discover} properties of a ``theory'' (e.g. a library), through a combination of brute-force enumeration, random testing and (in the case of \hspec{}) automated theorem proving.\footnote{See section \ref{sec:atp} for more information on automated theorem proving.}
+We can reduce this bias further through the use of \emph{theory exploration} tools, such as \qspec{} and \hspec{}. These programs \emph{discover} properties of a ``theory'' (e.g. a library), through a combination of brute-force enumeration, random testing and (in the case of \hspec{}) automated theorem proving.
 
 \subsection{Theory Exploration}
 \label{sec:theoryexploration}
 
 \newcommand{\blank}{\cdot}
 
-In this work we focus on the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. The method of conjecture generation is a key characteristic of any theory exploration system, although all existing implementations rely on brute force enumeration to some degree.
+In this work we consider the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. The method of conjecture generation is a key characteristic of any theory exploration system, although all existing implementations rely on brute force enumeration to some degree.
 
 We focus on \qspec{} \citep{QuickSpec}, which conjectures equations about Haskell code (these may be fed into another tool, such as \hspec{}, for proving). These conjectures are arrived at through the following stages:
 
 \begin{enumerate}
-  \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the functions and constants from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$. To ensure the list is finite, function applications are only nested up to a specified depth (e.g. 3).
+  \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the functions and constants from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$. To ensure the list is finite, function applications are only nested up to a specified depth (by default, 3).
   \item The elements of $terms$ are grouped into equivalence classes, based on their type.
-  \item Each variable is instantiated to particular value, generated randomly by \qcheck{}.
-  \item For each class, the members are compared (using a pre-specified function, such as equality \hs{==}) to see if these instantiations have caused an observable difference between members. If so, the class is split up to separate such members.
+  \item Each variable is instantiated to a particular value, generated randomly by \qcheck{}.
+  \item For each class, the members are compared (using a pre-specified function, such as equality \hs{==}) to see if these instantiations have caused an observable difference between members. If so, the class is split up to separate such distinguishable members.
   \item The previous steps of variable instantiation and comparison are repeated until the classes stabilise (i.e. no differences have been observed for some specified number of repetitions).
   \item A set of equations are then conjectured, relating each class's members.
 \end{enumerate}
 
-Such $conjectures$ can be used in several ways: they can be simplified for direct presentation to the user (by removing any equation which is a can be derived from the others by rewriting), sent to a more rigorous system like \hspec{} or \textsc{Hipster} for proving, or even serve as a background theory for an automated theorem prover \citep{claessen2013automating}.
+Such $conjectures$ can be used in several ways: they can be simplified for direct presentation to the user (by removing any equation which can be derived from the others by rewriting), sent to a more rigorous system like \hspec{} or \textsc{Hipster} for proving, or even serve as a background theory for an automated theorem prover \citep{claessen2013automating}.
 
 As an example, we can consider a simple signature for Peano numerals, addition and multiplication:
 
@@ -129,37 +130,38 @@ As an example, we can consider a simple signature for Peano numerals, addition a
 
 Together with a set of variables, say $V_{\mathbb{N}} = \{x, y, z\}$, \qspec{}'s enumeration will resemble the following:
 
-\begin{multline}
-  terms_{\mathbb{N}} = \{0,\ succ,\ plus,\ times,\ x,\ y,\ succ(0),\ succ(x),\ succ(y),\ succ(z), \\
-                    plus(0,\blank),\ plus(x, \blank),\ \dots \}
-\end{multline}
+\begin{align*}
+  terms_{\mathbb{N}} = [& 0,\ succ,\ plus,\ times,\ x,\ y,\ z,\ succ(0),\ succ(x),\ succ(y), \\
+                     & succ(z),\ plus(0,\blank),\ plus(x, \blank),\ \dots ]
+\end{align*}
 
 Notice that our functions are curried, where $f(x,\blank)$ indicates \emph{partial application} of $f$ to $x$. This is required as the construction of $terms$ applies functions to one argument at a time.
 
-These terms will be grouped into three classes, for $\mathbb{N}$, $\mathbb{N} \rightarrow \mathbb{N}$ and $\mathbb{N} \rightarrow \mathbb{N} \rightarrow \mathbb{N}$. As the variables $x$, $y$ and $z$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until equations such as the following are conjectured (after simplification):
+\begin{figure}
+  % To reproduce, run 'quickSpec nat' in haskell_example/src/QuickSpecExample.hs
+  \begin{align*}
+                        plus(x, y) &= plus(y, x)            \\
+                        plus(x, 0) &= x                     \\
+               plus(x, plus(y, z)) &= plus(y, plus(x, z))   \\
+                       times(x, y) &= times(y, x)           \\
+                       times(x, 0) &= 0                     \\
+             times(x, times(y, z)) &= times(y, times(x, z)) \\
+                  plus(x, succ(y)) &= succ(plus(x, y))      \\
+                 times(x, succ(y)) &= plus(x, times(x, y))  \\
+              times(x, plus(y, y)) &= times(y, plus(x, x))  \\
+    plus(times(x, y), times(x, z)) &= times(x, plus(y, z))
+  \end{align*}
+  \caption{Equations conjectured by \qspec{} for Peano numerals, addition and multiplication; after simplification.}
+  \label{fig:qspecresult}
+\end{figure}
 
-% To reproduce, run 'quickSpec nat' in haskell_example/src/QuickSpecExample.hs
-\begin{align*}
-                      plus(x, y) &= plus(y, x)
-                      plus(x, 0) &= x
-             plus(x, plus(y, z)) &= plus(y, plus(x, z))
-                     times(x, y) &= times(y, x)
-                     times(x, 0) &= 0
-           times(x, times(y, z)) &= times(y, times(x, z))
-                plus(x, succ(y)) &= succ(plus(x, y))
-               times(x, succ(y)) &= plus(x, times(x, y))
-            times(x, plus(y, y)) &= times(y, plus(x, x))
-  plus(times(x, y), times(x, z)) &= times(x, plus(y, z))
-\end{align*}
+These terms will be grouped into three classes, one each for $\mathbb{N}$, $\mathbb{N} \rightarrow \mathbb{N}$ and $\mathbb{N} \rightarrow \mathbb{N} \rightarrow \mathbb{N}$. As the variables $x$, $y$ and $z$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until eventually the equations in figure \ref{fig:qspecresult} are conjectured.
 
-\qspec{} (and \hspec{}) is also compatible with Haskell's existing testing infrastructure, such that an invocation of \texttt{cabal test} can run these tools alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and \textsc{Criterion}.
+Although complete, this enumeration approach is wasteful: many terms are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. Here we know that addition and multiplication are closely related, and hence obey many algebraic laws. Our machine learning technique aims to predict these kinds of relations between functions, so we can create small signatures which nevertheless have the potential to give rise to many equations.
+
+\qspec{} (and \hspec{}) are also compatible with Haskell's existing testing infrastructure, such that an invocation of \texttt{cabal test} can run these tools alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and \textsc{Criterion}.
 
 In fact, there are similarities between the way a TE system like \qspec{} can generalise from checking \emph{particular} properties to \emph{inventing} new ones, and the way counterexample finders like \qcheck{} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. One of our aims is to understand the implications of this generalisation, the lessons that each can learn from the other's approach to term generation, and the consequences for testing and QA in general.
-
-We attempt to mitigate the cost of running \qspec{}, by providing a machine learning layer analogous to that of premise selection in theorem proving. Of particular concern is the set of expressions $exprs$, which grows exponentially as the size of the expressions increases, and hence slows down the rest of the algorithm. Although complete, the current enumeration approach is wasteful: many combinations are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. The key idea of premise selection is to make such choices automatically, by only including those expressions which are considered \emph{relevant} to the problem.
-
-\iffalse TODO: Not immediately clear how the problem of reducing the set of expressions relates to premise selection \fi
-\iffalse TODO: This detailed comparison with premise selection is opaque without defining/explaining what premise selection is \fi
 
 \subsection{Clustering and Feature Extraction}
 \label{sec:featureextraction}
@@ -184,6 +186,8 @@ Another benefit of feature extraction is to \emph{normalise} the input data to a
 In our case, we will use a novel feature extraction algorithm, described in \S \ref{sec:recurrentclustering}, to transform expressions in Haskell Core into a fixed size representation, suitable for clustering via the standard \emph{k-means} algorithm.
 
 \iffalse TODO: I have had a look now at section 5. I do not think feature extraction and clustering is explained/defined there, either. Seeing your contribution is feature extraction algorithms, you need to define feature vectors and clusters *here* \fi
+
+\iffalse
 
 \begin{figure}
   \centering
@@ -219,3 +223,4 @@ In our case, we will use a novel feature extraction algorithm, described in \S \
 \subsection{Clustering}
 \label{sec:clustering}
 % TODO
+\fi

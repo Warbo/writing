@@ -10,16 +10,176 @@ Our use of clustering to pre-process \qcheck{} signatures necessarily involves m
   \item Improvements to our feature extraction algorithm, in particular to handle types.
   \item Alternative clustering algorithms.
   \item \emph{Feature learning} uses machine learning algorithms in place of hand-coded feature extraction algorithms such as ours. A comparison of our hand-picked features against a selection of learned representations would be a useful indication of the importance that understanding the expression language may or may not have on identifying salient aspects of expressions.
-  \item
+  \item There are several potential alternatives to \qcheck{} for instantiating variables, which may improve performance of \qspec{} by either generating expressions more efficiently (as in \textsc{SmallCheck}'s enumeration approach) or by observing differences with fewer tests (as found in \textsc{Lazy SmallCheck}'s demand-driven enumeration).
 \end{itemize}
 
 \subsection{Interestingness}
 \label{sec:interestingness}
 
-It is important to consider the question: \emph{what if we are right?} What if a more efficient theory exploration system were possible, capable of reading huge amounts of code and producing an  abundance of theorems? How could the output be made manageable, by finding the needles we are interested in among the haystack of potential laws?
+It is important to consider the question: \emph{what if we succeed?} What if a more efficient theory exploration system were possible, capable of reading huge amounts of code and producing an abundance of theorems? How could the output be made manageable, by finding the needles we are interested in among the haystack of potential laws?
 
-The criteria of what is considered \emph{interesting} is a key property of a theory exploration system. \qspec{}'s approach, briefly mentioned in \S \ref{sec:theoryexploration}, is to discard equations which are direct consequences of others; those which remain are considered interesting.
+This is governed by the ``interestingness'' criteria of the theory exploration system: what to keep and what to discard, and even what areas of the search space to prioritise. \qspec{}'s approach, briefly mentioned in \S \ref{sec:theoryexploration}, is very simple: we discard equations which are direct consequences of others, and keep all the rest.
 
-A variety of such ad-hoc heuristics can be found in systems for concept formation
+\subsubsection{Interestingness in Concept Formation}
+\label{sec:conceptformation}
 
- conjecture generation systems, like those described in \S \ref{sec:conceptformation}, use a variety of ad-hoc heuristics to
+% TODO:
+\citep{Montano-Rivas.McCasland.Dixon.ea:2012}
+\citep{Piantadosi.Tenenbaum.Goodman:2012}
+\citep{Wille:2005}
+\citep{colton1999automatic}
+\citep{colton2000agent}
+\citep{colton2012automated}
+\citep{lenat1977automated}
+\citep{mullerunderstanding}
+\citep{Bundy.Cavallo.Dixon.ea:2015}
+\citep{johansson2009isacosy}
+\citep{spector2008genetic}
+\citep{colton2012automated}
+ \citep{geng2006interestingness}
+% TODO: How does https en.wikipedia.org/wiki/Discovery system relate?
+
+% However, this search space grows exponentially in the length of the proofs, which is unfortunate since proof length has been proposed as an approximate measure of how interesting a theorem is \cite[\S~10.2.1]{colton2012automated}.
+
+% Alan Bundy et al
+
+% Eurisko, AM, etc.?
+
+\subsubsection{Artificial Curiosity}
+\label{sec:curiosity}
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=0.75]
+      % The image, for reference
+      % \node[anchor=south west,inner sep=0] at (0,0) {\includegraphics[width=\textwidth]{wundt.png}};
+
+      % Axes
+      \draw[black,ultra thick,->] (1,0.8) -- (1,  9)   node[midway, above, sloped] {HEDONIC VALUE};     % y axis
+      \draw[black,ultra thick,->] (1,4)   -- (11, 4);                                                   % x axis
+      \path                       (1,0.8) -- (11, 0.8) node[midway, below]         {AROUSAL POTENTIAL}; % x axis label
+
+      % Curve. The numbers come from tracing over wundt.png
+      \draw[black,ultra thick] (3, 4)
+           to[out=0,   in=240] (5.05, 6)
+           to[out=60,  in=180] (6.5,  8.2)
+           to[out=0,   in=105] (8.1,  6)
+           to[out=-75, in=120] (8.8,  4)
+           to[out=-60, in=150] (11.4, 0.8);
+
+      % This version is closer, but a little jagged
+      \iffalse
+      \draw[black,ultra thick] (3, 4)
+           to[out=0,   in=240] (5.05, 6)
+           to[out=60,  in=225] (6,    8)
+           to[out=45,  in=180] (6.5,  8.2)
+           to[out=0,   in=135] (7.2,  8)
+           to[out=-45, in=105] (8.1,  6)
+           to[out=-75, in=120] (8.8,  4)
+           to[out=-60, in=150] (11.4, 0.8);
+      \fi
+  \end{tikzpicture}
+
+  \caption{The Wundt curve, reproduced from \citep{berlyne1970novelty}. The axes ``hedonic value'' and ``arousal potential'' are described as covering \textquote{reward value\dots preference or pleasure}, and \textquote{all the stimulus properties that tend to raise arousal, including novelty and complexity}, respectively.}
+
+  \label{fig:wundt}
+\end{figure}
+
+\emph{Artificial curiosity} (AC) describes active learning systems which are rewarded based on how interesting the input or data they discover is \citep{schmidhuber2006developmental}. Although framed in the context of \emph{reinforcement learning}, this is clearly relevant to our theory exploration setting.
+
+As an unsupervised learning task, AC has no access to labels or meanings associated with its input; the only features it can learn are the structure and relationships inherent in the data, which is very much what we would like a theory exploration system to do. The unifying principle of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in figure \ref{fig:wundt}) \footnote{In practice, many measures avoid negative values for simplicity, in which cases we replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \citep{berlyne1970novelty}.
+
+We can divide AC approaches into two groups: the first, which we call \emph{explicit}, send inputs which follow a Wundt curve to their learning algorithm; the second, the \emph{implicit} approaches, instead modify the \emph{output} of their learning algorithm(s), such that the overall system follows a Wundt curve as an emergent property.
+
+In the explicit case, the \emph{implicit reward} signals being learned are analogous to our notion of interestingness. A framework encompassing many examples is given in \citep{oudeyer2007intrinsic} in the context of reinforcement learning.
+
+One particularly general measure is \emph{compression progress}: given a compressed representation of our previous observations, the ``progress'' is the space saved if we include the current observation. Observations which are incompressible or trivially compressible don't save any space, whilst observations which provide new information relevant to past experience can provide a saving. This can be translated to a theorem proving context very naturally: our observations are theorems and their proofs, whilst new theorems which generalise known results will allow us to compress their proofs.
+
+% TODO: Examples
+\citep{Schmidhuber1999}
+
+Two sources of intrinsic reward are proposed in \citep{Hester.Stone:2012} for \emph{random forests}. A random forest is a population of decision trees, where each tree is trained on a sub-set of the available examples, each decision is made using a sub-set of the available features, and the predictions of every tree are averaged to obtain that of the forest \citep{randomforests}. The first intrinsic reward is the \emph{disagreement} between predictions; for a forest with $m$ models (trees), predicting features $x_1$ \dots $x_n$ of the state resulting from taking action $a$ in state $s$, we simply sum the Kullback-Leibler divergence $D_{\rm KL}$ of each prediction $P_1$ \dots $P_m$ from every other prediction:
+
+\begin{equation}
+  D(s,a) = \sum_{i = 1}^n \sum_{j = 1}^m \sum_{k = 1}^m D_{KL}(P_j(x_i|s,a) || P_k(x_i|s,a))
+\end{equation}
+
+$D(s,a)$ is an explicit AC reward, as it follows a Wundt curve as the complexity of transitions increases. For parts of the state space which have been fully learned, the models will agree on accurate predictions. For parts which are unlearnable, the models cannot infer any structure, and will converge to reporting the average of past observations; these predictions may not be accurate, but they will be in agreement. Hence it is the states which are amenable to learning which produce the largest disagreement.
+
+The second intrinsic reward is simply a measure of distance from previous observations, which pushes the system towards unseen states regardless of how learnable they are (similar to the $R_{max}$ technique). This is too simple to meet our definition of AC, but it does force the models to generalise their predictions to unexplored states, acting to increase disagreement in the forest.
+
+A key advantage of random forests is that their models are \emph{inspectable}: they not only give predictions, but also \emph{reasons} for those predictions (i.e. we can see which paths are taken through each decision tree). % TODO: The accuracy of these random forest models are compared
+
+% TODO
+\citep{Kaplan2006}
+\citep{Lipson2007}
+\citep{Luciw2011}
+\citep{Macedo2000}
+\citep{Ramik.Sabourin.Madani:2013}
+\citep{Roa.Kruijff.Jacobsson:2009}
+\citep{Schaul.Sun.Wierstra.ea:2011}
+\citep{Schmidhuber1999}
+\citep{Schmidhuber:1991}
+\citep{Scott1989}
+\citep{Steunebrink.Koutnik.Thorisson.ea:2013}
+\citep{maher2008achieving}
+\citep{meyer1991possibility}
+\citep{oudeyer2004intelligent}
+\citep{oudeyer2014evolution}
+\citep{schmidhuber2006developmental}
+
+% TODO: Coevolution
+
+Whilst clearly of relevance to theory exploration, artificial curiosity is usually framed in the context of a \emph{reinforcement learning} and \emph{intrinsic reward}, especially in the field of developmental robotics. This requires non-trivial choices to be made in deciding which of its concepts are of relevance to our domain, and how they may be translated across. For example, much of developmental robotics studies continuous, real-valued sensorimotor signals which may not have any direct analogue in the manipulation of logical formulae. However, if we take a higher-level view, the study of such signals may provide insight for predicting and tuning the behaviour of off-the-shelf ATP algorithms.
+
+The most obvious contrast between developmental robotics and theory exploration is that the latter is not physically embodied (e.g. in a robot). Embodiment has been proposed as a necessary property of intelligent systems, as it provides \emph{grounding} \citep{anderson2003embodied}. Embodiment emerged as a response to the symbolic techniques of GOFAI, and in this sense the fields of theory exploration and developmental robotics seem incompatible. Nevertheless, TE can be seen to avoid the problems of GOFAI in two ways:
+
+\begin{itemize}
+
+  \item Firstly, the abstract, mathematical domain being explored is not a \emph{model} of some external, physical environment; the domain \emph{is} our environment; hence there is no issue of grounding terms with some external meaning.
+
+  \item Secondly, there is a physical aspect of TE in that \emph{resource usage} is a critical factor. If it weren't, then brute force enumeration of proofs would be a viable solution. In this sense, we can provide physical inputs to our algorithms, such as measures of time and space used.
+
+\end{itemize}
+
+\iffalse
+
+\subsubsection{Universal Drives}
+
+PhysRevLett.110.168702.pdf
+Omohundro? Too physical.
+\emph{Universal drives} are those
+
+\fi
+
+\subsubsection{Interestingness in Evolutionary Computation}
+
+\emph{Evolutionary computation} is an umbrella term for heuristic search algorithms which mimic the process of evolution by natural selection among a population of candidate solutions \citep{back1997evolutionary}. Whilst \emph{genetic algorithms} are perhaps the most well-known instance of evolutionary computation, their use of \emph{strings} to represent solutions causes complications when comparing to a domain like theory exploration, where recursive structures of unbounded depth arise. Thankfully these problems are not insurmountable, for example \emph{genetic programming} can operate on tree-structures natively \citep{banzhaf1998genetic}, which makes evolutionary computation a useful source of ideas for reuse in our theory exploration setting.
+
+Traditionally, evolutionary approaches assign solutions a \emph{fitness} value, using a user-supplied \emph{fitness function}. Fitness should correlate with how well a solution solves the user's problem; for example, the fitness of a solution to some engineering problem may depend on the estimated materials cost. If we frame the task of theory exploration in evolutionary computation terms, the fitness function would be our interestingness measure.
+
+Pure exploration (i.e. for its own sake) has been studied in evolutionary computation for two main reasons: \emph{artificial life} and \emph{deceptive problems}. The former attempts to gain insight into the nature of life and biology through competition over limited resources. Whilst this may have utility in resource allocation, e.g. efficient scheduling of a portfolio of ATP programs, there is no direct connection to interestingness in theory exploration, so we will not consider it further (note that similar resource-usage ideas can also be found in the literature on \emph{artificial economies}, e.g. \citep{baum2000evolution}).
+
+On the other hand, work on deceptive problems is highly relevant, as it has lead to studying various notions of intrinsic fitness, which are analogous to the interestingness measures we want. Deceptive problems are those where \textquote{pursuing the objective may prevent the objective from being reached} \citep{lehman2011abandoning}, which is caused by the fitness (objective) function having many local optima which are easy to find (e.g. by hill climbing), but few global optima which are hard to find. Many approaches try to avoid deception by augmenting the given fitness function to promote \emph{diversity} and \emph{novelty}, such as \emph{niching methods} \citep{sareni1998fitness}.
+
+One example is \emph{fitness sharing}, which divides up fitness values between identical or similar solutions. Say we have a user-provided fitness function $f$, and a population containing two identical solutions $s_1$ and $s_2$; hence $f(s_1) = f(s_2)$. In a fitness sharing scheme, we interpret fitness as a fixed resource, distributed according to $f$; when multiple individuals occupy the same point in the solution space, they must \emph{share} the fitness available there. We can describe the fitness \emph{allocated} to a solution by augmenting $f$, e.g. if we allocate fitness uniformly between identical solutions we get:
+
+$$f'(x) = \frac{f(x)}{\sum_{i=1}^n \delta_{s_i x}}$$
+
+Where $n$ is the population size, $s_i$ is the $i$th solution in the population and $\delta$ is the Kronecker delta function. In the example above, assuming there are no other copies in the population, then $f'(s_1) = \frac{f(s_1)}{2} = \frac{f(s_2)}{2} = f'(s_2)$. By sharing in this way, the fitness of each solution is balanced against redundancy in the population: there may still be many copies of a solution, but only when the fitness is high enough to justify all of them.
+
+There are many variations on this theme, such as sharing between ``close'' solutions rather than just identical ones and judging distance based on fitness (AKA phenotypically) rather than based on the location in solution space (AKA genetically). Yet the underlying principle is always the same: penalise duplication in order to promote diversity. This lesson can be carried over to our theory exploration context, where a theorem should be considered less interesting if it is ``close'' to others which have been found.
+
+In a similar way, we can bias our search procedure, rather than our fitness function, towards diversity. The search procedure in population-based evolutionary algorithms consists of \emph{selecting} one or more individuals from the population, e.g. via truncation (select the best $n$ individuals, discarding the rest); then \emph{transforming} the selected individuals, e.g. via mutation and crossover, to obtain new solutions.
+
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+
+Traditional selection methods are biased towards high fitness individuals (this is especially clear for truncation). Alternative schemes have been proposed which favour diversity \emph{at the expense of} fitness. For example, the fitness uniform selection scheme (FUSS) \citep{hutter2002fitness} selects a target fitness $f_t$ uniformly from the interval $\left[ f_{min}, f_{max} \right]$ between the highest and lowest of the population. An individual $s$ is then selected with fitness closest to $f_t$, i.e. $s = \operatornamewithlimits{argmin}\limits_{x} \lvert f(x) - f_t \rvert$
+
+In this way, the fitness function $f$ is used to assign comparable quantities to solutions, but it is not treated as the objective; instead, the implicit objective is to maintain a diverse population, with individuals spread out uniformly in fitness space. This approach seems useful for informing our work in theory exploration, as it supports search criteria which \emph{describe} solutions, but which we may not want to \emph{optimise}. As a simple example, we might distinguish different forms of theorem by measuring how balanced their syntax trees are (-1 for left-leaning, +1 for right leaning, 0 for balanced); but it would be senseless to \emph{maximise} how far they lean.
+
+Once we begin this process of augmenting fitness functions, or abandoning their use as objectives, an obvious question arises: what happens if our new function contains nothing of the original? This kind of pure exploration scenario leads to a variety of ideas for \emph{instrinsic} fitness, such as novelty \citep{lehman2011abandoning}, which can lead to learning useful ``stepping stones'' even in objective-driven domains. Such intrinsic notions of fitness are direct analogues of the interestingness measures we seek for theory exploration.
+
+\iffalse
+The core problem of assigning ``interestingness'' to logical formulae is the application of statistical reasoning to the discrete, semantically-rich domain of formal systems. This problem has been tackled from various directions for a variety of reasons; here we summarise those contributions which seem of particular importance for theory exploration.
+\fi
