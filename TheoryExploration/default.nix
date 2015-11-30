@@ -36,17 +36,13 @@ in stdenv.mkDerivation {
     ml4hs1 #haskellPackages.criterion
 
     # Data for running experiments *on*
-    hs2ast1 haskellPackages.hoogle
+    hs2ast1
 
     # Document rendering tools
     pandoc
     haskellPackages.pandoc-citeproc
-    (hs (atCommit "panpipe"
-                  "a3a40e9"
-                  "0sajlq926yr4684vbzmjh2209fnmrx1p1lqfbhxj5j0h166424ak") {})
-    (hs (atCommit "panhandle"
-                  "11ab103"
-                  "0ix7wd3k5q50ydanrv4sb2nfjbz32c4y38i4qzirrqf3dvbv734m") {})
+    panpipe
+    panhandle
 
     # Misc shell tools
     wget # For Hoogle
@@ -55,6 +51,5 @@ in stdenv.mkDerivation {
 
   shellHook = ''
     export HS2ASTSRC='${hs2astSrc}'
-    test -d hoogle || (mkdir -p hoogle; hoogle data --datadir=./hoogle)
   '';
 }
