@@ -8,6 +8,16 @@ We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), an
 
 \subsubsection{Overview}
 
+\iffalse TODO: Much of this discussion reads as a minor implementation solution rather than an overview of the whole method \fi
+
+\iffalse TODO: Don't show the ``pkg:Mod:name'' format here, it will just be confusing. Leave that to the implementation section. \fi
+
+\iffalse TODO: Focus the section more on the problem of identifiers, and how recurrent clustering uses clustering as part of feature extraction to solve this \fi
+
+\iffalse TODO: Maybe present the translation from trees to matrices, to vectors first; leaving the conversion of terms to features until afterwards; similar to how ML4PG uses [foo] to mean ``the feature corresponding to foo, whatever that might be'' \fi
+
+\iffalse TODO: Maybe present recurrent clustering in a ``naive'' way: define the conversion function ``[]'' recursively. Leave the dependency-ordering, etc. for the Algorithm section, as a way of ``building up to'' the result, which avoids the inefficiencies of recursing. \fi
+
 The purpose of recurrent clustering, as with other clustering algorithms, is to identify similarities between a set of inputs. In our case, we want compare the abstract syntax trees of Core expressions, which presents a difficulty for clustering: many leaves are \emph{references}, containing identifiers for other expressions. For example, consider the following expressions which are identical except for an identifier:\footnote{The \texttt{(\&\&)} function is boolean AND, \texttt{(++)} appends lists and \texttt{map} applies a function to the elements of a list.}
 
 \begin{equation*}
@@ -26,8 +36,20 @@ Recurrent clustering tackles this problem in a simple way: we look up the expres
 
 \subsubsection{Algorithm}
 \label{sec:algorithm}
-\iffalse TODO: the code could be used in the implementation section rather than here \fi
-\iffalse TODO: give a more abstract presentation:
+\iffalse TODO: the code should go in the implementation section rather than here \fi
+\iffalse TODO: give a more abstract presentation, using mathematical notation \fi
+\iffalse TODO: maybe focus on the ``interesting cases'', and defer the nitty-gritty of extending the environment, etc. to the implementation section? \fi
+\iffalse TODO: Define rose trees \fi
+\iffalse TODO: Show an example from earlier, e.g. factorial \fi
+\iffalse TODO: Split into three parts: expressions to rose trees of features; rose trees to matrices to vectors; k-means clustering \fi
+\iffalse TODO: highlight the recurrent nature of the algorithm \fi
+\iffalse TODO: I would probably just restructure:
+ - start with the syntax, get to show how, for every line of figure 1, extraction works
+ - then transformation to feature vectors
+ - then k-means
+obviously, they are mutually recursive...
+\fi
+
 Our algorithm proceeds in several stages. At the top level, we send named expressions to \hs{recurrentCluster}, topologically sorted: if an element contains multiple \hs{(Global, Expr)} pairs, they are mutually-recursive:
 
 \begin{haskell}
