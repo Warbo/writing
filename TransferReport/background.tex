@@ -4,26 +4,43 @@
 \subsection{Haskell}
 \label{sec:haskell}
 
+\newcommand{\CVar}{\texttt{Var}}
+\newcommand{\CLit}{\texttt{Lit}}
+\newcommand{\CApp}{\texttt{App}}
+\newcommand{\CLam}{\texttt{Lam}}
+\newcommand{\CLet}{\texttt{Let}}
+\newcommand{\CCase}{\texttt{Case}}
+\newcommand{\CType}{\texttt{Type}}
+\newcommand{\CLocal}{\texttt{Local}}
+\newcommand{\CGlobal}{\texttt{Global}}
+\newcommand{\CLitNum}{\texttt{LitNum}}
+\newcommand{\CLitStr}{\texttt{LitStr}}
+\newcommand{\CDataAlt}{\texttt{DataAlt}}
+\newcommand{\CLitAlt}{\texttt{LitAlt}}
+\newcommand{\CDefault}{\texttt{Default}}
+\newcommand{\CNonRec}{\texttt{NonRec}}
+\newcommand{\CRec}{\texttt{Rec}}
+
 \begin{figure}
   \begin{equation*}
     \begin{split}
-      expr\    \rightarrow\ & \texttt{Var}\ id                                       \\
-                         |\ & \texttt{Lit}\ literal                                  \\
-                         |\ & \texttt{App}\ expr\ expr                               \\
-                         |\ & \texttt{Lam}\ \mathcal{L}\ expr                        \\
-                         |\ & \texttt{Let}\ bind\ expr                               \\
-                         |\ & \texttt{Case}\ expr\ \mathcal{L}\ \left[ alt \right]   \\
-                         |\ & \texttt{Type}                                          \\
-      id\      \rightarrow\ & \texttt{Local}\ \mathcal{L}                            \\
-                         |\ & \texttt{Global}\ \mathcal{G}                           \\
-      literal\ \rightarrow\ & \texttt{LitNum}\ \mathcal{N}                           \\
-                         |\ & \texttt{LitStr}\ \mathcal{S}                           \\
-      alt\     \rightarrow\ & ( altcon,\ [\mathcal{L}],\ expr )                      \\
-      altcon\  \rightarrow\ & \texttt{DataAlt}\ \mathcal{G}                          \\
-                         |\ & \texttt{LitAlt}\ literal                               \\
-                         |\ & \texttt{Default}                                       \\
-      bind\    \rightarrow\ & \texttt{NonRec}\ \mathcal{L}\ expr                     \\
-                         |\ & \texttt{Rec}\ [ ( \mathcal{L},\ expr ) ]
+      expr\    \rightarrow\ & \CVar\ id                                       \\
+                         |\ & \CLit\ literal                                  \\
+                         |\ & \CApp\ expr\ expr                               \\
+                         |\ & \CLam\ \mathcal{L}\ expr                        \\
+                         |\ & \CLet\ bind\ expr                               \\
+                         |\ & \CCase\ expr\ \mathcal{L}\ \left[ alt \right]   \\
+                         |\ & \CType                                          \\
+      id\      \rightarrow\ & \CLocal\ \mathcal{L}                            \\
+                         |\ & \CGlobal\ \mathcal{G}                           \\
+      literal\ \rightarrow\ & \CLitNum\ \mathcal{N}                           \\
+                         |\ & \CLitStr\ \mathcal{S}                           \\
+      alt\     \rightarrow\ & ( altcon,\ [\mathcal{L}],\ expr )               \\
+      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{G}                          \\
+                         |\ & \CLitAlt\ literal                               \\
+                         |\ & \CDefault                                       \\
+      bind\    \rightarrow\ & \CNonRec\ \mathcal{L}\ expr                     \\
+                         |\ & \CRec\ [ ( \mathcal{L},\ expr ) ]
     \end{split}
   \end{equation*}
   Where:
@@ -42,7 +59,114 @@ We decided to focus on theory exploration in the Haskell programming language as
 
 Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \citep[Appendix C]{sulzmann2007system}.
 
-The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major changes are to ignore type hints (explicit casts are removed, whilst particular types/kinds/coercions are all represented by \texttt{Type}) and to use a custom representation of names. We also omit several other forms of literal (machine words of various sizes, individual characters, etc.) for brevity, as their treatment is similar to those of strings and numerals.
+The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major change is to ignore type hints (such as explicit casts, and differences between types/kinds/coercions). We also omit several other forms of literal (machine words of various sizes, individual characters, etc.) for brevity, as their treatment is similar to those of strings and numerals. We denote names and literals using quoted strings, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{LitStr "baz"} and \texttt{LitNum "42"}.
+
+\begin{figure}
+  \begin{haskell}
+    data Nat = Z
+             | S Nat
+
+    plus :: Nat -> Nat -> Nat
+    plus    Z  y = y
+    plus (S x) y = S (plus x y)
+
+    mult :: Nat -> Nat -> Nat
+    mult    Z  y = Z
+    mult (S x) y = plus y (mult x y)
+
+    factorial :: Nat -> Nat
+    factorial    Z  = S Z
+    factorial (S n) = mult (S n) (factorial n)
+
+    odd :: Nat -> Bool
+    odd    Z  = False
+    odd (S n) = even n
+
+    even :: Nat -> Bool
+    even    Z  = True
+    even (S n) = odd n
+  \end{haskell}
+  \caption{A Haskell datatype and functions for Peano arithmetic; in particular, the \hs{even} and \hs{odd} functions are mutually recursive. The \hs{Bool} type is Haskell's built in representation of Booleans, which can be regarded as \hs{data Bool = True \| False}.}
+  \label{fig:haskellexample}
+\end{figure}
+
+\begin{figure}
+  \begin{subfigure}[plus]{\textwidth}
+    \begin{small}
+      \underline{\texttt{plus}}
+      \begin{verbatim}
+Lam "a" (Lam "y" (Case (Var (Local "a"))
+                       "b"
+                       [(DataAlt "Z", [],    Var (Local "y")),
+                        (DataAlt "S", ["x"], App (Var (Global "S"))
+                                                 (App (App (Var (Global "plus"))
+                                                           (Var (Local  "x")))
+                                                      (Var (Local "y"))))]))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[mult]{\textwidth}
+    \begin{small}
+      \underline{\texttt{mult}}
+      \begin{verbatim}
+Lam "a" (Lam "y" (Case (Var (Local "a"))
+                       "b"
+                       [(DataAlt "Z", [],    Var (Global "Z")),
+                        (DataAlt "S", ["x"], App (App (Var (Global "plus"))
+                                                      (Var (Local  "y")))
+                                                 (App (App (Var (Global "mult"))
+                                                           (Var (Local  "x")))
+                                                      (Var (Local  "y"))))]))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[factorial]{\textwidth}
+    \begin{small}
+      \underline{\texttt{factorial}}
+      \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              [(DataAlt "Z", [],    App (Var (Global "S"))
+                                        (Var (Global "Z"))),
+               (DataAlt "S", ["n"], App (App (Var (Global "mult"))
+                                             (App (Var (Global "S"))
+                                                  (Var (Local  "n"))))
+                                        (App (Var (Global "factorial"))
+                                             (Var (Local  "n"))))])
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[odd]{\textwidth}
+    \begin{small}
+      \underline{\texttt{odd}}
+      \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              [(DataAlt "Z", [],    Var (Global "False")),
+               (DataAlt "S", ["n"], App (Var (Global "even"))
+                                        (Var (Local  "n")))])
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[even]{\textwidth}
+    \begin{small}
+      \underline{\texttt{even}}
+      \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              [(DataAlt "Z", [],    Var (Global "True")),
+               (DataAlt "S", ["n"], App (Var (Global "odd"))
+                                        (Var (Local  "n")))])
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \caption{Translations of functions in figure \ref{fig:haskellexample} into the Core syntax of figure \ref{fig:coresyntax}. Notice the introduction of explicit $\lambda$ abstractions (\texttt{Lam}) and the use of \texttt{Case} to represent piecewise definitions. Fresh variables are chosen arbitrarily as \texttt{"a"}, \texttt{"b"}, etc.}
+  \label{fig:coreexample}
+\end{figure}
+
+Figure \ref{fig:haskellexample} shows some simple Haskell function definitions, along with a custom datatype for Peano numerals. The translation to our Core syntax is routine, and shown in figure \ref{fig:coreexample}. Although the Core is more verbose, we can see similar structure across the definitions (such as \texttt{(App (App (Var (Global $\blank$)) (Var (Local "x"))) (Var (Local "y")))}) which arise from similarities in the Haskell definitions (in this case, \hs{(plus x y)} and \hs{(mult x y)}). This is clearest in the definitions of \hs{odd} and \hs{even}, which are identical except for the global variables.
+
+Note that we exclude representations for type-level entities, including datatype definitions like that of \hs{Nat}. GHC can represent these, but in this work we only consider reducible expressions (i.e. value-level bindings of the form \hs{f a b ... = ...}).
 
 \subsection{QuickCheck}
 \label{sec:quickcheck}
@@ -63,6 +187,8 @@ The intent of the function is to map an input $n$ to an output $n!$. The tests c
 All of Haskell's built-in numeric types allow negative numbers, which this implementation doesn't take into account. Whilst this is a rather trivial example, it highlights a common problem: unit tests are insufficient to expose incorrect assumptions. In this case, our assumption that numbers are positive has caused a bug in the implementation \emph{and} limited the tests we've written.
 
 If we do manage to spot this error, we might capture it in a \emph{regression test} and update the definition of \hs{factorial} to handle negative numbers, e.g. by taking their absolute value:
+
+\iffalse TODO: Re-use these examples later on, e.g. for QuickSpec exploration \fi
 
 \begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
 factorial 0 = 1
@@ -101,8 +227,6 @@ We can reduce this bias further through the use of \emph{theory exploration} too
 
 \subsection{Theory Exploration}
 \label{sec:theoryexploration}
-
-\newcommand{\blank}{\cdot}
 
 In this work we consider the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. The method of conjecture generation is a key characteristic of any theory exploration system, although all existing implementations rely on brute force enumeration to some degree.
 
@@ -163,12 +287,15 @@ Although complete, this enumeration approach is wasteful: many terms are unlikel
 
 In fact, there are similarities between the way a TE system like \qspec{} can generalise from checking \emph{particular} properties to \emph{inventing} new ones, and the way counterexample finders like \qcheck{} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. One of our aims is to understand the implications of this generalisation, the lessons that each can learn from the other's approach to term generation, and the consequences for testing and QA in general.
 
-\subsection{Clustering and Feature Extraction}
+\subsection{Feature Extraction}
 \label{sec:featureextraction}
 
-Our approach to scaling up these Haskell theory exploration tools takes inspiration from two sources. The first is premise selection, which makes expensive algorithms used in theorem proving more practical by limiting the size of their inputs. We describe this approach in more details in \S \ref{sec:relevance}. Premise selection is a practical tool, used in production systems like the \emph{Sledgehammer} component of the Isabelle/HOL theorem prover.
+\iffalse TODO: include definitions \fi
+\iffalse TODO: make more relevant to our context \fi
 
-Despite the idea's promise, we cannot simply invoke existing premise selection algorithms in our theory exploration setting. The reason is that theory exploration has no distinct \emph{goal} to compare expressions against. Instead, we are interested in relationships between \emph{any} terms generated from a signature, and hence we must consider the relevance of \emph{all terms} to \emph{all other terms}. A natural fit for such problems is \emph{clustering}, which attempts to group similar inputs together in an unsupervised way. See \S \ref{sec:clustering} for more information.
+Our approach to scaling up these Haskell theory exploration tools takes inspiration from two sources. The first is premise selection, which makes expensive algorithms used in theorem proving more practical by limiting the size of their inputs. We describe this approach in more details in \S \ref{sec:relevance}. Premise selection is a practical tool which has seen use in practical software, such as the \emph{Sledgehammer} component of the Isabelle/HOL theorem prover.
+
+Despite the idea's promise, we cannot simply invoke existing premise selection algorithms in our theory exploration setting. The reason is that theory exploration has no distinct \emph{goal} \iffalse TODO: implies that premise selection has a goal; rephrase: premise selection is given a concrete formula (called the ``goal'') to compare terms against \fi to compare expressions against. Instead, we are interested in relationships between \emph{any} terms generated from a signature, and hence we must consider the relevance of \emph{all terms} to \emph{all other terms}. A natural fit for such problems is \emph{clustering}, which attempts to group similar inputs together in an unsupervised way. See \S \ref{sec:clustering} for more information.
 
 Our hypothesis is that clustering methods, as found in systems like ML4PG and ACL2(ml), can be used as relevance filters to break up large signatures into smaller ones more amenable to brute force enumeration.
 
@@ -186,8 +313,6 @@ Another benefit of feature extraction is to \emph{normalise} the input data to a
 In our case, we will use a novel feature extraction algorithm, described in \S \ref{sec:recurrentclustering}, to transform expressions in Haskell Core into a fixed size representation, suitable for clustering via the standard \emph{k-means} algorithm.
 
 \iffalse TODO: I have had a look now at section 5. I do not think feature extraction and clustering is explained/defined there, either. Seeing your contribution is feature extraction algorithms, you need to define feature vectors and clusters *here* \fi
-
-\iffalse
 
 \begin{figure}
   \centering
@@ -223,4 +348,32 @@ In our case, we will use a novel feature extraction algorithm, described in \S \
 \subsection{Clustering}
 \label{sec:clustering}
 % TODO
-\fi
+
+Clustering is an unsupervised machine learning task for grouping $n$ data points using a similarity metric. There are many variations on this theme, but in our case we will fix the number of clusters at \iffalse TODO: use ceiling brackets \fi $k = \sqrt{n}$ the data points will be $d$-dimensional feature vectors of rational numbers, the similarity metric is euclidean distance, denoted $d$. and clustering will be performed by the $k-means$ algorithm. We choose this setup as it is well studied and supported by off-the-shelf tools, and is used in the ML4PG and ACL2(ml) systems which served as inspiration for this work.
+
+We will use $S$ to denote our set of $n$ data points and $k$ as the number of clusters.
+
+\subsubsection{k-Means}
+
+The k-means algorithm works, as the name suggests, by calculating the \emph{mean value} of each cluster's elements, which we will denote as $m_1$ to $m_k$. Since k-means is iterative, we will use superscript notation to denote time steps, such as $m_i^t$ for the value of $m_i$ at step $t$.
+
+Before k-means starts, we must choose \emph{seed} values for $m_1^0$ to $m_k^0$. Many methods have been proposed for choosing these values, e.g. see CITE. For simplicity, we will assume they are chosen at random from our data set. Subsequent values, i.e. $m_i^t$ for $t > 0$, are simply the mean values of the corresponding cluster $C_i^t$:
+
+TODO: We need to handle the vectors element-wise, but we've already used subscript notation!
+
+\begin{equation}
+  m_i^t =
+\end{equation}
+
+At time step $t$, the elements of each cluster $C_i^t$ are the data points closest to $m_i^{t-1}$ from the previous time step:
+
+\begin{equation}
+  C_i^t = \{ p \in S \mid i = \argmin\limits_j d(p, m_j^{t-1}) \}
+\end{equation}
+
+The mean values o determine which cluster a point $p$ belongs to, we
+The as the name suggests, relies on the mean value of each cluster to determine  represents each cluster by uses a \emph{representative} t step $t$, the with cluster membership  We begin at iteration 0 by \emph{seeding} the algorithm with , each cluster is represented by the mean value of its elements:
+
+\begin{equation}
+  C_k =
+\end{equation}

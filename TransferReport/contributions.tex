@@ -26,7 +26,8 @@ Recurrent clustering tackles this problem in a simple way: we look up the expres
 
 \subsubsection{Algorithm}
 \label{sec:algorithm}
-
+\iffalse TODO: the code could be used in the implementation section rather than here \fi
+\iffalse TODO: give a more abstract presentation:
 Our algorithm proceeds in several stages. At the top level, we send named expressions to \hs{recurrentCluster}, topologically sorted: if an element contains multiple \hs{(Global, Expr)} pairs, they are mutually-recursive:
 
 \begin{haskell}
