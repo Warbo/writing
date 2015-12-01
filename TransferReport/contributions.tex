@@ -10,21 +10,19 @@ We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), an
 
 \iffalse TODO: Much of this discussion reads as a minor implementation solution rather than an overview of the whole method \fi
 
-\iffalse TODO: Don't show the ``pkg:Mod:name'' format here, it will just be confusing. Leave that to the implementation section. \fi
-
 \iffalse TODO: Focus the section more on the problem of identifiers, and how recurrent clustering uses clustering as part of feature extraction to solve this \fi
 
 \iffalse TODO: Maybe present the translation from trees to matrices, to vectors first; leaving the conversion of terms to features until afterwards; similar to how ML4PG uses [foo] to mean ``the feature corresponding to foo, whatever that might be'' \fi
 
 \iffalse TODO: Maybe present recurrent clustering in a ``naive'' way: define the conversion function ``[]'' recursively. Leave the dependency-ordering, etc. for the Algorithm section, as a way of ``building up to'' the result, which avoids the inefficiencies of recursing. \fi
 
-The purpose of recurrent clustering, as with other clustering algorithms, is to identify similarities between a set of inputs. In our case, we want compare the abstract syntax trees of Core expressions, which presents a difficulty for clustering: many leaves are \emph{references}, containing identifiers for other expressions. For example, consider the following expressions which are identical except for an identifier:\footnote{The \texttt{(\&\&)} function is boolean AND, \texttt{(++)} appends lists and \texttt{map} applies a function to the elements of a list.}
+The purpose of recurrent clustering, as with other clustering algorithms, is to identify similarities between a set of inputs. In our case, we want compare the abstract syntax trees of Core expressions, which presents a difficulty for clustering: many leaves are \emph{references}, containing identifiers for other expressions. For example, consider the following expressions which are identical except for an identifier:
 
 \begin{equation*}
   \begin{split}
-    X =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"base:Prelude.(\&\&)"})) \\
-    Y =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"base:Prelude.(++)"})) \\
-    Z =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"base:Prelude.map"}))
+    X =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"odd"})) \\
+    Y =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"even"})) \\
+    Z =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"plus"}))
   \end{split}
 \end{equation*}
 
