@@ -59,7 +59,7 @@ We decided to focus on theory exploration in the Haskell programming language as
 
 Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \citep[Appendix C]{sulzmann2007system}.
 
-The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major change is to ignore type hints (such as explicit casts, and differences between types/kinds/coercions). We also omit several other forms of literal (machine words of various sizes, individual characters, etc.) for brevity, as their treatment is similar to those of strings and numerals. We denote names and literals using quoted strings, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{LitStr "baz"} and \texttt{LitNum "42"}.
+The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major change is to ignore type hints (such as explicit casts, and differences between types/kinds/coercions). For brevity, we also omit several other forms of literal (machine words of various sizes, individual characters, etc.), as their treatment is similar to those of strings and numerals. We will use quoted strings to denote names and literals, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{LitStr "baz"} and \texttt{LitNum "42"}, and require only that they can be compared for equality.
 
 \begin{figure}
   \begin{haskell}
@@ -74,10 +74,6 @@ The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compare
     mult    Z  y = Z
     mult (S x) y = plus y (mult x y)
 
-    factorial :: Nat -> Nat
-    factorial    Z  = S Z
-    factorial (S n) = mult (S n) (factorial n)
-
     odd :: Nat -> Bool
     odd    Z  = False
     odd (S n) = even n
@@ -86,7 +82,7 @@ The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compare
     even    Z  = True
     even (S n) = odd n
   \end{haskell}
-  \caption{A Haskell datatype and functions for Peano arithmetic; in particular, the \hs{even} and \hs{odd} functions are mutually recursive. The \hs{Bool} type is Haskell's built in representation of Booleans, which can be regarded as \hs{data Bool = True \| False}.}
+  \caption{A Haskell datatype for Peano numerals with some simple arithmetic functions, including mutually-recursive definitions for \hs{odd} and \hs{even}. \hs{Bool} is Haskell's built in boolean type, which can be regarded as \hs{data Bool = True \| False}.}
   \label{fig:haskellexample}
 \end{figure}
 
@@ -120,22 +116,6 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
       \end{verbatim}
     \end{small}
   \end{subfigure}
-  \begin{subfigure}[factorial]{\textwidth}
-    \begin{small}
-      \underline{\texttt{factorial}}
-      \begin{verbatim}
-Lam "a" (Case (Var (Local "a"))
-              "b"
-              [(DataAlt "Z", [],    App (Var (Global "S"))
-                                        (Var (Global "Z"))),
-               (DataAlt "S", ["n"], App (App (Var (Global "mult"))
-                                             (App (Var (Global "S"))
-                                                  (Var (Local  "n"))))
-                                        (App (Var (Global "factorial"))
-                                             (Var (Local  "n"))))])
-      \end{verbatim}
-    \end{small}
-  \end{subfigure}
   \begin{subfigure}[odd]{\textwidth}
     \begin{small}
       \underline{\texttt{odd}}
@@ -164,7 +144,7 @@ Lam "a" (Case (Var (Local "a"))
   \label{fig:coreexample}
 \end{figure}
 
-Figure \ref{fig:haskellexample} shows some simple Haskell function definitions, along with a custom datatype for Peano numerals. The translation to our Core syntax is routine, and shown in figure \ref{fig:coreexample}. Although the Core is more verbose, we can see similar structure across the definitions (such as \texttt{(App (App (Var (Global $\blank$)) (Var (Local "x"))) (Var (Local "y")))}) which arise from similarities in the Haskell definitions (in this case, \hs{(plus x y)} and \hs{(mult x y)}). This is clearest in the definitions of \hs{odd} and \hs{even}, which are identical except for the global variables.
+Figure \ref{fig:haskellexample} shows some simple Haskell function definitions, along with a custom datatype for Peano numerals. The translation to our Core syntax is routine, and shown in figure \ref{fig:coreexample}. Although the Core is more verbose, we can see that similar structure in the Haskell definitions gives rise to similar structure in the Core; for example, the definitions of \hs{odd} and \hs{even} are identical in both languages, except for the global variables. This correspondence allows us to analyse
 
 Note that we exclude representations for type-level entities, including datatype definitions like that of \hs{Nat}. GHC can represent these, but in this work we only consider reducible expressions (i.e. value-level bindings of the form \hs{f a b ... = ...}).
 
@@ -283,15 +263,21 @@ These terms will be grouped into three classes, one each for $\mathbb{N}$, $\mat
 
 Although complete, this enumeration approach is wasteful: many terms are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. Here we know that addition and multiplication are closely related, and hence obey many algebraic laws. Our machine learning technique aims to predict these kinds of relations between functions, so we can create small signatures which nevertheless have the potential to give rise to many equations.
 
-\qspec{} (and \hspec{}) are also compatible with Haskell's existing testing infrastructure, such that an invocation of \texttt{cabal test} can run these tools alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and \textsc{Criterion}.
+\qspec{} (and \hspec{}) is also compatible with Haskell's existing testing infrastructure, such that an invocation of \texttt{cabal test} can run these tools alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and \textsc{Criterion}.
 
 In fact, there are similarities between the way a TE system like \qspec{} can generalise from checking \emph{particular} properties to \emph{inventing} new ones, and the way counterexample finders like \qcheck{} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. One of our aims is to understand the implications of this generalisation, the lessons that each can learn from the other's approach to term generation, and the consequences for testing and QA in general.
 
 \subsection{Feature Extraction}
 \label{sec:featureextraction}
 
-\iffalse TODO: include definitions \fi
-\iffalse TODO: make more relevant to our context \fi
+One of our main contributions is a \emph{feature extraction} algorithm for Core expressions. Feature extraction is the conversion of ``raw'' input data, such as audio, images or (in our case) expressions, into a form more suited to machine learning algorithms. By pre-processing our data in this way, we can re-use the same ``off-the-shelf'' machine learning algorithms in a variety of domains.
+
+We use a standard representation of features known as a \emph{feature vector}: a sequence of numbers $(x_1, \dots, x_n)$ where $x_i \in \mathbb{R}$. \footnote{In fact, we only use $\mathbb{R}$ for notational and analytic convenience. Practical implementations will use an approximate format such as IEEE 754 floating point numbers.} For learning purposes this has two important advantages over our raw expressions:
+
+\begin{itemize}
+  \item All of our feature vectors will be the same size, i.e. they will all have length (or \emph{dimension}) $n$. This makes element-wise comparison between arbitrary feature vectors $x$ and $y$ trivial, as each element $x_i$ will have a corresponding element $y_i$. For raw expressions this is not so straightforward, as their nesting may give rise to very different shapes.
+  \item Unlike our discrete expressions, we can continuously transform one feature vector into another. This enables many powerful ML algorithms to be used, such as those based on \emph{gradient descent} or, in our case, taking the arithmetic mean.
+\end{itemize}
 
 Our approach to scaling up these Haskell theory exploration tools takes inspiration from two sources. The first is premise selection, which makes expensive algorithms used in theorem proving more practical by limiting the size of their inputs. We describe this approach in more details in \S \ref{sec:relevance}. Premise selection is a practical tool which has seen use in practical software, such as the \emph{Sledgehammer} component of the Isabelle/HOL theorem prover.
 
