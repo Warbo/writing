@@ -16,7 +16,7 @@ We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), an
 
 \iffalse TODO: Maybe present recurrent clustering in a ``naive'' way: define the conversion function ``[]'' recursively. Leave the dependency-ordering, etc. for the Algorithm section, as a way of ``building up to'' the result, which avoids the inefficiencies of recursing. \fi
 
-The purpose of recurrent clustering, as with other clustering algorithms, is to identify similarities between a set of inputs. In our case, we want compare the abstract syntax trees of Core expressions, which presents a difficulty for clustering: many leaves are \emph{references}, containing identifiers for other expressions. For example, consider the following expressions which are identical except for an identifier:
+The purpose of recurrent clustering, as with other clustering algorithms, is to identify similarities between a set of inputs. In our case, we want to compare Core expressions, which presents a difficulty for clustering: many leaves are \emph{references}, containing identifiers for other expressions. For example, consider the following expressions which are identical except for the global identifiers (which refer to the expressions in figure \ref{fig:coreexample}):
 
 \begin{equation*}
   \begin{split}
@@ -26,7 +26,7 @@ The purpose of recurrent clustering, as with other clustering algorithms, is to 
   \end{split}
 \end{equation*}
 
-Two possible methods for comparison are to ignore identifiers completely, or to compare them for equality. Neither is completely satisfactory, as the former will \emph{over-estimate} similarity (considering $X$, $Y$ and $Z$ to be the same), whilst the latter will \emph{under-estimate} similarity (considering $X$, $Y$ and $Z$ to be equidistant).
+We saw in section Two possible methods for comparison are to ignore identifiers completely, or to compare them for equality. Neither is completely satisfactory, as the former will \emph{over-estimate} similarity (considering $X$, $Y$ and $Z$ to be the same), whilst the latter will \emph{under-estimate} similarity (considering $X$, $Y$ and $Z$ to be equidistant).
 
 Ideally we would like something in between these two extremes, which requires a more sophisticated notion of similarity for identifiers. In the above example, we may intuitively consider \texttt{(\&\&)} and \texttt{(++)} to be closer to each other than to \texttt{map}; both in terms of \emph{definition} (e.g. only the former can be specified by pattern-matching on their first argument), and by their \emph{properties} (e.g. only the former can form monoids).
 

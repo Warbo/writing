@@ -29,9 +29,11 @@ sigma = [blind0 "()"      (),
          observer1 ((`mod` 10) :: Natural -> Natural),
          observer1 (id :: Bool -> Bool)]
 
-nat = [fun0 "0"     (0 :: Natural),
-       fun1 "succ"  ((1+) :: Natural -> Natural),
-       fun2 "plus"  ((+) :: Natural -> Natural -> Natural),
-       fun2 "times" ((*) :: Natural -> Natural -> Natural),
+nat = [fun0 "Z"     (0    :: Natural),
+       fun1 "S"     ((1+) :: Natural -> Natural),
+       fun2 "plus"  ((+)  :: Natural -> Natural -> Natural),
+       fun2 "times" ((*)  :: Natural -> Natural -> Natural),
+       fun1 "odd"   (odd  :: Natural -> Bool),
+       fun1 "even"  (even :: Natural -> Bool),
 
        vars ["x", "y", "z"] (0 :: Natural)]
