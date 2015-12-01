@@ -262,7 +262,7 @@ plus (mult a b) (mult a c) = mult a (plus b c)
   \label{fig:qspecresult}
 \end{figure}
 
-These terms will be grouped into five classes, one each for \hs{Nat}, \hs{Nat -> Nat} and \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool} and \hs{Bool}. As the variables $a$, $b$ and $c$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until eventually the equations in figure \ref{fig:qspecresult} are conjectured.
+These terms will be grouped into five classes, one each for \hs{Nat}, \hs{Nat -> Nat}, \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool} and \hs{Bool}. As the variables $a$, $b$ and $c$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until eventually the equations in figure \ref{fig:qspecresult} are conjectured.
 
 Although complete, this enumeration approach is wasteful: many terms are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. Here we know that addition and multiplication are closely related, and hence obey many algebraic laws. Our machine learning technique aims to predict these kinds of relations between functions, so we can create small signatures which nevertheless have the potential to give rise to many equations.
 
@@ -273,7 +273,7 @@ In fact, there are similarities between the way a TE system like \qspec{} can ge
 \subsection{Clustering}
 \label{sec:clustering}
 
-Our approach to scaling up these Haskell theory exploration tools takes inspiration from two sources. The first is premise selection, which makes expensive algorithms used in theorem proving more practical by limiting the size of their inputs. We describe this approach in more details in \S \ref{sec:relevance}. Premise selection is a practical tool which has existing applications in software, such as the \emph{Sledgehammer} component of the Isabelle/HOL theorem prover.
+Our approach to scaling up \qspec{} takes inspiration from two sources. The first is premise selection, which makes expensive algorithms used in theorem proving more practical by limiting the size of their inputs. We describe this approach in more details in \S \ref{sec:relevance}. Premise selection is a practical tool which has existing applications in software, such as the \emph{Sledgehammer} component of the Isabelle/HOL theorem prover.
 
 Despite the idea's promise, we cannot simply invoke existing premise selection algorithms in our theory exploration setting. The reason is that premise selection requires a distinguished expression to compare everything against; in practice this is the current goal of a theorem prover. Theory exploration does not have such a distinguished expression; instead, we are interested in relationships between \emph{any} terms generated from a signature, and hence we must consider the relevance of \emph{all terms} to \emph{all other terms}.
 
@@ -284,11 +284,13 @@ A natural fit for this task is \emph{clustering}, which attempts to group simila
 
 Before describing clustering in detail, we must introduce the idea of \emph{feature extraction}. This is the conversion of ``raw'' input data, such as audio, images or (in our case) Core expressions, into a form more suited to machine learning algorithms. By pre-processing our data in this way, we can re-use the same ``off-the-shelf'' machine learning algorithms in a variety of domains.
 
-We use a standard representation of features as a \emph{feature vector} of numbers $(x_1, \dots, x_p)$ where $x_i \in \mathbb{R}$. \footnote{In fact, we only use $\mathbb{R}$ for notational and analytic convenience. Practical implementations will use an approximate format such as IEEE 754 floating point numbers.} For learning purposes this has two important advantages over our raw expressions:
+We use a standard representation of features as a \emph{feature vector} of numbers $(x_1, \dots, x_d)$ where $x_i \in \mathbb{R}$. \footnote{In fact, ractical implementations will use an approximate format such as IEEE 754 floating point numbers.} For learning purposes this has some important advantages over raw expressions:
 
+Another benefit of feature extraction is to \emph{normalise} the input data to a fixed-size representation.
 \begin{itemize}
-  \item All of our feature vectors will be the same size, i.e. they will all have length (or \emph{dimension}) $p$. This makes element-wise comparison between arbitrary feature vectors $\mathbf{x}$ and $\mathbf{y}$ trivial: compare each element $x_i$ with $y_i$ for $1 \leq i \leq p$. For expressions would not be so straightforward, as their nesting may give rise to very different shapes.
+  \item All of our feature vectors will be the same size, i.e. they will all have length (or \emph{dimension}) $d$. Many ML algorithms only work with inputs of a uniform size; feature extraction allows us to use these algorithms in domains where the size of each input is not known, may vary or may even be unbounded. For example, element-wise comparison of feature vectors is trivial (compare the $i$th elements for $1 \leq i \leq d$); for expressions this is not so straightforward, as their nesting may give rise to very different shapes.
   \item Unlike our expressions, which are discrete, we can continuously transform one feature vector into another. This enables many powerful ML algorithms to be used, such as those based on \emph{gradient descent} or, in our case, arithmetic means.
+  \item Feature vectors can be chosen to represent the relevant information in a more compressed form than the raw data; for example, we might replace verbose, descriptive identifiers with sequential numbers. This reduces the input size of the machine learning problem, improving efficiency.
 \end{itemize}
 
 \subsubsection{K-Means}
@@ -298,76 +300,35 @@ Clustering is an unsupervised machine learning task for grouping $n$ data points
 
 \begin{itemize}
   \item We fix the number of clusters at $k = \lceil \sqrt{n} \rceil$.
-  \item Data points will be $p$-dimensional feature vectors, as defined above.
-  \item We will use euclidean distance (denoted $d$) as our similarity metric.
-  \item Clustering will be performed by the $k-means$ algorithm.
+  \item Data points will be $d$-dimensional feature vectors, as defined above.
+  \item We will use euclidean distance (denoted $e$) as our similarity metric.
+  \item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm.
 \end{itemize}
 
-This is a standard setup, supported by off-the-shelf tools. In particular, it is similar to that used by the ML4PG and ACL2(ml) systems which served as inspiration for this work, which makes our results more easily comparable.
+This is a standard setup, supported by off-the-shelf tools. In particular, it is similar to that used by the ML4PG and ACL2(ml), which makes our results more easily comparable.
 
-The k-means algorithm works, as the name suggests, by calculating the \emph{mean value} of each cluster's elements. Since k-means is iterative, we will use function notation to denote time steps, so $x(t)$ denotes the value of $x$ at time $t$. We denote the clusters as $C^1$ to $C^k$, their mean values as $\mathbf{m}^1$ to $\mathbf{m}^k$. Subscripts are vector elements, so $m^i_j(t)$ is the $i$th element of the $j$th mean, at time $t$.
+The k-means algorithm works, as the name suggests, by calculating the \emph{mean value} of each cluster, which we define as:
 
-Before k-means starts, we must choose \emph{seed} values for $\mathbf{m}^1(0)$ to $\mathbf{m}^k(0)$. Many methods have been proposed for choosing these values, e.g. see \citep{arthur2007k}. For simplicity, we will assume they are chosen at random from our data set. Subsequent values, i.e. $\mathbf{m}^i(t)$ for $t > 0$, are simply the mean values of the corresponding cluster $C^i(t)$:
+\begin{equation*}
+  \mean{X}_i = \frac{\sum_{x \in X} x_i}{|X|}
+\end{equation*}
 
-\begin{equation}
-  m^i_j(t) = \frac{\sum_{x \in C^i(t)} x_j}{|C^i(t)|}
-\end{equation}
+Since k-means is iterative, we will use function notation to denote time steps, so $x(t)$ denotes the value of $x$ at time $t$. We denote the clusters as $C^1$ to $C^k$ and their mean values as $\vect{m}^1$ to $\vect{m}^k$, hence:
 
-At time step $t$, the elements of each cluster $C_i^t$ are the data points closest to $m_i^{t-1}$ from the previous time step:
+\begin{equation*}
+  \vect{m}^i(t) = \mean{C}^i(t) \quad \text{for $t > 0$}
+\end{equation*}
 
-\begin{equation}
-  C_i^t = \{ p \in S \mid i = \argmin\limits_j d(p, m_j^{t-1}) \}
-\end{equation}
+Before k-means starts, we must choose \emph{seed} values for $\mathbf{m}^i(0)$. Many methods have been proposed for choosing these values \citep{arthur2007k}. For simplicity, we will choose values randomly from our data set $S$; this is known as the Forgy method.
 
-The mean values o determine which cluster a point $p$ belongs to, we
-The as the name suggests, relies on the mean value of each cluster to determine  represents each cluster by uses a \emph{representative} t step $t$, the with cluster membership  We begin at iteration 0 by \emph{seeding} the algorithm with , each cluster is represented by the mean value of its elements:
+The elements of each cluster $C^i(t)$ are those data points closest to the mean value at the previous time step:
 
-\begin{equation}
-  C_k =
-\end{equation}
+\begin{equation*}
+  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x}, \vect{m}^j(t-1)) \} \quad for t > 0
+\end{equation*}
 
+As $t$ increases, the clusters $C^i$ move from their initial location around the ``seeds'', to converge on a local minimum of the ``within-cluster sum of squared error'' objective:
 
-
-Both of these approaches, premise selection and clustering, use \emph{machine learning} (ML) algorithms to analyse expressions, and hence rely on \emph{feature extraction} to transform the data into a suitable representation and remove irrelevant details. This has two benefits:
-
-\begin{itemize}
-  \item \emph{Feature vectors} (ordered lists of features) are chosen to represent the relevant information in a more compressed form than the raw data (for example, replacing descriptive identifier names with sequential numbers). This reduces the input size of the machine learning problem, improving efficiency (e.g. running time).
-  \item We avoid learning irrelevant details, such as the text encoding system used, improving \emph{data} efficiency (the number of samples required to spot a pattern).
-\end{itemize}
-
-Another benefit of feature extraction is to \emph{normalise} the input data to a fixed-size representation. Many ML algorithms only work with inputs of a uniform size; feature extraction allows us to use these algorithms in domains where the size of each input is not known, may vary or may even be unbounded.
-
-In our case, we will use a novel feature extraction algorithm, described in \S \ref{sec:recurrentclustering}, to transform expressions in Haskell Core into a fixed size representation, suitable for clustering via the standard \emph{k-means} algorithm.
-
-\iffalse TODO: I have had a look now at section 5. I do not think feature extraction and clustering is explained/defined there, either. Seeing your contribution is feature extraction algorithms, you need to define feature vectors and clusters *here* \fi
-
-\begin{figure}
-  \centering
-  \begin{tikzpicture}[scale=0.75, level/.style={sibling distance=60mm/#1}]
-      % Tree
-      \node {\texttt{Lam}}
-        child {node {\texttt{"x"}}}
-        child {node {\texttt{App}}
-          child {node {\texttt{Var}}
-            child {node {\texttt{Global}}
-              child {node {\texttt{"base:Prelude.not"}}}}}
-          child {node {\texttt{Var}}
-            child {node {\texttt{Local}}
-              child {node {\texttt{"x"}}}}}};
-
-      % Arrow
-      %\node[single arrow,
-      %      draw=black,
-      %      fill=black!10,
-      %      minimum height=2cm,
-      %      shape border rotate=0] at (0,-1) {};
-      %\draw[-latex] (A.east) -- (B.west);
-
-      % Feature vector
-
-  \end{tikzpicture}
-
-  \caption{}
-
-  \label{fig:featureextractionpic}
-\end{figure}
+\begin{equation*}
+  \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
+\end{equation*}
