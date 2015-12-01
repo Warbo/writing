@@ -15,32 +15,35 @@
 \newcommand{\CGlobal}{\texttt{Global}}
 \newcommand{\CLitNum}{\texttt{LitNum}}
 \newcommand{\CLitStr}{\texttt{LitStr}}
+\newcommand{\CAlt}{\texttt{Alt}}
 \newcommand{\CDataAlt}{\texttt{DataAlt}}
 \newcommand{\CLitAlt}{\texttt{LitAlt}}
 \newcommand{\CDefault}{\texttt{Default}}
 \newcommand{\CNonRec}{\texttt{NonRec}}
 \newcommand{\CRec}{\texttt{Rec}}
+\newcommand{\CBind}{\texttt{Bind}}
 
 \begin{figure}
   \begin{equation*}
     \begin{split}
-      expr\    \rightarrow\ & \CVar\ id                                       \\
-                         |\ & \CLit\ literal                                  \\
-                         |\ & \CApp\ expr\ expr                               \\
-                         |\ & \CLam\ \mathcal{L}\ expr                        \\
-                         |\ & \CLet\ bind\ expr                               \\
-                         |\ & \CCase\ expr\ \mathcal{L}\ \left[ alt \right]   \\
-                         |\ & \CType                                          \\
-      id\      \rightarrow\ & \CLocal\ \mathcal{L}                            \\
-                         |\ & \CGlobal\ \mathcal{G}                           \\
-      literal\ \rightarrow\ & \CLitNum\ \mathcal{N}                           \\
-                         |\ & \CLitStr\ \mathcal{S}                           \\
-      alt\     \rightarrow\ & ( altcon,\ [\mathcal{L}],\ expr )               \\
-      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{G}                          \\
-                         |\ & \CLitAlt\ literal                               \\
-                         |\ & \CDefault                                       \\
-      bind\    \rightarrow\ & \CNonRec\ \mathcal{L}\ expr                     \\
-                         |\ & \CRec\ [ ( \mathcal{L},\ expr ) ]
+      expr\    \rightarrow\ & \CVar\ id                          \\
+                         |\ & \CLit\ literal                     \\
+                         |\ & \CApp\ expr\ expr                  \\
+                         |\ & \CLam\ \mathcal{L}\ expr           \\
+                         |\ & \CLet\ bind\ expr                  \\
+                         |\ & \CCase\ expr\ \mathcal{L}\ [alt]   \\
+                         |\ & \CType                             \\
+      id\      \rightarrow\ & \CLocal\ \mathcal{L}               \\
+                         |\ & \CGlobal\ \mathcal{G}              \\
+      literal\ \rightarrow\ & \CLitNum\ \mathcal{N}              \\
+                         |\ & \CLitStr\ \mathcal{S}              \\
+      alt\     \rightarrow\ & \CAlt\ altcon\ expr\ [\mathcal{L}] \\
+      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{G}             \\
+                         |\ & \CLitAlt\ literal                  \\
+                         |\ & \CDefault                          \\
+      bind\    \rightarrow\ & \CNonRec\ binder                   \\
+                         |\ & \CRec\ [binder]                    \\
+      binder   \rightarrow\ & \CBind \mathcal{L}\ expr
     \end{split}
   \end{equation*}
   Where:
@@ -82,7 +85,7 @@ The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compare
     even    Z  = True
     even (S n) = odd n
   \end{haskell}
-  \caption{A Haskell datatype for Peano numerals with some simple arithmetic functions, including mutually-recursive definitions for \hs{odd} and \hs{even}. \hs{Bool} is Haskell's built in boolean type, which can be regarded as \hs{data Bool = True \| False}.}
+  \caption{A Haskell datatype for Peano numerals with some simple arithmetic functions, including mutually-recursive definitions for \hs{odd} and \hs{even}. \hs{Bool} is Haskell's built in boolean type, which can be regarded as \hs{data Bool \equal{} True | False}.}
   \label{fig:haskellexample}
 \end{figure}
 
@@ -93,11 +96,12 @@ The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compare
       \begin{verbatim}
 Lam "a" (Lam "y" (Case (Var (Local "a"))
                        "b"
-                       [(DataAlt "Z", [],    Var (Local "y")),
-                        (DataAlt "S", ["x"], App (Var (Global "S"))
-                                                 (App (App (Var (Global "plus"))
-                                                           (Var (Local  "x")))
-                                                      (Var (Local "y"))))]))
+                       [Alt (DataAlt "Z") (Var (Local "y")) [],
+                        Alt (DataAlt "S") (App (Var (Global "S"))
+                                               (App (App (Var (Global "plus"))
+                                                         (Var (Local  "x")))
+                                                    (Var (Local "y"))))
+                                          ["x"]]))
       \end{verbatim}
     \end{small}
   \end{subfigure}
@@ -107,12 +111,13 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Lam "y" (Case (Var (Local "a"))
                        "b"
-                       [(DataAlt "Z", [],    Var (Global "Z")),
-                        (DataAlt "S", ["x"], App (App (Var (Global "plus"))
-                                                      (Var (Local  "y")))
-                                                 (App (App (Var (Global "mult"))
-                                                           (Var (Local  "x")))
-                                                      (Var (Local  "y"))))]))
+                       [Alt (DataAlt "Z") (Var (Global "Z")) [],
+                        Alt (DataAlt "S") (App (App (Var (Global "plus"))
+                                                    (Var (Local  "y")))
+                                               (App (App (Var (Global "mult"))
+                                                         (Var (Local  "x")))
+                                                    (Var (Local  "y"))))
+                                          ["x"]]))
       \end{verbatim}
     \end{small}
   \end{subfigure}
@@ -122,9 +127,10 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
               "b"
-              [(DataAlt "Z", [],    Var (Global "False")),
-               (DataAlt "S", ["n"], App (Var (Global "even"))
-                                        (Var (Local  "n")))])
+              [Alt (DataAlt "Z") (Var (Global "False")) [],
+               Alt (DataAlt "S") (App (Var (Global "even"))
+                                      (Var (Local  "n")))
+                                 ["n"]])
       \end{verbatim}
     \end{small}
   \end{subfigure}
@@ -134,9 +140,10 @@ Lam "a" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
               "b"
-              [(DataAlt "Z", [],    Var (Global "True")),
-               (DataAlt "S", ["n"], App (Var (Global "odd"))
-                                        (Var (Local  "n")))])
+              [Alt (DataAlt "Z") (Var (Global "True")) [],
+               Alt (DataAlt "S") (App (Var (Global "odd"))
+                                      (Var (Local  "n")))
+                                 ["n"]])
       \end{verbatim}
     \end{small}
   \end{subfigure}
@@ -168,8 +175,6 @@ All of Haskell's built-in numeric types allow negative numbers, which this imple
 
 If we do manage to spot this error, we might capture it in a \emph{regression test} and update the definition of \hs{factorial} to handle negative numbers, e.g. by taking their absolute value:
 
-\iffalse TODO: Re-use these examples later on, e.g. for QuickSpec exploration \fi
-
 \begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
 factorial 0 = 1
 factorial n = let nPos = abs n
@@ -189,9 +194,9 @@ fact_div       n = factorial n == factorial (n+1) `div` (n+1)
 fact_neg       n = factorial n == factorial (-n)
 \end{lstlisting}
 
-The free variables (all called \hs{n} in this case) are abstracted as function parameters; these parameters are implicitly \emph{universally quantified}, i.e. we've gone from a unit test asserting $factorial(3) \leq factorial(4)$ to a property asserting $\forall n, factorial(n) \leq factorial(n+1)$. Notice that unit tests like \hs{fact_base} are valid properties; they just assert rather weak statements.
+The free variables (all called \hs{n} in this case) are abstracted as function parameters; these parameters are implicitly \emph{universally quantified}, i.e. we've gone from a unit test asserting $factorial(3) \leq factorial(4)$ to a property asserting $\forall n, factorial(n) \leq factorial(n+1)$. Notice that unit tests like \hs{fact\_base} are valid properties; they just assert rather weak statements.
 
-To check these properties, \qcheck{} treats closed terms (like \hs{fact_base}) just like unit tests: pass if they evaluate to \hs{True}, fail otherwise. For open terms, a random selection of values are generated and passed in via the function parameter; the results are then treated in the same way as closed terms. The default stopping criterion for \qcheck{} (for each test) is when a single generated test fails, or when 100 generated tests pass.
+To check these properties, \qcheck{} treats closed terms (like \hs{fact\_base}) just like unit tests: pass if they evaluate to \hs{True}, fail otherwise. For open terms, a random selection of values are generated and passed in via the function parameter; the results are then treated in the same way as closed terms. The default stopping criterion for \qcheck{} (for each test) is when a single generated test fails, or when 100 generated tests pass.
 
 The ability to state \emph{universal} properties in this way avoids some of the bias we encountered with unit tests. In the \hs{factorial} example, this manifests in two ways:
 
@@ -293,7 +298,7 @@ Another benefit of feature extraction is to \emph{normalise} the input data to a
   \item Feature vectors can be chosen to represent the relevant information in a more compressed form than the raw data; for example, we might replace verbose, descriptive identifiers with sequential numbers. This reduces the input size of the machine learning problem, improving efficiency.
 \end{itemize}
 
-\subsubsection{K-Means}
+\subsubsection{k-Means}
 \label{sec:kmeans}
 
 Clustering is an unsupervised machine learning task for grouping $n$ data points using a similarity metric. There are many variations on this theme, but in our case we make the following choices:
@@ -307,7 +312,7 @@ Clustering is an unsupervised machine learning task for grouping $n$ data points
 
 This is a standard setup, supported by off-the-shelf tools. In particular, it is similar to that used by the ML4PG and ACL2(ml), which makes our results more easily comparable.
 
-The k-means algorithm works, as the name suggests, by calculating the \emph{mean value} of each cluster, which we define as:
+k-means works, as the name suggests, by calculating the \emph{mean value} of each cluster, which we define as:
 
 \begin{equation*}
   \mean{X}_i = \frac{\sum_{x \in X} x_i}{|X|}
@@ -324,7 +329,7 @@ Before k-means starts, we must choose \emph{seed} values for $\mathbf{m}^i(0)$. 
 The elements of each cluster $C^i(t)$ are those data points closest to the mean value at the previous time step:
 
 \begin{equation*}
-  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x}, \vect{m}^j(t-1)) \} \quad for t > 0
+  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x}, \vect{m}^j(t-1)) \} \quad \text{for $t > 0$}
 \end{equation*}
 
 As $t$ increases, the clusters $C^i$ move from their initial location around the ``seeds'', to converge on a local minimum of the ``within-cluster sum of squared error'' objective:

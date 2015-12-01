@@ -4,9 +4,7 @@
 \subsection{Recurrent Clustering}
 \label{sec:recurrentclustering}
 
-We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), and implement a variant in the context of Haskell theory exploration. Here we give a brief description of recurrent clustering, describe our algorithm, and compare its similarity and differences to ML4PG and ACL2(ml).
-
-\subsubsection{Overview}
+We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), and implement a variant in the context of Haskell theory exploration. Here we describe our recurrent clustering algorithm and compare its similarity and differences to those of ML4PG and ACL2(ml).
 
 \iffalse TODO: Much of this discussion reads as a minor implementation solution rather than an overview of the whole method \fi
 
@@ -16,24 +14,84 @@ We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), an
 
 \iffalse TODO: Maybe present recurrent clustering in a ``naive'' way: define the conversion function ``[]'' recursively. Leave the dependency-ordering, etc. for the Algorithm section, as a way of ``building up to'' the result, which avoids the inefficiencies of recursing. \fi
 
-The purpose of recurrent clustering, as with other clustering algorithms, is to identify similarities between a set of inputs. In our case, we want to compare Core expressions, which presents a difficulty for clustering: many leaves are \emph{references}, containing identifiers for other expressions. For example, consider the following expressions which are identical except for the global identifiers (which refer to the expressions in figure \ref{fig:coreexample}):
+The purpose of recurrent clustering, as with other clustering algorithms, is to identify similarities between a set of inputs. In our case, we want to compare Core expressions which, as described above, requires a feature extraction algorithm to create a suitable representation.
+
+We extract features in two stages: first we construct \emph{rose trees} of features (real numbers), which maintain the nested structure of expressions shown in figure \ref{fig:coresyntax}. We then flatten these rose trees into feature vectors.
+
+\subsubsection{Rose Trees}
+
+Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{children of} $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may be different for each child; trees where $n_T = 0$ are \emph{leaves}.
+
+We turn Core expressions into rose trees by converting terminal symbols (such as \hs{Lam} or \hs{Rec}) into features; we represent this conversion using $\feature{}$. Non-terminal symbols (such as $expr$ and $id$) are converted recursively and become children. This is shown in figure \ref{fig:totree}.
+
+\begin{figure}
+  \begin{align*}
+    toTree(e) &=
+    \begin{cases}
+      (\feature{\CVar}, toTree(e_1))                                 & \text{if $e = \CVar\ e_1$} \\
+      (\feature{\CLit}, toTree(e_1))                                 & \text{if $e = \CLit\ e_1$} \\
+      (\feature{\CApp}, toTree(e_1), toTree(e_2))                    & \text{if $e = \CApp\ e_1\ e_2$} \\
+      (\feature{\CLam}, leaf(l_1), toTree(e_1))                      & \text{if $e = \CLam\ l_1\ e_1$} \\
+      (\feature{\CLet}, toTree(e_1), toTree(e_2))                    & \text{if $e = \CLet\ e_1\ e_2$} \\
+      (\feature{\CCase}, toTree(e_1), leaf(l_1), toTree(a_1), \dots) & \text{if $e = \CCase\ e_1\ l_1 [a_1, \dots]$} \\
+      (\feature{\CType})                                            & \text{if $e = \CType$} \\
+      (\feature{\CLocal}, leaf(l_1))                                & \text{if $e = \CLocal\ l_1$} \\
+      (\feature{\CGlobal}, leaf(g_1))                               & \text{if $e = \CGlobal\ g_1$} \\
+      (\feature{\CLitNum})                                          & \text{if $e = \CLitNum\ n_1$} \\
+      (\feature{\CLitStr})                                          & \text{if $e = \CLitStr\ s_1$} \\
+      (\feature{\CAlt}, toTree(e_1), toTree(e_2), leaf{l_1}, \dots)  & \text{if $e = \CAlt\ e_1 e_2 [l_1, \dots]$}  \\
+      (\feature{\CDataAlt}, leaf(g_1))                              & \text{if $e = \CDataAlt\ g_1$}  \\
+      (\feature{\CLitAlt}, toTree(e_1))                             & \text{if $e = \CLitAlt\ e_1$}  \\
+      (\feature{\CDefault})                                         & \text{if $e = \CDefault$}  \\
+      (\feature{\CNonRec}, toTree(e_1))                             & \text{if $e = \CNonRec\ e_1$}  \\
+      (\feature{\CRec}, toTree(e_1), \dots)                         & \text{if $e = \CRec\ [e_1, \dots]$} \\
+      (\feature{\CBind}, leaf(l_1), toTree(e_1))                    & \text{if $e = \CBind\ l_1 e_1$}
+    \end{cases} \\
+    leaf(x) &= (\feature{x})
+  \end{align*}
+  \caption{Recursively converting Core expressions of figure \ref{fig:coresyntax} to rose trees. List elements (indicated with $\dots$) are appended as children, rather than being wrapped in another tree.}
+  \label{fig:totree}
+\end{figure}
+
+To flatten a rose tree we fetch the features from each ``level'', concatenating those from adjacent children:
+
+\begin{equation*}
+  level(l, (x, T_1, \dots, T_{n_T})) =
+    \begin{cases}
+      (x) & \text{if $l = 1$} \\
+      \vect{x}_1 \vect{x}_2 \dots \vect{x}_{T_n} & \text{if $l > 1$ and $\vect{x}_i = level(l - 1, T_i)$}
+    \end{cases}
+\end{equation*}
+
+Given a rose tree $T$, we pad each level $level(1, T)$, $level(2, T)$, $\dots$, $level(r, T)$ with zeros and truncate them to length $c$. The resulting vectors are concatenated to form the feature vector for $T$.
+
+See see figure \ref{fig:rosetreeexample} for an example of this construction.
+
+\begin{figure}
+  \caption{}
+  \label{fig:rosetreeexample}
+\end{figure}
+
+\subsubsection{Feature Extraction}
+
+We now define the algorithm for $\feature{}$, which turns terminal symbols into features. In the case of known language features, such as $\feature{\hs{Lam}}$ and $\feature{\hs{Case}}$, we just enumerate the possibilities (while trying to make ``similar'' symbols have similar features).
+
+The difficulty comes from identifiers, which we cannot hard-code into our algorithm in advance. The only meaningful way to directly compare identifiers is by equality, but since the space of identifiers is large, giving distinct features to distinct identifiers would make matches very unlikely. Since identifiers make up a significant portion of expressions, we would like a more fine-grained notion of similarity between their features than exact matching.
+
+For example, consider the following feature vectors, which are identical except for the global identifiers:
 
 \begin{equation*}
   \begin{split}
-    X =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"odd"})) \\
-    Y =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"even"})) \\
-    Z =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"plus"}))
+    \vect{x} =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"odd"})) \\
+    \vect{y} =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"even"})) \\
+    \vect{z} =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"plus"}))
   \end{split}
 \end{equation*}
 
-We saw in section Two possible methods for comparison are to ignore identifiers completely, or to compare them for equality. Neither is completely satisfactory, as the former will \emph{over-estimate} similarity (considering $X$, $Y$ and $Z$ to be the same), whilst the latter will \emph{under-estimate} similarity (considering $X$, $Y$ and $Z$ to be equidistant).
+From their definitions in figure \ref{fig:coreexample} we might consider \hs{odd} to be more similar to \hs{even} than to \hs{plus}, and hence for $X$ to be more similar to $Y$ than to $Z$. In this sense, exact equality will under-estimate the similarity of $X$ and $Y$, whilst ignoring identifiers will over-estimate the similarity of $X$ and $Z$.
 
-Ideally we would like something in between these two extremes, which requires a more sophisticated notion of similarity for identifiers. In the above example, we may intuitively consider \texttt{(\&\&)} and \texttt{(++)} to be closer to each other than to \texttt{map}; both in terms of \emph{definition} (e.g. only the former can be specified by pattern-matching on their first argument), and by their \emph{properties} (e.g. only the former can form monoids).
+Recurrent clustering tackles this problem by comparing identifiers \emph{indirectly}: we look up the expressions \emph{referenced by} each identifier, and use \emph{their} similarity instead. However, this is a circular definition: to compare the similarity of, say $X$ and $Y$, we would need to look up the global identifiers and compare the expressions \hs{odd} and \hs{even}; yet \hs{odd} and \hs{even} are mutually recursive! To  themselves gives rise to a recursive process, where feature extraction is interleaved with multiple rounds of clustering. For this recursive process to be well-founded, we impose a topological ordering on expressions based on their dependencies (the expressions they reference). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and several mutually-recursive expressions may appear at the same level.
 
-Recurrent clustering tackles this problem in a simple way: we look up the expressions \emph{referenced by} each identifier, and use \emph{their} similarity in place of the identifiers'. This gives rise to a recursive process, where feature extraction is interleaved with multiple rounds of clustering. For this recursive process to be well-founded, we impose a topological ordering on expressions based on their dependencies (the expressions they reference). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and several mutually-recursive expressions may appear at the same level.
-
-\subsubsection{Algorithm}
-\label{sec:algorithm}
 \iffalse TODO: the code should go in the implementation section rather than here \fi
 \iffalse TODO: give a more abstract presentation, using mathematical notation \fi
 \iffalse TODO: maybe focus on the ``interesting cases'', and defer the nitty-gritty of extending the environment, etc. to the implementation section? \fi
