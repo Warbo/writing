@@ -55,7 +55,7 @@ Our feature extraction method (described below) uses a variation of breadth-firs
 
 Here $\frac{1}{2}$ of the original 6 features align, which is more than $breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2 zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
 
-To achieve this we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the $toTree$ function shown in figure \ref{fig:totree}. Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree for each sub-tree; trees where $n_T = 0$ are \emph{leaves}. Rose trees for the Peano arithmetic functions of figure \ref{fig:coreexample} are given in figure \ref{fig:rosetreeexample}.
+To achieve this we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the $toTree$ function shown in figure \ref{fig:totree}. Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}. The results are illustrated in figure \ref{fig:rosetreeexample}.
 
 \begin{figure}
   \begin{align*}
@@ -86,117 +86,78 @@ To achieve this we first transform the nested tokens of an expression into a \em
   \label{fig:totree}
 \end{figure}
 
-To flatten a rose tree we fetch the features from each ``level'', concatenating those from adjacent sub-trees:
+\begin{figure}
+  \centering
+  \begin{subfigure}{\textwidth}
+    \begin{small}
+      \Tree[ .$\feature{\CLam}$
+                $\feature{\id{a}}$
+                [ .$\feature{\CCase}$
+                     [ .$\feature{\CVar}$
+                          [ .$\feature{\CLocal}$
+                               $\feature{\id{a}}$ ]]
+                     $\feature{\id{b}}$
+                     [ .$\feature{\CAlt}$
+                          [ .$\feature{\CDataAlt}$
+                               $\feature{\id{Z}}$ ]
+                          [ .$\feature{\CVar}$
+                               [ .$\feature{\CGlobal}$
+                                    $\feature{\id{False}}$ ]]]
+                     [ .$\feature{\CAlt}$
+                          [ .$\feature{\CDataAlt}$
+                               $\feature{\id{S}}$ ]
+                          [ .$\feature{\CApp}$
+                               [ .$\feature{\CVar}$
+                                    [ .$\feature{\CGlobal}$
+                                         $\feature{\id{even}}$ ]]
+                               [ .$\feature{\CVar}$
+                                    [ .$\feature{\CLocal}$
+                                         $\feature{\id{n}}$ ]]]
+                          $\feature{\id{n}}$ ]]]
+    \end{small}
+    \caption{Rose tree for the expression \hs{odd} from \ref{fig:coreexample}. Each (sub-) rose tree is rendered with its feature at the node and sub-trees beneath.}
+    \label{fig:rosetreeexample}
+  \end{subfigure}
+  \vspace{1ex}
+  \begin{subfigure}{\textwidth}
+    \begin{equation*}
+      \begin{bmatrix}
+        \feature{\CLam}      & 0                   & 0                  & 0                   & 0               & 0                \\
+        \feature{\id{a}}     & \feature{\CCase}    & 0                  & 0                   & 0               & 0                \\
+        \feature{\CVar}      & \feature{\id{b}}    & \feature{\CAlt}    & \feature{\CAlt}     & 0               & 0                \\
+        \feature{\CLocal}    & \feature{\CDataAlt} & \feature{\CVar}    & \feature{\CDataAlt} & \feature{\CApp} & \feature{\id{n}} \\
+        \feature{\id{a}}     & \feature{\id{Z}}    & \feature{\CGlobal} & \feature{\id{S}}    & \feature{\CVar} & \feature{\CVar}  \\
+        \feature{\id{False}} & \feature{\CGlobal}  & \feature{\CLocal}  & 0                   & 0               & 0                \\
+        \feature{\id{even}}  & \feature{\id{n}}    & 0                  & 0                   & 0               & 0
+      \end{bmatrix}
+    \end{equation*}
+    \caption{Matrix generated from figure \ref{fig:rosetreeexample}, padded to 6 columns. Each level of sub-trees corresponds to a row in the matrix.}
+    \label{fig:matrixexample}
+  \end{subfigure}
+  \vspace{1ex}
+  \begin{subfigure}{\textwidth}
+    \begin{equation*}
+      (\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \feature{\CAlt}, \feature{\CAlt}, 0, 0, \dots
+     \end{equation*}
+     \caption{(Prefix of) the feature vector for \hs{odd}, constructed by concatenating the rows of \ref{fig:matrixexample}. Ignoring padding, the features are in breadth-first order.}
+     \label{fig:vectorexample}
+  \end{subfigure}
+  \caption{Feature extraction applied to the expression \hs{odd} from figure \ref{fig:coreexample}.}
+\end{figure}
+
+We convert these rose trees into matrices, as shown in figure \ref{fig:matrixexample}, by gathering the features of adjacent (sub-) trees at each level of nesting using the following function:
 
 \begin{equation*}
-  level(l, (x, T_1, \dots, T_{n_T})) =
+  level(l, (f, T_1, \dots, T_{n_T})) =
     \begin{cases}
-      (x) & \text{if $l = 1$} \\
-      \vect{x}_1 \vect{x}_2 \dots \vect{x}_{T_n} & \text{if $l > 1$ and $\vect{x}_i = level(l - 1, T_i)$}
+      (f) & \text{if $l = 1$} \\
+      \vect{x}_1 \vect{x}_2 \dots \vect{x}_{T_n} & \text{if $l > 1$, where $\vect{x}_i = level(l - 1, T_i)$}
     \end{cases}
 \end{equation*}
 
-Given a rose tree $T$, we pad each level $level(1, T)$, $level(2, T)$, $\dots$, $level(r, T)$ with zeros and truncate them to length $c$. The resulting vectors are concatenated to form the feature vector for $T$.
+Given a rose tree $t$ we can define its matrix $\mathbf{M}$ by $\mathbf{M}_i = pad(level(i, t))$, where $pad$ appends zeros to ensure each row has the same length. To improve alignment across different expressions, we actually pad each matrix to the same dimensions $r \times c$, which may require appending rows of zeros or truncating rows/columns as necessary.
 
-See see figure \ref{fig:rosetreeexample} for an example of this construction.
-
-\begin{figure}
-  \begin{small}
-  \begin{align*}
-    toTree(\hs{plus}) &= \\
-      (\feature{\CLam},
-       \begin{array}[t]{@{}l@{}}
-         (\feature{\id{a}}), \\
-         (\feature{\CLam},
-          \begin{array}[t]{@{}l@{}}
-            (\feature{\id{y}}), \\
-            (\feature{\CCase},
-             \begin{array}[t]{@{}l@{}}
-               (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{a}}))), \\
-               (\feature{\id{b}}), \\
-               (\feature{\CAlt},
-                \begin{array}[t]{@{}l@{}}
-                  (\feature{\CDataAlt}, (\feature{\id{Z}})), \\
-                  (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{y}})))),
-                \end{array} \\
-               (\feature{\CAlt},
-                \begin{array}[t]{@{}l@{}}
-                  (\feature{\CDataAlt}, (\feature{\id{S}})), \\
-                  (\feature{\CApp},
-                   \begin{array}[t]{@{}l@{}}
-                     (\feature{\CVar}, (\feature{\CGlobal}, (\feature{\id{S}}))), \\
-                     (\feature{\CApp},
-                      \begin{array}[t]{@{}l@{}}
-                        (\feature{\CApp},
-                         \begin{array}[t]{@{}l@{}}
-                           (\feature{\CVar}, (\feature{\CGlobal}, (\feature{\id{plus}}))), \\
-                           (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{x}})))),
-                         \end{array} \\
-                      (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{y}}))))),
-                      \end{array}
-                   \end{array} \\
-                  (\feature{\id{x}})))))
-                \end{array}
-             \end{array}
-          \end{array}
-       \end{array} \\
-\iffalse
-    toTree(\hs{mult}) &= \\
-      (Lam "a" (Lam "y" (Case (Var (Local "a"))
-                              "b"
-                              [Alt (DataAlt "Z") (Var (Global "Z")) [],
-                               Alt (DataAlt "S") (App (App (Var (Global "plus"))
-                                                           (Var (Local  "y")))
-                                                      (App (App (Var (Global "mult"))
-                                                                (Var (Local  "x")))
-                                                           (Var (Local  "y"))))
-                                                 ["x"]])))
-
-    toTree(\hs{odd}) &= \\
-      (\feature{\CLam},
-       \begin{array}[t]{@{}l@{}}
-         (\feature{\id{a}}), \\
-         (\feature{\CCase},
-          \begin{array}[t]{@{}l@{}}
-            (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{a}}))), \\
-            (\feature{\id{b}}), \\
-            (\feature{\CAlt},
-             \begin{array}[t]{@{}l@{}}
-               (\feature{\CDataAlt}, (\feature{\id{Z}})), \\
-               (\feature{\CVar}, (\feature{\CGlobal}, (\feature{\id{False}})))),
-             \end{array} \\
-            (\feature{\CAlt},
-             \begin{array}[t]{@{}l@{}}
-               (\feature{\CDataAlt}, (\feature{\id{S}})), \\
-               (\feature{\CApp},
-                \begin{array}[t]{@{}l@{}}
-                  (\feature{\CVar}, (\feature{\CGlobal}, (\feature{\id{even}}))), \\
-                  (\feature{\CVar}, (\feature{\CLocal},  (\feature{\id{n}})))),
-                \end{array} \\
-               (\feature{\id{n}}))))
-             \end{array}
-          \end{array}
-       \end{array}
-\fi
-
-    toTree(\hs{odd}) &= \\
-      \begin{array}
-        (\feature{\CLam}, &(\feature{\id{a}}),&                    &                      &                      &                           &                         \\
-                          &(\feature{\CCase}, &(\feature{\CVar},   &(\feature{\CLocal},   &(\feature{\id{a}}))), &                           &                         \\
-                          &                   &(\feature{\id{b}}), &                      &                      &                           &                         \\
-                          &                   &(\feature{\CAlt},   &(\feature{\CDataAlt}, &(\feature{\id{Z}})),  &                           &                         \\
-                          &                   &                    &(\feature{\CVar},     &(\feature{\CGlobal},  &(\feature{\id{False}})))), &                         \\
-                          &                   &(\feature{\CAlt},   &(\feature{\CDataAlt}, &(\feature{\id{S}})),  &                           &                         \\
-                          &                   &                    &(\feature{\CApp},     &(\feature{\CVar},     &(\feature{\CGlobal},       &(\feature{\id{even}}))), \\
-                          &                   &                    &                      &(\feature{\CVar},     &(\feature{\CLocal},        &(\feature{\id{n}})))),   \\
-                          &                   &                    &(\feature{\id{n}})))) &                      &                           &
-
-       \end{array}
-  \end{align*}
-  \end{small}
-  \caption{}
-  \label{fig:rosetreeexample}
-\end{figure}
+Feature vectors are then simply the concatenation of matrix rows $(\mathbf{M}_{1,1} \mathbf{M}_{1,2} \dots \mathbf{M}_{2,1} \mathbf{M}_{2,2} \dots)$, as shown in figure \ref{fig:vectorexample}.
 
 \subsubsection{Feature Extraction}
 
