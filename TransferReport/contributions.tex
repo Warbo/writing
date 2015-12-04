@@ -18,16 +18,18 @@ We consider our algorithm in two stages: the first transforms the nested structu
 
 \subsubsection{Flattening Expressions}
 
-Our approach will make use of the k-means algorithm described in \S \ref{sec:kmeans}, which considers the elements of a feature vector to be orthogonal. Hence we must ensure that similar expressions not only give rise to similar numerical values, but crucially that these values appear \emph{at the same position} in the feature vectors. Since expressions can be nested in different ways, simple traversals (breadth-first, depth-first, post-order, etc.) may cause features from equivalent sub-expressions to be mis-aligned. For example, if we read features in breadth-first order we might get the following feature vectors (padded to the same length with $0$):
+Our approach will make use of the k-means algorithm described in \S \ref{sec:kmeans}, which considers the elements of a feature vector to be orthogonal. Hence we must ensure that similar expressions not only give rise to similar numerical values, but crucially that these values appear \emph{at the same position} in the feature vectors. Since different patterns of nesting can alter the ``shape'' of expressions, simple traversals (breadth-first, depth-first, post-order, etc.) may cause features from equivalent sub-expressions to be mis-aligned. For example, consider the following expressions, which represent pattern-match clauses with different patterns but the same body (\hs{\vlocal{y}}):
+
+\begin{equation*}
+  \begin{array}{r@{}l@{}l@{}}
+    X\ &=\ \CAlt\ (\CDataAlt\ \id{C})\ & (\vlocal{y}) \\
+    Y\ &=\ \CAlt\ \CDefault\           & (\vlocal{y})
+  \end{array}
+\end{equation*}
+
+If we traverse these expressions in breadth-first order, converting each token to a feature using $\feature{}$ and padding to the same length with $0$, we would get the following feature vectors:
 
 \begin{small}
-  \begin{equation*}
-    \begin{array}{r@{}l@{}l@{}}
-      X\ &=\ \CAlt\ (\CDataAlt\ \id{x})\ & (\vlocal{y}) \\
-      Y\ &=\ \CAlt\ \CDefault\           & (\vlocal{y})
-    \end{array}
-  \end{equation*}
-
   \begin{equation*}
     \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
       breadthFirst(X)\ &=\ (\feature{\CAlt},\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{x}},\ &\feature{\CLocal},\ &\feature{\id{y}} &) \\
@@ -36,26 +38,24 @@ Our approach will make use of the k-means algorithm described in \S \ref{sec:kme
   \end{equation*}
 \end{small}
 
-Here the common sub-expression $\vlocal{y}$ is misaligned, such that only $\frac{1}{6}$ features are guaranteed to match (others may match by coincidence, depending on $\feature{}$). These feature vectors might be deemed very dissimilar, despite the intuitive similarity of the expressions $X$ and $Y$ from which they derive.
+Here the features corresponding to the common sub-expression $\CLocal\ \id{y}$ are misaligned, such that only $\frac{1}{3}$ of features are guaranteed to match (others may match by coincidence, depending on $\feature{}$). These feature vectors might be deemed very dissimilar during clustering, despite the intuitive similarity of the expressions $X$ and $Y$ from which they derive.
 
-If we were to align these features instead, by padding the third column rather than the sixth, then $\frac{4}{6}$ of the features would be guaranteed to match, making the similarity of the vectors more closely match our intuition and depend less on coincidence.
+If we were to align these feature optimally, by padding the fourth column rather than the sixth, then $\frac{2}{3}$ of features would be guaranteed to match, making the similarity of the vectors more closely match our intuition and depend less on coincidence.
 
-There are many approaches we could take to increase alignment. Our method, described below, is a variation of breadth-first traversal which pads each level of nesting to a fixed size. This doesn't guarantee alignment, but it does prevent misalignment from accumulating from one level to the next. In this example, our method (when padding each level to 2 features) would give the following feature vectors:
+Our feature extraction method (described below) uses a variation of breadth-first traversal which pads each level of nesting to a fixed size. This doesn't guarantee alignment, but it does prevent mis-alignment from accumulating across different levels of nesting. For this example, our method (when padding each level to 2 features) would give the following feature vectors:
 
 \begin{small}
   \begin{equation*}
     \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
-      featureVec(X)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{x}},\  &\feature{\CLocal},\ &\feature{\id{y}},\ &0 &) \\
-      featureVec(Y)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDefault},\ &\feature{\CVar},\ &\feature{\CLocal},\ &0,\                 &\feature{\id{y}},\ &0 &)
+      featureVec_2(X)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{x}},\  &\feature{\CLocal},\ &\feature{\id{y}},\ &0 &) \\
+      featureVec_2(Y)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDefault},\ &\feature{\CVar},\ &\feature{\CLocal},\ &0,\                 &\feature{\id{y}},\ &0 &)
     \end{array}
   \end{equation*}
 \end{small}
 
-For this reason, we cannot Core expressions  we will associate first associate features (real numbers) with the syntax of figure \ref{fig:coresyntax}. To preserve the in two stages: first we construct \emph{rose trees} of features (real numbers), which maintain the nested structure of expressions shown in figure \ref{fig:coresyntax}. We then flatten these rose trees into feature vectors.
+Here $\frac{1}{2}$ of the original 6 features align, which is more than $breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2 zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
 
-Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{children of} $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may be different for each child; trees where $n_T = 0$ are \emph{leaves}.
-
-We turn Core expressions into rose trees by converting terminal symbols (such as \hs{Lam} or \hs{Rec}) into features; we represent this conversion using $\feature{}$. Non-terminal symbols (such as $expr$ and $id$) are converted recursively and become children. This is shown in figure \ref{fig:totree}.
+To achieve this we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the $toTree$ function shown in figure \ref{fig:totree}. Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree for each sub-tree; trees where $n_T = 0$ are \emph{leaves}. Rose trees for the Peano arithmetic functions of figure \ref{fig:coreexample} are given in figure \ref{fig:rosetreeexample}.
 
 \begin{figure}
   \begin{align*}
@@ -66,27 +66,27 @@ We turn Core expressions into rose trees by converting terminal symbols (such as
       (\feature{\CApp}, toTree(e_1), toTree(e_2))                    & \text{if $e = \CApp\ e_1\ e_2$} \\
       (\feature{\CLam}, leaf(l_1), toTree(e_1))                      & \text{if $e = \CLam\ l_1\ e_1$} \\
       (\feature{\CLet}, toTree(e_1), toTree(e_2))                    & \text{if $e = \CLet\ e_1\ e_2$} \\
-      (\feature{\CCase}, toTree(e_1), leaf(l_1), toTree(a_1), \dots) & \text{if $e = \CCase\ e_1\ l_1 [a_1, \dots]$} \\
+      (\feature{\CCase}, toTree(e_1), leaf(l_1), toTree(a_1), \dots) & \text{if $e = \CCase\ e_1\ l_1 a_1 \dots$} \\
       (\feature{\CType})                                            & \text{if $e = \CType$} \\
       (\feature{\CLocal}, leaf(l_1))                                & \text{if $e = \CLocal\ l_1$} \\
       (\feature{\CGlobal}, leaf(g_1))                               & \text{if $e = \CGlobal\ g_1$} \\
       (\feature{\CLitNum})                                          & \text{if $e = \CLitNum\ n_1$} \\
       (\feature{\CLitStr})                                          & \text{if $e = \CLitStr\ s_1$} \\
-      (\feature{\CAlt}, toTree(e_1), toTree(e_2), leaf{l_1}, \dots)  & \text{if $e = \CAlt\ e_1 e_2 [l_1, \dots]$}  \\
+      (\feature{\CAlt}, toTree(e_1), toTree(e_2), leaf{l_1}, \dots)  & \text{if $e = \CAlt\ e_1 e_2 l_1 \dots$}  \\
       (\feature{\CDataAlt}, leaf(g_1))                              & \text{if $e = \CDataAlt\ g_1$}  \\
       (\feature{\CLitAlt}, toTree(e_1))                             & \text{if $e = \CLitAlt\ e_1$}  \\
       (\feature{\CDefault})                                         & \text{if $e = \CDefault$}  \\
       (\feature{\CNonRec}, toTree(e_1))                             & \text{if $e = \CNonRec\ e_1$}  \\
-      (\feature{\CRec}, toTree(e_1), \dots)                         & \text{if $e = \CRec\ [e_1, \dots]$} \\
+      (\feature{\CRec}, toTree(e_1), \dots)                         & \text{if $e = \CRec\ e_1 \dots$} \\
       (\feature{\CBind}, leaf(l_1), toTree(e_1))                    & \text{if $e = \CBind\ l_1 e_1$}
     \end{cases} \\
     leaf(x) &= (\feature{x})
   \end{align*}
-  \caption{Recursively converting Core expressions of figure \ref{fig:coresyntax} to rose trees. List elements (indicated with $\dots$) are appended as children, rather than being wrapped in another tree.}
+  \caption{Transforming Core expressions of figure \ref{fig:coresyntax} to rose trees. The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CAlt$ we use $leaf$ for each $l_i$. Also note that we ignore the value of literals, as it simplifies our later definition of $\feature{}$ and we conjecture that the effect on clustering real code is low.}
   \label{fig:totree}
 \end{figure}
 
-To flatten a rose tree we fetch the features from each ``level'', concatenating those from adjacent children:
+To flatten a rose tree we fetch the features from each ``level'', concatenating those from adjacent sub-trees:
 
 \begin{equation*}
   level(l, (x, T_1, \dots, T_{n_T})) =
@@ -140,7 +140,58 @@ See see figure \ref{fig:rosetreeexample} for an example of this construction.
              \end{array}
           \end{array}
        \end{array} \\
-foo &= bar
+\iffalse
+    toTree(\hs{mult}) &= \\
+      (Lam "a" (Lam "y" (Case (Var (Local "a"))
+                              "b"
+                              [Alt (DataAlt "Z") (Var (Global "Z")) [],
+                               Alt (DataAlt "S") (App (App (Var (Global "plus"))
+                                                           (Var (Local  "y")))
+                                                      (App (App (Var (Global "mult"))
+                                                                (Var (Local  "x")))
+                                                           (Var (Local  "y"))))
+                                                 ["x"]])))
+
+    toTree(\hs{odd}) &= \\
+      (\feature{\CLam},
+       \begin{array}[t]{@{}l@{}}
+         (\feature{\id{a}}), \\
+         (\feature{\CCase},
+          \begin{array}[t]{@{}l@{}}
+            (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{a}}))), \\
+            (\feature{\id{b}}), \\
+            (\feature{\CAlt},
+             \begin{array}[t]{@{}l@{}}
+               (\feature{\CDataAlt}, (\feature{\id{Z}})), \\
+               (\feature{\CVar}, (\feature{\CGlobal}, (\feature{\id{False}})))),
+             \end{array} \\
+            (\feature{\CAlt},
+             \begin{array}[t]{@{}l@{}}
+               (\feature{\CDataAlt}, (\feature{\id{S}})), \\
+               (\feature{\CApp},
+                \begin{array}[t]{@{}l@{}}
+                  (\feature{\CVar}, (\feature{\CGlobal}, (\feature{\id{even}}))), \\
+                  (\feature{\CVar}, (\feature{\CLocal},  (\feature{\id{n}})))),
+                \end{array} \\
+               (\feature{\id{n}}))))
+             \end{array}
+          \end{array}
+       \end{array}
+\fi
+
+    toTree(\hs{odd}) &= \\
+      \begin{array}
+        (\feature{\CLam}, &(\feature{\id{a}}),&                    &                      &                      &                           &                         \\
+                          &(\feature{\CCase}, &(\feature{\CVar},   &(\feature{\CLocal},   &(\feature{\id{a}}))), &                           &                         \\
+                          &                   &(\feature{\id{b}}), &                      &                      &                           &                         \\
+                          &                   &(\feature{\CAlt},   &(\feature{\CDataAlt}, &(\feature{\id{Z}})),  &                           &                         \\
+                          &                   &                    &(\feature{\CVar},     &(\feature{\CGlobal},  &(\feature{\id{False}})))), &                         \\
+                          &                   &(\feature{\CAlt},   &(\feature{\CDataAlt}, &(\feature{\id{S}})),  &                           &                         \\
+                          &                   &                    &(\feature{\CApp},     &(\feature{\CVar},     &(\feature{\CGlobal},       &(\feature{\id{even}}))), \\
+                          &                   &                    &                      &(\feature{\CVar},     &(\feature{\CLocal},        &(\feature{\id{n}})))),   \\
+                          &                   &                    &(\feature{\id{n}})))) &                      &                           &
+
+       \end{array}
   \end{align*}
   \end{small}
   \caption{}

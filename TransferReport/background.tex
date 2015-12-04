@@ -96,12 +96,12 @@ The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compare
       \begin{verbatim}
 Lam "a" (Lam "y" (Case (Var (Local "a"))
                        "b"
-                       [Alt (DataAlt "Z") (Var (Local "y")) [],
-                        Alt (DataAlt "S") (App (Var (Global "S"))
+                       (Alt (DataAlt "Z") (Var (Local "y")))
+                       (Alt (DataAlt "S") (App (Var (Global "S"))
                                                (App (App (Var (Global "plus"))
                                                          (Var (Local  "x")))
                                                     (Var (Local "y"))))
-                                          ["x"]]))
+                                          "x")))
       \end{verbatim}
     \end{small}
   \end{subfigure}
@@ -111,13 +111,13 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Lam "y" (Case (Var (Local "a"))
                        "b"
-                       [Alt (DataAlt "Z") (Var (Global "Z")) [],
-                        Alt (DataAlt "S") (App (App (Var (Global "plus"))
+                       (Alt (DataAlt "Z") (Var (Global "Z")))
+                       (Alt (DataAlt "S") (App (App (Var (Global "plus"))
                                                     (Var (Local  "y")))
                                                (App (App (Var (Global "mult"))
                                                          (Var (Local  "x")))
                                                     (Var (Local  "y"))))
-                                          ["x"]]))
+                                          "x")))
       \end{verbatim}
     \end{small}
   \end{subfigure}
@@ -127,10 +127,10 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
               "b"
-              [Alt (DataAlt "Z") (Var (Global "False")) [],
-               Alt (DataAlt "S") (App (Var (Global "even"))
+              (Alt (DataAlt "Z") (Var (Global "False")))
+              (Alt (DataAlt "S") (App (Var (Global "even"))
                                       (Var (Local  "n")))
-                                 ["n"]])
+                                 "n"))
       \end{verbatim}
     \end{small}
   \end{subfigure}
@@ -140,10 +140,10 @@ Lam "a" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
               "b"
-              [Alt (DataAlt "Z") (Var (Global "True")) [],
-               Alt (DataAlt "S") (App (Var (Global "odd"))
+              (Alt (DataAlt "Z") (Var (Global "True")))
+              (Alt (DataAlt "S") (App (Var (Global "odd"))
                                       (Var (Local  "n")))
-                                 ["n"]])
+                                 "n"))
       \end{verbatim}
     \end{small}
   \end{subfigure}
