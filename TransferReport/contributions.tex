@@ -4,8 +4,6 @@
 \subsection{Recurrent Clustering}
 \label{sec:recurrentclustering}
 
-We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), and implement a variant in the context of Haskell theory exploration. Here we describe our recurrent clustering algorithm and compare its similarity and differences to those of ML4PG and ACL2(ml).
-
 \iffalse TODO: Much of this discussion reads as a minor implementation solution rather than an overview of the whole method \fi
 
 \iffalse TODO: Focus the section more on the problem of identifiers, and how recurrent clustering uses clustering as part of feature extraction to solve this \fi
@@ -14,11 +12,46 @@ We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), an
 
 \iffalse TODO: Maybe present recurrent clustering in a ``naive'' way: define the conversion function ``[]'' recursively. Leave the dependency-ordering, etc. for the Algorithm section, as a way of ``building up to'' the result, which avoids the inefficiencies of recursing. \fi
 
-The purpose of recurrent clustering, as with other clustering algorithms, is to identify similarities between a set of inputs. In our case, we want to compare Core expressions which, as described above, requires a feature extraction algorithm to create a suitable representation.
+We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), and implement a variant in the context of Haskell theory exploration. As a clustering algorithm, the aim of recurrent clustering is to identify similarities in a set of data points (in our case, Core expressions). Its distinguishing characteristic is to \emph{combine} feature extraction and clustering into a single recursive algorithm, to avoid problems with identifiers (described below). Here we describe our approach to recurrent clustering and compare its similarity and differences to those of ML4PG and ACL2(ml).
 
-We extract features in two stages: first we construct \emph{rose trees} of features (real numbers), which maintain the nested structure of expressions shown in figure \ref{fig:coresyntax}. We then flatten these rose trees into feature vectors.
+We consider our algorithm in two stages: the first transforms the nested structure of expressions into a flat feature vector representation; the second converts the discrete symbols of Core syntax into features (real numbers), which we will denote using the notation $\feature{}$.
 
-\subsubsection{Rose Trees}
+\subsubsection{Flattening Expressions}
+
+Our approach will make use of the k-means algorithm described in \S \ref{sec:kmeans}, which considers the elements of a feature vector to be orthogonal. Hence we must ensure that similar expressions not only give rise to similar numerical values, but crucially that these values appear \emph{at the same position} in the feature vectors. Since expressions can be nested in different ways, simple traversals (breadth-first, depth-first, post-order, etc.) may cause features from equivalent sub-expressions to be mis-aligned. For example, if we read features in breadth-first order we might get the following feature vectors (padded to the same length with $0$):
+
+\begin{small}
+  \begin{equation*}
+    \begin{array}{r@{}l@{}l@{}}
+      X\ &=\ \CAlt\ (\CDataAlt\ \id{x})\ & (\vlocal{y}) \\
+      Y\ &=\ \CAlt\ \CDefault\           & (\vlocal{y})
+    \end{array}
+  \end{equation*}
+
+  \begin{equation*}
+    \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
+      breadthFirst(X)\ &=\ (\feature{\CAlt},\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{x}},\ &\feature{\CLocal},\ &\feature{\id{y}} &) \\
+      breadthFirst(Y)\ &=\ (\feature{\CAlt},\ &\feature{\CDefault},\ &\feature{\CVar},\ &\feature{\CLocal},\ &\feature{\id{y}},\ &0 &)
+    \end{array}
+  \end{equation*}
+\end{small}
+
+Here the common sub-expression $\vlocal{y}$ is misaligned, such that only $\frac{1}{6}$ features are guaranteed to match (others may match by coincidence, depending on $\feature{}$). These feature vectors might be deemed very dissimilar, despite the intuitive similarity of the expressions $X$ and $Y$ from which they derive.
+
+If we were to align these features instead, by padding the third column rather than the sixth, then $\frac{4}{6}$ of the features would be guaranteed to match, making the similarity of the vectors more closely match our intuition and depend less on coincidence.
+
+There are many approaches we could take to increase alignment. Our method, described below, is a variation of breadth-first traversal which pads each level of nesting to a fixed size. This doesn't guarantee alignment, but it does prevent misalignment from accumulating from one level to the next. In this example, our method (when padding each level to 2 features) would give the following feature vectors:
+
+\begin{small}
+  \begin{equation*}
+    \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
+      featureVec(X)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{x}},\  &\feature{\CLocal},\ &\feature{\id{y}},\ &0 &) \\
+      featureVec(Y)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDefault},\ &\feature{\CVar},\ &\feature{\CLocal},\ &0,\                 &\feature{\id{y}},\ &0 &)
+    \end{array}
+  \end{equation*}
+\end{small}
+
+For this reason, we cannot Core expressions  we will associate first associate features (real numbers) with the syntax of figure \ref{fig:coresyntax}. To preserve the in two stages: first we construct \emph{rose trees} of features (real numbers), which maintain the nested structure of expressions shown in figure \ref{fig:coresyntax}. We then flatten these rose trees into feature vectors.
 
 Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{children of} $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may be different for each child; trees where $n_T = 0$ are \emph{leaves}.
 
@@ -68,13 +101,55 @@ Given a rose tree $T$, we pad each level $level(1, T)$, $level(2, T)$, $\dots$, 
 See see figure \ref{fig:rosetreeexample} for an example of this construction.
 
 \begin{figure}
+  \begin{small}
+  \begin{align*}
+    toTree(\hs{plus}) &= \\
+      (\feature{\CLam},
+       \begin{array}[t]{@{}l@{}}
+         (\feature{\id{a}}), \\
+         (\feature{\CLam},
+          \begin{array}[t]{@{}l@{}}
+            (\feature{\id{y}}), \\
+            (\feature{\CCase},
+             \begin{array}[t]{@{}l@{}}
+               (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{a}}))), \\
+               (\feature{\id{b}}), \\
+               (\feature{\CAlt},
+                \begin{array}[t]{@{}l@{}}
+                  (\feature{\CDataAlt}, (\feature{\id{Z}})), \\
+                  (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{y}})))),
+                \end{array} \\
+               (\feature{\CAlt},
+                \begin{array}[t]{@{}l@{}}
+                  (\feature{\CDataAlt}, (\feature{\id{S}})), \\
+                  (\feature{\CApp},
+                   \begin{array}[t]{@{}l@{}}
+                     (\feature{\CVar}, (\feature{\CGlobal}, (\feature{\id{S}}))), \\
+                     (\feature{\CApp},
+                      \begin{array}[t]{@{}l@{}}
+                        (\feature{\CApp},
+                         \begin{array}[t]{@{}l@{}}
+                           (\feature{\CVar}, (\feature{\CGlobal}, (\feature{\id{plus}}))), \\
+                           (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{x}})))),
+                         \end{array} \\
+                      (\feature{\CVar}, (\feature{\CLocal}, (\feature{\id{y}}))))),
+                      \end{array}
+                   \end{array} \\
+                  (\feature{\id{x}})))))
+                \end{array}
+             \end{array}
+          \end{array}
+       \end{array} \\
+foo &= bar
+  \end{align*}
+  \end{small}
   \caption{}
   \label{fig:rosetreeexample}
 \end{figure}
 
 \subsubsection{Feature Extraction}
 
-We now define the algorithm for $\feature{}$, which turns terminal symbols into features. In the case of known language features, such as $\feature{\hs{Lam}}$ and $\feature{\hs{Case}}$, we just enumerate the possibilities (while trying to make ``similar'' symbols have similar features).
+We now define the algorithm for $\feature{}$, which turns terminal symbols into features. In the case of known language features, such as $\feature{\CLam}$ and $\feature{\CCase}$, we just enumerate the possibilities (while trying to make ``similar'' symbols have similar features).
 
 The difficulty comes from identifiers, which we cannot hard-code into our algorithm in advance. The only meaningful way to directly compare identifiers is by equality, but since the space of identifiers is large, giving distinct features to distinct identifiers would make matches very unlikely. Since identifiers make up a significant portion of expressions, we would like a more fine-grained notion of similarity between their features than exact matching.
 
