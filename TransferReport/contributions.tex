@@ -4,21 +4,15 @@
 \subsection{Recurrent Clustering}
 \label{sec:recurrentclustering}
 
-\iffalse TODO: Much of this discussion reads as a minor implementation solution rather than an overview of the whole method \fi
-
 \iffalse TODO: Focus the section more on the problem of identifiers, and how recurrent clustering uses clustering as part of feature extraction to solve this \fi
-
-\iffalse TODO: Maybe present the translation from trees to matrices, to vectors first; leaving the conversion of terms to features until afterwards; similar to how ML4PG uses [foo] to mean ``the feature corresponding to foo, whatever that might be'' \fi
-
-\iffalse TODO: Maybe present recurrent clustering in a ``naive'' way: define the conversion function ``[]'' recursively. Leave the dependency-ordering, etc. for the Algorithm section, as a way of ``building up to'' the result, which avoids the inefficiencies of recursing. \fi
 
 We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), and implement a variant in the context of Haskell theory exploration. As a clustering algorithm, the aim of recurrent clustering is to identify similarities in a set of data points (in our case, Core expressions). Its distinguishing characteristic is to \emph{combine} feature extraction and clustering into a single recursive algorithm, to avoid problems with identifiers (described below). Here we describe our approach to recurrent clustering and compare its similarity and differences to those of ML4PG and ACL2(ml).
 
 We consider our algorithm in two stages: the first transforms the nested structure of expressions into a flat feature vector representation; the second converts the discrete symbols of Core syntax into features (real numbers), which we will denote using the notation $\feature{}$.
 
-\subsubsection{Flattening Expressions}
+\subsubsection{Expressions to Vectors}
 
-Our approach will make use of the k-means algorithm described in \S \ref{sec:kmeans}, which considers the elements of a feature vector to be orthogonal. Hence we must ensure that similar expressions not only give rise to similar numerical values, but crucially that these values appear \emph{at the same position} in the feature vectors. Since different patterns of nesting can alter the ``shape'' of expressions, simple traversals (breadth-first, depth-first, post-order, etc.) may cause features from equivalent sub-expressions to be mis-aligned. For example, consider the following expressions, which represent pattern-match clauses with different patterns but the same body (\hs{\vlocal{y}}):
+Our recurrent clustering algorithm makes use of the k-means algorithm described in \S \ref{sec:kmeans}, which considers the elements of a feature vector to be orthogonal. Hence we must ensure that similar expressions not only give rise to similar numerical values, but crucially that these values appear \emph{at the same position} in the feature vectors. Since different patterns of nesting can alter the ``shape'' of expressions, simple traversals (breadth-first, depth-first, post-order, etc.) may cause features from equivalent sub-expressions to be mis-aligned. For example, consider the following expressions, which represent pattern-match clauses with different patterns but the same body (\hs{\vlocal{y}}):
 
 \begin{equation*}
   \begin{array}{r@{}l@{}l@{}}
@@ -42,47 +36,47 @@ Here the features corresponding to the common sub-expression $\CLocal\ \id{y}$ a
 
 If we were to align these feature optimally, by padding the fourth column rather than the sixth, then $\frac{2}{3}$ of features would be guaranteed to match, making the similarity of the vectors more closely match our intuition and depend less on coincidence.
 
-Our feature extraction method (described below) uses a variation of breadth-first traversal which pads each level of nesting to a fixed size. This doesn't guarantee alignment, but it does prevent mis-alignment from accumulating across different levels of nesting. For this example, our method (when padding each level to 2 features) would give the following feature vectors:
+The method we use to ``flatten'' expressions, described below, is a variation of breadth-first traversal which pads each level of nesting to a fixed size $c$ (for \emph{columns}). This doesn't guarantee alignment, but it does prevent mis-alignment from accumulating across different levels of nesting. For this example, our method would give the following feature vectors when $c = 2$:
 
 \begin{small}
-  \begin{equation*}
+  \begin{equation}\label{eq:flattened}
     \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
-      featureVec_2(X)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{x}},\  &\feature{\CLocal},\ &\feature{\id{y}},\ &0 &) \\
-      featureVec_2(Y)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDefault},\ &\feature{\CVar},\ &\feature{\CLocal},\ &0,\                 &\feature{\id{y}},\ &0 &)
+      featureVec(X)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{x}},\  &\feature{\CLocal},\ &\feature{\id{y}},\ &0 &) \\
+      featureVec(Y)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDefault},\ &\feature{\CVar},\ &\feature{\CLocal},\ &0,\                 &\feature{\id{y}},\ &0 &)
     \end{array}
-  \end{equation*}
+  \end{equation}
 \end{small}
 
 Here $\frac{1}{2}$ of the original 6 features align, which is more than $breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2 zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
 
-To achieve this we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the $toTree$ function shown in figure \ref{fig:totree}. Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}. The results are illustrated in figure \ref{fig:rosetreeexample}.
+To perform this flattening we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the $toTree$ function shown in figure \ref{fig:totree}. Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}. The results are illustrated in figure \ref{fig:rosetreeexample}.
 
 \begin{figure}
   \begin{align*}
     toTree(e) &=
     \begin{cases}
-      (\feature{\CVar}, toTree(e_1))                                 & \text{if $e = \CVar\ e_1$} \\
-      (\feature{\CLit}, toTree(e_1))                                 & \text{if $e = \CLit\ e_1$} \\
-      (\feature{\CApp}, toTree(e_1), toTree(e_2))                    & \text{if $e = \CApp\ e_1\ e_2$} \\
-      (\feature{\CLam}, leaf(l_1), toTree(e_1))                      & \text{if $e = \CLam\ l_1\ e_1$} \\
-      (\feature{\CLet}, toTree(e_1), toTree(e_2))                    & \text{if $e = \CLet\ e_1\ e_2$} \\
-      (\feature{\CCase}, toTree(e_1), leaf(l_1), toTree(a_1), \dots) & \text{if $e = \CCase\ e_1\ l_1 a_1 \dots$} \\
-      (\feature{\CType})                                            & \text{if $e = \CType$} \\
-      (\feature{\CLocal}, leaf(l_1))                                & \text{if $e = \CLocal\ l_1$} \\
-      (\feature{\CGlobal}, leaf(g_1))                               & \text{if $e = \CGlobal\ g_1$} \\
-      (\feature{\CLitNum})                                          & \text{if $e = \CLitNum\ n_1$} \\
-      (\feature{\CLitStr})                                          & \text{if $e = \CLitStr\ s_1$} \\
-      (\feature{\CAlt}, toTree(e_1), toTree(e_2), leaf{l_1}, \dots)  & \text{if $e = \CAlt\ e_1 e_2 l_1 \dots$}  \\
-      (\feature{\CDataAlt}, leaf(g_1))                              & \text{if $e = \CDataAlt\ g_1$}  \\
-      (\feature{\CLitAlt}, toTree(e_1))                             & \text{if $e = \CLitAlt\ e_1$}  \\
-      (\feature{\CDefault})                                         & \text{if $e = \CDefault$}  \\
-      (\feature{\CNonRec}, toTree(e_1))                             & \text{if $e = \CNonRec\ e_1$}  \\
-      (\feature{\CRec}, toTree(e_1), \dots)                         & \text{if $e = \CRec\ e_1 \dots$} \\
-      (\feature{\CBind}, leaf(l_1), toTree(e_1))                    & \text{if $e = \CBind\ l_1 e_1$}
+      (\feature{\CVar},     toTree(e_1))                                 & \text{if $e = \CVar\ e_1$} \\
+      (\feature{\CLit},     toTree(e_1))                                 & \text{if $e = \CLit\ e_1$} \\
+      (\feature{\CApp},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CApp\ e_1\ e_2$} \\
+      (\feature{\CLam},     toTree(e_1))                                 & \text{if $e = \CLam\ l_1\ e_1$} \\
+      (\feature{\CLet},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CLet\ e_1\ e_2$} \\
+      (\feature{\CCase},    toTree(e_1), toTree(a_1), \dots)             & \text{if $e = \CCase\ e_1\ l_1 a_1 \dots$} \\
+      (\feature{\CType})                                                & \text{if $e = \CType$} \\
+      (\feature{\CLocal},   leaf(l_1))                                  & \text{if $e = \CLocal\ l_1$} \\
+      (\feature{\CGlobal},  leaf(g_1))                                  & \text{if $e = \CGlobal\ g_1$} \\
+      (\feature{\CLitNum})                                              & \text{if $e = \CLitNum\ n_1$} \\
+      (\feature{\CLitStr})                                              & \text{if $e = \CLitStr\ s_1$} \\
+      (\feature{\CAlt},     toTree(e_1), toTree(e_2))                   & \text{if $e = \CAlt\ e_1 e_2 l_1 \dots$}  \\
+      (\feature{\CDataAlt}, leaf(g_1))                                  & \text{if $e = \CDataAlt\ g_1$}  \\
+      (\feature{\CLitAlt},  toTree(e_1))                                & \text{if $e = \CLitAlt\ e_1$}  \\
+      (\feature{\CDefault})                                             & \text{if $e = \CDefault$}  \\
+      (\feature{\CNonRec},  toTree(e_1))                                & \text{if $e = \CNonRec\ e_1$}  \\
+      (\feature{\CRec},     toTree(e_1), \dots)                         & \text{if $e = \CRec\ e_1 \dots$} \\
+      (\feature{\CBind},    toTree(e_1))                                & \text{if $e = \CBind\ l_1 e_1$}
     \end{cases} \\
     leaf(x) &= (\feature{x})
   \end{align*}
-  \caption{Transforming Core expressions of figure \ref{fig:coresyntax} to rose trees. The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CAlt$ we use $leaf$ for each $l_i$. Also note that we ignore the value of literals, as it simplifies our later definition of $\feature{}$ and we conjecture that the effect on clustering real code is low.}
+  \caption{Transforming Core expressions of figure \ref{fig:coresyntax} to rose trees. The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply $toTree$ to each $e_i$. Also note that we ignore the value of literals, as it simplifies our later definition of $\feature{}$ and we conjecture that the effect on clustering real code is low.}
   \label{fig:totree}
 \end{figure}
 
@@ -145,7 +139,7 @@ To achieve this we first transform the nested tokens of an expression into a \em
   \caption{Feature extraction applied to the expression \hs{odd} from figure \ref{fig:coreexample}.}
 \end{figure}
 
-We convert these rose trees into matrices, as shown in figure \ref{fig:matrixexample}, by gathering the features of adjacent (sub-) trees at each level of nesting using the following function:
+These rose trees are then turned into matrices, as shown in figure \ref{fig:matrixexample}, by gathering the features of adjacent (sub-) trees at each level of nesting using the following function:
 
 \begin{equation*}
   level(l, (f, T_1, \dots, T_{n_T})) =
@@ -155,40 +149,80 @@ We convert these rose trees into matrices, as shown in figure \ref{fig:matrixexa
     \end{cases}
 \end{equation*}
 
-Given a rose tree $t$ we can define its matrix $\mathbf{M}$ by $\mathbf{M}_i = pad(level(i, t))$, where $pad$ appends zeros to ensure each row has the same length. To improve alignment across different expressions, we actually pad each matrix to the same dimensions $r \times c$, which may require appending rows of zeros or truncating rows/columns as necessary.
+Given a rose tree $t$ we can define its matrix $\mathbf{M}$ by $\mathbf{M}_i = pad(level(i, t), c)$, where $pad$ either truncates or appends zeros, until the row has length $c$. We also truncate/pad the number of rows to match a fixed number $r$. This way, all expressions give rise to $r \times c$ matrices, where the left-most features at each each level are aligned.
 
 Feature vectors are then simply the concatenation of matrix rows $(\mathbf{M}_{1,1} \mathbf{M}_{1,2} \dots \mathbf{M}_{2,1} \mathbf{M}_{2,2} \dots)$, as shown in figure \ref{fig:vectorexample}.
 
-\subsubsection{Feature Extraction}
+\subsubsection{Symbols to Features}
 
-We now define the algorithm for $\feature{}$, which turns terminal symbols into features. In the case of known language features, such as $\feature{\CLam}$ and $\feature{\CCase}$, we just enumerate the possibilities (while trying to make ``similar'' symbols have similar features).
+\iffalse TODO: Maybe present recurrent clustering in a ``naive'' way: define the conversion function ``[]'' recursively. Leave the dependency-ordering, etc. for the Algorithm section, as a way of ``building up to'' the result, which avoids the inefficiencies of recursing. \fi
 
-The difficulty comes from identifiers, which we cannot hard-code into our algorithm in advance. The only meaningful way to directly compare identifiers is by equality, but since the space of identifiers is large, giving distinct features to distinct identifiers would make matches very unlikely. Since identifiers make up a significant portion of expressions, we would like a more fine-grained notion of similarity between their features than exact matching.
+We now define the algorithm for $\feature{}$, which turns terminal symbols of Core syntax into features (real numbers). For known language features, such as $\feature{\CLam}$ and $\feature{\CCase}$, we can enumerate the possibilities and assign a value to each, in a similar way to \cite{DBLP:journals/corr/HerasK14} in Coq. We use a constant $\alpha$ to separate these values from those of other tokens (e.g. identifiers), but the order is essentially arbitrary: \footnote{In \cite{DBLP:journals/corr/HerasK14}, ``similar'' Gallina tokens like \coq{fix} and \coq{cofix} are grouped together to reduce redundancy; we do not group tokens, but we do put ``similar'' tokens close together, such as \CLocal\ and \CGlobal.}
 
-For example, consider the following feature vectors, which are identical except for the global identifiers:
+\begin{align*}
+  \feature{\CAlt}     &= \alpha      &
+  \feature{\CDataAlt} &= \alpha + 1  &
+  \feature{\CLitAlt}  &= \alpha + 2  \\
+  \feature{\CDefault} &= \alpha + 3  &
+  \feature{\CNonRec}  &= \alpha + 4  &
+  \feature{\CRec}     &= \alpha + 5  \\
+  \feature{\CBind}    &= \alpha + 6  &
+  \feature{\CLet}     &= \alpha + 7  &
+  \feature{\CCase}    &= \alpha + 8  \\
+  \feature{\CLocal}   &= \alpha + 9  &
+  \feature{\CGlobal}  &= \alpha + 10 &
+  \feature{\CVar}     &= \alpha + 11 \\
+  \feature{\CLam}     &= \alpha + 12 &
+  \feature{\CApp}     &= \alpha + 13 &
+  \feature{\CType}    &= \alpha + 14 \\
+  \feature{\CLit}     &= \alpha + 15 &
+  \feature{\CLitNum}  &= \alpha + 16 &
+  \feature{\CLitStr}  &= \alpha + 17
+\end{align*}
 
-\begin{equation*}
-  \begin{split}
-    \vect{x} =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"odd"})) \\
-    \vect{y} =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"even"})) \\
-    \vect{z} =\ & \texttt{App}\ (\texttt{Var}\ (\texttt{Local}\ \texttt{"f"}))\ (\texttt{Var}\ (\texttt{Global}\ \texttt{"plus"}))
-  \end{split}
-\end{equation*}
+To encode \emph{local} identifiers $\mathcal{L}$ we use their $de Bruijn index$, since this is a numeric value suitable for use as a feature, and it gives equal values for $\alpha$-equivalent expressions. To calculate these indices the $toTree$ function maintains a \emph{context} as it recurses through expressions (we elided this from figure \ref{fig:totree} for clarity). The context is a list of the local identifiers which are in scope, beginning with an empty list for top-level Haskell declarations and prepending identifiers as they are introduced.
 
-From their definitions in figure \ref{fig:coreexample} we might consider \hs{odd} to be more similar to \hs{even} than to \hs{plus}, and hence for $X$ to be more similar to $Y$ than to $Z$. In this sense, exact equality will under-estimate the similarity of $X$ and $Y$, whilst ignoring identifiers will over-estimate the similarity of $X$ and $Z$.
+For example, when calculating $toTree(\CLam\ i\ e)$ in context $c$, we make the recursive call $toTree(e)$ in the context of \emph{$c$ prepended with $i$}. Similar extensions of the context are performed in the cases of \CBind, \CCase\footnote{The $\mathcal{L}$ value in a \CCase\ expression is bound to the expression being matched against; a technical detail to preserve sharing.}, \CAlt\ (which may introduce an arbitrary number of local identifiers) and \CLet\ (where identifiers are taken from occurrences of \CBind\ in the first expression).
 
-Recurrent clustering tackles this problem by comparing identifiers \emph{indirectly}: we look up the expressions \emph{referenced by} each identifier, and use \emph{their} similarity instead. However, this is a circular definition: to compare the similarity of, say $X$ and $Y$, we would need to look up the global identifiers and compare the expressions \hs{odd} and \hs{even}; yet \hs{odd} and \hs{even} are mutually recursive! To  themselves gives rise to a recursive process, where feature extraction is interleaved with multiple rounds of clustering. For this recursive process to be well-founded, we impose a topological ordering on expressions based on their dependencies (the expressions they reference). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and several mutually-recursive expressions may appear at the same level.
+Since well-formed Haskell declarations do not contain free variables, if we apply $toTree$ to the corresponding Core expression we are guaranteed that $l \in \mathcal{L}$ will appear in the context whenever we encounter $\feature{l}$. \iffalse NOTE: Can we prove this, or would it just be an exercise in formalising Haskell? \fi In which case we define:
+
+$$\feature{l} = i + 2 \alpha$$
+
+Where $i$ is the de Bruijn index of $l$ (the index of the first occurrence of $l$ in the context), and we again use $\alpha$ to separate these features from those of other constructs.
+
+Since the $toTree$ function discards the particular values of numerals and strings, the only remaining case is global identifiers $\mathcal{G}$. Since these are declared \emph{outside} the body of an expression, we cannot perform the same indexing trick as we did for local identifiers. We also cannot directly encode the form of the identifiers, e.g. using a scheme like G{\"o}del numbering, since this is essentially arbitrary and has no effect on their semantic meaning (referencing other expressions).
+
+Instead, we encode global identifiers \emph{indirectly}, by looking up the expressions which they \emph{reference}. For $g \in \mathcal{G}$ we define $\feature{g}$ as the \emph{index of the cluster which $g$ appears in}. This is where the recurrent nature of the algorithm appears, since we perform k-means clustering \emph{during} feature extraction, and that clustering step, in turn, requires that we perform feature extraction.
+
+For this recursive process to be well-founded, we impose a topological ordering on declarations based on their dependencies (the expressions they reference). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and several mutually-recursive expressions may appear at the same level in the ordering. Rather than following such cyclic references forever, references which point to the same level in the ordering (including self-references) get a constant feature value $r$.
+
+By working through a list of declarations $d$ in dependency order, storing the features of each top-level expression as they are calculated, our algorithm can be computed \emph{iteratively} rather than recursively, as shown in figure . Any global identifier which has not been encountered yet must be a mutual- or self-reference.
+
+
+\begin{algorithm}
+  \begin{algorithmic}[1]
+    \Require List $d$ of (identifier, expression) pairs, in dependency order
+    \Procedure{RecurrentCluster}{}
+      \State $C  \gets []$
+      \State $DB \gets \varnothing$
+      \ForAll{$(i, e)$ \textbf{in} $d$}
+        \State $DB \gets DB \cup \{(i, featureVec(e))\}$
+        \State $C  \gets kMeans(DB)$
+      \EndFor
+      \Return $C$
+    \EndProcedure
+  \end{algorithmic}
+  \caption{Recurrent clustering of Core expressions. $d$, $C$ and $DB$ are lists.}\label{alg:recurrent}
+\end{algorithm}
+
+For example, from their definitions in figure \ref{fig:coreexample} we might consider \hs{odd} to be more similar to \hs{even} than to \hs{plus}, and hence for $\feature{\id{odd}}$ to be more similar to $\feature{\id{even}}$ than to $\feature{\id{plus}}$. In this sense, exact equality will under-estimate the similarity of $\feature{\id{odd}}$ and $\feature{\id{even}}$, whilst ignoring all differences between identifiers will over-estimate the similarity of $\feature{\id{odd}}$ and $\feature{\id{plus}}$.
+
 
 \iffalse TODO: the code should go in the implementation section rather than here \fi
-\iffalse TODO: give a more abstract presentation, using mathematical notation \fi
 \iffalse TODO: maybe focus on the ``interesting cases'', and defer the nitty-gritty of extending the environment, etc. to the implementation section? \fi
-\iffalse TODO: Define rose trees \fi
-\iffalse TODO: Show an example from earlier, e.g. factorial \fi
 \iffalse TODO: Split into three parts: expressions to rose trees of features; rose trees to matrices to vectors; k-means clustering \fi
 \iffalse TODO: highlight the recurrent nature of the algorithm \fi
 \iffalse TODO: I would probably just restructure:
- - start with the syntax, get to show how, for every line of figure 1, extraction works
- - then transformation to feature vectors
  - then k-means
 obviously, they are mutually recursive...
 \fi
