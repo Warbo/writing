@@ -13,6 +13,7 @@
 \newcommand{\CType}{\texttt{Type}}
 \newcommand{\CLocal}{\texttt{Local}}
 \newcommand{\CGlobal}{\texttt{Global}}
+\newcommand{\CConstructor}{\texttt{Constructor}}
 \newcommand{\CLitNum}{\texttt{LitNum}}
 \newcommand{\CLitStr}{\texttt{LitStr}}
 \newcommand{\CAlt}{\texttt{Alt}}
@@ -33,12 +34,13 @@
                          |\ & \CLet\ bind\ expr                  \\
                          |\ & \CCase\ expr\ \mathcal{L}\ [alt]   \\
                          |\ & \CType                             \\
-      id\      \rightarrow\ & \CLocal\ \mathcal{L}               \\
-                         |\ & \CGlobal\ \mathcal{G}              \\
+      id\      \rightarrow\ & \CLocal\       \mathcal{L}         \\
+                         |\ & \CGlobal\      \mathcal{G}         \\
+                         |\ & \CConstructor\ \mathcal{D}         \\
       literal\ \rightarrow\ & \CLitNum\ \mathcal{N}              \\
                          |\ & \CLitStr\ \mathcal{S}              \\
       alt\     \rightarrow\ & \CAlt\ altcon\ expr\ [\mathcal{L}] \\
-      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{G}             \\
+      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{D}             \\
                          |\ & \CLitAlt\ literal                  \\
                          |\ & \CDefault                          \\
       bind\    \rightarrow\ & \CNonRec\ binder                   \\
@@ -51,7 +53,8 @@
     $\mathcal{S}$ & string literals    \\
     $\mathcal{N}$ & numeric literals   \\
     $\mathcal{L}$ & local identifiers  \\
-    $\mathcal{G}$ & global identifiers
+    $\mathcal{G}$ & global identifiers \\
+    $\mathcal{D}$ & constructor identifiers
   \end{tabular}
 
   \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
@@ -62,7 +65,7 @@ We decided to focus on theory exploration in the Haskell programming language as
 
 Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \citep[Appendix C]{sulzmann2007system}.
 
-The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major change is to ignore type hints (such as explicit casts, and differences between types/kinds/coercions). For brevity, we also omit several other forms of literal (machine words of various sizes, individual characters, etc.), as their treatment is similar to those of strings and numerals. We will use quoted strings to denote names and literals, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{LitStr "baz"} and \texttt{LitNum "42"}, and require only that they can be compared for equality.
+The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major change is to ignore type hints (such as explicit casts, and differences between types/kinds/coercions). For brevity, we also omit several other forms of literal (machine words of various sizes, individual characters, etc.), as their treatment is similar to those of strings and numerals. We will use quoted strings to denote names and literals, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr "quux"} and \texttt{LitNum "42"}, and require only that they can be compared for equality.
 
 \begin{figure}
   \begin{haskell}
@@ -97,7 +100,7 @@ The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compare
 Lam "a" (Lam "y" (Case (Var (Local "a"))
                        "b"
                        (Alt (DataAlt "Z") (Var (Local "y")))
-                       (Alt (DataAlt "S") (App (Var (Global "S"))
+                       (Alt (DataAlt "S") (App (Var (Constructor "S"))
                                                (App (App (Var (Global "plus"))
                                                          (Var (Local  "x")))
                                                     (Var (Local "y"))))
@@ -111,7 +114,7 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Lam "y" (Case (Var (Local "a"))
                        "b"
-                       (Alt (DataAlt "Z") (Var (Global "Z")))
+                       (Alt (DataAlt "Z") (Var (Constructor "Z")))
                        (Alt (DataAlt "S") (App (App (Var (Global "plus"))
                                                     (Var (Local  "y")))
                                                (App (App (Var (Global "mult"))
@@ -127,7 +130,7 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
               "b"
-              (Alt (DataAlt "Z") (Var (Global "False")))
+              (Alt (DataAlt "Z") (Var (Constructor "False")))
               (Alt (DataAlt "S") (App (Var (Global "even"))
                                       (Var (Local  "n")))
                                  "n"))
@@ -140,7 +143,7 @@ Lam "a" (Case (Var (Local "a"))
       \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
               "b"
-              (Alt (DataAlt "Z") (Var (Global "True")))
+              (Alt (DataAlt "Z") (Var (Constructor "True")))
               (Alt (DataAlt "S") (App (Var (Global "odd"))
                                       (Var (Local  "n")))
                                  "n"))

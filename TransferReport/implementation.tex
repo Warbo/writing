@@ -1,6 +1,96 @@
 \section{Implementation}
 \label{sec:implementation}
 
+We have implemented these ideas in a theory exploration framework called \textsc{ML4HS}. It contains several components.
+
+\subsection{Recurrent Clustering}
+
+\iffalse TODO: maybe focus on the ``interesting cases'', and defer the nitty-gritty of extending the environment, etc. to the implementation section? \fi
+
+Our implementation is a rather direct translation of the algorithm described in \S \ref{sec:contributions} into Haskell. At the top level, we send named expressions to \hs{recurrentCluster}, topologically sorted: if an element contains multiple \hs{(Global, Expr)} pairs, they are mutually-recursive:
+
+\begin{haskell}
+recurrentCluster :: [[(Global, Expr)]] -> [[Global]]
+recurrentCluster = go ([],[])
+  where go (fs, db) []       = db
+        go (fs, db) (es:ess) = let fs' = fs ++ map (extract db) es
+                                   db' = kMeans fs'
+                                in go (fs', db') ess
+        extract db (i, e) = (i, rt db e)
+\end{haskell}
+
+The overall result of the \hs{recurrentCluster} function is a list of clusters, containing the IDs of their elements. These are obtained by interleaving clustering (the \hs{kMeans} function) and feature extraction (the \hs{rt} function).
+
+The feature extraction itself contains two parts: first, syntax trees matching the grammar in figure \ref{fig:coresyntax} are converted into \hs{RoseTree}s with features (\hs{Float}s) on their \hs{Node}s:
+
+\begin{haskell}
+data RoseTree = Node Feature [RoseTree]
+
+eRT :: [Local] -> [[Global]] -> Expr -> RoseTree
+eRT env db e = case e of
+  ...
+\end{haskell}
+
+The easiest branches to handle are literals and types, which we represent using particular feature values (\hs{sLITNUM}, \hs{sLITSTR} and \hs{sTYPE}):
+
+\begin{haskell}
+  Lit (LitNum _) -> Node sLITNUM []
+  Lit (LitStr _) -> Node sLITSTR []
+  Type           -> Node sTYPE   []
+\end{haskell}
+
+Function application simply recurses into both sub-expressions:
+
+\begin{haskell}
+  App e1 e2 -> Node sAPP [eRT env db e1,
+                          eRT env db e2]
+\end{haskell}
+
+To look up variables locally and globally, we use the \hs{lookupL} and \hs{lookupG} functions, respectively. These return the index containing their argument, if found. In the case of \hs{lookupL}, this acts as a de Bruijn index to give alpha-equivalent terms equal feature vectors. For \hs{lookupG}, this is the ID of the cluster it appears in; this ensures that references to similar expressions result in similar features:
+
+\begin{haskell}
+  Var (Global i) -> Node (lookupG db  i) []
+  Var (Local  i) -> Node (lookupL env i) []
+\end{haskell}
+
+Finally, when we traverse binders we must extend the environment \hs{env}:
+
+\begin{haskell}
+  Lam  i  e     -> Node sLAM [eRT (i:env) db e]
+  Let  bs e     -> Node sLET (map (bRT (ids bs:env) db) bs ++
+                                   eRT (ids bs:env) db  e
+  Case e i alts -> Node sCASE (eRT    env  db  e :
+                          map (aRT (i:env) db) alts)
+\end{haskell}
+
+Patterns and bindings are handled in a similar way:
+
+\begin{haskell}
+aRT :: [Local] -> [[Global]] -> Alt -> RoseTree
+aRT env db alt = case alt of
+  (DataAlt _, vs, e) -> eRT (vs ++ env) db e
+  (LitAlt  _, _,  e) -> eRT env db e
+  (Default,   _,  e) -> eRT env db e
+
+bRT :: [Local] -> [[Global]] -> Bind -> RoseTree
+bRT env db b = case b of
+  NonRec i e -> eRT env db e
+  Rec es     -> Node sREC (map (eRT env db . snd) es)
+\end{haskell}
+
+The result of \hs{eRT} is a \hs{RoseTree} whose branching structure mimics that of our original expression. We next need to convert this to a \emph{matrix} of features, which we do by converting each level of the \hs{RoseTree} into a row of the matrix (using \hs{pad} to ensure a consistent size). Finally we turn the matrix into a \emph{feature vector} by concatenating the rows:
+
+\begin{haskell}
+level :: Int -> RoseTree -> [Feature]
+level 0 (Node x xs) = [x]
+level n (Node x xs) = concatMap (level (n-1)) xs
+
+rt :: [[Global]] -> Expr -> [Feature]
+rt db e = concat (pad cols (map (`level` eRT [] db e) [0..rows]))
+\end{haskell}
+
+Notice that this algorithm contains several parameters, including \hs{rows} and \hs{cols} which determine how to truncate the matrices (defaults are 30). The \hs{kMeans} function also contains a parameter for the cluster number; we set this as $\sqrt{n}$ where $n$ is the number of feature vectors being clustered.
+
 \iffalse TODO: How does this section differ from Algorithm in Contributions? \fi
 \iffalse TODO: Make this a concrete presentation of the abstract ideas from the Algorithm section, e.g. this is how we get the dependencies (AST plugin, etc.); this is a case-by-case of how we perform feature extraction; this is how we perform k-means (Weka), etc. \fi
 
