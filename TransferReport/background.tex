@@ -63,7 +63,7 @@
 
 We decided to focus on theory exploration in the Haskell programming language as it has mature, state-of-the-art implementations (\qspec{} \citep{QuickSpec} and \hspec{} \citep{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \citep{Hipster} system, is actually implemented by translating to Haskell and invoking \hspec{}.
 
-Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most members of the \emph{functional programming} paradigm, Haskell is essentially a variant of $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \citep[Appendix C]{sulzmann2007system}.
+Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most \emph{functional} programming languages, Haskell is essentially a variant of $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \citep[Appendix C]{sulzmann2007system}.
 
 The sub-set of Core we consider is shown in figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major change is to ignore type hints (such as explicit casts, and differences between types/kinds/coercions). For brevity, we also omit several other forms of literal (machine words of various sizes, individual characters, etc.), as their treatment is similar to those of strings and numerals. We will use quoted strings to denote names and literals, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr "quux"} and \texttt{LitNum "42"}, and require only that they can be compared for equality.
 
@@ -220,8 +220,19 @@ In this work we consider the problem of \emph{(automated) theory exploration}, w
 
 We focus on \qspec{} \citep{QuickSpec}, which conjectures equations about Haskell code (these may be fed into another tool, such as \hspec{}, for proving). These conjectures are arrived at through the following stages:
 
+\iffalse TODO: Make this more formal?
+ V \in Var
+ F \in Fun
+ T \in Term
+ T ::= V | F | T1 T2
+
+ Term ::= VAR | Const | Fun (Term)
+or
+ Term t ::= x | f | t t'
+\fi
+
 \begin{enumerate}
-  \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the functions and constants from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$. To ensure the list is finite, function applications are only nested up to a specified depth (by default, 3).
+  \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the functions and constants from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$ \iffalse TODO: A little awkward; maybe use the above notation? \fi. To ensure the list is finite, function applications are only nested up to a specified depth (by default, 3).
   \item The elements of $terms$ are grouped into equivalence classes, based on their type.
   \item Each variable is instantiated to a particular value, generated randomly by \qcheck{}.
   \item For each class, the members are compared (using a pre-specified function, such as equality \hs{==}) to see if these instantiations have caused an observable difference between members. If so, the class is split up to separate such distinguishable members.
@@ -244,7 +255,7 @@ Together with a set of variables, say $V_{\texttt{Nat}} = \{a, b, c\}$, \qspec{}
                      & \texttt{S}\ c,\ \texttt{plus Z},\ \texttt{plus}\ a,\ \dots ]
 \end{align*}
 
-Notice that Haskell curries functions, so the binary functions \hs{plus} and \hs{mult} can be treated as unary functions which return unary functions. This is required as the construction of $terms$ applies functions to one argument at a time.
+Notice that Haskell curries functions, so the binary functions \hs{plus} and \hs{mult} can be treated as unary functions which return unary functions. This is required as the construction of $terms$ applies functions to one argument at a time. \iffalse TODO: Maybe mention that not all definitions of a term would regard plus as a well-formed term on its own; maybe make it more explicit that yes, we do regard functions as first-class values, etc \fi
 
 \begin{figure}
   % To reproduce, run 'quickSpec nat' in haskell_example/src/QuickSpecExample.hs
@@ -294,7 +305,6 @@ Before describing clustering in detail, we must introduce the idea of \emph{feat
 
 We use a standard representation of features as a \emph{feature vector} of numbers $(x_1, \dots, x_d)$ where $x_i \in \mathbb{R}$. \footnote{In fact, ractical implementations will use an approximate format such as IEEE 754 floating point numbers.} For learning purposes this has some important advantages over raw expressions:
 
-Another benefit of feature extraction is to \emph{normalise} the input data to a fixed-size representation.
 \begin{itemize}
   \item All of our feature vectors will be the same size, i.e. they will all have length (or \emph{dimension}) $d$. Many ML algorithms only work with inputs of a uniform size; feature extraction allows us to use these algorithms in domains where the size of each input is not known, may vary or may even be unbounded. For example, element-wise comparison of feature vectors is trivial (compare the $i$th elements for $1 \leq i \leq d$); for expressions this is not so straightforward, as their nesting may give rise to very different shapes.
   \item Unlike our expressions, which are discrete, we can continuously transform one feature vector into another. This enables many powerful ML algorithms to be used, such as those based on \emph{gradient descent} or, in our case, arithmetic means.
@@ -315,7 +325,7 @@ Clustering is an unsupervised machine learning task for grouping $n$ data points
 
 This is a standard setup, supported by off-the-shelf tools. In particular, it is similar to that used by the ML4PG and ACL2(ml), which makes our results more easily comparable.
 
-k-means works, as the name suggests, by calculating the \emph{mean value} of each cluster, which we define as:
+k-means works, as the name suggests, by calculating the \emph{mean value} of each cluster, which we define as: \iffalse TODO: Define environment? \fi
 
 \begin{equation*}
   \mean{X}_i = \frac{\sum_{x \in X} x_i}{|X|}
@@ -340,3 +350,5 @@ As $t$ increases, the clusters $C^i$ move from their initial location around the
 \begin{equation*}
   \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
 \end{equation*}
+
+\iffalse TODO: subsection Available Software \fi
