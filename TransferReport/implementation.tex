@@ -31,7 +31,7 @@ recurrentCluster = go ([],[])
 
 The overall result of the \hs{recurrentCluster} function is a list of clusters, containing the IDs of their elements. These are obtained by interleaving clustering (the \hs{kMeans} function) and feature extraction (the \hs{rt} function).
 
-The feature extraction itself contains two parts: first, syntax trees matching the grammar in figure \ref{fig:coresyntax} are converted into \hs{RoseTree}s with features (\hs{Float}s) on their \hs{Node}s:
+The feature extraction itself contains two parts: first, syntax trees matching the grammar in Figure \ref{fig:coresyntax} are converted into \hs{RoseTree}s with features (\hs{Float}s) on their \hs{Node}s:
 
 \begin{haskell}
 data RoseTree = Node Feature [RoseTree]

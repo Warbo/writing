@@ -69,7 +69,7 @@ Other empirical advantages to studying Haskell, compared to either other program
 \end{itemize}
 
 \iffalse
-
+TODO
 \subsection{Conjecture Generation}
 
 The task of \emph{conjecture generation} lies at the heart of theory exploration, and
@@ -88,7 +88,7 @@ The combinatorial nature of formal systems causes many proof search methods, suc
 
 Relevance filtering simplifies a proof search problem by removing from consideration those clauses (axioms, definitions, lemmas, etc.) which are deemed \emph{irrelevant}. The technique is used in Sledgehammer during its translation of Isabelle/HOL theories to statements in first order logic: rather than translating the entire theory, only a sub-set of relevant clauses are included. This reduces the size of the problem and speeds up the proof search, but it creates the new problem of determining when a clause is relevant: how do we know what will be required, before we have the proof?
 
-The initial approach, known as \textsc{MePO} (from \emph{Meng-Paulson} \citep{meng2009lightweight}), gives each clause a score based on the proportion $m / n$ of its symbols which are ``relevant'' (where $n$ is the number of symbols in the clause and $m$ is the number which are relevant). Initially, the relevant symbols are those which occur in the goal, but whenever a clause is found which scores more than a particular threshold, all of its symbols are then also considered relevant. There are other heuristics applied too, such as increasing the score of user-provided facts (e.g. given by keywords like \texttt{using}), locally-scoped facts, first-order facts and rarely-occuring facts. To choose $r$ relevant clauses for an ATP invocation, we simply order the clauses by decreasing score and take the first $r$ of them.
+The initial approach, known as \textsc{MePO} \iffalse TODO: Check name \fi (from \emph{Meng-Paulson} \citep{meng2009lightweight}), gives each clause a score based on the proportion $m / n$ of its symbols which are ``relevant'' (where $n$ is the number of symbols in the clause and $m$ is the number which are relevant). Initially, the relevant symbols are those which occur in the goal, but whenever a clause is found which scores more than a particular threshold, all of its symbols are then also considered relevant. There are other heuristics applied too, such as increasing the score of user-provided facts (e.g. given by keywords like \texttt{using}), locally-scoped facts, first-order facts and rarely-occuring facts. To choose $r$ relevant clauses for an ATP invocation, we simply order the clauses by decreasing score and take the first $r$ of them.
 
 Recently, a variety of alternative algorithms have also been investigated, including:
 
@@ -100,7 +100,7 @@ Recently, a variety of alternative algorithms have also been investigated, inclu
 
   % TODO:
   \item{\textsc{SInE}}
-  \item{\textsc{BliStr}}
+  \item{\textsc{BliStr}}: The Blind Strategy Maker
   \item{\textsc{HOLyHammer}}
   \item{\textsc{MoMM}}
   \item{\textsc{SNoW}}
@@ -110,15 +110,16 @@ Recently, a variety of alternative algorithms have also been investigated, inclu
 
 \end{description}
 
-\subsection{Clustering Expressions}
+\subsection{Recurrent Clustering}
 \label{sec:clusteringexpressions}
 
-% TODO: ML4PG
-\citep{journals/corr/abs-1212-3618}
-% TODO: ACL2(ml) (also examples section)
-\citep{heras2013proof}
+Our recurrent clustering approach takes inspiration from the ML4PG \citep{journals/corr/abs-1212-3618} and ACL2(ml) \citep{heras2013proof} tools, used for analysing proofs in Coq and ACL2, respectively. Whilst both transform syntax trees into matrices, the algorithm of ML4PG most closely resembles ours as it assigns tokens directly to matrix elements. In contrast, the matrices produced by ACL2(ml) \emph{summarise} information about the tree; for example, one column counts the number of variables appearing at each tree level, others count the number of function symbols which are nullary, unary, binary, etc.
 
-\subsubsection{Learning From Structured Data}
+However, the way we \emph{use} our clusters to inform theory exploration is similar to that of ACL2(ml). In ACL2(ml), the clusters are used to reason by analogy: finding theorem statements which are similar to the current goal being proved. Once a similar theorem is found, the lemma statements used in its proof are mutated, which includes substituting symbols for those which appear in the same cluster. For example, if we are trying to prove a theorem \texttt{multiply_commutes}, we might find it appears in the same cluster as \texttt{plus_commutes} which was proved using the lemma \texttt{plus_identity} relating \texttt{plus} and \texttt{0}. In this case ACL2(ml) might try mutating \texttt{plus_identity}, for example replacing \texttt{plus} by \texttt{multiply} and \textt{0} by \texttt{1} (assuming those appear in the same clusters); the resulting lemma (which we might call \texttt{multiply_identity}) would be given to ACL2 to try and prove \textt{multiply_commutes}.
+
+Whilst we do not currently reason by analogy, this is an interesting area for future work in theory exploration: given a set of theorems relating particular terms, we might form conjectures regarding similar terms found through clustering.
+
+\subsection{Feature Extraction}
 
 One major difficulty with formal mathematics as a domain in which to apply statistical machine learning is the use of \emph{structure} to encode information in objects. In particular, \emph{trees} appear in many places: from inductive datatypes, to recursive function definitions; from theorem statements, to proof objects. Such nested structures may extend to arbitrary depth, which makes them difficult to represent with a fixed number of features, as is expected by most machine learning algorithms. Here we review a selection of solutions to this problem, and compare their distinguishing properties.
 

@@ -6,7 +6,7 @@
 
 \iffalse TODO: Focus the section more on the problem of identifiers, and how recurrent clustering uses clustering as part of feature extraction to solve this \fi
 
-We take the \emph{recurrent clustering} approach found in ML4PG and ACL2(ml), and implement a variant in the context of Haskell theory exploration. As a clustering algorithm, the aim of recurrent clustering is to identify similarities in a set of data points (in our case, Core expressions). Its distinguishing characteristic is to \emph{combine} feature extraction and clustering into a single recursive algorithm (shown as algorithm \ref{alg:recurrent}), which goes beyond a simple syntactic characterisation, to allow the features of an expression to depend on those it references. Here we describe our approach to recurrent clustering and compare its similarity and differences to those of ML4PG and ACL2(ml).
+We adapt the methodology of \emph{recurrent clustering} suggested in CITE, and suggest a new recurrent clustering and feature extraction algorithm for Haskell \iffalse TODO: Fix the end of this sentence \fi theory exploration. As a clustering algorithm, the aim of recurrent clustering is to identify similarities in a set of data points (in our case, Core expressions). Its distinguishing characteristic is to \emph{combine} feature extraction and clustering into a single recursive algorithm (shown as algorithm \ref{alg:recurrent}), which goes beyond a simple syntactic characterisation, to allow the features of an expression to depend on those it references. Here we describe our approach to recurrent clustering and compare its similarity and differences to those of ML4PG and ACL2(ml).
 
 We consider our algorithm in two stages: the first transforms the nested structure of expressions into a flat feature vector representation; the second converts the discrete symbols of Core syntax into features (real numbers), which we will denote using the notation $\feature{}$.
 
@@ -49,7 +49,7 @@ The method we use to ``flatten'' expressions, described below, is a variation of
 
 Here $\frac{1}{2}$ of the original 6 features align, which is more than $breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2 zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
 
-To perform this flattening we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the $toTree$ function shown in figure \ref{fig:totree}. Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}. The results are illustrated in figure \ref{fig:rosetreeexample}.
+To perform this flattening we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the $toTree$ function shown in Figure \ref{fig:totree}. \iffalse TODO: Make a formal definition in an environment, i.e. not inline? \fi Rose trees are defined recursively: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}. The results are illustrated in Figure \ref{fig:rosetreeexample}.
 
 \begin{figure}
   \begin{align*}
@@ -75,9 +75,9 @@ To perform this flattening we first transform the nested tokens of an expression
       (\feature{\CRec},     toTree(e_1), \dots)                         & \text{if $e = \CRec\ e_1 \dots$} \\
       (\feature{\CBind},    toTree(e_1))                                & \text{if $e = \CBind\ l_1 e_1$}
     \end{cases} \\
-    leaf(x) &= (\feature{x})
+    leaf(x) &= (\feature{x}) \iffalse TODO: This is completely unnecessary... \fi
   \end{align*}
-  \caption{Transforming Core expressions of figure \ref{fig:coresyntax} to rose trees. The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$ as constructors can only be distinguished by their type, which we do not currently support. We also ignore values from $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\feature{}$, and we conjecture that the effect on clustering real code is low.}
+  \caption{Transforming Core expressions of Figure \ref{fig:coresyntax} to rose trees. The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors have no internal structure for us to compare; they can only be compared based on their types, which we do not currently support. We also ignore values from $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\feature{}$, and we conjecture that the effect on clustering real code is low.}
   \label{fig:totree}
 \end{figure}
 
@@ -107,7 +107,7 @@ To perform this flattening we first transform the nested tokens of an expression
                                          $\feature{\id{n}}$ ]]]
                           $\feature{\id{n}}$ ]]]
     \end{small}
-    \caption{Rose tree for the expression \hs{odd} from figure \ref{fig:coreexample}. Each (sub-) rose tree is rendered with its feature at the node and sub-trees beneath.}
+    \caption{Rose tree for the expression \hs{odd} from Figure \ref{fig:coreexample}. Each (sub-) rose tree is rendered with its feature at the node and sub-trees beneath.}
     \label{fig:rosetreeexample}
   \end{subfigure}
   \vspace{1ex}
@@ -123,7 +123,7 @@ To perform this flattening we first transform the nested tokens of an expression
         \feature{\id{even}}  & \feature{\id{n}}        & 0                 & 0                   & 0               & 0
       \end{bmatrix}
     \end{equation*}
-    \caption{Matrix generated from figure \ref{fig:rosetreeexample}, padded to 6 columns. Each level of nesting in the tree corresponds to a row in the matrix.}
+    \caption{Matrix generated from Figure \ref{fig:rosetreeexample}, padded to 6 columns. Each level of nesting in the tree corresponds to a row in the matrix.}
     \label{fig:matrixexample}
   \end{subfigure}
   \vspace{1ex}
@@ -134,11 +134,11 @@ To perform this flattening we first transform the nested tokens of an expression
      \caption{(Prefix of) the feature vector for \hs{odd}, constructed by concatenating the rows of \ref{fig:matrixexample}. Ignoring padding, the features are in breadth-first order.}
      \label{fig:vectorexample}
   \end{subfigure}
-  \caption{Feature extraction applied to the expression \hs{odd} from figure \ref{fig:coreexample}.}
+  \caption{Feature extraction applied to the expression \hs{odd} from Figure \ref{fig:coreexample}.}
 \end{figure}
 
-These rose trees are then turned into matrices, as shown in figure \ref{fig:matrixexample}, by gathering the features of adjacent (sub-) trees at each level of nesting, and concatenating them together (written as $\cat$):
-
+These rose trees are then turned into matrices, as shown in Figure \ref{fig:matrixexample}, by gathering the features of adjacent (sub-) trees at each level of nesting, and concatenating them together (written as $\cat$):
+\iffalse TODO: Maybe make this a bit more of a formal definition? \fi
 \begin{equation*}
   level(l, (f, T_1, \dots, T_{n_T})) =
     \begin{cases}
@@ -150,7 +150,7 @@ These rose trees are then turned into matrices, as shown in figure \ref{fig:matr
 Given a rose tree $t$ we can define its matrix $\mathbf{M}$ by $\mathbf{M}_i = pad(level(i, t))$, where $pad$ either truncates or appends zeros, until the row has a fixed length $c$. We also truncate/pad the number of rows to match a fixed number $r$. This way, all expressions give rise to $r \times c$ matrices, where the left-most features at each each level are aligned.
 
 \begin{sloppypar}
-Feature vectors are then simply the concatenation of matrix rows $\mathbf{M}_{1,1} \cat \mathbf{M}_{1,2} \cat \dots \cat \mathbf{M}_{2,1} \cat \mathbf{M}_{2,2} \cat \dots$, as shown in figure \ref{fig:vectorexample}:
+Feature vectors are then simply the concatenation of matrix rows $\mathbf{M}_{1,1} \cat \mathbf{M}_{1,2} \cat \dots \cat \mathbf{M}_{2,1} \cat \mathbf{M}_{2,2} \cat \dots$, as shown in Figure \ref{fig:vectorexample}:
 \end{sloppypar}
 
 \begin{equation}
@@ -159,7 +159,7 @@ Feature vectors are then simply the concatenation of matrix rows $\mathbf{M}_{1,
 
 \subsubsection{Symbols to Features}
 
-\iffalse TODO: Maybe present recurrent clustering in a ``naive'' way: define the conversion function ``[]'' recursively. Leave the dependency-ordering, etc. for the Algorithm section, as a way of ``building up to'' the result, which avoids the inefficiencies of recursing. \fi
+\iffalse TODO: quine quotes look so much like ceiling. Maybe find a name for it and define it formally in an environment? \fi
 
 We now define the algorithm for $\feature{}$, which turns terminal symbols of Core syntax into features (real numbers). For known language features, such as $\feature{\CLam}$ and $\feature{\CCase}$, we can enumerate the possibilities and assign a value to each, in a similar way to \citep{DBLP:journals/corr/HerasK14} in Coq. We use a constant $\alpha$ to separate these values from those of other tokens (e.g. identifiers), but the order is essentially arbitrary: \footnote{In \citep{DBLP:journals/corr/HerasK14}, ``similar'' Gallina tokens like \coq{fix} and \coq{cofix} are grouped together to reduce redundancy; we do not group tokens, but we do put ``similar'' tokens close together, such as \CLocal\ and \CGlobal.}
 
@@ -185,7 +185,7 @@ We now define the algorithm for $\feature{}$, which turns terminal symbols of Co
   \feature{\CLitStr}       &= \alpha + 18
 \end{align*}
 
-To encode \emph{local} identifiers $\mathcal{L}$ we use their \emph{de Bruijn index}, since this is a numeric value suitable for use as a feature, and it gives equal values for $\alpha$-equivalent expressions. To calculate these indices the $toTree$ function maintains a \emph{context} as it recurses through expressions (we elided this from figure \ref{fig:totree} for clarity). The context is a list of the local identifiers which are in scope, prepended as they are encountered. The context is initially empty, and only extended when $toTree$ calls itself recursively.
+To encode \emph{local} identifiers $\mathcal{L}$ we use their \emph{de Bruijn index}, since this is a numeric value suitable for use as a feature, and it gives equal values for $\alpha$-equivalent expressions. \iffalse TODO: needs to be defined within the text to make formal sense. Maybe don't mention it here, but just say, once it's defined, that it's known as the de Bruijn index? \fi To calculate these indices the $toTree$ function maintains a \emph{context} as it recurses through expressions (we elided this from Figure \ref{fig:totree} for clarity). The context is a list of the local identifiers which are in scope, prepended as they are encountered. The context is initially empty, and only extended when $toTree$ calls itself recursively.
 
 For example, when calculating $toTree(\CLam\ i\ e)$ in context $x$, we make the recursive call $toTree(e)$ in the context of \emph{$x$ prepended with $i$} (i.e. $(i) \cat x$). Similar extensions of the context are performed in the cases of \CBind, \CCase\footnote{The $\mathcal{L}$ value in a \CCase\ expression is bound to the expression being matched against; a technical detail to preserve sharing.}, \CAlt\ (which may introduce an arbitrary number of local identifiers) and \CLet\ (where identifiers are taken from occurrences of \CBind\ in the first expression).
 
@@ -199,6 +199,7 @@ Where $i$ is the index of the first occurrence of $l$ in the context; this is th
 
 Since the $toTree$ function discards numerals, strings and constructor identifiers, the only remaining case is global identifiers $\mathcal{G}$. Since these are declared \emph{outside} the body of an expression, we cannot perform the same indexing trick as we did for local identifiers. We also cannot directly encode the form of the identifiers, e.g. using a scheme like G{\"o}del numbering, since this is essentially arbitrary and has no effect on their semantic meaning (referencing other expressions).
 
+\iffalse TODO: this is a novel feature compared to ML4PG, ACL2(ml), etc., right? Maybe... Emphasize either the connection to earlier work, or the novelty. \fi
 Instead, we encode global identifiers \emph{indirectly}, by looking up the expressions which they \emph{reference}. For $g \in \mathcal{G}$ we define $\feature{g}$ as the \emph{index of the cluster which $g$ appears in}. This is where the recurrent nature of the algorithm appears, since we perform k-means clustering \emph{during} feature extraction, and that clustering step, in turn, requires that we perform feature extraction.
 
 For this recursive process to be well-founded, we impose a topological ordering on declarations based on their dependencies (the expressions they reference). \iffalse TODO: Maybe explain a little more about topological sorting; i.e. directed graphs, etc. \fi This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and hence the dependency graph may contain cycles. To handle this, we perform the sort using an algorithm such as Tarjan's which produces a sorted list of \emph{strongly connected components} (SCCs), where each SCC is a mutually-recursive sub-set of the declarations. References which point to the same SCC as the expression they appear in (which includes direct recursion and mutual recursion) are given a constant feature value $f_{recursion}$.
@@ -222,7 +223,7 @@ By working through the sorted list of SCCs, storing the features of each top-lev
   \label{alg:recurrent}
 \end{algorithm}
 
-As an example of this recurrent process, we can consider the Peano arithmetic functions from figure \ref{fig:coreexample}. A valid topological ordering would be (eliding Core expressions to save space) $d = [\{(\hs{plus}, \dots)\}, \{(\hs{odd}, \dots), (\hs{even}, \dots)\}, \{(\hs{mult}, \dots)\}]$:
+As an example of this recurrent process, we can consider the Peano arithmetic functions from Figure \ref{fig:coreexample}. A valid topological ordering would be (eliding Core expressions to save space) $d = [\{(\hs{plus}, \dots)\}, \{(\hs{odd}, \dots), (\hs{even}, \dots)\}, \{(\hs{mult}, \dots)\}]$:
 
 \begin{itemize}
   \item The first iteration through \textsc{RecurrentCluster}'s loop will set $scc \gets \{(\hs{plus}, \dots)\}$.

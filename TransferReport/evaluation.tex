@@ -1,6 +1,18 @@
 \section{Evaluation}
 
+We evaluate our recurrent clustering algorithm in two ways: by comparison to the clustering algorithms of ML4PG and ACL2(ml), and by comparison to \qspec{}'s theory exploration.
+
+\subsection{Clustering}
+
+\iffalse TODO \fi
+
+\subsection{Theory Exploration}
+
+The most direct way to use our recurrent clustering algorithm for theory exploration is to construct a separate signature for each cluster. As we vary $k$ from 1 (equivalent to no clustering at all) to $n$ (the number of elements in the signature), the performance will increase since each signature will produce fewer terms (up to the allowed level of nesting). However, the number of equations produced will decrease, as terms in separate clusters are no longer combined.
+
+\iffalse
 TODO
 
 Future work?
 Hypothetical use cases?
+\fi
