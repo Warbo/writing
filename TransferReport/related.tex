@@ -119,42 +119,25 @@ However, the way we \emph{use} our clusters to inform theory exploration is simi
 
 Whilst we do not currently reason by analogy, this is an interesting area for future work in theory exploration: given a set of theorems relating particular terms, we might form conjectures regarding similar terms found through clustering.
 
+\iffalse
+We could expand this a bit, e.g. talking about how we both use Weka, etc.
+\fi
+
 \subsection{Feature Extraction}
 
-One major difficulty with formal mathematics as a domain in which to apply statistical machine learning is the use of \emph{structure} to encode information in objects. In particular, \emph{trees} appear in many places: from inductive datatypes, to recursive function definitions; from theorem statements, to proof objects. Such nested structures may extend to arbitrary depth, which makes them difficult to represent with a fixed number of features, as is expected by most machine learning algorithms. Here we review a selection of solutions to this problem, and compare their distinguishing properties.
+One major difficulty with formal mathematics as a domain in which to apply statistical machine learning is the use of \emph{structure} to encode information in objects. In particular, \emph{trees} appear in many places: from inductive datatypes, to recursive function definitions; from theorem statements, to proof objects. Such nested structures may extend to arbitrary depth, which makes them difficult to process with many machine learning algorithms. The solution, as described in \S \ref{sec:featureextraction}, is to use \emph{feature extraction}. However, our method is not the only possible way to encode recursive structures as fixed-size features.
 
-\paragraph{Truncation and Padding}
+The simplest way to encode such inputs is to simply choose a desired size, then pad anything smaller and truncate anything larger. We use this to make our matrices a uniform size, borrowing the idea from ML4PG. Care must be taken to ensure that we are not discarding too much information, that we are not producing features with too many dimensions to be practical, and that there is a uniform ``meaning'' to each feature across different feature vectors. In our case, we transform the recursive structure of expressions into matrices in order to give meanings such as ``the $i$th token at the $j$th level of nesting''.
 
-The simplest way to limit the size of our inputs is to truncate anything larger than a particular size (and pad anything smaller). This is the approach taken by ML4PG \citep{journals/corr/abs-1302-6421}, which limits itself to trees with at most 10 levels and 10 elements per level; each tree is converted to a $30 \times 10$ matrix (3 values per tree node) and learning takes place on these normalised representations.
+Truncation works best when the input data contains no redundancy and is arranged with the most significant data first (in a sense, it is ``big-endian''). The less these assumptions hold, the less we can truncate. These seem to hold in the case of Haskell expressions, since the higher levels of the syntax tree are the most semantically significant; for example, due to laziness, the lower levels may never even be evaluated.
 
-Truncation is unsatisfactory in the way it balances \emph{data} efficiency with \emph{time} efficiency. Specifically, truncation works best when the input data contains no redundancy and is arranged with the most significant data first (in a sense, it is ``big-endian''). The less these assumptions hold, the less we can truncate. Since many ML algorithms scale poorly with input size, we would prefer to eliminate the redundancy using a more aggressive algorithm, to keep the resulting feature size as low as possible.
+By modelling our inputs as points in high-dimensional spaces, we can consider feature extraction as projection into a lower-dimensional space (known as \emph{dimension reduction}). Truncation is a trivial dimension reduction technique; more sophisticated projection functions consider the \emph{distribution} of the input points, and project with the hyperplane which preserves as much of the variance as possible (or, equivalently, reduces the \emph{mutual information} between the points).
 
-\paragraph{Dimension Reduction}
+Techniques such as \emph{principle component analysis} (PCA) can be used to find these hyperplanes, but unfortunately require their inputs to already have a fixed, integer number of dimensions. In the case of our recursive expressions (which we may consider to have \emph{fractal} dimension), we would need another pre-processing stage to satisfy this requirement.
 
-A more sophisticated approach to the problem of reducing input size is to view it as a \emph{dimension reduction} technique: our inputs can be modelled as points in high-dimensional spaces, which we want to project into a lower-dimensional space ($\left\{ {0, 1} \right\}^N$ in the case of $N$-bit vectors).
+There are some machine learning algorithms which can handle variable-size input. In particular, \emph{recurrent artificial neural networks} (RNNs) can learn \emph{sequences}, such as audio or written sentences. For example, we could render our expressions into a linear sequence of tokens (e.g. s-expressions) and process these with an RNN. Unfortunately there are several problems with this approach: firstly, we must train RNNs in a \emph{supervised} way, unlike clustering which is \emph{unsupervised}; this requires us to define an error signal which the RNN should minimise. There are ways to achieve clustering this way, for example by having the RNN \emph{compress} each expression to a fixed size we get a dimension reduction technique. \iffalse and, in fact, clustering CITE Clustering by compression\fi In this case the error signal is the difference between the original input and the output after decompression. This is the basis of \emph{autoencoders}.
 
-Truncation is a trivial dimension reduction technique: take the first $N$ coordinates (bits). More sophisticated projection functions consider the \emph{distribution} of the points, and project with the hyperplane which preserves as much of the variance as possible (or, equivalently, reduces the \emph{mutual information} between the points).
-
-There are many techniques to find these hyperplanes, such as \emph{principle component analysis} (PCA) and \emph{autoencoding}; however, since these techniques are effectively ML algorithms in their own right, they suffer some of the same constraints we're trying to avoid:
-
-\begin{itemize}
-  \item They operate \emph{offline}, requiring all input points up-front
-  \item All input points must have the same dimensionality
-\end{itemize}
-
-In particular, the second constraint is precisely what we're trying to avoid. Sophisticated dimension reduction is still useful for \emph{compressing} large, redundant features into smaller, information-dense representations, and as such provides a good complement to truncation.
-
-The requirement for offline ``batch'' processing is more difficult to overcome, since any learning we perform for feature extraction will interfere with the core learning algorithm that's consuming these features (this is why deep learning is often done greedily).
-
-\paragraph{Sequencing}
-
-The task of dimension reduction changes when we consider \emph{structured} data. Recursive structures, like trees and lists, have \emph{fractal} dimension: adding layers to a recursive structure gives us more \emph{fine-grained} features, rather than \emph{orthogonal} features. For data mining context-free languages (e.g. those of programming and theorem-proving systems), we will mainly be concerned with tree structures of variable size.
-
-Any investigation of variable-size input would be incomplete without mentioning \emph{sequencing}. This is a lossless approach, which splits the input into fixed-size \emph{chunks}, which are fed into an appropriate ML algorithm one at a time. The sequence is terminated by a sentinel; an ``end-of-sequence'' marker which, by construction, is distinguishable from the data chunks. This technique allows us to trade \emph{space} (the size of our input) for \emph{time} (the number of chunks in a sequence).
-
-Not all ML algorithms can be adapted to accept sequences. One notable approach is to use \emph{recurrent ANNs} (RANNs), which allow arbitrary connections between nodes, including cycles. Compared to \emph{feed-forward} ANNs (FFANNs), which are acyclic, the \emph{future output} of a RANN may depend arbitrarily on its \emph{past inputs} (in fact, RANNs are universal computers).
-
-The main problem with RANNs, compared to the more widely-used FFANNs, is the difficulty of training them. If we extend the standard backpropagation algorithm to handle cycles, we get the \emph{backpropagation through time} algorithm \citep{werbos1990backpropagation}. However, this suffers a problem known as the \emph{vanishing gradient}: error values decay exponentially as they propagate back through the cycles, which prevents effective learning of delayed dependencies, undermining the main advantage of RANNs. The vanishing gradient problem is the subject of current research, with countermeasures including \emph{neuroevolution} (using evolutionary computation techniques to train an ANN) and \emph{long short-term memory} (LSTM; introducing a few special, untrainable nodes to persist values for long time periods \citep{hochreiter1997long}).
+Another problem with RNNs is the difficulty of training them. If we extend the standard backpropagation algorithm (used for non-recurrent neural networks) to handle the cycles present in RNNs, we get the \emph{backpropagation through time} algorithm \citep{werbos1990backpropagation}. However, this suffers a problem known as the \emph{vanishing} or \emph{exploding gradient}: error values grow or decay exponentially as they propagate back through the cycles, which prevents effective learning of correlations across a sequence, undermining the main advantage of RNNs. The vanishing gradient problem is the subject of current research, with countermeasures including \emph{neuroevolution} (using evolutionary computation techniques to train, rather than backpropagation) and \emph{long short-term memory} (LSTM; introducing a few special, nodes to persist values for long time periods, unaffected by training \citep{hochreiter1997long}).
 
 The application of \emph{kernel methods} to structured information is discussed in \citep{Gartner2003}, where the input data (including sequences, trees and graphs) are represented using \emph{generative models}, such as hidden Markov models, of a fixed size.
 
