@@ -350,8 +350,8 @@ The elements of each cluster $C^i(t)$ are those data points closest to the mean 
 
 As $t$ increases, the clusters $C^i$ move from their initial location around the ``seeds'', to converge on a local minimum of the ``within-cluster sum of squared error'' objective:
 
-\begin{equation*}
+\begin{equation} \label{eq:kmeansobjective}
   \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
-\end{equation*}
+\end{equation}
 
 \iffalse TODO: subsection Available Software \fi
