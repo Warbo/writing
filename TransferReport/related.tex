@@ -6,11 +6,11 @@
 \subsection{Haskell}
 \label{sec:haskelldesc}
 
-Haskell is a convenient choice for our purposes for several reasons. Here we discuss the relevant language features from a high-level:
+Whilst \S \label{sec:haskell} gave some brief background on Haskell, little consideration was given for why we chose this language rather than, for example Coq or ACL2 (for which recurrent clustering algorithms already exist), or a more widespread language like Java. Here we discuss the relevant language features from a high-level, which motivated our choice:
 
 \begin{description}
 
-\item{Functional}: All control flow is performed by function abstraction and application, which we can reason about using standard rules of inference such as \emph{modus ponens}.
+\item{Functional}: All control flow in Haskell is performed by function abstraction and application, which we can reason about using standard rules of inference such as \emph{modus ponens}.
 
 \item{Pure}: Execution of actions (e.g. reading files) is separate to evaluation of expressions; hence our reasoning can safely ignore complicated external and non-local interactions.
 
@@ -54,7 +54,7 @@ The \hs{Email} type guarantees that its elements have both a user part and a hos
 
 \end{description}
 
-Together, these features make Haskell code highly structured, amenable to logical analysis and subject to many algebraic laws. However, as mentioned with regards to type classes, Haskell itself is incapable of expressing or enforcing these laws (at least, without difficulty \citep{lindley2014hasochism}). This reduces the incentive to manually discover, state and prove theorems about Haskell code, e.g. in the style of interactive theorem proving, as these results may be invalidated by seemingly innocuous code changes. We will revisit the second-class status of theorem proving in Haskell in our discussion of theory exploration (\S \ref{sec:theoryexploration}), but we will remark that Haskell is thus in a unique position with regards to the discovery of interesting theorems. Namely that many discoveries may be available with very little work, simply because the code's authors are focused on \emph{software} development rather than \emph{proof} development. The same cannot be said, for example, of ITP systems; although our reasoning capabilities may be stronger in an ITP setting, much of the ``low hanging fruit'' will have already been found through the user's dedicated efforts, and hence TE would be more likely to fit into an automation role for the user, rather than providing truly unexpected new discoveries.
+Together, these features make Haskell code highly structured, amenable to logical analysis and subject to many algebraic laws. However, as mentioned with regards to type classes, Haskell itself is incapable of expressing or enforcing these laws (at least, without difficulty \citep{lindley2014hasochism}). This reduces the incentive to manually discover, state and prove theorems about Haskell code, e.g. in the style of interactive theorem proving, as these results may be invalidated by seemingly innocuous code changes. This puts Haskell in a rather special position with regards to the discovery of interesting theorems. Namely that many discoveries may be available with very little work, simply because the code's authors are focused on \emph{software} development rather than \emph{proof} development. The same cannot be said, for example, of ITP systems; although our reasoning capabilities may be stronger in an ITP setting, much of the ``low hanging fruit'' will have already been found through the user's dedicated efforts, and hence TE would be more likely to fit into an automation role for the user, rather than providing truly unexpected new discoveries.
 
 Other empirical advantages to studying Haskell, compared to either other programming languages or theorem proving systems, include:
 
@@ -62,7 +62,7 @@ Other empirical advantages to studying Haskell, compared to either other program
 
 \item The large amount of Haskell code which is freely available online, e.g. in repositories like \href{http://hackage.haskell.org}{Hackage}, with which we can experiment.
 
-\item The existence of conjecture generation and theory exploration systems for Haskell, such as \qspec{} and \hspec{}, and counterexample finders like \qcheck{}, \textsc{SmallCheck} and \textsc{SmartCheck}.
+\item The existence of conjecture generation and theory exploration systems for Haskell, such as \qspec{} and \hspec{}; counterexample finders like \qcheck{}, \textsc{SmallCheck} and \textsc{SmartCheck}; theorem provers like \textsc{Hip} \citep{rosen2012proving}; and other related testing and term-generating systems like \textsc{MuCheck} \citep{le2014mucheck}, \textsc{MagicHaskeller} \citep{katayama2011magichaskeller} and \textsc{Djinn} \citep{augustsson2005djinn}.
 
 \item The remarkable amount of infrastructure which exists for working with Haskell code, including package managers, compilers, interpreters, parsers, static analysers, etc.
 
@@ -72,9 +72,7 @@ Other empirical advantages to studying Haskell, compared to either other program
 TODO
 \subsection{Conjecture Generation}
 
-The task of \emph{conjecture generation} lies at the heart of theory exploration, and
-
-\subsubsection{Lemma generation}
+The task of \emph{conjecture generation} lies at the heart of theory exploration, and whilst its main use has been for lemma generation (i.e. performing ) and even significant theorems.
 
 \fi
 
