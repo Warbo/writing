@@ -202,7 +202,79 @@ Since the $toTree$ function discards numerals, strings and constructor identifie
 \iffalse TODO: this is a novel feature compared to ML4PG, ACL2(ml), etc., right? Maybe... Emphasize either the connection to earlier work, or the novelty. \fi
 Instead, we encode global identifiers \emph{indirectly}, by looking up the expressions which they \emph{reference}. For $g \in \mathcal{G}$ we define $\feature{g}$ as the \emph{index of the cluster which $g$ appears in}. This is where the recurrent nature of the algorithm appears, since we perform k-means clustering \emph{during} feature extraction, and that clustering step, in turn, requires that we perform feature extraction.
 
-For this recursive process to be well-founded, we impose a topological ordering on declarations based on their dependencies (the expressions they reference). \iffalse TODO: Maybe explain a little more about topological sorting; i.e. directed graphs, etc. \fi This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and hence the dependency graph may contain cycles. To handle this, we perform the sort using an algorithm such as Tarjan's which produces a sorted list of \emph{strongly connected components} (SCCs), where each SCC is a mutually-recursive sub-set of the declarations. References which point to the same SCC as the expression they appear in (which includes direct recursion and mutual recursion) are given a constant feature value $f_{recursion}$.
+For this recursive process to be well-founded, we perform a topological sort on declarations based on their dependencies (the expressions they reference). To do this, we construct a directed graph, where each declaration is a node and edges denote an ``is referenced by'' relation. An example dependency graph is given in Figure \ref{fig:dependencyexample}.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}{\textwidth}
+    \centering
+    \begin{tikzpicture}[node distance=2cm]
+      \tikzset{vertex/.style = {minimum size=1.5em}}
+      \tikzset{edge/.style = {->,> = latex'}}
+
+      \node[vertex]                at (0.5\textwidth, 3)   (z)     {\hs{Z}};
+      \node[vertex]                at (0.5\textwidth, 0)   (s)     {\hs{S}};
+      \node[vertex]                at (0,             1.5) (plus)  {\hs{plus}};
+      \node[vertex, anchor=east]   at (\textwidth,    1.5) (false) {\hs{False}};
+      \node[vertex, right of=plus]                         (mult)  {\hs{mult}};
+      \node[vertex, left of=false]                         (odd)   {\hs{odd}};
+      \node[vertex, left of=odd]                           (even)  {\hs{even}};
+      \node[vertex, left of=even]                          (true)  {\hs{True}};
+
+      \draw[edge, dashed]     (z)     to (plus);
+      \draw[edge, dashed]     (z)     to (mult);
+      \draw[edge, dashed]     (z)     to (odd);
+      \draw[edge, dashed]     (z)     to (even);
+      \draw[edge, dashed]     (s)     to (plus);
+      \draw[edge, dashed]     (s)     to (mult);
+      \draw[edge, dashed]     (s)     to (odd);
+      \draw[edge, dashed]     (s)     to (even);
+      \draw[edge, dashed]     (false) to (odd);
+      \draw[edge, dashed]     (true)  to (even);
+      \draw[edge]             (plus)  to (mult);
+      \draw[edge]             (even)  to (odd);
+      \draw[edge]             (odd)   to (even);
+      \draw[edge, loop above] (plus)  to (plus);
+      \draw[edge, loop above] (mult)  to (mult);
+    \end{tikzpicture}
+
+    \caption{Dependency graph for Figure \ref{fig:haskellexample}. Loops indicate recursive functions, double arrows indicate mutual recursion. Dashed lines show references to data constructors, which we do not consider in this work.}
+    \label{fig:dagexample}
+  \end{subfigure}
+
+  \begin{subfigure}{\textwidth}
+    \centering
+    \tikzstyle{block} = [rectangle, draw]
+    \tikzstyle{line}  = [draw, -latex']
+    \begin{tikzpicture}[node distance=2cm]
+      \node [block] (plusset) {
+        \begin{tikzpicture}[node distance = 2cm]
+          \node [block] (plus) {\hs{plus}};
+        \end{tikzpicture}
+      };
+      \node [block, right of=plusset] (multset) {
+        \begin{tikzpicture}[node distance = 2cm]
+          \node [block] (mult) {\hs{mult}};
+        \end{tikzpicture}
+      };
+      \node [block, right of=multset] (parityset) {
+        \begin{tikzpicture}[node distance = 1cm]
+          \node [block]               (odd)  {\hs{odd}};
+          \node [block, below of=odd] (even) {\hs{even}};
+        \end{tikzpicture}
+      };
+
+      \path [line] (plusset)     -- (multset);
+      \path [line] (multset)     -- (parityset);
+    \end{tikzpicture}
+    \caption{One possible topological sorting of simply connected components for Figure \ref{fig:dagexample} (ignoring constructors). \hs{even} and \hs{odd} are mutually recursive, no neither can appear before the other.}
+    \label{fig:sccexample}
+  \end{subfigure}
+  \label{fig:dependencyexample}
+  \caption{Sorting functions from Figure \ref{fig:haskellexample} into dependency order.}
+\end{figure}
+
+In a topological sort we say that $A < B$ for nodes $A$ and $B$ if we can reach $B$ by following edges from $A$ (if $A$ and $B$ cannot be reached from each other, their order is arbitrary). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and hence the dependency graph may contain cycles. To handle this, we use an algorithm such as Tarjan's \citep{tarjan1972depth} to produce a sorted list of \emph{strongly connected components} (SCCs), where each SCC is a mutually-recursive sub-set of the declarations (as shown in Figure \ref{fig:sccexample}). References which point to the same SCC as the expression they appear in (which includes direct recursion and mutual recursion) are given a constant feature value $f_{recursion}$.
 
 By working through the sorted list of SCCs, storing the features of each top-level expression as they are calculated, our algorithm can be computed \emph{iteratively} rather than recursively, as shown in algorithm \ref{alg:recurrent}. This makes cyclic references particularly easy to handle: global identifiers are looked up in the current clusters $C$, and if not found the value $f_{recursion}$ is used.
 

@@ -11,7 +11,92 @@ B Module-by-module road map
 C - External software
 \fi
 
-We have implemented these ideas in a theory exploration framework called \textsc{ML4HS}. It contains several components.
+We provide an implementation of our recurrent clustering algorithm in a tool called \textsc{ML4HS}, which consists of a loose collection of components shown in Figure \ref{fig:ml4hs}. This arrangement makes it easy to swap out parts for experimentation. In the following, we describe the custom components in the order they appear in the diagram.
+
+\begin{figure}
+  \centering
+  \tikzstyle{block} = [rectangle, draw, rounded corners]
+  \tikzstyle{container} = [rectangle, draw, rounded corners]
+  \tikzstyle{line} = [draw, -latex']
+  \colorlet{shade}{rgb:black,1;white,4}
+
+  \begin{tikzpicture}[node distance=2cm]
+    \node [block] (hackage) {Hackage};
+
+    \node [block, below of=hackage] (cabal) {
+      \begin{tikzpicture}[node distance = 2cm]
+        \node (caballabel) {Cabal};
+        \node [block, anchor=north west] at (caballabel.south) (ghc) {
+          \begin{tikzpicture}[node distance = 2cm]
+            \node (ghclabel) {GHC};
+            \node [block, anchor=north west, fill=shade] at (ghclabel.south) (plugin) {AST Plugin};
+          \end{tikzpicture}
+        };
+      \end{tikzpicture}
+    };
+
+    \node [block, below of=cabal, fill=shade]  (sorting) {Sorting};
+
+    \node [block, below of=sorting, fill=shade] (clustering) {
+      \begin{tikzpicture}[node distance = 2cm, auto]
+        \node (clusterlabel) {Recurrent Clustering};
+        \node [block, anchor=north west, fill=shade] at (clusterlabel.south west) (fe) {Feature Extraction};
+        \node [block, anchor=west, fill=white] at ([xshift=2em]fe.east) (weka) {Weka};
+
+        \path [line] (fe)   -- (weka);
+        \path [line] (weka) -- (fe);
+      \end{tikzpicture}
+    };
+
+    \node [block, below of=clustering, fill=shade] (mlspec) {
+      \begin{tikzpicture}[node distance = 2cm, auto]
+        \node (mlspeclabel) {MLSpec};
+        \node [block, anchor=north west, fill=white] at (mlspeclabel.south) (qs) {QuickSpec};
+      \end{tikzpicture}
+    };
+
+    \node [block, below of=mlspec] (user) {User};
+
+    \path [line] (hackage)    -- (cabal);
+    \path [line] (cabal)      -- (sorting);
+    \path [line] (sorting)    -- (clustering);
+    \path [line] (clustering) -- (mlspec);
+    \path [line] (mlspec)     -- (user);
+  \end{tikzpicture}
+  \caption{Components of the ML4HS theory exploration system. Custom components are shaded, arrows indicate data flow.}
+  \label{fig:ml4hs}
+\end{figure}
+
+\subsection{\textsc{ASTPlugin}}
+\label{sec:astplugin}
+
+The GHC compiler provides mechanisms for parsing Haskell source code and converting it to Core. It also includes a \emph{renaming} transformation which makes all names unique (either by prefixing them with the name of the module which defines them, or by suffixing the name with a number. This allows us to spot repeated use of a term, across multiple modules and packages, with a simple syntactic equality check.
+
+Since we are interested in comparing definitions based on the terms they reference, building our framework on top of GHC seems like a promising approach. Indeed, \hspec{} already invokes GHC's API to obtain the definitions of Haskell functions, in order to transform them into a form suitable for ATP systems. However, our initial experiments showed that this technique is too fragile for use on many real Haskell projects.
+
+This is due to many projects having a complex module structure, requiring particular GHC flags to be given, or using pre-processors such as \texttt{cpp} and Template Haskell to generate parts of their code. All of this complexity means that invoking GHC ``manually'' via its API is unlikely to obtain the definitions we require.
+
+Thankfully there is one implementation detail which most Haskell packages agree on: the Cabal build system. All of the above complexities will be specified in a package's ``Cabal file'', such that the \texttt{cabal configure} and \texttt{cabal build} commands are very likely to work for most packages, without any extra effort. This shifted our focus to augmenting GHC and Cabal, such that definitions can be collected during the normal Haskell build process.
+
+GHC provides a plugin mechanism for manipulating Core during a build, intended for optimisation passes, which we use to inspect definitions as they are being compiled. We provide a plugin called \textsc{AstPlugin} which emits a serialised version of each Core definition to the console (to satisfy the type system, it also implements a dummy ``optimisation'' which returns the Core unchanged).
+
+Compared to Haskell, Core is a much simpler language and its representation is relatively stable compared to many existing representations of Haskell (which often change to support various language extensions). Three areas which make Core difficult to handle are:
+
+\begin{description}
+  \item{Type variables}: Parametric polymorphism (described in more detail in \S \ref{sec:haskelldesc}) can be thought of as values being parameterised by type-level objects. In System F, this is represented explicitly by a special abstraction form $\Lambda$, distinct from the $\lambda$ used for values. Core only has one abstraction form, \CLam, for both types and values. This alters function properties like arity.
+
+  \item{Unified namespace}: Haskell has distinct namespaces for values, types, data constructors, etc. Since Core does not make these distinctions, names may become ambiguous. For example, a type parameter \hs{t} may be confused with a function argument \hs{t}. To prevent this, overlapping namespaces are distinguished by prefices which are distinct from the available names; for example a type class constraint \hs{Ord t} may give rise to a binder $\CLam\ \hs{"\$dOrd"}$ in Core. This causes difficulties when looking up names, as these prefixed forms do not easily map back to the Haskell source.
+
+  \item{Violating encapsulation}: Although Haskell allows names to be \emph{private} to a module, when compiling Core we have full access to private definitions, as well as references to private names from within other definitions. Hence the definitions we receive from \textsc{AstPlugin} will include private values which we cannot import into a theory exploration tool.
+\end{description}
+
+In practice, we work around these issues with a post-processing stage: for each named definition appearing in the output of \textsc{AstPlugin}, we attempt to reference that name within the GHCi interpreter. Names with the above problems will cause an error, and are discarded.
+
+The result of building a Haskell package with \textsc{AstPlugin} is a database of Haskell definitions, similar in some respects to \textsc{Hoogle}. Definitions are indexed by a combination of their package name, module name and binding name. The definitions themselves are s-expressions representing the Core AST, with non-local references replaced by a combination of package name, module name and binding name, which allows dependencies to be discovered. Each definition also has an associated arity and type, obtained during the post-processing step mentioned above.
+
+\subsection{Toplogical Sorting}
+
+As described in \S \ref{} We have a tool which annotates each definition with its dependencies, i.e. those (package, module, name) combinations which it references. Definitions are then topologically sorted into dependency order, as this is required for our recurrent clustering technique.
 
 \subsection{Recurrent Clustering}
 
@@ -110,47 +195,6 @@ Most of the work carried out so far has been either preliminary investigations, 
 \label{sec:ml4hs}
 
 \textsc{ML4HS} is our top-level theory exploration framework, combining \textsc{AstPlugin} and \textsc{MLSpec}, described below, with an implementation of our recurrent clustering algorithm and the \textsc{Weka} machine learning library.
-
-\subsection{\textsc{ASTPlugin}}
-\label{sec:astplugin}
-
-The Glasgow Haskell Compiler provides mechanisms for parsing Haskell code into tree structures, and a \emph{renaming} transformation which makes all names unique; either by prefixing them with the name of the module which defines them, or by suffixing the name with a number. This allows us to spot repeated use of a term, across multiple modules and packages, with a simple syntactic equality check.
-
-Since we are interested in comparing definitions based on the terms they reference, building our framework on top of GHC seems like a promising approach. Indeed, \hspec{} already invokes GHC's API to obtain the definitions of Haskell functions, in order to transform them into a form suitable for ATP systems. However, our initial experiments showed that this technique is too fragile for use on many real Haskell projects.
-
-This is due to many projects having a complex module structure, requiring particular GHC flags to be given, or using pre-processors such as \texttt{cpp} and Template Haskell to generate parts of their code. All of this complexity means that invoking GHC ``manually'' via its API is unlikely to obtain the definitions we require.
-
-Thankfully there is one implementation detail which most Haskell packages agree on: the Cabal build system. All of the above complexities can be specified in a package's ``Cabal file'', such that the \texttt{cabal configure} and \texttt{cabal build} commands are very likely to work for most packages, without any extra effort. This shifted our focus to augmenting GHC and Cabal, such that definitions can be collected during the normal Haskell build process.
-
-GHC provides a plugin mechanism for manipulating its Core representation, intended for optimisation passes, which we use to inspect definitions as they are being compiled. We provide a plugin called \textsc{AstPlugin} which implements an optimisation pass which returns its argument unchanged, but which also emits a serialised version of the definition to the console.
-
-There are several complications in the implementation of \textsc{AstPlugin}. We are working with Core, which as a variant of System F\textsubscript{C} \citep{sulzmann2007system} has slightly different syntax and semantics to Haskell. This is mostly a benefit, since Core is a much simpler language than Haskell and its representation is relatively stable compared to many existing representations of Haskell (which often change to support various language extensions). Three areas which make Core more difficult to handle are:
-
-\begin{description}
-  \item{Type variables}: In \S \ref{sec:haskell} we saw that parametric polymorphism can be thought of as values being parameterised by type-level objects. In System F, this is represented explicitly by a special binding form $\Lambda$, distinct from the $\lambda$ binding form for value parameters. Core also has explicit bindings for type-level objects, although for simplicity it uses the same $\lambda$ representation for both types and values. This difference from Haskell, which only has explicit binding of values, alters function properties like arity.
-
-  \item{Unified namespace}: Haskell has distinct namespaces for values, types, data constructors, etc. Since Core does not make these distinctions, names may become ambiguous. For example, a type parameter \hs{t} may be confused with a function argument \hs{t}. To prevent this, overlapping namespaces are distinguished by prefices which are distinct from the available names; for example a type class constraint \hs{Ord t} may give rise to a binder \texttt{$\lambda$ \$dOrd} in Core. This causes difficulties when looking up names, as these prefixed forms do not easily map back to the Haskell source.
-
-  \item{Violating encapsulation}: As discussed in \S \ref{sec:haskell}, Haskell allows names to be \emph{private} to a module. When compiling Core, we have full access to private definitions, as well as references to private names from within other definitions. Hence the definitions we receive from \textsc{AstPlugin} will include private values which we cannot import into a theory exploration tool.
-\end{description}
-
-In practice, we work around these issues with a post-processing stage: for each named definition appearing in the output of \textsc{AstPlugin}, we attempt to type-check a Haskell expression which imports that name and passes it to \qspec{}. Those which fail, due to the reasons above and others, are discarded.
-
-The result of building a Haskell package with \textsc{AstPlugin} is a database of Haskell definitions, similar in some respects to \textsc{Hoogle}. Definitions are indexed by a combination of their package name, module name and binding name. The definitions themselves are s-expressions representing the Core AST, with non-local references replaced by a combination of package name, module name and binding name (AKA database keys). Each definition also has an associated arity and type, obtained during the post-processing step mentioned above.
-
-Such data is useful for multiple purposes:
-
-\begin{itemize}
-  \item{Dependency tracking}: We have a tool which annotates each definition with its dependencies, i.e. those (package, module, name) combinations which it references. Definitions are then topologically sorted into dependency order, as this is required for our recurrent clustering technique.
-
-  \item{Machine learning}: The Core s-expressions are used as input to our machine learning approaches, for guiding theory exploration using statistical properties of the theory being explored. As mentioned in \S \ref{sec:featureextraction}, it is inefficient to apply intensive machine learning algorithms directly to high-dimensional data representations, so we use various feature extraction algorithms to reduce their dimensionality.
-
-  \item{Theory exploration}: The \textsc{MLSpec} tool, described below, uses the output of \textsc{AstPlugin} to construct theories suitable for \qspec{} to explore.
-
-  \item{Reflection}: As mentioned above, \hspec{} uses the GHC API to obtain definitions of Haskell terms, which are then converted for use by theorem provers. Although we have not yet investigated this use, it seems likely that the output of \textsc{AstPlugin} would provide a more comprehensive and robust alternative to the GHC API approach.
-
-  \item{Counterexample Generation}: As mentioned in \S \ref{sec:quickcheck}, there are many Haskell property checkers, which differ mostly in the way they generate values for testing. Since our theory exploration tools are built on these property checkers, we rely on the existence of value generators for at least some of the types in our theory; yet existing approaches to deriving such generators (e.g. as found in the \texttt{derive} package) rely on choosing an arbitrary constructor then recursing. As demonstrated in \S \ref{sec:haskell}, a type's constructors might not be exported, in which case these methods fail. Also, the exponential complexity of such naive recursion makes these generators unusable in many cases. It seems that a database of inspectable Haskell functions may be useful for solving this problem in a more practical way, although we have not yet performed experiments in this area.
-\end{itemize}
 
 \subsection{\textsc{MLSpec}}
 \label{sec:mlspec}

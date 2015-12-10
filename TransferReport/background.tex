@@ -323,7 +323,7 @@ Clustering is an unsupervised machine learning task for grouping $n$ data points
   \item We fix the number of clusters at $k = \lceil \sqrt{n} \rceil$. \iffalse TODO: Any reason for this choice? YES: It should be n/max! \fi
   \item Data points will be $d$-dimensional feature vectors, as defined above.
   \item We will use euclidean distance (denoted $e$) as our similarity metric.
-  \item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm. \iffalse TODO:Citation \fi
+  \item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm. \iffalse TODO:Citation Lloyd, S. P. (1957). "Least square quantization in PCM". Bell Telephone Laboratories Paper. Published in journal much later: Lloyd., S. P. (1982). "Least squares quantization in PCM" (PDF). IEEE Transactions on Information Theory 28 (2): 129–137. doi:10.1109/TIT.1982.1056489. Retrieved 2009-04-15. \fi
 \end{itemize}
 
 This is a standard setup, supported by off-the-shelf tools. In particular, it is similar to that used by the ML4PG and ACL2(ml), which makes our results more easily comparable.
@@ -354,4 +354,4 @@ As $t$ increases, the clusters $C^i$ move from their initial location around the
   \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
 \end{equation}
 
-\iffalse TODO: subsection Available Software \fi
+K-means is a standard algorithm, available in a variety of machine learning systems. We use the implementation provided by Weka \citep{Holmes.Donkin.Witten:1994}, due to its successful use by ML4PG.

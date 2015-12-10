@@ -189,3 +189,15 @@ Once we begin this process of augmenting fitness functions, or abandoning their 
 \iffalse
 The core problem of assigning ``interestingness'' to logical formulae is the application of statistical reasoning to the discrete, semantically-rich domain of formal systems. This problem has been tackled from various directions for a variety of reasons; here we summarise those contributions which seem of particular importance for theory exploration.
 \fi
+
+\iffalse
+TODO
+
+Other uses of AST Plugin data. Maybe mention this in the context of data generation (e.g. lazysmallcheck and friends)
+
+\begin{itemize}
+  \item{Reflection}: As mentioned above, \hspec{} uses the GHC API to obtain definitions of Haskell terms, which are then converted for use by theorem provers. Although we have not yet investigated this use, it seems likely that the output of \textsc{AstPlugin} would provide a more comprehensive and robust alternative to the GHC API approach.
+
+  \item{Counterexample Generation}: As mentioned in \S \ref{sec:quickcheck}, there are many Haskell property checkers, which differ mostly in the way they generate values for testing. Since our theory exploration tools are built on these property checkers, we rely on the existence of value generators for at least some of the types in our theory; yet existing approaches to deriving such generators (e.g. as found in the \texttt{derive} package) rely on choosing an arbitrary constructor then recursing. As demonstrated in \S \ref{sec:haskell}, a type's constructors might not be exported, in which case these methods fail. Also, the exponential complexity of such naive recursion makes these generators unusable in many cases. It seems that a database of inspectable Haskell functions may be useful for solving this problem in a more practical way, although we have not yet performed experiments in this area.
+\end{itemize}
+\fi
