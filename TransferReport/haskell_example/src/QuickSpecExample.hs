@@ -2,7 +2,7 @@ module QuickSpecExample where
 
 import Numeric.Natural
 import Test.QuickSpec
-
+{-
 i2N :: Int -> Natural
 i2N = fromInteger . toInteger
 
@@ -37,3 +37,4 @@ nat = [fun0 "Z"     (0    :: Natural),
        fun1 "even"  (even :: Natural -> Bool),
 
        vars ["x", "y", "z"] (0 :: Natural)]
+-}

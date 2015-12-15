@@ -19,6 +19,7 @@ mult_tail' x y acc = case x of
 mult_tail :: Nat -> Nat -> Nat
 mult_tail x y = mult_tail' x y []
 -}
+{-
 factorial1 0 = 1
 factorial1 n = n * factorial1 (n-1)
 
@@ -48,3 +49,4 @@ f2 :: Int -> Int
 f2 = factorial2
 
 foo n = -n
+-}
