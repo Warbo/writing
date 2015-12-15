@@ -1,52 +1,70 @@
 \section{Future Work}
 \label{sec:future}
 
-\subsection{Extensions}
+\begin{sidewaysfigure}
+  \centering
+  \includegraphics[trim=3cm 2cm 3cm 2cm, width=1.00\textwidth]{Gantt.pdf}
+  \caption{Gantt chart showing research direction, sub-tasks and approximate timeframes. CICM is the \emph{Conference on Intelligent Computer Mathematics}.}
+  \label{fig:gantt}
+\end{sidewaysfigure}
+
+Our use of clustering to pre-process \qspec{} signatures has required many decisions and tradeoffs to be made. Hence our approach is just one possibility out of many alternatives which could be investigated to push this work further. In addition, there are other ways in which machine learning could aid theory exploration besides our relevance filter technique. The Gantt chart in Figure \ref{fig:gantt} shows how these relate to the short- and long-term direction being taken by this research. Below, we elaborate on the details, background and motivation for these choices.
+
+\subsection{Clustering Extensions}
 \label{sec:preprocessing}
 
-Our use of clustering to pre-process \qspec{} signatures necessarily involves many decisions and tradeoffs. There are many alternative approaches which are ripe for investigation:
+The most glaring omission in our algorithm is its disregard for types. By ignoring types, not only are we losing valuable information about expressions, but we also lose the ability to distinguish between constructors. This is because a constructor, like \hs{True} or \hs{Just}, has no internal structure; it is just a token. The distinguishing features of constructors are their types, which not only tell us which data type they construct, but also their arity, the types of their arguments, etc.
 
-\begin{itemize}
-  \item Improvements to our feature extraction algorithm, in particular to handle types.
-  \item Alternative clustering algorithms.
-  \item \emph{Feature learning} uses machine learning algorithms in place of hand-coded feature extraction algorithms such as ours. A comparison of our hand-picked features against a selection of learned representations would be a useful indication of the importance that understanding the expression language may or may not have on identifying salient aspects of expressions.
-  \item There are several potential alternatives to \qcheck{} for instantiating variables, which may improve performance of \qspec{} by either generating expressions more efficiently (as in \textsc{SmallCheck}'s enumeration approach) or by observing differences with fewer tests (as found in \textsc{Lazy SmallCheck}'s demand-driven enumeration).
-\end{itemize}
+Our algorithm closely follows that of ML4PG, which \emph{does} support types. This is handled by populating matrix cells with tokens \emph{and} their types. Unfortunately this is more complicated in Haskell than it is in Coq, since types form a separate part of the language from terms, and we do not have an interactive Core environment to query for types (unlike ML4PG, which runs inside the Proof General environment).
 
-\subsection{Interestingness}
+One partial solution would be leave most Core expressions without types, but to include them for non-local identifiers (i.e. globals and constructors), which we can look up in a database. In fact, our ML4HS framework already includes such type information in its database, alongside the Core syntax trees. Integrating this information into our algorithm is the next logical step.
+
+We can also compare the performance of our hand-selected features with \emph{learned} representations, like those reviewed in \citep{bengio2013representation}. This may provide an indication of how important it is to understand the language when identifying salient aspects of expressions, and how difficult various aspects of it might be to learn.
+
+With more expressive features, it may also be useful to experiment with more powerful learning algorithms. An interesting possibility is to add a feedback loop between the theory exploration phase and the clustering phase, to more directly base the similarity of expressions on whether they (are predicted to) occur together in equations.
+
+\subsection{Theory Exploration Extensions}
+
+Our current approach is a rather conservative change to the existing theory exploration approaches, as it is essentially a wrapper around \qspec{}. There is potential for more radical changes to be made, which alter the search process itself.
+
+\subsubsection{Variable Instantiation}
+
+\qcheck{} is certainly the most popular property checker for Haskell, which motivates its use in \qspec{} to instantiate variables to random values. However, this task of finding type inhabitants has also been solved in many other ways, which may be worth investigating in place of \qcheck{} (or perhaps even as part of an ensemble).
+
+The \textsc{SmallCheck} system \citep{runciman2008smallcheck} \emph{enumerates} values rather than sampling them randomly. Whilst this does not make \textsc{SmallCheck} objectively ``better'' than \qcheck{}, one major advantage is that it may use much less memory, as the generated values are built up incrementally. In contrast, \qcheck{} may generate very large values; in particular, generating tree structures na\"{\i}vely can cause them to grow exponentially. For example, here is a potential generator for \hs{RoseTree}s:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=0.1\textwidth, xrightmargin=0.1\textwidth]
+genRoseTree = do f        <- arbitrary
+                 subtrees <- listOf genRoseTree
+                 return (Node f subtrees)
+\end{lstlisting}
+
+The \hs{listOf genRoseTree} call will return a list of arbitrary length, where each element is generated by \hs{genRoseTree}. This allows an arbitrary number of recursive calls to be made for each invocation of \hs{genRoseTree}, which will quickly exhaust the resources of any machine. Whilst such problems may be anticipated, or quickly spotted, in a property checking setting, this can be more difficult for our automated approach. For example, if a type does not have a generator available, we cannot use a library like \hs{derive} to create one automatically, as it suffers from this na\"{\i}vity problem.
+
+A relative of \textsc{SmallCheck} is \textsc{Lazy SmallCheck} \citep{reich2013advances}, which uses laziness to only produce parts of a datastructure as they are demanded. This may narrow down our search procedures greatly, especially when predicates are involved. \qcheck{} allows predicates to restrict the values it tests with, and hence allows \emph{conditional} equations to be discovered. However, its implementation uses a simple rejection sampling technique: values are generated just as if the predicate were not there, and afterwards are filtered to reject any which do not satisfy the predicate. This makes it difficult to use very specific predicates, as it is unlikely that many of our random samples will exactly match our criteria. On the other hand, \textsc{Lazy SmallCheck} will focus its search on exactly those parts of the datastructure which are checked by the predicate, as those are the parts being forced to evaluate. This makes it much more likely that we will find values which satisfy the predicate, allowing us to effectively explore more specific conditional properties.
+
+Other approaches to generating inhabitants include \textsc{Djinn} \citep{augustsson2005djinn}, which uses a decision procedure for a sub-set of Haskell types which in particular can generate and apply functions (unlike the above tools, which generate values ``bottom-up'' from constructors, and only use functions when they have been explicitly written in a generator). \textsc{MuCheck} \citep{le2014mucheck} is designed for \emph{mutation testing}, and contains combinators for altering functions in common ways (e.g. changing the order of pattern match clauses); whilst not as exhaustive as the other approaches, mutating existing values in this way is claimed to yield values which correspond more closely to what a programmer might write. This is an interesting possibility for focusing theory exploration on to more ``realistic'' areas of the search space, and hence avoiding some of the more useless or bizarre expressions that random search and enumeration may produce.
+
+In fact, the database generated by our \textsc{AstPlugin} may prove helpful in generating values, since its type information can be fed to a tool like \textsc{Djinn} to discover chains of function applications for building values, which would be particularly useful in cases where constructors are private, like in our email example. This is similar to the \textsc{Hoogle} tool, but also offers the ability to use dependency information to avoid potentially infinite recursion.
+
+The Core syntax trees in our database could also be used to generate theories for automated theorem provers. \hspec{} currently uses the GHC API to transform Core within its own process, however that approach suffers from the problems described in \S \ref{sec:astplugin}.
+
+\subsubsection{Interestingness}
 \label{sec:interestingness}
 
-It is important to consider the question: \emph{what if we succeed?} What if a more efficient theory exploration system were possible, capable of reading huge amounts of code and producing an abundance of theorems? How could the output be made manageable, by finding the needles we are interested in among the haystack of potential laws?
+If we do succeed in producing a fast theory exploration system, which chooses productive combinations of terms and finds a large number of properties, we encounter the problem of managing the output: finding the needles we are interested in among the haystack of trivialities and coincidences.
 
-This is governed by the ``interestingness'' criteria of the theory exploration system: what to keep and what to discard, and even what areas of the search space to prioritise. \qspec{}'s approach, briefly mentioned in \S \ref{sec:theoryexploration}, is very simple: we discard equations which are direct consequences of others, and keep all the rest.
+This is governed by the ``interestingness'' criteria of the theory exploration system: what to keep and what to discard, and even what areas of the search space to prioritise. \qspec{}'s approach, briefly mentioned in \S \ref{sec:theoryexploration}, is very simple: we discard equations which are direct consequences of others, and keep all the rest. Different, and more sophisticated notions of interestingness have been widely studied in other fields, which may be applied in the context of theory exploration.
 
-\subsubsection{Interestingness in Concept Formation}
-\label{sec:conceptformation}
+\paragraph{Concept Formation} \label{sec:conceptformation} \leavevmode \newline
 
-% TODO:
-\citep{Montano-Rivas.McCasland.Dixon.ea:2012}
-\citep{Piantadosi.Tenenbaum.Goodman:2012}
-\citep{Wille:2005}
-\citep{colton1999automatic}
-\citep{colton2000agent}
-\citep{colton2012automated}
-\citep{lenat1977automated}
-\citep{mullerunderstanding}
-\citep{Bundy.Cavallo.Dixon.ea:2015}
-\citep{johansson2009isacosy}
-\citep{spector2008genetic}
-\citep{colton2012automated}
- \citep{geng2006interestingness}
-% TODO: How does https en.wikipedia.org/wiki/Discovery system relate?
+One directly applicable area to consider is \emph{concept formation}, which considers the (automatic) generation of new definitions and axioms. Unlike theory exploration, such systems are not constrained by the requirement that their output be provable, and hence interestingness is an important way to judge the quality of the results.
 
-% However, this search space grows exponentially in the length of the proofs, which is unfortunate since proof length has been proposed as an approximate measure of how interesting a theorem is \cite[\S~10.2.1]{colton2012automated}.
+Approaches vary, from those which are directly related to theory exploration (such as the scheme-instantiating approach of \citep{Montano-Rivas.McCasland.Dixon.ea:2012}, which forms part of a theory exploration system), to others which are more closely related to theories of human learning and discovery \citep{Piantadosi.Tenenbaum.Goodman:2012, mullerunderstanding}. Those based on finding patterns in data, such as \citep{Wille:2005}, may be useful in tandem with our expression database, and the results of value generators like \qcheck{}.
 
-% Alan Bundy et al
+Since tools like \hspec{} already call out to third-party automated theorem provers, and indeed our own ML4HS system uses the external Weka program, there may also be merit in using external concept formation or conjecture generation tools (or reimplementations of their ideas), in order to build up more structure on top of that provided by the code we are exploring. For example, the approaches taken by AM \citep{lenat1977automated, lenat1979automated}, Graffiti \citep{delavina2005some, delavina2005graffiti} and HR \citep{colton1999automatic, colton2000agent} could be used alongside those of \qspec{}.
 
-% Eurisko, AM, etc.?
-
-\subsubsection{Artificial Curiosity}
-\label{sec:curiosity}
+\paragraph{Artificial Curiosity} \label{sec:curiosity} \leavevmode \newline
 
 \begin{figure}
   \centering
@@ -85,84 +103,25 @@ This is governed by the ``interestingness'' criteria of the theory exploration s
   \label{fig:wundt}
 \end{figure}
 
-\emph{Artificial curiosity} (AC) describes active learning systems which are rewarded based on how interesting the input or data they discover is \citep{schmidhuber2006developmental}. Although framed in the context of \emph{reinforcement learning}, this is clearly relevant to our theory exploration setting.
+\emph{Artificial curiosity} (AC) describes active learning systems which are rewarded based on how interesting the input or data they discover is \citep{schmidhuber2006developmental}. Although framed in the context of \emph{reinforcement learning}, this reliance on interest is clearly relevant to our theory exploration setting.
 
-As an unsupervised learning task, AC has no access to labels or meanings associated with its input; the only features it can learn are the structure and relationships inherent in the data, which is very much what we would like a theory exploration system to do. The unifying principle of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in Figure \ref{fig:wundt}) \footnote{In practice, many measures avoid negative values for simplicity, in which cases we replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \citep{berlyne1970novelty}.
+As an unsupervised learning task, AC has no access to labels or meanings associated with its input; the only features it can learn are the structure and relationships inherent in the data, in a similar way to our recurrent clustering algorithm. The unifying principle of AC methods is to force systems away from inputs which are not amenable to learning; either because they are so familiar that there is nothing left to learn, or so unfamiliar that they are unintelligible. The resulting behaviour is characterised by the \emph{Wundt curve} (shown in Figure \ref{fig:wundt}) \footnote{In practice, many measures avoid negative values for simplicity, in which cases we replace all negative points on the curve with zero.}, which has been used in psychology to explain human aesthetics and preferences \citep{berlyne1970novelty}. This same behaviour may be applicable to the theorems produced by a theory exploration system.
 
-We can divide AC approaches into two groups: the first, which we call \emph{explicit}, send inputs which follow a Wundt curve to their learning algorithm; the second, the \emph{implicit} approaches, instead modify the \emph{output} of their learning algorithm(s), such that the overall system follows a Wundt curve as an emergent property.
+We can divide AC approaches into two groups: those which make \emph{explicit} use of interestingness, learning from signals which follow a Wundt curve; whilst \emph{implicit} approaches modify the \emph{output} of their learning algorithm(s), to engineer the overall system behaviour to follow a Wundt curve as an emergent property.
 
-In the explicit case, the \emph{implicit reward} signals being learned are analogous to our notion of interestingness. A framework encompassing many examples is given in \citep{oudeyer2007intrinsic} in the context of reinforcement learning.
+A framework encompassing many examples of the explicit approach is given in \citep{oudeyer2007intrinsic} in the context of reinforcement learning; for comparison, many similar measures are surveyed in a data mining context in \citep{geng2006interestingness}. Many more reinforcement learning examples can be found in \citep{Kaplan2006, Lipson2007, Luciw2011, Macedo2000, Ramik.Sabourin.Madani:2013, Roa.Kruijff.Jacobsson:2009, Schmidhuber:1991, oudeyer2004intelligent}; whilst more general descriptions are given in \citep{Schaul.Sun.Wierstra.ea:2011, Scott1989, maher2008achieving}, which may be more amenable to our theory exploration setting.
 
-One particularly general measure is \emph{compression progress}: given a compressed representation of our previous observations, the ``progress'' is the space saved if we include the current observation. Observations which are incompressible or trivially compressible don't save any space, whilst observations which provide new information relevant to past experience can provide a saving. This can be translated to a theorem proving context very naturally: our observations are theorems and their proofs, whilst new theorems which generalise known results will allow us to compress their proofs.
+Many of these reward signals are based on information theory, with a prominent example being \emph{compression progress}: given a compressed representation of our previous observations, the ``progress'' is the space saved if we include the current observation. Observations which are incompressible or trivially compressible don't save any space, whilst observations which provide new insights into the structure of past experience can provide a space saving when compressed together. This seems particularly relevant for our problem of identifying interesting theorems: those new theorems (``observations'') which shorten the proofs of previously discovered theorems may be more general, more powerful and therefore more \emph{interesting} and hence worth keeping. In fact this is very similar to \qspec{}'s interestingness criterion.
 
-% TODO: Examples
-\citep{Schmidhuber1999}
+Another example of explicit artificial curiosity is given in \citep{Hester.Stone:2012}, where world states which cause \emph{disagreement} among a population of decision trees (a \emph{random forest} \citep{randomforests}) are considered interesting. Since the models make stochastic predictions, the disagreement follows a Wundt curve as the complexity of state transitions increases: for parts of the state space which have been fully learned, the models will agree on accurate predictions; for parts which are unlearnable, the models cannot infer any structure, and will converge to reporting the same average value. Whilst the latter predictions may not be \emph{accurate}, they will be \emph{in agreement}, hence pushing down the interestingness of states which are too complex.
 
-Two sources of intrinsic reward are proposed in \citep{Hester.Stone:2012} for \emph{random forests}. A random forest is a population of decision trees, where each tree is trained on a sub-set of the available examples, each decision is made using a sub-set of the available features, and the predictions of every tree are averaged to obtain that of the forest \citep{randomforests}. The first intrinsic reward is the \emph{disagreement} between predictions; for a forest with $m$ models (trees), predicting features $x_1$ \dots $x_n$ of the state resulting from taking action $a$ in state $s$, we simply sum the Kullback-Leibler divergence $D_{\rm KL}$ of each prediction $P_1$ \dots $P_m$ from every other prediction:
+Many examples of the implicit case are based on \emph{coevolution}: rewarding one part of the system for exploiting another part, and vice versa. In \citep{Schmidhuber1999} a pair of learning algorithms place virtual ``bets'' on the outcome of actions, and the winner is rewarded at the expense of the loser. Due to the risk involved, each algorithm will only bet when it is confident in its prediction, and bets will only be actioned when each algorithm is confident in a \emph{different} outcome. The overall behaviour of this system is therefore similar to the explicit measure of disagreement used in the random forest example. In terms of theory exploration, such a scheme could be used to find theorems which are \emph{non-obvious}, and hence informative in some way to the user.
 
-\begin{equation}
-  D(s,a) = \sum_{i = 1}^n \sum_{j = 1}^m \sum_{k = 1}^m D_{KL}(P_j(x_i|s,a) || P_k(x_i|s,a))
-\end{equation}
+Another case is the ``darwinian brain'' of Fernando et al. \citep{fernando2013design1, fernando2013design2}. This coevolves a population of problem generators and problem solvers, rewarding the solvers based on their speed, and rewarding the generators based on the \emph{variance} of the solvers' speed. This avoids trivial problems (which all solvers can quickly overcome) and complex problems (which no solver can manage), and focuses on those with the most possibility for learning. It is easy to imagine such a general architecture being populated by conjecture generators and theorem provers to form a theory exploration system.
 
-$D(s,a)$ is an explicit AC reward, as it follows a Wundt curve as the complexity of transitions increases. For parts of the state space which have been fully learned, the models will agree on accurate predictions. For parts which are unlearnable, the models cannot infer any structure, and will converge to reporting the average of past observations; these predictions may not be accurate, but they will be in agreement. Hence it is the states which are amenable to learning which produce the largest disagreement.
+\paragraph{Evolutionary Computation} \leavevmode \newline
 
-The second intrinsic reward is simply a measure of distance from previous observations, which pushes the system towards unseen states regardless of how learnable they are (similar to the $R_{max}$ technique). This is too simple to meet our definition of AC, but it does force the models to generalise their predictions to unexplored states, acting to increase disagreement in the forest.
-
-A key advantage of random forests is that their models are \emph{inspectable}: they not only give predictions, but also \emph{reasons} for those predictions (i.e. we can see which paths are taken through each decision tree). % TODO: The accuracy of these random forest models are compared
-
-% TODO
-\citep{Kaplan2006}
-\citep{Lipson2007}
-\citep{Luciw2011}
-\citep{Macedo2000}
-\citep{Ramik.Sabourin.Madani:2013}
-\citep{Roa.Kruijff.Jacobsson:2009}
-\citep{Schaul.Sun.Wierstra.ea:2011}
-\citep{Schmidhuber1999}
-\citep{Schmidhuber:1991}
-\citep{Scott1989}
-\citep{Steunebrink.Koutnik.Thorisson.ea:2013}
-\citep{maher2008achieving}
-\citep{meyer1991possibility}
-\citep{oudeyer2004intelligent}
-\citep{oudeyer2014evolution}
-\citep{schmidhuber2006developmental}
-
-% TODO: Coevolution
-
-Whilst clearly of relevance to theory exploration, artificial curiosity is usually framed in the context of a \emph{reinforcement learning} and \emph{intrinsic reward}, especially in the field of developmental robotics. This requires non-trivial choices to be made in deciding which of its concepts are of relevance to our domain, and how they may be translated across. For example, much of developmental robotics studies continuous, real-valued sensorimotor signals which may not have any direct analogue in the manipulation of logical formulae. However, if we take a higher-level view, the study of such signals may provide insight for predicting and tuning the behaviour of off-the-shelf ATP algorithms.
-
-The most obvious contrast between developmental robotics and theory exploration is that the latter is not physically embodied (e.g. in a robot). Embodiment has been proposed as a necessary property of intelligent systems, as it provides \emph{grounding} \citep{anderson2003embodied}. Embodiment emerged as a response to the symbolic techniques of GOFAI, and in this sense the fields of theory exploration and developmental robotics seem incompatible. Nevertheless, TE can be seen to avoid the problems of GOFAI in two ways:
-
-\begin{itemize}
-
-  \item Firstly, the abstract, mathematical domain being explored is not a \emph{model} of some external, physical environment; the domain \emph{is} our environment; hence there is no issue of grounding terms with some external meaning.
-
-  \item Secondly, there is a physical aspect of TE in that \emph{resource usage} is a critical factor. If it weren't, then brute force enumeration of proofs would be a viable solution. In this sense, we can provide physical inputs to our algorithms, such as measures of time and space used.
-
-\end{itemize}
-
-\iffalse
-
-\subsubsection{Universal Drives}
-
-PhysRevLett.110.168702.pdf
-Omohundro? Too physical.
-\emph{Universal drives} are those
-
-\fi
-
-\iffalse
-TODO
-\subsection{Conjecture Generation}
-
-The task of \emph{conjecture generation} lies at the heart of theory exploration, and whilst its main use has been for lemma generation (i.e. performing ) and even significant theorems.
-
-\fi
-
-\subsubsection{Interestingness in Evolutionary Computation}
-
-\emph{Evolutionary computation} is an umbrella term for heuristic search algorithms which mimic the process of evolution by natural selection among a population of candidate solutions \citep{back1997evolutionary}. Whilst \emph{genetic algorithms} are perhaps the most well-known instance of evolutionary computation, their use of \emph{strings} to represent solutions causes complications when comparing to a domain like theory exploration, where recursive structures of unbounded depth arise. Thankfully these problems are not insurmountable, for example \emph{genetic programming} can operate on tree-structures natively \citep{banzhaf1998genetic}, which makes evolutionary computation a useful source of ideas for reuse in our theory exploration setting.
+Coevolution is a form of \emph{evolutionary computation}; an umbrella term for heuristic search algorithms which mimic the process of evolution by natural selection among a population of candidate solutions \citep{back1997evolutionary}. Whilst \emph{genetic algorithms} are perhaps the most well-known instance of evolutionary computation, their use of \emph{strings} to represent solutions causes complications when comparing to a domain like theory exploration, where recursive structures of unbounded depth arise. Thankfully these problems are not insurmountable, for example \emph{genetic programming} can operate on tree-structures natively \citep{banzhaf1998genetic}, which makes evolutionary computation a useful source of ideas for reuse in our theory exploration setting (there are also precedents for using evolutionary computation in a theorem proving domain \citep{spector2008genetic}).
 
 Traditionally, evolutionary approaches assign solutions a \emph{fitness} value, using a user-supplied \emph{fitness function}. Fitness should correlate with how well a solution solves the user's problem; for example, the fitness of a solution to some engineering problem may depend on the estimated materials cost. If we frame the task of theory exploration in evolutionary computation terms, the fitness function would be our interestingness measure.
 
@@ -185,19 +144,3 @@ Traditional selection methods are biased towards high fitness individuals (this 
 In this way, the fitness function $f$ is used to assign comparable quantities to solutions, but it is not treated as the objective; instead, the implicit objective is to maintain a diverse population, with individuals spread out uniformly in fitness space. This approach seems useful for informing our work in theory exploration, as it supports search criteria which \emph{describe} solutions, but which we may not want to \emph{optimise}. As a simple example, we might distinguish different forms of theorem by measuring how balanced their syntax trees are (-1 for left-leaning, +1 for right leaning, 0 for balanced); but it would be senseless to \emph{maximise} how far they lean.
 
 Once we begin this process of augmenting fitness functions, or abandoning their use as objectives, an obvious question arises: what happens if our new function contains nothing of the original? This kind of pure exploration scenario leads to a variety of ideas for \emph{instrinsic} fitness, such as novelty \citep{lehman2011abandoning}, which can lead to learning useful ``stepping stones'' even in objective-driven domains. Such intrinsic notions of fitness are direct analogues of the interestingness measures we seek for theory exploration.
-
-\iffalse
-The core problem of assigning ``interestingness'' to logical formulae is the application of statistical reasoning to the discrete, semantically-rich domain of formal systems. This problem has been tackled from various directions for a variety of reasons; here we summarise those contributions which seem of particular importance for theory exploration.
-\fi
-
-\iffalse
-TODO
-
-Other uses of AST Plugin data. Maybe mention this in the context of data generation (e.g. lazysmallcheck and friends)
-
-\begin{itemize}
-  \item{Reflection}: As mentioned above, \hspec{} uses the GHC API to obtain definitions of Haskell terms, which are then converted for use by theorem provers. Although we have not yet investigated this use, it seems likely that the output of \textsc{AstPlugin} would provide a more comprehensive and robust alternative to the GHC API approach.
-
-  \item{Counterexample Generation}: As mentioned in \S \ref{sec:quickcheck}, there are many Haskell property checkers, which differ mostly in the way they generate values for testing. Since our theory exploration tools are built on these property checkers, we rely on the existence of value generators for at least some of the types in our theory; yet existing approaches to deriving such generators (e.g. as found in the \texttt{derive} package) rely on choosing an arbitrary constructor then recursing. As demonstrated in \S \ref{sec:haskell}, a type's constructors might not be exported, in which case these methods fail. Also, the exponential complexity of such naive recursion makes these generators unusable in many cases. It seems that a database of inspectable Haskell functions may be useful for solving this problem in a more practical way, although we have not yet performed experiments in this area.
-\end{itemize}
-\fi
