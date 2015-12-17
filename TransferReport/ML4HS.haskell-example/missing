@@ -1,5 +1,0 @@
-WARNING: No entry for '{"name":"fromInteger","package":"base-4.8.1.0","module":"GHC.Num"}'
-WARNING: No entry for '{"name":"-","package":"base-4.8.1.0","module":"GHC.Num"}'
-WARNING: No entry for '{"name":"*","package":"base-4.8.1.0","module":"GHC.Num"}'
-WARNING: No entry for '{"name":"+","package":"base-4.8.1.0","module":"GHC.Num"}'
-WARNING: No entry for '{"name":"==","package":"ghc-prim-0.4.0.0","module":"GHC.Classes"}'
