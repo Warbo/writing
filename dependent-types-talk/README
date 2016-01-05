@@ -1,0 +1,9 @@
+This repository contains materials from a talk I (Chris Warburton) originally gave at Lambda Lounge Manchester on 19th August 2013.
+
+The talk is an introduction to dependent types, using the dependently-typed language Idris. The files are as follows:
+
+pres.org : Source code of the presentation, an Emacs Org-Mode file
+pres.pdf : pres.org rendered as PDF (for those without Emacs/Org-Mode)
+sort.idr : Idris example showing powerful types; namely sorted lists
+
+NOTE: Many implementation details have been left out in sort.idr, using "holes" as type-checkable placeholders. The focus is on the types, and how they might be circumvented, rather than the implementation. Also, it was spotted during the talk that the "Permutation" type defined at the end of sort.idr is not strong enough: it is not sufficient to show that every element of list1 is in list2, since that would make [1, 1, 1, 1, 2, 3] a permutation of [1, 1, 2, 2, 3, 3] (note that they must still have the same length!).
