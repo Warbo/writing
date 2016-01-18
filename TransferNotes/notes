@@ -1,0 +1,33 @@
+Hi Chris,
+
+I made some notes of people's suggestions during your transfer; as a memo
+for your future studies
+
+   - You need to include type analysis (Marco)
+
+   - You need to include recursion analysis (Marco)
+
+   - Perhaps analyse how specific your TE techniques to programming
+   languages (TE in general does not rely on theorem proving, for example)
+   (Alison)
+
+   - Be mindful about approaches to testing (Stephen)
+
+   - Check testing methods in ML4PG journal version (Katya)
+
+   - Perhaps analysis and development of methodology concerning statistical
+   evaluation of ML techniques for proving may be one of the objectives and
+   contributions of your thesis (Katya)
+
+   - cluster values to feature values -- needs more thought (Stephen)
+
+   - use  kernel methods (Stephen)
+
+   - Rel work: Marco "Learning refinement types" ICFP'15
+
+   - work on learning in Microsoft research
+
+   - Unifying theory exploration and theory formation (Alison)
+
+   - Workplan: more emphasis on measuring, experiments, reproduciblility
+   (Marco & Stephen)
