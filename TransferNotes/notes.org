@@ -1,33 +1,141 @@
-Hi Chris,
+* You need to include type analysis (Marco)
+ - The approach of ML4PG which we follow does allow types quite naturally: rather than just having a tree of symbols, we have a tree of (symbol, type) pairs.
+ - We don't do it yet since getting at the (intermediate) types is a little awkward in Core(/SystemFC)
+ - ML4PG could query for types using a REPL (via ProofGeneral), which we don't have for Core
+  - The `CoreLint.hs` module in GHC's API has functions for type-checking; perhaps we could use those.
 
-I made some notes of people's suggestions during your transfer; as a memo
-for your future studies
+* You need to include recursion analysis (Marco)
+ - One reason information about recursion is important is that Haskell functions tend to be very small, and often (mutually) recursive.
+ - Recurrent clustering is one way of handling recursion, in that we don't get infinite loops.
+  - We also truncate the trees(/matrices), so we could ensure termination that way instead.
+  - Replacing self-reference (and mutually-recursive references) with an identifiable placeholder gives us *some* information about the recursive structure/nature of the function (e.g. recursing on the first argument; recurses under a constructor; doubly-recursive; etc.).
+ - One alternative may be to mechanically transform expressions into a form which uses an explicit fixed point operator.
+  - Recursive calls would then be represented in the same way as arguments.
+ - Perhaps we could compare what happens when we in-line recursive calls. This would expose some of the information hidden in the recursive call.
+  - This might only be useful with more sophisticated pattern-recognition algorithms, like tree kernels, which don't assume the symbols are orthogonal.
+  - If we add the ability to in-line, it might be interesting to see what happens if we in-line non-recursive references too; e.g. unfolding to a particular depth, or down to the language primitives.
 
-   - You need to include type analysis (Marco)
+* Perhaps analyse how specific your TE techniques to programming languages (TE in general does not rely on theorem proving, for example) (Alison)
+ - The approach should be applicable to any combinatorial system with an evaluation function ("interestingness")
+ - Programming languages (especially pure languages like Haskell) provide some useful structure:
+  - We have a deterministic normalisation function, which is useful for testing particular instances
+  - Can encode lots of other systems
+   - The worst case being `eval "some other representation" == True`
+  - Classical mathematics may be harder to analyse using testing, e.g. if we have non-constructive definitions ("the x such that ...") which would require expensive searches to find
+   - A similar argument can be made for more precise/constrained languages, like dependently typed languages (Coq, Agda, Idris, etc.)
+  - Purity is useful, but exists in other paradigms too (e.g. logic programming, term-rewriting, ...)
+  - Exploring programs/libraries lets us explore the implementation itself, which could serve as a non-arbitrary benchmark (analogous to running a compiler on its own code)
+ - We want *some* sort of formal/informal justification for the conjectures/constructions we produce (an evaluation function)
+  - If our language only allows acceptable things to be constructed, then that's a "correct by construction" proof
+  - Testing (failure to find counterexamples) is a justification, as used in QuickSpec
+  - Justifications, like proof or testing, could be incorporated into "interestingness" (e.g. if a statement has a counterexample, it is less- or un-interesting)
 
-   - You need to include recursion analysis (Marco)
+* Be mindful about approaches to testing (Stephen)
+ - This is a current topic of interest; both *what* to test and how to analyse the results.
+ - We aren't especially concerned with making a better theorem prover, but it's a well-trodden area with benchmarks (TPTP, etc.)
+  - HipSpec has been evaluated as a theorem prover on libraries from CLAM and IsaPlanner (HipSpec: Automating inductive proofs of program properties)
+ - Theory exploration has mostly been evaluated based on precision/recall of Isabelle libraries
+  - Precision: fraction of output which is relevant (e.g. output 10 equations, 7 are interesting, precision is 7/10)
+  - Recall: fraction of relevant results which are output (e.g. 10 interesting equations possible, output includes 4 of them, recall is 4/10)
+  - Assumes Isabelle libraries are perfect: no irrelevant entries and nothing left out
+  - HipSpec
+   - 80%  precision, 73%  recall for nats
+   - 90%  precision, 100% recall for lists
+  - IsaCoSy
+   - 63%  precision, 83%  recall for nats
+   - 38%  precision, 100% recall for lists
+  - IsaScheme (InventTheorems)
+   - 100% precision, 46%  recall for nats
+   - 70%  precision, 100% recall for lists
+  - IsaScheme (InventDefinitions: theory formation rather than conjecture generation)
+   - 8%   precision, 100% recall for nats
+   - 25%  precision, 21%  recall for lists
+ - Can't find quantitative evaluation of Hipster
+ - IsaScheme specifically notes narrowing down the search space as a problem for future work
+ - IsaCoSy also evaluates search-space reduction for equations, comparing:
+  - Naive enumeration
+  - Constraint-based synthesis
+  - Heuristics: commutativity/associativity, limiting variable number, etc.
 
-   - Perhaps analyse how specific your TE techniques to programming
-   languages (TE in general does not rely on theorem proving, for example)
-   (Alison)
+* Check testing methods in ML4PG journal version (Katya)
+** Interfacing Interfaces paper
+ - Many examples, counting the correlated features for a variety of hand-picked examples, e.g. `sum_first_n` and `sum_first_n_odd` from the SSReflect library.
+ - Provides many parameters for users to set, rather than determining "best" choices.
+ - Table 34 shows the effect of various parameter settings across different clustering algorithms. Although not explicitly stated, it seems to show the number of lemmas (out of 205 total) which appear in the same cluster as the `fact_prod` lemma.
 
-   - Be mindful about approaches to testing (Stephen)
+* Perhaps analysis and development of methodology concerning statistical evaluation of ML techniques for proving may be one of the objectives and contributions of your thesis (Katya)
+ - It is definitely an important problem to solve; even if only partially, for some comparative evaluation
+ - For theorem proving in particular, a benchmark system could be used (similar to TPTP and premise selection)
+ - For "interestingness", it's doubtful that a particular scheme would suit everyone; perhaps a pluggable evaluation framework would be possible though
 
-   - Check testing methods in ML4PG journal version (Katya)
+* cluster values to feature values -- needs more thought (Stephen)
+ - One of the interesting points raised was the comparison of cluster numbers using a delta function (d(Ci, Cj) = 1 when i = j, 0 otherwise). This is certainly interesting, but would probably require a custom implementation (we're currently using the widely-used Weka Java library)
 
-   - Perhaps analysis and development of methodology concerning statistical
-   evaluation of ML techniques for proving may be one of the objectives and
-   contributions of your thesis (Katya)
+* use kernel methods (Stephen)
+ - Kernel methods are certainly interesting, as they allow pattern recognition across our tree structures, rather than having to turn them into vectors of orthogonal features. For example, tree kernels can be used to compare similarity of trees, and tree convolution allows features to be detected at any level of a tree (similar to how convolutional ANNs allow a single feature detector to be applied across a whole image).
+ - Tree kernels/convolution can be slow though; e.g. exact sub-tree matching can take O(n^2) comparisons, for trees with n nodes.
+ - Generative models and recursive ANNs are also very related
 
-   - cluster values to feature values -- needs more thought (Stephen)
+* Related work (Marco)
+** "Learning refinement types" ICFP'15
+ - This is certainly interesting, as a more "integrated" alternative to HipSpec:
+  - HipSpec can prove properties, given in the form of a test suite separate to the program
+  - This "CEGAR" process does a similar thing, but allows those properties to be sprinkled throughout the program's types
+** Work on learning in Microsoft research
 
-   - use  kernel methods (Stephen)
+ - Lots of interesting things to consider here, e.g. converting between good/bad program classifiers and Hoare logic specifications
 
-   - Rel work: Marco "Learning refinement types" ICFP'15
+* Unifying theory exploration and theory formation (Alison)
+ - In the current setup, we have (at least) definitions -> statements -> proofs. Automating these gives theory formation -> conjecture generation -> theorem proving.
+ - Theorem proving is easy to justify: we can assume the user provides interesting statements
+ - Conjecture generation is trickier, but we can still assume the user provides interesting definitions
+ - Theory formation relies much more on heuristics for what is interesting
+  - Perhaps there is another step before definitions, e.g. "intuitions", which is less formal and more statistical?
+  - We can justify definitions based on the provable conjectures they allow; but that requires performing all three steps, which makes feedback and exploration much slower
+ - Two clear ways theory formation is useful, even restricted to the current QuickSpec-style setting:
+  - Defining auxiliary functions which interact with the given definitions in a nice way (inverses, isomorphisms, etc.)
+  - Predicate invention, to restrict variables to more structured sub-sets yielding more conjectures (e.g. sorted lists, prime numbers, etc.).
 
-   - work on learning in Microsoft research
+* Workplan: more emphasis on measuring, experiments, reproducibility (Marco & Stephen)
+ - As stated above, measurement (what and how) is certainly a very central question
+ - There is a lot of experimental work to do; hopefully the modular approach I've taken to implementation will make this easier
+ - Regarding reproducibility:
+  - I'm currently using git to track all software changes. This lets us specify commit IDs for our experimental runs, for example.
+  - For infrastructure, I'm using the Nix package manager. This allows reproducible builds, with exact versions of all dependencies (right down to, e.g. the compiler version used to build libc)
+   - This provides most of the benefits of virtual machine images, but with much less overhead; plus Nix definitions can be version controlled.
+   - Nix (and its descendent Guix) are recognised for reproducible research (e.g. http://dl.acm.org/citation.cfm?id=2830172 )
+   - To get reproducible *runs* would require some tweaking, e.g. deterministic seeding of random number generators, etc.
 
-   - Unifying theory exploration and theory formation (Alison)
+* A few more thoughts which have been building on my whiteboard
+** Tasks
+ - Compare recurrent with non-recurrent clustering: what do we gain?
+ - Feature extraction for types
+ - Testing with QuickSpec version 2 (their conjecture generation algorithm is now much faster)
+ - Precision/recall evaluation compared to existing tools and using one cluster
 
-   - Workplan: more emphasis on measuring, experiments, reproduciblility
-   (Marco & Stephen)
+** Applications
+ - Speeding up QuickSpec
+ - Finding new typeclass instances (identifying when values satisfy a typeclass's laws)
+ - Finding new typeclasses (finding sets of laws which many values satisfy)
+ - Finding isomorphisms
+ - Finding rewrite rules (for optimisation, or alternative definitions)
+
+** Questions
+ - How does QuickSpec scale w.r.t.
+  - Number of values in the signature?
+  - Number of types in the signature?
+  - Enumeration depth?
+ - How do newtypes affect search? (i.e. nominally distinct synonyms)
+  - What happens if we swap type synonyms for newtypes and vice versa?
+  - Can we spot patterns to suggest newtypes to the user?
+ - How do the following methods compare for identifying sub-sets of a signature to explore?
+  - Using the whole thing
+  - Random selection
+  - Recurrent clustering
+  - Premise-selection
+*** Recurrent clustering
+ - Does it converge?
+ - Does it behave differently to inlining?
+ - How does matrix size/density affect performance?
+ - How do the parameters (e.g. alpha) affect the results?
+ - What happens if we don't left-align the sub-trees?
