@@ -1,5 +1,5 @@
 #!/bin/sh
-nix-shell --show-trace --command "sh" <<'EOF'
+nix-shell --show-trace --command "bash" <<'EOF'
   for src in *.md
   do
     doc=$(basename "$src" .md)
