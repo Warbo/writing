@@ -1,0 +1,1492 @@
+Theorem add_lt_mono_l : forall n m p, n < m <-> p + n < p + m.
+Theorem add_lt_mono_r : forall n m p, n < m <-> n + p < m + p.
+Theorem add_lt_mono : forall n m p q, n < m -> p < q -> n + p < m + q.
+Theorem add_le_mono_l : forall n m p, n <= m <-> p + n <= p + m.
+Theorem add_le_mono_r : forall n m p, n <= m <-> n + p <= m + p.
+Theorem add_le_mono : forall n m p q, n <= m -> p <= q -> n + p <= m + q.
+Theorem add_lt_le_mono : forall n m p q, n < m -> p <= q -> n + p < m + q.
+Theorem add_le_lt_mono : forall n m p q, n <= m -> p < q -> n + p < m + q.
+Theorem add_pos_pos : forall n m, 0 < n -> 0 < m -> 0 < n + m.
+Theorem add_pos_nonneg : forall n m, 0 < n -> 0 <= m -> 0 < n + m.
+Theorem add_nonneg_pos : forall n m, 0 <= n -> 0 < m -> 0 < n + m.
+Theorem add_nonneg_nonneg : forall n m, 0 <= n -> 0 <= m -> 0 <= n + m.
+Theorem lt_add_pos_l : forall n m, 0 < n -> m < n + m.
+Theorem lt_add_pos_r : forall n m, 0 < n -> m < m + n.
+Theorem le_lt_add_lt : forall n m p q, n <= m -> p + m < q + n -> p < q.
+Theorem lt_le_add_lt : forall n m p q, n < m -> p + m <= q + n -> p < q.
+Theorem le_le_add_le : forall n m p q, n <= m -> p + m <= q + n -> p <= q.
+Theorem add_lt_cases : forall n m p q, n + m < p + q -> n < p \/ m < q.
+Theorem add_le_cases : forall n m p q, n + m <= p + q -> n <= p \/ m <= q.
+Theorem add_neg_cases : forall n m, n + m < 0 -> n < 0 \/ m < 0.
+Theorem add_pos_cases : forall n m, 0 < n + m -> 0 < n \/ 0 < m.
+Theorem add_nonpos_cases : forall n m, n + m <= 0 -> n <= 0 \/ m <= 0.
+Theorem add_nonneg_cases : forall n m, 0 <= n + m -> 0 <= n \/ 0 <= m.
+Theorem cos_plus_form :  forall (x y:R) (n:nat),    (0 < n)%nat ->    A1 x (S n) * A1 y (S n) - B1 x n * B1 y n + Reste x y n = C1 x y (S n).
+Theorem Rstar_reflexive :  forall (U:Type) (R:Relation U), Reflexive U (Rstar U R).
+Theorem Rplus_contains_R :  forall (U:Type) (R:Relation U), contains U (Rplus U R) R.
+Theorem Rstar_contains_R :  forall (U:Type) (R:Relation U), contains U (Rstar U R) R.
+Theorem Rstar_contains_Rplus :  forall (U:Type) (R:Relation U), contains U (Rstar U R) (Rplus U R).
+Theorem Rstar_transitive :  forall (U:Type) (R:Relation U), Transitive U (Rstar U R).
+Theorem Rstar_cases :  forall (U:Type) (R:Relation U) (x y:U),    Rstar U R x y -> x = y \/ (exists u : _, R x u /\ Rstar U R u y).
+Theorem Rstar_equiv_Rstar1 :  forall (U:Type) (R:Relation U), same_relation U (Rstar U R) (Rstar1 U R).
+Theorem Rsym_imp_Rstarsym :  forall (U:Type) (R:Relation U), Symmetric U R -> Symmetric U (Rstar U R).
+Theorem Sstar_contains_Rstar :  forall (U:Type) (R S:Relation U),    contains U (Rstar U S) R -> contains U (Rstar U S) (Rstar U R).
+Theorem star_monotone :  forall (U:Type) (R S:Relation U),    contains U S R -> contains U (Rstar U S) (Rstar U R).
+Theorem RstarRplus_RRstar :  forall (U:Type) (R:Relation U) (x y z:U),    Rstar U R x y -> Rplus U R y z ->  exists u : _, R x u /\ Rstar U R u z.
+Theorem Lemma1 :  forall (U:Type) (R:Relation U),    Strongly_confluent U R ->    forall x b:U,      Rstar U R x b ->      forall a:U, R x a ->  exists z : _, Rstar U R a z /\ R b z.
+Theorem exp_increasing : forall x y:R, x < y -> exp x < exp y.
+Theorem exp_lt_inv : forall x y:R, exp x < exp y -> x < y.
+Theorem exp_inv : forall x y:R, exp x = exp y -> x = y.
+Theorem exp_Ropp : forall x:R, exp (- x) = / exp x.
+Theorem ln_increasing : forall x y:R, 0 < x -> x < y -> ln x < ln y.
+Theorem ln_exp : forall x:R, ln (exp x) = x.
+Theorem ln_1 : ln 1 = 0.
+Theorem ln_lt_inv : forall x y:R, 0 < x -> 0 < y -> ln x < ln y -> x < y.
+Theorem ln_inv : forall x y:R, 0 < x -> 0 < y -> ln x = ln y -> x = y.
+Theorem ln_mult : forall x y:R, 0 < x -> 0 < y -> ln (x * y) = ln x + ln y.
+Theorem ln_Rinv : forall x:R, 0 < x -> ln (/ x) = - ln x.
+Theorem ln_continue :   forall y:R, 0 < y -> continue_in ln (fun x:R => 0 < x) y.
+Theorem Rpower_plus : forall x y z:R, z ^R (x + y) = z ^R x * z ^R y.
+Theorem Rpower_mult : forall x y z:R, (x ^R y) ^R z = x ^R (y * z).
+Theorem Rpower_O : forall x:R, 0 < x -> x ^R 0 = 1.
+Theorem Rpower_1 : forall x:R, 0 < x -> x ^R 1 = x.
+Theorem Rpower_pow : forall (n:nat) (x:R), 0 < x -> x ^R INR n = x ^ n.
+Theorem Rpower_lt :   forall x y z:R, 1 < x -> 0 <= y -> y < z -> x ^R y < x ^R z.
+Theorem Rpower_sqrt : forall x:R, 0 < x -> x ^R (/ 2) = sqrt x.
+Theorem Rpower_Ropp : forall x y:R, x ^R (- y) = / x ^R y.
+Theorem Rle_Rpower :   forall e n m:R, 1 < e -> 0 <= n -> n <= m -> e ^R n <= e ^R m.
+Theorem ln_lt_2 : / 2 < ln 2.
+Theorem limit1_ext :   forall (f g:R -> R) (D:R -> Prop) (l x:R),     (forall x:R, D x -> f x = g x) -> limit1_in f D l x -> limit1_in g D l x.
+Theorem limit1_imp :   forall (f:R -> R) (D D1:R -> Prop) (l x:R),     (forall x:R, D1 x -> D x) -> limit1_in f D l x -> limit1_in f D1 l x.
+Theorem Rinv_Rdiv : forall x y:R, x <> 0 -> y <> 0 -> / (x / y) = y / x.
+Theorem Dln : forall y:R, 0 < y -> D_in ln Rinv (fun x:R => 0 < x) y.
+Theorem D_in_imp :   forall (f g:R -> R) (D D1:R -> Prop) (x:R),     (forall x:R, D1 x -> D x) -> D_in f g D x -> D_in f g D1 x.
+Theorem D_in_ext :   forall (f g h:R -> R) (D:R -> Prop) (x:R),     f x = g x -> D_in h f D x -> D_in h g D x.
+Theorem Dpower :   forall y z:R,     0 < y ->     D_in (fun x:R => x ^R z) (fun x:R => z * x ^R (z - 1)) (       fun x:R => 0 < x) y.
+Theorem derivable_pt_lim_power :   forall x y:R,     0 < x -> derivable_pt_lim (fun x => x ^R y) x (y * x ^R (y - 1)).
+Theorem le_add_r : forall n m, n <= n + m.
+Theorem lt_lt_add_r : forall n m p, n < m -> n < m + p.
+Theorem lt_lt_add_l : forall n m p, n < m -> n < p + m.
+Theorem add_pos_l : forall n m, 0 < n -> 0 < n + m.
+Theorem add_pos_r : forall n m, 0 < m -> 0 < n + m.
+Theorem eq_proofs_unicity : forall (y:A) (p1 p2:x = y), p1 = p2.
+Theorem K_dec :     forall P:x = x -> Prop, P (eq_refl x) -> forall p:x = x, P p.
+Theorem inj_right_pair :     forall (P:A -> Prop) (y y':P x),       ex_intro P x y = ex_intro P x y' -> y = y'.
+Theorem K_dec_type :   forall A:Type,     (forall x y:A, {x = y} + {x <> y}) ->     forall (x:A) (P:x = x -> Prop), P (eq_refl x) -> forall p:x = x, P p.
+Theorem K_dec_set :   forall A:Set,     (forall x y:A, {x = y} + {x <> y}) ->     forall (x:A) (P:x = x -> Prop), P (eq_refl x) -> forall p:x = x, P p.
+Theorem eq_rect_eq_dec :   forall A:Type,     (forall x y:A, {x = y} + {x <> y}) ->     forall (p:A) (Q:A -> Type) (x:Q p) (h:p = p), x = eq_rect p Q x p h.
+Theorem eq_dep_eq_dec :   forall A:Type,     (forall x y:A, {x = y} + {x <> y}) ->      forall (P:A->Type) (p:A) (x y:P p), eq_dep A P p x p y -> x = y.
+Theorem UIP_dec :   forall (A:Type),     (forall x y:A, {x = y} + {x <> y}) ->     forall (x y:A) (p1 p2:x = y), p1 = p2.
+Theorem eq_dep_eq :     forall (P:U->Type) (p:U) (x y:P p), eq_dep U P p x p y -> x = y.
+Theorem eq_dep_eq :     forall (P:U->Type) (p:U) (x y:P p), eq_dep U P p x p y -> x = y.
+Theorem Zquot_opp_l a b : (-a)÷b = -(a÷b).
+Theorem Zquot_opp_r a b : a÷(-b) = -(a÷b).
+Theorem Zrem_opp_l a b : Z.rem (-a) b = -(Z.rem a b).
+Theorem Zrem_opp_r a b : Z.rem a (-b) = Z.rem a b.
+Theorem Zquot_opp_opp a b : (-a)÷(-b) = a÷b.
+Theorem Zrem_opp_opp a b : Z.rem (-a) (-b) = -(Z.rem a b).
+Theorem Zrem_sgn a b : 0 <= Z.sgn (Z.rem a b) * Z.sgn a.
+Theorem Zrem_sgn2 a b : 0 <= (Z.rem a b) * a.
+Theorem Zrem_lt_pos a b : 0<=a -> b<>0 -> 0 <= Z.rem a b < Z.abs b.
+Theorem Zrem_lt_neg a b : a<=0 -> b<>0 -> -Z.abs b < Z.rem a b <= 0.
+Theorem Zrem_lt_pos_pos a b : 0<=a -> 0<b -> 0 <= Z.rem a b < b.
+Theorem Zrem_lt_pos_neg a b : 0<=a -> b<0 -> 0 <= Z.rem a b < -b.
+Theorem Zrem_lt_neg_pos a b : a<=0 -> 0<b -> -b < Z.rem a b <= 0.
+Theorem Zrem_lt_neg_neg a b : a<=0 -> b<0 -> b < Z.rem a b <= 0.
+Theorem Zquot_mod_unique_full a b q r :   Remainder a b r -> a = b*q + r -> q = a÷b /\ r = Z.rem a b.
+Theorem Zquot_unique_full a b q r :   Remainder a b r -> a = b*q + r -> q = a÷b.
+Theorem Zrem_unique_full a b q r :   Remainder a b r -> a = b*q + r -> r = Z.rem a b.
+Theorem Zrem_le a b : 0 <= a -> 0 <= b -> Z.rem a b <= a.
+Theorem Zquot_le_upper_bound:   forall a b q, 0 < b -> a <= q*b -> a÷b <= q.
+Theorem Zquot_lt_upper_bound:   forall a b q, 0 <= a -> 0 < b -> a < q*b -> a÷b < q.
+Theorem Zquot_le_lower_bound:   forall a b q, 0 < b -> q*b <= a -> q <= a÷b.
+Theorem Zquot_sgn: forall a b,   0 <= Z.sgn (a÷b) * Z.sgn a * Z.sgn b.
+Theorem Z_quot_plus_l: forall a b c : Z,  0 <= (a*b+c)*c -> b<>0 ->  b<>0 -> (a * b + c) ÷ b = a + c ÷ b.
+Theorem Zrem_rem: forall a n, Z.rem (Z.rem a n) n = Z.rem a n.
+Theorem Zmult_rem: forall a b n,  Z.rem (a * b) n = Z.rem (Z.rem a n * Z.rem b n) n.
+Theorem Zplus_rem: forall a b n,  0 <= a * b ->  Z.rem (a + b) n = Z.rem (Z.rem a n + Z.rem b n) n.
+Theorem Zquot_mult_le:  forall a b c, 0<=a -> 0<=b -> 0<=c -> c*(a÷b) <= (c*a)÷b.
+Theorem Zquotrem_Zdiv_eucl_pos : forall a b:Z, 0 <= a -> 0 < b ->   a÷b = a/b /\ Z.rem a b = a mod b.
+Theorem Zquot_Zdiv_pos : forall a b, 0 <= a -> 0 <= b ->   a÷b = a/b.
+Theorem Zrem_Zmod_pos : forall a b, 0 <= a -> 0 < b ->   Z.rem a b = a mod b.
+Theorem Zrem_Zmod_zero : forall a b, b<>0 ->  (Z.rem a b = 0 <-> a mod b = 0).
+Theorem inj_add p q : to_nat (p + q) = to_nat p + to_nat q.
+Theorem inj_mul p q : to_nat (p * q) = to_nat p * to_nat q.
+Theorem id p : of_nat (to_nat p) = p.
+Theorem inj_sub p q : (q < p)%positive -> to_nat (p - q) = to_nat p - to_nat q.
+Theorem inj_sub_max p q : to_nat (p - q) = Peano.max 1 (to_nat p - to_nat q).
+Theorem inj_pred p : (1 < p)%positive -> to_nat (pred p) = Peano.pred (to_nat p).
+Theorem inj_pred_max p : to_nat (pred p) = Peano.max 1 (Peano.pred (to_nat p)).
+Theorem inj_iter :   forall p {A} (f:A->A) (x:A),     Pos.iter p f x = nat_iter (to_nat p) f x.
+Theorem id (n:nat) : n<>0 -> Pos.to_nat (Pos.of_nat n) = n.
+Theorem id_max (n:nat) : Pos.to_nat (Pos.of_nat n) = max 1 n.
+Theorem id_succ p : Pos.of_succ_nat (Pos.to_nat p) = Pos.succ p.
+Theorem pred_id p : Pos.pred (Pos.of_succ_nat (Pos.to_nat p)) = p.
+Theorem id_succ (n:nat) : Pos.to_nat (Pos.of_succ_nat n) = S n.
+Theorem pred_id (n:nat) : pred (Pos.to_nat (Pos.of_succ_nat n)) = n.
+Theorem inv n p : Pos.to_nat p = S n -> Pos.of_succ_nat n = p.
+Theorem Pmult_nat_l_plus_morphism :  forall p q n, Pmult_nat (p + q) n = Pmult_nat p n + Pmult_nat q n.
+Theorem Pmult_nat_plus_carry_morphism :  forall p q n, Pmult_nat (Pos.add_carry p q) n = n + Pmult_nat (p + q) n.
+Theorem mul_pred_r : forall n m, n * (P m) == n * m - n.
+Theorem mul_pred_l : forall n m, (P n) * m == n * m - m.
+Theorem mul_opp_l : forall n m, (- n) * m == - (n * m).
+Theorem mul_opp_r : forall n m, n * (- m) == - (n * m).
+Theorem mul_opp_opp : forall n m, (- n) * (- m) == n * m.
+Theorem mul_opp_comm : forall n m, (- n) * m == n * (- m).
+Theorem mul_sub_distr_l : forall n m p, n * (m - p) == n * m - n * p.
+Theorem mul_sub_distr_r : forall n m p, (n - m) * p == n * p - m * p.
+Theorem Zdivide_Zabs_l a b : (Z.abs a | b) -> (a | b).
+Theorem Zdivide_Zabs_inv_l a b : (a | b) -> (Z.abs a | b).
+Theorem Zdivide_Zdiv_eq a b : 0 < a -> (a | b) ->  b = a * (b / a).
+Theorem Zdivide_Zdiv_eq_2 a b c :  0 < a -> (a | b) -> (c * b) / a = c * (b / a).
+Theorem Zdivide_le: forall a b : Z,  0 <= a -> 0 < b -> (a | b) ->  a <= b.
+Theorem Zdivide_Zdiv_lt_pos a b :  1 < a -> 0 < b -> (a | b) ->  0 < b / a < b .
+Theorem Zis_gcd_unique: forall a b c d : Z,  Zis_gcd a b c -> Zis_gcd a b d ->  c = d \/ c = (- d).
+Theorem Zis_gcd_uniqueness_apart_sign :   forall a b d d':Z, Zis_gcd a b d -> Zis_gcd a b d' -> d = d' \/ d = - d'.
+Theorem Gauss : forall a b c:Z, (a | b * c) -> rel_prime a b -> (a | c).
+Theorem rel_prime_sym: forall a b, rel_prime a b -> rel_prime b a.
+Theorem rel_prime_div: forall p q r,  rel_prime p q -> (r | p) -> rel_prime r q.
+Theorem rel_prime_1: forall n, rel_prime 1 n.
+Theorem not_rel_prime_0: forall n, 1 < n -> ~ rel_prime 0 n.
+Theorem rel_prime_mod: forall p q, 0 < q ->  rel_prime p q -> rel_prime (p mod q) q.
+Theorem rel_prime_mod_rev: forall p q, 0 < q ->  rel_prime (p mod q) q -> rel_prime p q.
+Theorem Zrel_prime_neq_mod_0: forall a b, 1 < b -> rel_prime a b -> a mod b <> 0.
+Theorem rel_prime_le_prime:  forall a p, prime p -> 1 <=  a < p -> rel_prime a p.
+Theorem prime_3: prime 3.
+Theorem prime_ge_2 p : prime p ->  2 <= p.
+Theorem prime_alt p : prime' p <-> prime p.
+Theorem square_not_prime: forall a, ~ prime (a * a).
+Theorem prime_div_prime: forall p q,  prime p -> prime q -> (p | q) -> p = q.
+Theorem Zgcd_spec : forall x y : Z, {z : Z | Zis_gcd x y z /\ 0 <= z}.
+Theorem Zdivide_Zgcd: forall p q r : Z,  (p | q) -> (p | r) -> (p | Z.gcd q r).
+Theorem Zis_gcd_gcd: forall a b c : Z,  0 <= c ->  Zis_gcd a b c -> Z.gcd a b = c.
+Theorem Zgcd_div_swap0 : forall a b : Z,  0 < Z.gcd a b ->
+Theorem Zgcd_div_swap : forall a b c : Z,  0 < Z.gcd a b ->
+Theorem Zgcd_1_rel_prime : forall a b,  Z.gcd a b = 1 <-> rel_prime a b.
+Theorem not_prime_divide:  forall p, 1 < p -> ~ prime p -> exists n, 1 < n < p  /\ (n | p).
+Theorem singleton_choice :   forall (A : Type) (P : A->Prop),   (exists x : A, P x) -> exists P' : A->Prop, subset P' P /\ exists! x, P' x.
+Theorem choice :  forall (A B : Type) (R : A->B->Prop),    (forall x : A, exists y : B, R x y) ->     exists f : A->B, (forall x : A, R x (f x)).
+Theorem Rsym_imp_notRsym :  forall (U:Type) (R:Relation U),    Symmetric U R -> Symmetric U (Complement U R).
+Theorem Equiv_from_preorder :  forall (U:Type) (R:Relation U),    Preorder U R -> Equivalence U (fun x y:U => R x y /\ R y x).
+Theorem Equiv_from_order :  forall (U:Type) (R:Relation U),    Order U R -> Equivalence U (fun x y:U => R x y /\ R y x).
+Theorem contains_is_preorder :  forall U:Type, Preorder (Relation U) (contains U).
+Theorem same_relation_is_equivalence :  forall U:Type, Equivalence (Relation U) (same_relation U).
+Theorem cong_reflexive_same_relation :  forall (U:Type) (R R':Relation U),    same_relation U R R' -> Reflexive U R -> Reflexive U R'.
+Theorem cong_symmetric_same_relation :  forall (U:Type) (R R':Relation U),    same_relation U R R' -> Symmetric U R -> Symmetric U R'.
+Theorem cong_antisymmetric_same_relation :  forall (U:Type) (R R':Relation U),    same_relation U R R' -> Antisymmetric U R -> Antisymmetric U R'.
+Theorem cong_transitive_same_relation :  forall (U:Type) (R R':Relation U),    same_relation U R R' -> Transitive U R -> Transitive U R'.
+Theorem beta_lex: forall a b c d beta,        a * beta + b <= c * beta + d ->        0 <= b < beta -> 0 <= d < beta ->        a <= c.
+Theorem beta_lex_inv: forall a b c d beta,       a < c -> 0 <= b < beta ->       0 <= d < beta ->       a * beta + b < c * beta  + d.
+Theorem mult_add_ineq: forall x y cross beta,    0 <= x < beta ->    0 <= y < beta ->    0 <= cross < beta ->    0 <= x * y + cross < beta^2.
+Theorem mult_add_ineq2: forall x y c cross beta,    0 <= x < beta ->    0 <= y < beta ->    0 <= c*beta + cross <= 2*beta - 2 ->    0 <= x * y + (c*beta + cross) < beta^2.
+Theorem mult_add_ineq3: forall x y c cross beta,    0 <= x < beta ->    0 <= y < beta ->    0 <= cross <= beta - 2 ->    0 <= c <= 1 ->    0 <= x * y + (c*beta + cross) < beta^2.
+Theorem Zmod_le_first: forall a b, 0 <= a -> 0 < b -> 0 <= a mod b <= a.
+Theorem Zmod_distr: forall a b r t, 0 <= a <= b -> 0 <= r -> 0 <= t < 2 ^a ->   (2 ^a * r + t) mod (2 ^ b) = (2 ^a * r) mod (2 ^ b) + t.
+Theorem Zmod_shift_r:    forall a b r t, 0 <= a <= b -> 0 <= r -> 0 <= t < 2 ^a ->      (r * 2 ^a + t) mod (2 ^ b) = (r * 2 ^a) mod (2 ^ b) + t.
+Theorem Zdiv_shift_r:     forall a b r t, 0 <= a <= b -> 0 <= r -> 0 <= t < 2 ^a ->       (r * 2 ^a + t) /  (2 ^ b) = (r * 2 ^a) / (2 ^ b).
+Theorem Zgcd_div_pos a b:    0 < b -> 0 < Z.gcd a b -> 0 < b / Z.gcd a b.
+Theorem Zdiv_neg a b:    a < 0 -> 0 < b -> a / b < 0.
+Theorem Zbounded_induction :   (forall Q : Z -> Prop, forall b : Z,     Q 0 ->     (forall n, 0 <= n -> n < b - 1 -> Q n -> Q (n + 1)) ->       forall n, 0 <= n -> n < b -> Q n)%Z.
+Theorem wf_union :     commut A R1 R2 -> well_founded R1 -> well_founded R2 -> well_founded Union.
+Theorem Image_set_continuous :     forall (A:Ensemble U) (f:U -> V) (X:Ensemble V),       Finite V X ->       Included V X (Im U V A f) ->       exists n : _, 	(exists Y : _, (cardinal U Y n /\ Included U Y A) /\ Im U V Y f = X).
+Theorem Image_set_continuous' :     forall (A:Ensemble U) (f:U -> V) (X:Ensemble V),       Approximant V (Im U V A f) X ->       exists Y : _, Approximant U A Y /\ Im U V Y f = X.
+Theorem Pigeonhole_bis :     forall (A:Ensemble U) (f:U -> V),       ~ Finite U A -> Finite V (Im U V A f) -> ~ injective U V f.
+Theorem Pigeonhole_ter :     forall (A:Ensemble U) (f:U -> V) (n:nat),       injective U V f -> Finite V (Im U V A f) -> Finite U A.
+Theorem R_complete :   forall Un:nat -> R, Cauchy_crit Un -> { l:R | Un_cv Un l } .
+Theorem get_correct :   forall s1 s2 : string, (forall n : nat, get n s1 = get n s2) <-> s1 = s2.
+Theorem append_correct1 :  forall (s1 s2 : string) (n : nat),  n < length s1 -> get n s1 = get n (s1 ++ s2).
+Theorem append_correct2 :  forall (s1 s2 : string) (n : nat),  get n s2 = get (n + length s1) (s1 ++ s2).
+Theorem substring_correct1 :  forall (s : string) (n m p : nat),  p < m -> get p (substring n m s) = get (p + n) s.
+Theorem substring_correct2 :  forall (s : string) (n m p : nat), m <= p -> get p (substring n m s) = None.
+Theorem prefix_correct :  forall s1 s2 : string,  prefix s1 s2 = true <-> substring 0 (length s1) s2 = s1.
+Theorem index_correct1 :  forall (n m : nat) (s1 s2 : string),  index n s1 s2 = Some m -> substring m (length s1) s2 = s1.
+Theorem index_correct2 :  forall (n m : nat) (s1 s2 : string),  index n s1 s2 = Some m ->  forall p : nat, n <= p -> p < m -> substring p (length s1) s2 <> s1.
+Theorem index_correct3 :  forall (n m : nat) (s1 s2 : string),  index n s1 s2 = None ->  s1 <> EmptyString -> n <= m -> substring m (length s1) s2 <> s1.
+Theorem index_correct4 :  forall (n : nat) (s : string),  index n EmptyString s = None -> length s < n.
+Theorem succ_pred: forall q : bigN,   0 < q -> BigN.succ (BigN.pred q) == q.
+Theorem well_founded_ltof : well_founded ltof.
+Theorem well_founded_gtof : well_founded gtof.
+Theorem induction_ltof1 :   forall P:A -> Set,     (forall x:A, (forall y:A, ltof y x -> P y) -> P x) -> forall a:A, P a.
+Theorem induction_gtof1 :   forall P:A -> Set,     (forall x:A, (forall y:A, gtof y x -> P y) -> P x) -> forall a:A, P a.
+Theorem induction_ltof2 :   forall P:A -> Set,     (forall x:A, (forall y:A, ltof y x -> P y) -> P x) -> forall a:A, P a.
+Theorem induction_gtof2 :   forall P:A -> Set,     (forall x:A, (forall y:A, gtof y x -> P y) -> P x) -> forall a:A, P a.
+Theorem well_founded_lt_compat : well_founded R.
+Theorem well_founded_inv_lt_rel_compat : well_founded R.
+Theorem div_mod_unique : forall b q1 q2 r1 r2 : t,   (0<=r1<b \/ b<r1<=0) -> (0<=r2<b \/ b<r2<=0) ->   b*q1+r1 == b*q2+r2 -> q1 == q2 /\ r1 == r2.
+Theorem div_unique:  forall a b q r, (0<=r<b \/ b<r<=0) -> a == b*q + r -> q == a/b.
+Theorem div_unique_pos:  forall a b q r, 0<=r<b -> a == b*q + r -> q == a/b.
+Theorem div_unique_neg:  forall a b q r, b<r<=0 -> a == b*q + r -> q == a/b.
+Theorem mod_unique:  forall a b q r, (0<=r<b \/ b<r<=0) -> a == b*q + r -> r == a mod b.
+Theorem mod_unique_pos:  forall a b q r, 0<=r<b -> a == b*q + r -> r == a mod b.
+Theorem mod_unique_neg:  forall a b q r, b<r<=0 -> a == b*q + r -> r == a mod b.
+Theorem div_small: forall a b, 0<=a<b -> a/b == 0.
+Theorem mod_small: forall a b, 0<=a<b -> a mod b == a.
+Theorem div_unique_exact a b q: b~=0 -> a == b*q -> q == a/b.
+Theorem mod_le: forall a b, 0<=a -> 0<b -> a mod b <= a.
+Theorem div_pos : forall a b, 0<=a -> 0<b -> 0<= a/b.
+Theorem div_lt_upper_bound:   forall a b q, 0<b -> a < b*q -> a/b < q.
+Theorem div_le_upper_bound:   forall a b q, 0<b -> a <= b*q -> a/b <= q.
+Theorem div_le_lower_bound:   forall a b q, 0<b -> b*q <= a -> q <= a/b.
+Theorem mod_mod: forall a n, n~=0 ->  (a mod n) mod n == a mod n.
+Theorem mul_mod: forall a b n, n~=0 ->  (a * b) mod n == ((a mod n) * (b mod n)) mod n.
+Theorem add_mod: forall a b n, n~=0 ->  (a+b) mod n == (a mod n + b mod n) mod n.
+Theorem div_mul_le:  forall a b c, 0<=a -> 0<b -> 0<=c -> c*(a/b) <= (c*a)/b.
+(** Intermediate Value Theorem on an Interval (Proof mainly taken from Reals.Rsqrt_def) and its corollary *)
+Theorem Empty_set_minimal : forall X:Ensemble U, Included U (Empty_set U) X.
+Theorem Power_set_Inhabited :  forall X:Ensemble U, Inhabited (Ensemble U) (Power_set X).
+Theorem Inclusion_is_an_order : Order (Ensemble U) (Included U).
+Theorem Inclusion_is_transitive : Transitive (Ensemble U) (Included U).
+Theorem Strict_Rel_is_Strict_Included :  same_relation (Ensemble U) (Strict_Included U)    (Strict_Rel_of (Ensemble U) (Power_set_PO (Full_set U))).
+Theorem Empty_set_is_Bottom :  forall A:Ensemble U, Bottom (Ensemble U) (Power_set_PO A) (Empty_set U).
+Theorem Union_minimal :  forall a b X:Ensemble U,    Included U a X -> Included U b X -> Included U (Union U a b) X.
+Theorem Intersection_maximal :  forall a b X:Ensemble U,    Included U X a -> Included U X b -> Included U X (Intersection U a b).
+Theorem Union_increases_l : forall a b:Ensemble U, Included U a (Union U a b).
+Theorem Union_increases_r : forall a b:Ensemble U, Included U b (Union U a b).
+Theorem Intersection_decreases_l :  forall a b:Ensemble U, Included U (Intersection U a b) a.
+Theorem Intersection_decreases_r :  forall a b:Ensemble U, Included U (Intersection U a b) b.
+Theorem Union_is_Lub :  forall A a b:Ensemble U,    Included U a A ->    Included U b A ->    Lub (Ensemble U) (Power_set_PO A) (Couple (Ensemble U) a b) (Union U a b).
+Theorem Intersection_is_Glb :  forall A a b:Ensemble U,    Included U a A ->    Included U b A ->    Glb (Ensemble U) (Power_set_PO A) (Couple (Ensemble U) a b)      (Intersection U a b).
+Theorem Zsqrt_interval :   forall n:Z,     0 <= n ->     Zsqrt_plain n * Zsqrt_plain n <= n <     (Zsqrt_plain n + 1) * (Zsqrt_plain n + 1).
+Theorem Zsqrt_plain_is_pos: forall n, 0 <= n ->  0 <= Zsqrt_plain n.
+Theorem Zsqrt_square_id: forall a, 0 <= a ->  Zsqrt_plain (a * a) = a.
+Theorem Zsqrt_le:  forall p q, 0 <= p <= q  ->  Zsqrt_plain p <= Zsqrt_plain q.
+Theorem Alembert_C3 :   forall (An:nat -> R) (x:R),     (forall n:nat, An n <> 0) ->     Un_cv (fun n:nat => Rabs (An (S n) / An n)) 0 ->     { l:R | Pser An x l }.
+Theorem of_pos_correct:    forall p, Zpos p < base digits -> [|(snd (of_pos p))|] = Zpos p.
+Theorem of_Z_correct:    forall p, 0 <= p < base digits -> [|of_Z p|] = p.
+Theorem gempty:     forall (i: positive), find i empty = None.
+Theorem gss:     forall (i: positive) (x: A) (m: t A), find i (add i x m) = Some x.
+Theorem gso:     forall (i j: positive) (x: A) (m: t A),     i <> j -> find i (add j x m) = find i m.
+Theorem grs:     forall (i: positive) (m: t A), find i (remove i m) = None.
+Theorem gro:     forall (i j: positive) (m: t A),     i <> j -> find i (remove j m) = find i m.
+Theorem elements_correct:     forall (m: t A) (i: positive) (v: A),     find i m = Some v -> List.In (i, v) (elements m).
+Theorem elements_complete:     forall (m: t A) (i: positive) (v: A),     List.In (i, v) (elements m) -> find i m = Some v.
+Theorem gmapi:     forall (A B: Type) (f: positive -> A -> B) (i: positive) (m: t A),     find i (mapi f m) = option_map (f i) (find i m).
+Theorem gsspec:     forall (A:Type)(i j: positive) (x: A) (m: t A),     find i (add j x m) = if E.eq_dec i j then Some x else find i m.
+Theorem gsident:     forall (A:Type)(i: positive) (m: t A) (v: A),     find i m = Some v -> add i v m = m.
+Theorem map2_commut:     forall (A B: Type) (f g: option A -> option A -> option B),     (forall (i j: option A), f i j = g j i) ->     forall (m1 m2: t A),     _map2 f m1 m2 = _map2 g m2 m1.
+Theorem add_neg_neg : forall n m, n < 0 -> m < 0 -> n + m < 0.
+Theorem add_neg_nonpos : forall n m, n < 0 -> m <= 0 -> n + m < 0.
+Theorem add_nonpos_neg : forall n m, n <= 0 -> m < 0 -> n + m < 0.
+Theorem add_nonpos_nonpos : forall n m, n <= 0 -> m <= 0 -> n + m <= 0.
+Theorem lt_0_sub : forall n m, 0 < m - n <-> n < m.
+Theorem le_0_sub : forall n m, 0 <= m - n <-> n <= m.
+Theorem lt_sub_0 : forall n m, n - m < 0 <-> n < m.
+Theorem le_sub_0 : forall n m, n - m <= 0 <-> n <= m.
+Theorem opp_lt_mono : forall n m, n < m <-> - m < - n.
+Theorem opp_le_mono : forall n m, n <= m <-> - m <= - n.
+Theorem opp_pos_neg : forall n, 0 < - n <-> n < 0.
+Theorem opp_neg_pos : forall n, - n < 0 <-> 0 < n.
+Theorem opp_nonneg_nonpos : forall n, 0 <= - n <-> n <= 0.
+Theorem opp_nonpos_nonneg : forall n, - n <= 0 <-> 0 <= n.
+Theorem lt_m1_0 : -1 < 0.
+Theorem sub_lt_mono_l : forall n m p, n < m <-> p - m < p - n.
+Theorem sub_lt_mono_r : forall n m p, n < m <-> n - p < m - p.
+Theorem sub_lt_mono : forall n m p q, n < m -> q < p -> n - p < m - q.
+Theorem sub_le_mono_l : forall n m p, n <= m <-> p - m <= p - n.
+Theorem sub_le_mono_r : forall n m p, n <= m <-> n - p <= m - p.
+Theorem sub_le_mono : forall n m p q, n <= m -> q <= p -> n - p <= m - q.
+Theorem sub_lt_le_mono : forall n m p q, n < m -> q <= p -> n - p < m - q.
+Theorem sub_le_lt_mono : forall n m p q, n <= m -> q < p -> n - p < m - q.
+Theorem le_lt_sub_lt : forall n m p q, n <= m -> p - n < q - m -> p < q.
+Theorem lt_le_sub_lt : forall n m p q, n < m -> p - n <= q - m -> p < q.
+Theorem le_le_sub_lt : forall n m p q, n <= m -> p - n <= q - m -> p <= q.
+Theorem lt_add_lt_sub_r : forall n m p, n + p < m <-> n < m - p.
+Theorem le_add_le_sub_r : forall n m p, n + p <= m <-> n <= m - p.
+Theorem lt_add_lt_sub_l : forall n m p, n + p < m <-> p < m - n.
+Theorem le_add_le_sub_l : forall n m p, n + p <= m <-> p <= m - n.
+Theorem lt_sub_lt_add_r : forall n m p, n - p < m <-> n < m + p.
+Theorem le_sub_le_add_r : forall n m p, n - p <= m <-> n <= m + p.
+Theorem lt_sub_lt_add_l : forall n m p, n - m < p <-> n < m + p.
+Theorem le_sub_le_add_l : forall n m p, n - m <= p <-> n <= m + p.
+Theorem lt_sub_lt_add : forall n m p q, n - m < p - q <-> n + q < m + p.
+Theorem le_sub_le_add : forall n m p q, n - m <= p - q <-> n + q <= m + p.
+Theorem lt_sub_pos : forall n m, 0 < m <-> n - m < n.
+Theorem le_sub_nonneg : forall n m, 0 <= m <-> n - m <= n.
+Theorem sub_lt_cases : forall n m p q, n - m < p - q -> n < m \/ q < p.
+Theorem sub_le_cases : forall n m p q, n - m <= p - q -> n <= m \/ q <= p.
+Theorem sub_neg_cases : forall n m, n - m < 0 -> n < 0 \/ 0 < m.
+Theorem sub_pos_cases : forall n m, 0 < n - m -> 0 < n \/ m < 0.
+Theorem sub_nonpos_cases : forall n m, n - m <= 0 -> n <= 0 \/ 0 <= m.
+Theorem sub_nonneg_cases : forall n m, 0 <= n - m -> 0 <= n \/ m <= 0.
+Theorem zero_pos_neg :   P 0 -> (forall n, 0 < n -> P n /\ P (- n)) -> forall n, P n.
+Theorem pred_succ : forall n, pred (succ n) == n.
+Theorem one_succ : 1 == succ 0.
+Theorem two_succ : 2 == succ 1.
+Theorem bi_induction : forall n, A n.
+Theorem add_0_l : forall n, 0 + n == n.
+Theorem add_succ_l : forall n m, (succ n) + m == succ (n + m).
+Theorem sub_0_r : forall n, n - 0 == n.
+Theorem sub_succ_r : forall n m, n - (succ m) == pred (n - m).
+Theorem mul_0_l : forall n, 0 * n == 0.
+Theorem mul_succ_l : forall n m, (succ n) * m == n * m + m.
+Theorem lt_succ_r : forall n m, n < succ m <-> n <= m.
+Theorem min_l : forall n m, n <= m -> min n m == n.
+Theorem min_r : forall n m, m <= n -> min n m == m.
+Theorem max_l : forall n m, m <= n -> max n m == n.
+Theorem max_r : forall n m, n <= m -> max n m == m.
+Theorem pred_0 : pred 0 == 0.
+Theorem div_mod : forall a b, ~b==0 -> a == b*(div a b) + (modulo a b).
+Theorem mod_bound_pos : forall a b, 0<=a -> 0<b ->  0 <= modulo a b /\ modulo a b < b.
+Theorem recursion_0 :   forall (A : Type) (a : A) (f : NN.t -> A -> A), recursion a f 0 = a.
+Theorem recursion_succ :   forall (A : Type) (Aeq : relation A) (a : A) (f : NN.t -> A -> A),
+Theorem Permutation_nil : forall (l : list A), Permutation [] l -> l = [].
+Theorem Permutation_nil_cons : forall (l : list A) (x : A), ~ Permutation nil (x::l).
+Theorem Permutation_refl : forall l : list A, Permutation l l.
+Theorem Permutation_sym : forall l l' : list A, Permutation l l' -> Permutation l' l.
+Theorem Permutation_trans : forall l l' l'' : list A, Permutation l l' -> Permutation l' l'' -> Permutation l l''.
+Theorem Permutation_in : forall (l l' : list A) (x : A), Permutation l l' -> In x l -> In x l'.
+Theorem Permutation_app : forall (l m l' m' : list A), Permutation l l' -> Permutation m m' -> Permutation (l++m) (l'++m').
+Theorem Permutation_app_comm : forall (l l' : list A),   Permutation (l ++ l') (l' ++ l).
+Theorem Permutation_cons_app : forall (l l1 l2:list A) a,   Permutation l (l1 ++ l2) -> Permutation (a :: l) (l1 ++ a :: l2).
+Theorem Permutation_middle : forall (l1 l2:list A) a,   Permutation (a :: l1 ++ l2) (l1 ++ a :: l2).
+Theorem Permutation_rev : forall (l : list A), Permutation l (rev l).
+Theorem Permutation_length : forall (l l' : list A), Permutation l l' -> length l = length l'.
+Theorem Permutation_ind_bis :  forall P : list A -> list A -> Prop,    P [] [] ->    (forall x l l', Permutation l l' -> P l l' -> P (x :: l) (x :: l')) ->    (forall x y l l', Permutation l l' -> P l l' -> P (y :: x :: l) (x :: y :: l')) ->    (forall l l' l'', Permutation l l' -> P l l' -> Permutation l' l'' -> P l' l'' -> P l l'') ->    forall l l', Permutation l l' -> P l l'.
+Theorem Permutation_nil_app_cons : forall (l l' : list A) (x : A), ~ Permutation nil (l++x::l').
+Theorem Permutation_app_inv : forall (l1 l2 l3 l4:list A) a,   Permutation (l1++a::l2) (l3++a::l4) -> Permutation (l1++l2) (l3 ++ l4).
+Theorem Permutation_cons_inv :    forall l l' a, Permutation (a::l) (a::l') -> Permutation l l'.
+Theorem Permutation_cons_app_inv :    forall l l1 l2 a, Permutation (a :: l) (l1 ++ a :: l2) -> Permutation l (l1 ++ l2).
+Theorem Permutation_app_inv_l :     forall l l1 l2, Permutation (l ++ l1) (l ++ l2) -> Permutation l1 l2.
+Theorem Permutation_app_inv_r :    forall l l1 l2, Permutation (l1 ++ l) (l2 ++ l) -> Permutation l1 l2.
+Theorem odd_even_lem : forall p q, 2 * p + 1 <> 2 * q.
+Theorem wf_inverse_image : well_founded R -> well_founded Rof.
+Theorem wf_inverse_rel : well_founded R -> well_founded RoF.
+Theorem EqSt_reflex : forall s:Stream, EqSt s s.
+Theorem sym_EqSt : forall s1 s2:Stream, EqSt s1 s2 -> EqSt s2 s1.
+Theorem trans_EqSt :  forall s1 s2 s3:Stream, EqSt s1 s2 -> EqSt s2 s3 -> EqSt s1 s3.
+Theorem eqst_ntheq :  forall (n:nat) (s1 s2:Stream), EqSt s1 s2 -> Str_nth n s1 = Str_nth n s2.
+Theorem ntheq_eqst :  forall s1 s2:Stream,    (forall n:nat, Str_nth n s1 = Str_nth n s2) -> EqSt s1 s2.
+Theorem ForAll_coind : forall x:Stream, Inv x -> ForAll x.
+Theorem iota_statement :   forall (A : Type) (P : A->Prop), inhabited A ->   { x : A | (exists! x : A, P x) -> P x }.
+Theorem wf_incl : inclusion A R1 R2 -> well_founded R2 -> well_founded R1.
+Theorem square_lt_mono : forall n m, n < m <-> n * n < m * m.
+Theorem square_le_mono : forall n m, n <= m <-> n * n <= m * m.
+Theorem mul_le_mono_l : forall n m p, n <= m -> p * n <= p * m.
+Theorem mul_le_mono_r : forall n m p, n <= m -> n * p <= m * p.
+Theorem mul_lt_mono : forall n m p q, n < m -> p < q -> n * p < m * q.
+Theorem mul_le_mono : forall n m p q, n <= m -> p <= q -> n * p <= m * q.
+Theorem lt_0_mul' : forall n m, n * m > 0 <-> n > 0 /\ m > 0.
+Theorem eq_mul_1 : forall n m, n * m == 1 <-> n == 1 /\ m == 1.
+Theorem acc_implies_P_eventually : acc 0 -> {n : nat | P n}.
+Theorem constructive_indefinite_ground_description_nat_Acc :   (exists n : nat, P n) -> {n : nat | P n}.
+Theorem wf_lexprod :     well_founded leA ->     (forall x:A, well_founded (leB x)) -> well_founded LexProd.
+Theorem not_not_archimedean :   forall r : R, ~ (forall n : nat, (INR n <= r)%R).
+Theorem mul_lt_pred :   forall p q n m, S p == q -> (p * n < p * m <-> q * n + m < q * m + n).
+Theorem mul_lt_mono_pos_l : forall p n m, 0 < p -> (n < m <-> p * n < p * m).
+Theorem mul_lt_mono_pos_r : forall p n m, 0 < p -> (n < m <-> n * p < m * p).
+Theorem mul_lt_mono_neg_l : forall p n m, p < 0 -> (n < m <-> p * m < p * n).
+Theorem mul_lt_mono_neg_r : forall p n m, p < 0 -> (n < m <-> m * p < n * p).
+Theorem mul_le_mono_nonneg_l : forall n m p, 0 <= p -> n <= m -> p * n <= p * m.
+Theorem mul_le_mono_nonpos_l : forall n m p, p <= 0 -> n <= m -> p * m <= p * n.
+Theorem mul_le_mono_nonneg_r : forall n m p, 0 <= p -> n <= m -> n * p <= m * p.
+Theorem mul_le_mono_nonpos_r : forall n m p, p <= 0 -> n <= m -> m * p <= n * p.
+Theorem mul_cancel_l : forall n m p, p ~= 0 -> (p * n == p * m <-> n == m).
+Theorem mul_cancel_r : forall n m p, p ~= 0 -> (n * p == m * p <-> n == m).
+Theorem mul_id_l : forall n m, m ~= 0 -> (n * m == m <-> n == 1).
+Theorem mul_id_r : forall n m, n ~= 0 -> (n * m == n <-> m == 1).
+Theorem mul_le_mono_pos_l : forall n m p, 0 < p -> (n <= m <-> p * n <= p * m).
+Theorem mul_le_mono_pos_r : forall n m p, 0 < p -> (n <= m <-> n * p <= m * p).
+Theorem mul_le_mono_neg_l : forall n m p, p < 0 -> (n <= m <-> p * m <= p * n).
+Theorem mul_le_mono_neg_r : forall n m p, p < 0 -> (n <= m <-> m * p <= n * p).
+Theorem mul_lt_mono_nonneg :   forall n m p q, 0 <= n -> n < m -> 0 <= p -> p < q -> n * p < m * q.
+Theorem mul_le_mono_nonneg :   forall n m p q, 0 <= n -> n <= m -> 0 <= p -> p <= q -> n * p <= m * q.
+Theorem mul_pos_pos : forall n m, 0 < n -> 0 < m -> 0 < n * m.
+Theorem mul_neg_neg : forall n m, n < 0 -> m < 0 -> 0 < n * m.
+Theorem mul_pos_neg : forall n m, 0 < n -> m < 0 -> n * m < 0.
+Theorem mul_neg_pos : forall n m, n < 0 -> 0 < m -> n * m < 0.
+Theorem mul_nonneg_nonneg : forall n m, 0 <= n -> 0 <= m -> 0 <= n*m.
+Theorem mul_pos_cancel_l : forall n m, 0 < n -> (0 < n*m <-> 0 < m).
+Theorem mul_pos_cancel_r : forall n m, 0 < m -> (0 < n*m <-> 0 < n).
+Theorem mul_nonneg_cancel_l : forall n m, 0 < n -> (0 <= n*m <-> 0 <= m).
+Theorem mul_nonneg_cancel_r : forall n m, 0 < m -> (0 <= n*m <-> 0 <= n).
+Theorem lt_1_mul_pos : forall n m, 1 < n -> 0 < m -> 1 < n * m.
+Theorem eq_mul_0 : forall n m, n * m == 0 <-> n == 0 \/ m == 0.
+Theorem neq_mul_0 : forall n m, n ~= 0 /\ m ~= 0 <-> n * m ~= 0.
+Theorem eq_square_0 : forall n, n * n == 0 <-> n == 0.
+Theorem eq_mul_0_l : forall n m, n * m == 0 -> m ~= 0 -> n == 0.
+Theorem eq_mul_0_r : forall n m, n * m == 0 -> n ~= 0 -> m == 0.
+Theorem lt_0_mul n m : 0 < n * m <-> (0 < n /\ 0 < m) \/ (m < 0 /\ n < 0).
+Theorem square_lt_mono_nonneg : forall n m, 0 <= n -> n < m -> n * n < m * m.
+Theorem square_le_mono_nonneg : forall n m, 0 <= n -> n <= m -> n * n <= m * m.
+Theorem square_lt_simpl_nonneg : forall n m, 0 <= m -> n * n < m * m -> n < m.
+Theorem square_le_simpl_nonneg : forall n m, 0 <= m -> n * n <= m * m -> n <= m.
+Theorem mul_2_mono_l : forall n m, n < m -> 1 + 2 * n < 2 * m.
+Theorem pred_ext_and_rel_choice_imp_EM : forall P:Prop, P \/ ~ P.
+Theorem proof_irrel_rel_choice_imp_eq_dec : a1=a2 \/ ~a1=a2.
+Theorem extensional_epsilon_imp_EM : forall P:Prop, P \/ ~ P.
+Theorem lt_irrefl : forall n, ~ n < n.
+Theorem lt_le_S : forall n m, n < m -> S n <= m.
+Theorem lt_n_Sm_le : forall n m, n < S m -> n <= m.
+Theorem le_lt_n_Sm : forall n m, n <= m -> n < S m.
+Theorem le_not_lt : forall n m, n <= m -> ~ m < n.
+Theorem lt_not_le : forall n m, n < m -> ~ m <= n.
+Theorem lt_asym : forall n m, n < m -> ~ m < n.
+Theorem lt_n_Sn : forall n, n < S n.
+Theorem lt_S : forall n m, n < m -> n < S m.
+Theorem lt_n_S : forall n m, n < m -> S n < S m.
+Theorem lt_S_n : forall n m, S n < S m -> n < m.
+Theorem lt_0_Sn : forall n, 0 < S n.
+Theorem lt_n_0 : forall n, ~ n < 0.
+Theorem lt_trans : forall n m p, n < m -> m < p -> n < p.
+Theorem lt_le_trans : forall n m p, n < m -> m <= p -> n < p.
+Theorem le_lt_trans : forall n m p, n <= m -> m < p -> n < p.
+Theorem le_lt_or_eq : forall n m, n <= m -> n < m \/ n = m.
+Theorem le_lt_or_eq_iff : forall n m, n <= m <-> n < m \/ n = m.
+Theorem lt_le_weak : forall n m, n < m -> n <= m.
+Theorem le_or_lt : forall n m, n <= m \/ m < n.
+Theorem nat_total_order : forall n m, n <> m -> n < m \/ m < n.
+Theorem neq_0_lt : forall n, 0 <> n -> 0 < n.
+Theorem lt_0_neq : forall n, 0 < n -> 0 <> n.
+Theorem eq_nat_refl : forall n, eq_nat n n.
+Theorem eq_nat_is_eq : forall n m, eq_nat n m <-> n = m.
+Theorem eq_nat_elim :   forall n (P:nat -> Prop), P n -> forall m, eq_nat n m -> P m.
+Theorem eq_nat_decide : forall n m, {eq_nat n m} + {~ eq_nat n m}.
+Theorem lt_wf_0 : well_founded lt.
+Theorem nlt_0_r : forall n, ~ n < 0.
+Theorem nle_succ_0 : forall n, ~ (S n <= 0).
+Theorem le_0_r : forall n, n <= 0 <-> n == 0.
+Theorem lt_0_succ : forall n, 0 < S n.
+Theorem neq_0_lt_0 : forall n, n ~= 0 <-> 0 < n.
+Theorem eq_0_gt_0_cases : forall n, n == 0 \/ 0 < n.
+Theorem zero_one : forall n, n == 0 \/ n == 1 \/ 1 < n.
+Theorem lt_1_r : forall n, n < 1 <-> n == 0.
+Theorem le_1_r : forall n, n <= 1 <-> n == 0 \/ n == 1.
+Theorem lt_lt_0 : forall n m, n < m -> 0 < m.
+Theorem lt_1_l' : forall n m p, n < m -> m < p -> 1 < p.
+Theorem le_ind_rel :    (forall m, R 0 m) ->    (forall n m, n <= m -> R n m -> R (S n) (S m)) ->      forall n m, n <= m -> R n m.
+Theorem lt_ind_rel :    (forall m, R 0 (S m)) ->    (forall n m, n < m -> R n m -> R (S n) (S m)) ->    forall n m, n < m -> R n m.
+Theorem succ_pred_pos : forall n, 0 < n -> S (P n) == n.
+Theorem le_pred_l : forall n, P n <= n.
+Theorem lt_pred_l : forall n, n ~= 0 -> P n < n.
+Theorem le_le_pred : forall n m, n <= m -> P n <= m.
+Theorem lt_lt_pred : forall n m, n < m -> P n < m.
+Theorem lt_le_pred : forall n m, n < m -> n <= P m.
+Theorem lt_pred_le : forall n m, P n < m -> n <= m.
+Theorem lt_pred_lt : forall n m, n < P m -> n < m.
+Theorem le_pred_le : forall n m, n <= P m -> n <= m.
+Theorem pred_le_mono : forall n m, n <= m -> P n <= P m.
+Theorem pred_lt_mono : forall n m, n ~= 0 -> (n < m <-> P n < P m).
+Theorem lt_succ_lt_pred : forall n m, S n < m <-> n < P m.
+Theorem le_succ_le_pred : forall n m, S n <= m -> n <= P m.
+Theorem lt_pred_lt_succ : forall n m, P n < m -> n < S m.
+Theorem le_pred_le_succ : forall n m, P n <= m <-> n <= S m.
+Theorem Rsepare :   forall x y:R,     x <> y ->     exists V : R -> Prop,       (exists W : R -> Prop,         neighbourhood V x /\         neighbourhood W y /\ ~ (exists y : R, intersection_domain V W y)).
+Theorem Bolzano_Weierstrass :   forall (un:nat -> R) (X:R -> Prop),     compact X -> (forall n:nat, X (un n)) ->  exists l : R, ValAdh un l.
+Theorem Heine :   forall (f:R -> R) (X:R -> Prop),     compact X ->     (forall x:R, X x -> continuity_pt f x) -> uniform_continuity f X.
+Theorem fold_rec_bis :     forall (A:Type)(P : t elt -> A -> Type)(f : key -> elt -> A -> A),      forall (i:A)(m:t elt),      (forall m m' a, Equal m m' -> P m a -> P m' a) ->      (P (empty _) i) ->      (forall k e a m', MapsTo k e m -> ~In k m' ->        P m' a -> P (add k e m') (f k e a)) ->      P m (fold f m i).
+Theorem Ztrichotomy_inf n m : {n < m} + {n = m} + {n > m}.
+Theorem Ztrichotomy n m : n < m \/ n = m \/ n > m.
+Theorem dec_Zne n m : decidable (Zne n m).
+Theorem dec_Zgt n m : decidable (n > m).
+Theorem dec_Zge n m : decidable (n >= m).
+Theorem not_Zeq n m : n <> m -> n < m \/ m < n.
+Theorem treesort :     forall l:list A,     {m : list A | Sorted leA m & permutation _ eqA_dec l m}.
+Theorem neq_succ_0 : forall n, S n ~= 0.
+Theorem neq_0_succ : forall n, 0 ~= S n.
+Theorem le_0_l : forall n, 0 <= n.
+Theorem induction :   forall A : N.t -> Prop, Proper (N.eq==>iff) A ->
+Theorem case_analysis :   forall A : N.t -> Prop, Proper (N.eq==>iff) A ->
+Theorem neq_0 : ~ forall n, n == 0.
+Theorem neq_0_r : forall n, n ~= 0 <-> exists m, n == S m.
+Theorem zero_or_succ : forall n, n == 0 \/ exists m, n == S m.
+Theorem eq_pred_0 : forall n, P n == 0 <-> n == 0 \/ n == 1.
+Theorem succ_pred : forall n, n ~= 0 -> S (P n) == n.
+Theorem pred_inj : forall n m, n ~= 0 -> m ~= 0 -> P n == P m -> n == m.
+Theorem pair_induction :   A 0 -> A 1 ->     (forall n, A n -> A (S n) -> A (S (S n))) -> forall n, A n.
+Theorem two_dim_induction :    R 0 0 ->    (forall n m, R n m -> R n (S m)) ->    (forall n, (forall m, R n m) -> R (S n) 0) -> forall n m, R n m.
+Theorem double_induction :    (forall m, R 0 m) ->    (forall n, R (S n) 0) ->    (forall n m, R n m -> R (S n) (S m)) -> forall n m, R n m.
+Theorem pre_sin_bound :   forall (a:R) (n:nat),     0 <= a ->     a <= 4 -> sin_approx a (2 * n + 1) <= sin a <= sin_approx a (2 * (n + 1)).
+Theorem derivable_pt_lim_sin : forall x:R, derivable_pt_lim sin x (cos x).
+Theorem wf_WO : well_founded le_WO.
+Theorem plength_correct: forall p, (Zpos p < 2 ^ Zpos (plength p))%Z.
+Theorem plength_pred_correct: forall p, (Zpos p <= 2 ^ Zpos (plength (Pos.pred p)))%Z.
+Theorem Pdiv_le: forall p q,   Zpos p <= Zpos q * Zpos (Pdiv p q).
+Theorem is_one_one: forall p, is_one p = true -> p = xH.
+Theorem get_height_correct:   forall digits N,    Zpos N <= Zpos digits * (2 ^ (Zpos (get_height digits N) -1)).
+Theorem length_pos_lt: forall x y,    (length_pos x < length_pos y)%nat -> Zpos x < Zpos y.
+Theorem cancel_app: forall A B (f g: A -> B) x, f = g -> f x = g x.
+Theorem digits_zop: forall t (ops : ZnZ.Ops t),
+Theorem digits_kzop: forall t (ops : ZnZ.Ops t),
+Theorem make_zop: forall t (ops : ZnZ.Ops t),
+Theorem make_kzop: forall t (ops: ZnZ.Ops t),
+Theorem mul_lt_mono_nonpos :   forall n m p q, m <= 0 -> n < m -> q <= 0 -> p < q ->  m * q < n * p.
+Theorem mul_le_mono_nonpos :   forall n m p q, m <= 0 -> n <= m -> q <= 0 -> p <= q ->  m * q <= n * p.
+Theorem mul_nonpos_nonpos : forall n m, n <= 0 -> m <= 0 -> 0 <= n * m.
+Theorem mul_nonneg_nonpos : forall n m, 0 <= n -> m <= 0 -> n * m <= 0.
+Theorem mul_nonpos_nonneg : forall n m, n <= 0 -> 0 <= m -> n * m <= 0.
+Theorem lt_mul_0 :   forall n m, n * m < 0 <-> n < 0 /\ m > 0 \/ n > 0 /\ m < 0.
+Theorem le_0_mul :   forall n m, 0 <= n * m -> 0 <= n /\ 0 <= m \/ n <= 0 /\ m <= 0.
+Theorem le_mul_0 :   forall n m, n * m <= 0 -> 0 <= n /\ m <= 0 \/ n <= 0 /\ 0 <= m.
+Theorem nlt_square_0 : forall n, ~ n * n < 0.
+Theorem square_lt_mono_nonpos : forall n m, n <= 0 -> m < n -> n * n < m * m.
+Theorem square_le_mono_nonpos : forall n m, n <= 0 -> m <= n -> n * n <= m * m.
+Theorem square_lt_simpl_nonpos : forall n m, m <= 0 -> n * n < m * m -> m < n.
+Theorem square_le_simpl_nonpos : forall n m, m <= 0 -> n * n <= m * m -> m <= n.
+Theorem lt_1_mul_neg : forall n m, n < -1 -> m < 0 -> 1 < n * m.
+Theorem lt_mul_m1_neg : forall n m, 1 < n -> m < 0 -> n * m < -1.
+Theorem lt_mul_m1_pos : forall n m, n < -1 -> 0 < m -> n * m < -1.
+Theorem lt_1_mul_l : forall n m, 1 < n ->  n * m < -1 \/ n * m == 0 \/ 1 < n * m.
+Theorem lt_m1_mul_r : forall n m, n < -1 ->  n * m < -1 \/ n * m == 0 \/ 1 < n * m.
+Theorem eq_mul_1 : forall n m, n * m == 1 -> n == 1 \/ n == -1.
+Theorem lt_mul_diag_l : forall n m, n < 0 -> (1 < m <-> n * m < n).
+Theorem lt_mul_diag_r : forall n m, 0 < n -> (1 < m <-> n < n * m).
+Theorem le_mul_diag_l : forall n m, n < 0 -> (1 <= m <-> n * m <= n).
+Theorem le_mul_diag_r : forall n m, 0 < n -> (1 <= m <-> n <= n * m).
+Theorem lt_mul_r : forall n m p, 0 < n -> 1 < p -> n < m -> n < m * p.
+Theorem paradox : B.
+Theorem div_mod_unique :  forall b q1 q2 r1 r2, 0<=r1<b -> 0<=r2<b ->   b*q1+r1 == b*q2+r2 -> q1 == q2 /\ r1 == r2.
+Theorem div_unique:  forall a b q r, 0<=a -> 0<=r<b ->    a == b*q + r -> q == a/b.
+Theorem mod_unique:  forall a b q r, 0<=a -> 0<=r<b ->   a == b*q + r -> r == a mod b.
+Theorem div_unique_exact a b q:  0<=a -> 0<b -> a == b*q -> q == a/b.
+Theorem div_small: forall a b, 0<=a<b -> a/b == 0.
+Theorem mod_small: forall a b, 0<=a<b -> a mod b == a.
+Theorem mod_le: forall a b, 0<=a -> 0<b -> a mod b <= a.
+Theorem div_lt_upper_bound:   forall a b q, 0<=a -> 0<b -> a < b*q -> a/b < q.
+Theorem div_le_upper_bound:   forall a b q, 0<=a -> 0<b -> a <= b*q -> a/b <= q.
+Theorem div_le_lower_bound:   forall a b q, 0<=a -> 0<b -> b*q <= a -> q <= a/b.
+Theorem mod_mod: forall a n, 0<=a -> 0<n ->  (a mod n) mod n == a mod n.
+Theorem mul_mod: forall a b n, 0<=a -> 0<=b -> 0<n ->  (a * b) mod n == ((a mod n) * (b mod n)) mod n.
+Theorem add_mod: forall a b n, 0<=a -> 0<=b -> 0<n ->  (a+b) mod n == (a mod n + b mod n) mod n.
+Theorem div_mul_le:  forall a b c, 0<=a -> 0<b -> 0<=c -> c*(a/b) <= (c*a)/b.
+Theorem dec_not_not : forall P:Prop, decidable P -> (~ P -> False) -> P.
+Theorem dec_True : decidable True.
+Theorem dec_False : decidable False.
+Theorem dec_or :  forall A B:Prop, decidable A -> decidable B -> decidable (A \/ B).
+Theorem dec_and :  forall A B:Prop, decidable A -> decidable B -> decidable (A /\ B).
+Theorem dec_not : forall A:Prop, decidable A -> decidable (~ A).
+Theorem dec_imp :  forall A B:Prop, decidable A -> decidable B -> decidable (A -> B).
+Theorem dec_iff :  forall A B:Prop, decidable A -> decidable B -> decidable (A<->B).
+Theorem not_not : forall P:Prop, decidable P -> ~ ~ P -> P.
+Theorem not_or : forall A B:Prop, ~ (A \/ B) -> ~ A /\ ~ B.
+Theorem not_and : forall A B:Prop, decidable A -> ~ (A /\ B) -> ~ A \/ ~ B.
+Theorem not_imp : forall A B:Prop, decidable A -> ~ (A -> B) -> A /\ ~ B.
+Theorem imp_simp : forall A B:Prop, decidable A -> (A -> B) -> ~ A \/ B.
+Theorem not_iff :   forall A B:Prop, decidable A -> decidable B ->     ~ (A <-> B) -> (A /\ ~ B) \/ (~ A /\ B).
+Theorem not_true_iff : (True -> False) <-> False.
+Theorem not_false_iff : (False -> False) <-> True.
+Theorem not_not_iff : forall A:Prop, decidable A ->   (((A -> False) -> False) <-> A).
+Theorem contrapositive : forall A B:Prop, decidable A ->   (((A -> False) -> (B -> False)) <-> (B -> A)).
+Theorem not_or_iff : forall A B:Prop,   (A \/ B -> False) <-> (A -> False) /\ (B -> False).
+(* The Mean Value Theorem *) Theorem MVT :   forall (f g:R -> R) (a b:R) (pr1:forall c:R, a < c < b -> derivable_pt f c)     (pr2:forall c:R, a < c < b -> derivable_pt g c),     a < b ->     (forall c:R, a <= c <= b -> continuity_pt f c) ->     (forall c:R, a <= c <= b -> continuity_pt g c) ->     exists c : R,       (exists P : a < c < b,         (g b - g a) * derive_pt f c (pr1 c P) =         (f b - f a) * derive_pt g c (pr2 c P)).
+Theorem MVT_cor2 :   forall (f f':R -> R) (a b:R),     a < b ->     (forall c:R, a <= c <= b -> derivable_pt_lim f c (f' c)) ->     exists c : R, f b - f a = f' c * (b - a) /\ a < c < b.
+Theorem IAF :   forall (f:R -> R) (a b k:R) (pr:derivable f),     a <= b ->     (forall c:R, a <= c <= b -> derive_pt f c (pr c) <= k) ->     f b - f a <= k * (b - a).
+Theorem sigma_split :     forall low high k:nat,       (low <= k)%nat ->       (k < high)%nat -> sigma low high = sigma low k + sigma (S k) high.
+Theorem sigma_diff :     forall low high k:nat,       (low <= k)%nat ->       (k < high)%nat -> sigma low high - sigma low k = sigma (S k) high.
+Theorem sigma_diff_neg :     forall low high k:nat,       (low <= k)%nat ->       (k < high)%nat -> sigma low k - sigma low high = - sigma (S k) high.
+Theorem sigma_first :     forall low high:nat,       (low < high)%nat -> sigma low high = f low + sigma (S low) high.
+Theorem sigma_last :     forall low high:nat,       (low < high)%nat -> sigma low high = f high + sigma low (pred high).
+Theorem sigma_eq_arg : forall low:nat, sigma low low = f low.
+similar to the [nat] schema (Theorem [Natlike_rec]). For that the
+Theorem fold_rec :     forall (A:Type)(P : t -> A -> Type)(f : elt -> A -> A)(i:A)(s:t),      (forall s', Empty s' -> P s' i) ->      (forall x a s' s'', In x s -> ~In x s' -> Add x s' s'' ->        P s' a -> P s'' (f x a)) ->      P s (fold f s i).
+Theorem fold_rec_bis :     forall (A:Type)(P : t -> A -> Type)(f : elt -> A -> A)(i:A)(s:t),      (forall s s' a, s[=]s' -> P s a -> P s' a) ->      (P empty i) ->      (forall x a s', In x s -> ~In x s' -> P s' a -> P (add x s') (f x a)) ->      P s (fold f s i).
+Theorem union_inter_cardinal :    forall s s', cardinal (union s s') + cardinal (inter s s')  = cardinal s  + cardinal s' .
+Theorem Qeq_refl x : x == x.
+Theorem Qeq_sym x y : x == y -> y == x.
+Theorem Qeq_trans x y z : x == y -> y == z -> x == z.
+Theorem Qeq_dec x y : {x==y} + {~ x==y}.
+Theorem Qnot_eq_sym x y : ~x == y -> ~y == x.
+Theorem Qplus_assoc : forall x y z, x+(y+z)==(x+y)+z.
+Theorem Qplus_comm : forall x y, x+y == y+x.
+Theorem Qplus_opp_r : forall q, q+(-q) == 0.
+Theorem Qmult_assoc : forall n m p, n*(m*p)==(n*m)*p.
+Theorem Qmult_1_r : forall n, n*1==n.
+Theorem Qmult_comm : forall x y, x*y==y*x.
+Theorem Qmult_plus_distr_r : forall x y z, x*(y+z)==(x*y)+(x*z).
+Theorem Qmult_plus_distr_l : forall x y z, (x+y)*z==(x*z)+(y*z).
+Theorem Qmult_integral : forall x y, x*y==0 -> x==0 \/ y==0.
+Theorem Qmult_integral_l : forall x y, ~ x == 0 -> x*y == 0 -> y == 0.
+Theorem Qmult_inv_r : forall x, ~ x == 0 -> x*(/x) == 1.
+Theorem Qdiv_mult_l : forall x y, ~ y == 0 -> (x*y)/y == x.
+Theorem Qmult_div_r : forall x y, ~ y == 0 -> y*(x/y) == x.
+Theorem excluded_middle_informative : forall P:Prop, {P} + {~ P}.
+Theorem classical_definite_description :   forall (A : Type) (P : A->Prop), inhabited A ->   { x : A | (exists! x : A, P x) -> P x }.
+Theorem dependent_unique_choice :   forall (A:Type) (B:A -> Type) (R:forall x:A, B x -> Prop),     (forall x:A, exists! y : B x, R x y) ->     (exists f : (forall x:A, B x), forall x:A, R x (f x)).
+Theorem unique_choice :   forall (A B:Type) (R:A -> B -> Prop),     (forall x:A,  exists! y : B, R x y) ->     (exists f : A -> B, forall x:A, R x (f x)).
+Theorem pred_inj : forall n m, P n == P m -> n == m.
+Theorem pred_inj_wd : forall n1 n2, P n1 == P n2 <-> n1 == n2.
+Theorem guarded_iff_omniscient_fun_choice :   GuardedFunctionalChoice <-> OmniscientFunctionalChoice.
+Theorem constructive_indefinite_description_and_small_drinker_iff_epsilon :   (SmallDrinker'sParadox * ConstructiveIndefiniteDescription ->   EpsilonStatement) *   (EpsilonStatement ->    SmallDrinker'sParadox * ConstructiveIndefiniteDescription).
+Theorem dep_non_dep_functional_choice :   DependentFunctionalChoice -> FunctionalChoice.
+Theorem non_dep_dep_functional_choice :   FunctionalChoice -> DependentFunctionalChoice.
+Theorem dep_non_dep_functional_rel_reification :   DependentFunctionalRelReification -> FunctionalRelReification.
+Theorem non_dep_dep_functional_rel_reification :   FunctionalRelReification -> DependentFunctionalRelReification.
+Theorem constructive_definite_descr_excluded_middle :   ConstructiveDefiniteDescription ->   (forall P:Prop, P \/ ~ P) -> (forall P:Prop, {P} + {~ P}).
+Theorem functional_choice_imp_functional_dependent_choice :    FunctionalChoice -> FunctionalDependentChoice.
+Theorem functional_dependent_choice_imp_functional_countable_choice :    FunctionalDependentChoice -> FunctionalCountableChoice.
+Theorem Alt_PI_eq : Alt_PI = PI.
+Theorem lt_le_incl : forall n m, n < m -> n <= m.
+Theorem le_refl : forall n, n <= n.
+Theorem lt_succ_diag_r : forall n, n < S n.
+Theorem le_succ_diag_r : forall n, n <= S n.
+Theorem neq_succ_diag_l : forall n, S n ~= n.
+Theorem neq_succ_diag_r : forall n, n ~= S n.
+Theorem nlt_succ_diag_l : forall n, ~ S n < n.
+Theorem nle_succ_diag_l : forall n, ~ S n <= n.
+Theorem le_succ_l : forall n m, S n <= m <-> n < m.
+Theorem le_gt_cases : forall n m, n <= m \/ n > m.
+Theorem lt_trichotomy : forall n m,  n < m \/ n == m \/ m < n.
+Theorem lt_asymm : forall n m, n < m -> ~ m < n.
+Theorem lt_trans : forall n m p, n < m -> m < p -> n < p.
+Theorem le_trans : forall n m p, n <= m -> m <= p -> n <= p.
+Theorem lt_neq : forall n m, n < m -> n ~= m.
+Theorem le_neq : forall n m, n < m <-> n <= m /\ n ~= m.
+Theorem eq_le_incl : forall n m, n == m -> n <= m.
+Theorem le_lt_trans : forall n m p, n <= m -> m < p -> n < p.
+Theorem lt_le_trans : forall n m p, n < m -> m <= p -> n < p.
+Theorem le_antisymm : forall n m, n <= m -> m <= n -> n == m.
+Theorem le_succ_r : forall n m, n <= S m <-> n <= m \/ n == S m.
+Theorem lt_succ_l : forall n m, S n < m -> n < m.
+Theorem le_le_succ_r : forall n m, n <= m -> n <= S m.
+Theorem lt_lt_succ_r : forall n m, n < m -> n < S m.
+Theorem succ_lt_mono : forall n m, n < m <-> S n < S m.
+Theorem succ_le_mono : forall n m, n <= m <-> S n <= S m.
+Theorem lt_0_1 : 0 < 1.
+Theorem le_0_1 : 0 <= 1.
+Theorem lt_1_2 : 1 < 2.
+Theorem lt_0_2 : 0 < 2.
+Theorem le_0_2 : 0 <= 2.
+Theorem lt_1_l : forall n m, 0 < n -> n < m -> 1 < m.
+Theorem lt_ge_cases : forall n m, n < m \/ n >= m.
+Theorem le_ge_cases : forall n m, n <= m \/ n >= m.
+Theorem lt_gt_cases : forall n m, n ~= m <-> n < m \/ n > m.
+Theorem eq_decidable : forall n m, decidable (n == m).
+Theorem eq_dne : forall n m, ~ ~ n == m <-> n == m.
+Theorem le_ngt : forall n m, n <= m <-> ~ n > m.
+Theorem nlt_ge : forall n m, ~ n < m <-> n >= m.
+Theorem lt_decidable : forall n m, decidable (n < m).
+Theorem lt_dne : forall n m, ~ ~ n < m <-> n < m.
+Theorem nle_gt : forall n m, ~ n <= m <-> n > m.
+Theorem lt_nge : forall n m, n < m <-> ~ n >= m.
+Theorem le_decidable : forall n m, decidable (n <= m).
+Theorem le_dne : forall n m, ~ ~ n <= m <-> n <= m.
+Theorem nlt_succ_r : forall n m, ~ m < S n <-> n < m.
+Theorem lt_exists_pred :   forall z n, z < n -> exists k, n == S k /\ z <= k.
+Theorem strong_right_induction: right_step' -> forall n, z <= n -> A n.
+Theorem right_induction : A z -> right_step -> forall n, z <= n -> A n.
+Theorem right_induction' :   (forall n, n <= z -> A n) -> right_step -> forall n, A n.
+Theorem strong_right_induction' :   (forall n, n <= z -> A n) -> right_step' -> forall n, A n.
+Theorem strong_left_induction: left_step' -> forall n, n <= z -> A n.
+Theorem left_induction : A z -> left_step -> forall n, n <= z -> A n.
+Theorem left_induction' :   (forall n, z <= n -> A n) -> left_step -> forall n, A n.
+Theorem strong_left_induction' :   (forall n, z <= n -> A n) -> left_step' -> forall n, A n.
+Theorem order_induction :   A z ->   (forall n, z <= n -> A n -> A (S n)) ->   (forall n, n < z  -> A (S n) -> A n) ->     forall n, A n.
+Theorem order_induction' :   A z ->   (forall n, z <= n -> A n -> A (S n)) ->   (forall n, n <= z -> A n -> A (P n)) ->     forall n, A n.
+Theorem order_induction_0 :   A 0 ->   (forall n, 0 <= n -> A n -> A (S n)) ->   (forall n, n < 0  -> A (S n) -> A n) ->     forall n, A n.
+Theorem order_induction'_0 :   A 0 ->   (forall n, 0 <= n -> A n -> A (S n)) ->   (forall n, n <= 0 -> A n -> A (P n)) ->     forall n, A n.
+Theorem lt_ind : forall (n : t),   A (S n) ->   (forall m, n < m -> A m -> A (S m)) ->    forall m, n < m -> A m.
+Theorem le_ind : forall (n : t),   A n ->   (forall m, n <= m -> A m -> A (S m)) ->    forall m, n <= m -> A m.
+Theorem lt_wf : well_founded Rlt.
+Theorem gt_wf : well_founded Rgt.
+Theorem Add_preserves_Finite :     forall (X:Ensemble U) (x:U), Finite U X -> Finite U (Add U X x).
+Theorem Singleton_is_finite : forall x:U, Finite U (Singleton U x).
+Theorem Union_preserves_Finite :     forall X Y:Ensemble U, Finite U X -> Finite U Y -> Finite U (Union U X Y).
+Theorem FunctExt_iff_EqDeltaProjs : FunctionalExtensionality <-> EqDeltaProjs.
+Theorem FunctExt_iff_UniqInverse : FunctionalExtensionality <-> UniqueInverse.
+Theorem pred_succ : forall n, pred (succ n) == n.
+Theorem one_succ : 1 == succ 0.
+Theorem two_succ : 2 == succ 1.
+Theorem bi_induction : forall n, A n.
+Theorem add_0_l : forall n, 0 + n == n.
+Theorem add_succ_l : forall n m, (succ n) + m == succ (n + m).
+Theorem sub_0_r : forall n, n - 0 == n.
+Theorem sub_succ_r : forall n m, n - (succ m) == pred (n - m).
+Theorem mul_0_l : forall n, 0 * n == 0.
+Theorem mul_succ_l : forall n m, (succ n) * m == n * m + m.
+Theorem lt_succ_r : forall n m, n < (succ m) <-> n <= m.
+Theorem min_l : forall n m, n <= m -> min n m == n.
+Theorem min_r : forall n m, m <= n -> min n m == m.
+Theorem max_l : forall n m, m <= n -> max n m == n.
+Theorem max_r : forall n m, n <= m -> max n m == m.
+Theorem succ_pred : forall n, succ (pred n) == n.
+Theorem opp_0 : - 0 == 0.
+Theorem opp_succ : forall n, - (succ n) == pred (- n).
+Theorem abs_eq : forall n, 0 <= n -> abs n == n.
+Theorem abs_neq : forall n, n <= 0 -> abs n == -n.
+Theorem sgn_null : forall n, n==0 -> sgn n == 0.
+Theorem sgn_pos : forall n, 0<n -> sgn n == 1.
+Theorem sgn_neg : forall n, n<0 -> sgn n == opp 1.
+Theorem div_mod : forall a b, ~b==0 -> a == b*(div a b) + (modulo a b).
+Theorem mod_pos_bound :  forall a b, 0 < b -> 0 <= modulo a b /\ modulo a b < b.
+Theorem mod_neg_bound :  forall a b, b < 0 -> b < modulo a b /\ modulo a b <= 0.
+Theorem quot_rem : forall a b, ~b==0 -> a == b*(quot a b) + rem a b.
+Theorem rem_bound_pos :  forall a b, 0<=a -> 0<b -> 0 <= rem a b /\ rem a b < b.
+Theorem rem_opp_l : forall a b, ~b==0 -> rem (-a) b == -(rem a b).
+Theorem rem_opp_r : forall a b, ~b==0 -> rem a (-b) == rem a b.
+Theorem Rstar_imp_coherent :  forall (U:Type) (R:Relation U) (x y:U), Rstar U R x y -> coherent U R x y.
+Theorem coherent_symmetric :  forall (U:Type) (R:Relation U), Symmetric U (coherent U R).
+Theorem Strong_confluence :  forall (U:Type) (R:Relation U), Strongly_confluent U R -> Confluent U R.
+Theorem Strong_confluence_direct :  forall (U:Type) (R:Relation U), Strongly_confluent U R -> Confluent U R.
+Theorem Noetherian_contains_Noetherian :  forall (U:Type) (R R':Relation U),    Noetherian U R -> contains U R R' -> Noetherian U R'.
+Theorem Newman :  forall (U:Type) (R:Relation U),    Noetherian U R -> Locally_confluent U R -> Confluent U R.
+Theorem add_carry_spec p q : add_carry p q = succ (p + q).
+Theorem add_comm p q : p + q = q + p.
+Theorem add_succ_r p q : p + succ q = succ (p + q).
+Theorem add_succ_l p q : succ p + q = succ (p + q).
+Theorem add_assoc p q r : p + (q + r) = p + q + r.
+Theorem peano_rect_succ (P:positive->Type) (a:P 1)   (f:forall p, P p -> P (succ p)) (p:positive) :   peano_rect P a f (succ p) = f _ (peano_rect P a f p).
+Theorem peano_rect_base (P:positive->Type) (a:P 1)   (f:forall p, P p -> P (succ p)) :   peano_rect P a f 1 = a.
+Theorem peano_case :   forall P:positive -> Prop,     P 1 -> (forall n:positive, P (succ n)) -> forall p:positive, P p.
+Theorem eq_dep_eq_positive :   forall (P:positive->Type) (p:positive) (x y:P p),     eq_dep positive P p x p y -> x = y.
+Theorem PeanoViewUnique : forall p (q q':PeanoView p), q = q'.
+Theorem mul_comm p q : p * q = q * p.
+Theorem mul_add_distr_l p q r :   p * (q + r) = p * q + p * r.
+Theorem mul_add_distr_r p q r :   (p + q) * r = p * r + q * r.
+Theorem mul_assoc p q r : p * (q * r) = p * q * r.
+Theorem mul_reg_r p q r : p * r = q * r -> p = q.
+Theorem mul_reg_l p q r : r * p = r * q -> p = q.
+Theorem iter_swap :   forall p (A:Type) (f:A -> A) (x:A),     iter p f (f x) = f (iter p f x).
+Theorem iter_succ :   forall p (A:Type) (f:A -> A) (x:A),     iter (succ p) f x = f (iter p f x).
+Theorem iter_add :   forall p q (A:Type) (f:A -> A) (x:A),     iter (p+q) f x = iter p f (iter q f x).
+Theorem iter_invariant :   forall (p:positive) (A:Type) (f:A -> A) (Inv:A -> Prop),     (forall x:A, Inv x -> Inv (f x)) ->     forall x:A, Inv x -> Inv (iter p f x).
+Theorem sub_mask_carry_spec p q :   sub_mask_carry p q = pred_mask (sub_mask p q).
+Theorem sub_mask_spec p q : SubMaskSpec p q (sub_mask p q).
+Theorem sub_mask_nul_iff p q : sub_mask p q = IsNul <-> p = q.
+Theorem sub_mask_diag p : sub_mask p p = IsNul.
+Theorem eqb_eq p q : (p =? q) = true <-> p=q.
+Theorem ltb_lt p q : (p <? q) = true <-> p < q.
+Theorem leb_le p q : (p <=? q) = true <-> p <= q.
+Theorem compare_cont_Eq p q c :  compare_cont p q c = Eq -> c = Eq.
+Theorem compare_cont_refl p c :   compare_cont p p c = c.
+Theorem lt_succ_r p q : p < succ q <-> p <= q.
+Theorem lt_ind : forall (A : positive -> Prop) (n : positive),   A (succ n) ->     (forall m : positive, n < m -> A m -> A (succ m)) ->       forall m : positive, n < m -> A m.
+Theorem sub_succ_r p q : p - (succ q) = pred (p - q).
+Theorem sub_add p q : q < p -> (p-q)+q = p.
+Theorem inj_minus2 : forall n m:nat, (m > n)%nat -> Z.of_nat (n - m) = 0.
+Theorem bi_induction :   A 0 -> (forall n, A n <-> A (Z.succ n)) -> forall n, A n.
+Theorem pred_succ : forall n, Z.pred (Z.succ n) == n.
+Theorem succ_pred : forall n, Z.succ (Z.pred n) == n.
+Theorem one_succ : 1 == Z.succ 0.
+Theorem two_succ : 2 == Z.succ 1.
+Theorem opp_0 : - 0 == 0.
+Theorem opp_succ : forall n, - (Z.succ n) == Z.pred (- n).
+Theorem add_0_l : forall n, 0 + n == n.
+Theorem add_succ_l : forall n m, (Z.succ n) + m == Z.succ (n + m).
+Theorem sub_0_r : forall n, n - 0 == n.
+Theorem sub_succ_r : forall n m, n - (Z.succ m) == Z.pred (n - m).
+Theorem mul_0_l : forall n, 0 * n == 0.
+Theorem mul_succ_l : forall n m, (Z.succ n) * m == n * m + m.
+Theorem lt_irrefl : forall n, ~ (n < n).
+Theorem lt_succ_r : forall n m, n < (Z.succ m) <-> n <= m.
+Theorem min_l : forall n m, n <= m -> Z.min n m == n.
+Theorem min_r : forall n m, m <= n -> Z.min n m == m.
+Theorem max_l : forall n m, m <= n -> Z.max n m == n.
+Theorem max_r : forall n m, n <= m -> Z.max n m == m.
+Theorem lt_nge : forall n m, n < m <-> ~(m<=n).
+Theorem gt_Sn_O : forall n, S n > 0.
+Theorem gt_Sn_n : forall n, S n > n.
+Theorem gt_n_S : forall n m, n > m -> S n > S m.
+Theorem gt_S : forall n m, S n > m -> n > m \/ m = n.
+Theorem le_S_gt : forall n m, S n <= m -> m > n.
+Theorem le_gt_trans : forall n m p, m <= n -> m > p -> n > p.
+Theorem gt_le_trans : forall n m p, n > m -> p <= m -> n > p.
+Theorem gt_trans_S : forall n m p, S n > m -> m > p -> n > p.
+Theorem gt_0_eq : forall n, n > 0 \/ 0 = n.
+Theorem Zabs_intro : forall P (n:Z), P (- n) -> P n -> P (Z.abs n).
+Theorem sub_0_l : forall n, 0 - n == 0.
+Theorem sub_succ : forall n m, S n - S m == n - m.
+Theorem sub_diag : forall n, n - n == 0.
+Theorem sub_gt : forall n m, n > m -> n - m ~= 0.
+Theorem add_sub_assoc : forall n m p, p <= m -> n + (m - p) == (n + m) - p.
+Theorem sub_succ_l : forall n m, n <= m -> S m - n == S (m - n).
+Theorem add_sub : forall n m, (n + m) - m == n.
+Theorem sub_add : forall n m, n <= m -> (m - n) + n == m.
+Theorem add_sub_eq_l : forall n m p, m + p == n -> n - m == p.
+Theorem add_sub_eq_r : forall n m p, m + p == n -> n - p == m.
+Theorem add_sub_eq_nz : forall n m p, p ~= 0 -> n - m == p -> m + p == n.
+Theorem sub_add_distr : forall n m p, n - (m + p) == (n - m) - p.
+Theorem add_sub_swap : forall n m p, p <= n -> n + m - p == n - p + m.
+Theorem le_sub_l : forall n m, n - m <= n.
+Theorem sub_0_le : forall n m, n - m == 0 <-> n <= m.
+Theorem sub_add_le : forall n m, n <= n - m + m.
+Theorem le_sub_le_add_r : forall n m p,  n - p <= m <-> n <= m + p.
+Theorem le_sub_le_add_l : forall n m p, n - m <= p <-> n <= m + p.
+Theorem lt_sub_lt_add_r : forall n m p,  n - p < m -> n < m + p.
+Theorem lt_sub_lt_add_l : forall n m p, n - m < p -> n < m + p.
+Theorem le_add_le_sub_r : forall n m p, n + p <= m -> n <= m - p.
+Theorem le_add_le_sub_l : forall n m p, n + p <= m -> p <= m - n.
+Theorem lt_add_lt_sub_r : forall n m p, n + p < m <-> n < m - p.
+Theorem lt_add_lt_sub_l : forall n m p, n + p < m <-> p < m - n.
+Theorem sub_lt : forall n m, m <= n -> 0 < m -> n - m < n.
+Theorem mul_pred_r : forall n m, n * (P m) == n * m - n.
+Theorem mul_sub_distr_r : forall n m p, (n - m) * p == n * p - m * p.
+Theorem mul_sub_distr_l : forall n m p, p * (n - m) == p * n - p * m.
+Theorem le_alt_dichotomy : forall n m, le_alt n m \/ le_alt m n.
+Theorem add_dichotomy :   forall n m, (exists p, p + n == m) \/ (exists p, p + m == n).
+Theorem nil_cons : forall (x:A) (l:list A), [] <> x :: l.
+Theorem destruct_list : forall l : list A, {x:A & {tl:list A | l = x::tl}}+{l = []}.
+Theorem hd_error_nil : hd_error (@nil A) = None.
+Theorem hd_error_cons : forall (l : list A) (x : A), hd_error (x::l) = Some x.
+Theorem in_eq : forall (a:A) (l:list A), In a (a :: l).
+Theorem in_cons : forall (a b:A) (l:list A), In b l -> In b (a :: l).
+Theorem in_nil : forall a:A, ~ In a [].
+Theorem in_split : forall x (l:list A), In x l -> exists l1 l2, l = l1++x::l2.
+Theorem in_dec :     (forall x y:A, {x = y} + {x <> y}) ->     forall (a:A) (l:list A), {In a l} + {~ In a l}.
+Theorem app_cons_not_nil : forall (x y:list A) (a:A), [] <> x ++ a :: y.
+Theorem app_nil_l : forall l:list A, [] ++ l = l.
+Theorem app_nil_r : forall l:list A, l ++ [] = l.
+Theorem app_nil_end : forall (l:list A), l = l ++ [].
+Theorem app_assoc : forall l m n:list A, l ++ m ++ n = (l ++ m) ++ n.
+Theorem app_assoc_reverse : forall l m n:list A, (l ++ m) ++ n = l ++ m ++ n.
+Theorem app_comm_cons : forall (x y:list A) (a:A), a :: (x ++ y) = (a :: x) ++ y.
+Theorem app_eq_nil : forall l l':list A, l ++ l' = [] -> l = [] /\ l' = [].
+Theorem app_eq_unit :     forall (x y:list A) (a:A),       x ++ y = [a] -> x = [] /\ y = [a] \/ x = [a] /\ y = [].
+Theorem remove_In : forall (l : list A) (x : A), ~ In x (remove x l).
+Theorem count_occ_In (l : list A) (x : A) : In x l <-> count_occ l x > 0.
+Theorem count_occ_inv_nil (l : list A) :     (forall x:A, count_occ l x = 0) <-> l = [].
+Theorem rev_ind :       forall P:list A -> Prop, 	P [] -> 	(forall (x:A) (l:list A), P l -> P (l ++ [x])) -> forall l:list A, P l.
+Theorem fold_symmetric :     forall (A:Type) (f:A -> A -> A),       (forall x y z:A, f x (f y z) = f (f x y) z) ->       (forall x y:A, f x y = f y x) ->       forall (a0:A) (l:list A), fold_left f l a0 = fold_right f a0 l.
+Theorem Forall2_refl : forall A B (R:A->B->Prop), Forall2 R [] [].
+Theorem Forall2_app_inv_l : forall A B (R:A->B->Prop) l1 l2 l',   Forall2 R (l1 ++ l2) l' ->   exists l1' l2', Forall2 R l1 l1' /\ Forall2 R l2 l2' /\ l' = l1' ++ l2'.
+Theorem Forall2_app_inv_r : forall A B (R:A->B->Prop) l1' l2' l,   Forall2 R l (l1' ++ l2') ->   exists l1 l2, Forall2 R l1 l1' /\ Forall2 R l2 l2' /\ l = l1 ++ l2.
+Theorem Forall2_app : forall A B (R:A->B->Prop) l1 l2 l1' l2',   Forall2 R l1 l1' -> Forall2 R l2 l2' -> Forall2 R (l1 ++ l2) (l1' ++ l2').
+Theorem wB_div_2:  2 * (wB / 2) = wB.
+Theorem wwB_div_2 : wwB / 2 = wB / 2 * wB.
+Theorem gt_wB_1 : 1 < wB.
+Theorem gt_wB_0 : 0 < wB.
+Theorem pred_succ : forall n, P (S n) == n.
+Theorem one_succ : one == succ zero.
+Theorem two_succ : two == succ one.
+Theorem bi_induction : forall n, A n.
+Theorem add_0_l : forall n, 0 + n == n.
+Theorem add_succ_l : forall n m, (S n) + m == S (n + m).
+Theorem sub_0_r : forall n, n - 0 == n.
+Theorem sub_succ_r : forall n m, n - (S m) == P (n - m).
+Theorem mul_0_l : forall n, 0 * n == 0.
+Theorem mul_succ_l : forall n m, (S n) * m == n * m + m.
+Theorem strong_rec_fixpoint : forall (a : A) (n : N.t),
+Theorem strong_rec_0_any : forall (a : A)(any : N.t->A),
+Theorem memo_get_correct: forall n, memo_get n memo_list = f n.
+Theorem imemo_get_correct: forall n, memo_get n imemo_list = f n.
+Theorem dmemo_get_correct: forall n, dmemo_get n dmemo_list = f n.
+Theorem dimemo_get_correct: forall n, dmemo_get n dimemo_list = f n.
+Theorem lfact_correct n: lfact n = tfact n.
+Theorem ofnat_S_gt_0 :   forall n : nat, 0 < [Datatypes.S n].
+Theorem ofnat_S_neq_0 :   forall n : nat, 0 ~= [Datatypes.S n].
+Theorem sin_gt_0 : forall x:R, 0 < x -> x < PI -> 0 < sin x.
+Theorem cos_gt_0 : forall x:R, - (PI / 2) < x -> x < PI / 2 -> 0 < cos x.
+Theorem Qpower_decomp p x y :   Qpower_positive (x#y) p = x ^ Zpos p # (y ^ p).
+Theorem strong_spec_of_Q: forall q: Q, [of_Q q] = q.
+Theorem spec_of_Q: forall q: Q, [of_Q q] == q.
+Theorem spec_compare: forall q1 q2, (compare q1 q2) = ([q1] ?= [q2]).
+Theorem spec_eq_bool: forall x y, eq_bool x y = Qeq_bool [x] [y].
+Theorem strong_spec_check_int : forall n d, [check_int n d] = [Qq n d].
+Theorem spec_norm: forall n q, [norm n q] == [Qq n q].
+Theorem strong_spec_norm : forall p q, [norm p q] = Qred [Qq p q].
+Theorem spec_red : forall x, [red x] == [x].
+Theorem strong_spec_red : forall x, [red x] = Qred [x].
+Theorem spec_add : forall x y, [add x y] == [x] + [y].
+Theorem spec_add_norm : forall x y, [add_norm x y] == [x] + [y].
+Theorem strong_spec_opp: forall q, [opp q] = -[q].
+Theorem spec_opp : forall q, [opp q] == -[q].
+Theorem spec_sub : forall x y, [sub x y] == [x] - [y].
+Theorem spec_sub_norm : forall x y, [sub_norm x y] == [x] - [y].
+Theorem spec_mul : forall x y, [mul x y] == [x] * [y].
+Theorem spec_mul_norm : forall x y, [mul_norm x y] == [x] * [y].
+Theorem spec_inv : forall x, [inv x] == /[x].
+Theorem spec_inv_norm : forall x, [inv_norm x] == /[x].
+Theorem spec_div x y: [div x y] == [x] / [y].
+Theorem spec_div_norm x y: [div_norm x y] == [x] / [y].
+Theorem spec_square : forall x, [square x] == [x] ^ 2.
+Theorem spec_power_pos : forall x p, [power_pos x p] == [x] ^ Zpos p.
+Theorem spec_power : forall x z, [power x z] == [x]^z.
+Theorem spec_power_norm : forall x z, [power_norm x z] == [x]^z.
+Theorem strong_spec_of_Qc : forall q, [of_Qc q] = q.
+Theorem spec_of_Qc: forall q, [[of_Qc q]] = q.
+Theorem spec_oppc: forall q, [[opp q]] = -[[q]].
+Theorem spec_oppc_bis : forall q : Qc, [opp (of_Qc q)] = - q.
+Theorem spec_comparec: forall q1 q2,   compare q1 q2 = ([[q1]] ?= [[q2]]).
+Theorem spec_addc x y:   [[add x y]] = [[x]] + [[y]].
+Theorem spec_add_normc x y:   [[add_norm x y]] = [[x]] + [[y]].
+Theorem spec_add_normc_bis : forall x y : Qc,    [add_norm (of_Qc x) (of_Qc y)] = x+y.
+Theorem spec_subc x y:  [[sub x y]] = [[x]] - [[y]].
+Theorem spec_sub_normc x y:    [[sub_norm x y]] = [[x]] - [[y]].
+Theorem spec_sub_normc_bis : forall x y : Qc,    [sub_norm (of_Qc x) (of_Qc y)] = x-y.
+Theorem spec_mulc x y:   [[mul x y]] = [[x]] * [[y]].
+Theorem spec_mul_normc x y:    [[mul_norm x y]] = [[x]] * [[y]].
+Theorem spec_mul_normc_bis : forall x y : Qc,    [mul_norm (of_Qc x) (of_Qc y)] = x*y.
+Theorem spec_invc x:    [[inv x]] =  /[[x]].
+Theorem spec_inv_normc x:    [[inv_norm x]] =  /[[x]].
+Theorem spec_inv_normc_bis : forall x : Qc,    [inv_norm (of_Qc x)] = /x.
+Theorem spec_divc x y: [[div x y]] = [[x]] / [[y]].
+Theorem spec_div_normc x y: [[div_norm x y]] = [[x]] / [[y]].
+Theorem spec_div_normc_bis : forall x y : Qc,    [div_norm (of_Qc x) (of_Qc y)] = x/y.
+Theorem spec_squarec x: [[square x]] = [[x]]^2.
+Theorem spec_power_posc x p:    [[power_pos x p]] = [[x]] ^ Pos.to_nat p.
+Theorem unique_choice :  forall (A B:Type) (R:A -> B -> Prop),    (forall x:A,  exists! y : B, R x y) ->    (exists f:A->B, forall x:A, R x (f x)).
+Theorem classic_set_in_prop_context :   forall C:Prop, ((forall P:Prop, {P} + {~ P}) -> C) -> C.
+Theorem Qc_eq_dec : forall x y:Qc, {x=y} + {x<>y}.
+Theorem Qcplus_assoc : forall x y z, x+(y+z)=(x+y)+z.
+Theorem Qcplus_comm : forall x y, x+y = y+x.
+Theorem Qcplus_opp_r : forall q, q+(-q) = 0.
+Theorem Qcmult_assoc : forall n m p, n*(m*p)=(n*m)*p.
+Theorem Qcmult_1_r : forall n, n*1=n.
+Theorem Qcmult_comm : forall x y, x*y=y*x.
+Theorem Qcmult_plus_distr_r : forall x y z, x*(y+z)=(x*y)+(x*z).
+Theorem Qcmult_plus_distr_l : forall x y z, (x+y)*z=(x*z)+(y*z).
+Theorem Qcmult_integral : forall x y, x*y=0 -> x=0 \/ y=0.
+Theorem Qcmult_integral_l : forall x y, ~ x = 0 -> x*y = 0 -> y = 0.
+Theorem Qcmult_inv_r : forall x, x<>0 -> x*(/x) = 1.
+Theorem Qcmult_inv_l : forall x, x<>0 -> (/x)*x = 1.
+Theorem Qcdiv_mult_l : forall x y, y<>0 -> (x*y)/y = x.
+Theorem Qcmult_div_r : forall x y, ~ y = 0 -> y*(x/y) = x.
+Theorem Qc_decomp: forall x y: Qc,   (Qred x = x -> Qred y = y -> (x:Q) = y)-> x = y.
+Theorem Qred_compare: forall x y,   Qcompare x y = Qcompare (Qred x) (Qred y).
+Theorem Empty_set_zero : forall X:Ensemble U, Union U (Empty_set U) X = X.
+Theorem Empty_set_zero' : forall x:U, Add U (Empty_set U) x = Singleton U x.
+Theorem Union_commutative : forall A B:Ensemble U, Union U A B = Union U B A.
+Theorem Union_associative :     forall A B C:Ensemble U, Union U (Union U A B) C = Union U A (Union U B C).
+Theorem Union_idempotent : forall A:Ensemble U, Union U A A = A.
+Theorem Couple_as_union :     forall x y:U, Union U (Singleton U x) (Singleton U y) = Couple U x y.
+Theorem Triple_as_union :     forall x y z:U,       Union U (Union U (Singleton U x) (Singleton U y)) (Singleton U z) =       Triple U x y z.
+Theorem Triple_as_Couple : forall x y:U, Couple U x y = Triple U x x y.
+Theorem Triple_as_Couple_Singleton :     forall x y z:U, Triple U x y z = Union U (Couple U x y) (Singleton U z).
+Theorem Intersection_commutative :     forall A B:Ensemble U, Intersection U A B = Intersection U B A.
+Theorem Distributivity :     forall A B C:Ensemble U,       Intersection U A (Union U B C) =       Union U (Intersection U A B) (Intersection U A C).
+Theorem Distributivity' :     forall A B C:Ensemble U,       Union U A (Intersection U B C) =       Intersection U (Union U A B) (Union U A C).
+Theorem Union_add :     forall (A B:Ensemble U) (x:U), Add U (Union U A B) x = Union U A (Add U B x).
+Theorem Non_disjoint_union :     forall (X:Ensemble U) (x:U), In U X x -> Add U X x = X.
+Theorem Non_disjoint_union' :     forall (X:Ensemble U) (x:U), ~ In U X x -> Subtract U X x = X.
+Theorem pred_of_minus : forall n, pred n = n - 1.
+Theorem minus_le_compat_r : forall n m p : nat, n <= m -> n - p <= m - p.
+Theorem minus_le_compat_l : forall n m p : nat, n <= m -> p - m <= p - n.
+Theorem not_le_minus_0 : forall n m, ~ m <= n -> n - m = 0.
+Theorem Zpower_nat_Zpower z n : 0 <= n ->  z^n = Zpower_nat z (Z.abs_nat n).
+Theorem Zpower_exp x n m :   n >= 0 -> m >= 0 -> x ^ (n + m) = x ^ n * x ^ m.
+Theorem shift_nat_correct n x :     Zpos (shift_nat n x) = Zpower_nat 2 n * Zpos x.
+Theorem two_power_nat_correct n : two_power_nat n = Zpower_nat 2 n.
+Theorem shift_pos_correct p x :     Zpos (shift_pos p x) = Z.pow_pos 2 p * Zpos x.
+Theorem two_power_pos_correct x : two_power_pos x = Z.pow_pos 2 x.
+Theorem two_power_pos_is_exp x y :    two_power_pos (x + y) = two_power_pos x * two_power_pos y.
+Theorem two_p_is_exp x y :     0 <= x -> 0 <= y -> two_p (x + y) = two_p x * two_p y.
+Theorem le_refl : forall n, n <= n.
+Theorem le_trans : forall n m p, n <= m -> m <= p -> n <= p.
+Theorem le_0_n : forall n, 0 <= n.
+Theorem le_Sn_0 : forall n, ~ S n <= 0.
+Theorem le_n_0_eq : forall n, n <= 0 -> 0 = n.
+Theorem le_n_S : forall n m, n <= m -> S n <= S m.
+Theorem le_n_Sn : forall n, n <= S n.
+Theorem le_Sn_le : forall n m, S n <= m -> n <= m.
+Theorem le_S_n : forall n m, S n <= S m -> n <= m.
+Theorem le_Sn_n : forall n, ~ S n <= n.
+Theorem le_pred_n : forall n, pred n <= n.
+Theorem le_pred : forall n m, n <= m -> pred n <= pred m.
+Theorem le_antisym : forall n m, n <= m -> m <= n -> n = m.
+Theorem spec_pos: forall x, 0 <= [x].
+Theorem spec_0: [zero] = 0.
+Theorem spec_1: [one] = 1.
+Theorem spec_succ: forall n, [succ n] = [n] + 1.
+Theorem spec_add: forall x y, [add x y] = [x] + [y].
+Theorem spec_pred_pos : forall x, 0 < [x] -> [pred x] = [x] - 1.
+Theorem spec_pred0 : forall x, [x] = 0 -> [pred x] = 0.
+Theorem spec_sub_pos : forall x y, [y] <= [x] -> [sub x y] = [x] - [y].
+Theorem spec_sub0 : forall x y, [x] < [y] -> [sub x y] = 0.
+Theorem spec_compare : forall x y,    compare x y = Z.compare [x] [y].
+Theorem spec_eqb x y : eqb x y = Z.eqb [x] [y].
+Theorem spec_ltb x y : ltb x y = Z.ltb [x] [y].
+Theorem spec_leb x y : leb x y = Z.leb [x] [y].
+Theorem spec_max : forall n m, [max n m] = Z.max [n] [m].
+Theorem spec_min : forall n m, [min n m] = Z.min [n] [m].
+Theorem spec_mul : forall x y, [mul x y] = [x] * [y].
+Theorem spec_div_gt: forall x y, [x] > [y] -> 0 < [y] ->   let (q,r) := div_gt x y in   [q] = [x] / [y] /\ [r] = [x] mod [y].
+Theorem spec_div_eucl: forall x y,       let (q,r) := div_eucl x y in       ([q], [r]) = Z.div_eucl [x] [y].
+Theorem spec_div:    forall x y, [div x y] = [x] / [y].
+Theorem spec_mod_gt:    forall x y, [x] > [y] -> 0 < [y] -> [mod_gt x y] = [x] mod [y].
+Theorem spec_modulo:    forall x y, [modulo x y] = [x] mod [y].
+Theorem spec_square: forall x, [square x] = [x] * [x].
+Theorem spec_sqrt_aux: forall x, [sqrt x] ^ 2 <= [x] < ([sqrt x] + 1) ^ 2.
+Theorem spec_sqrt: forall x, [sqrt x] = Z.sqrt [x].
+Theorem spec_pow_pos: forall x n, [pow_pos x n] = [x] ^ Zpos n.
+Theorem spec_pow_N: forall x n, [pow_N x n] = [x] ^ Z.of_N n.
+Theorem spec_pow : forall x y, [pow x y] = [x] ^ [y].
+Theorem spec_digits: forall x, 0 <= [x] < 2 ^ Zpos (digits x).
+Theorem Zspec_gcd_gt_body: forall a b cont p,     [a] > [b] -> [a] < 2 ^ p ->       (forall a1 b1, [a1] < 2 ^ (p - 1) -> [a1] > [b1] ->          Zis_gcd  [a1] [b1] [cont a1 b1]) ->       Zis_gcd [a] [b] [gcd_gt_body a b cont].
+Theorem Zspec_gcd_gt_aux: forall p n a b cont,     [a] > [b] -> [a] < 2 ^ (Zpos p + n) ->       (forall a1 b1, [a1] < 2 ^ n -> [a1] > [b1] ->             Zis_gcd [a1] [b1] [cont a1 b1]) ->           Zis_gcd [a] [b] [gcd_gt_aux p cont a b].
+Theorem spec_gcd_gt: forall a b,    [a] > [b] -> [gcd_gt a b] = Z.gcd [a] [b].
+Theorem spec_gcd: forall a b, [gcd a b] = Z.gcd [a] [b].
+Theorem spec_even_aux: forall x,    if even x then [x] mod 2 = 0 else [x] mod 2 = 1.
+Theorem spec_even: forall x, even x = Z.even [x].
+Theorem spec_odd: forall x, odd x = Z.odd [x].
+Theorem pheight_correct: forall p,     Zpos p < 2 ^ (Zpos (ZnZ.digits (dom_op 0)) * 2 ^ (Z.of_nat (pheight p))).
+Theorem spec_of_pos: forall x,    [of_pos x] = Zpos x.
+Theorem spec_of_N: forall x,    [of_N x] = Z.of_N x.
+Theorem spec_head00: forall x, [x] = 0 -> [head0 x] = Zpos (digits x).
+Theorem spec_head0: forall x, 0 < [x] ->    2 ^ (Zpos (digits x) - 1) <= 2 ^ [head0 x] * [x] < 2 ^ Zpos (digits x).
+Theorem spec_tail00: forall x, [x] = 0 -> [tail0 x] = Zpos (digits x).
+Theorem spec_tail0: forall x,    0 < [x] -> exists y, 0 <= y /\ [x] = (2 * y + 1) * 2 ^ [tail0 x].
+Theorem spec_Ndigits: forall x, [Ndigits x] = Zpos (digits x).
+Theorem spec_shiftr_pow2 : forall x n,   [shiftr x n] = [x] / 2 ^ [n].
+Theorem spec_unsafe_shiftl_aux : forall x p K,   0 <= K ->   [x] < 2^K ->   [p] + K <= Zpos (digits x) ->   [unsafe_shiftl x p] = [x] * 2 ^ [p].
+Theorem spec_unsafe_shiftl: forall x p,   [p] <= [head0 x] -> [unsafe_shiftl x p] = [x] * 2 ^ [p].
+Theorem spec_double_size_digits:    forall x, Zpos (digits (double_size x)) = 2 * (Zpos (digits x)).
+Theorem spec_double_size: forall x, [double_size x] = [x].
+Theorem spec_double_size_head0:    forall x, 2 * [head0 x] <= [head0 (double_size x)].
+Theorem spec_double_size_head0_pos:    forall x, 0 < [head0 (double_size x)].
+Theorem spec_shiftl_aux_body: forall n x p cont,        2^ Zpos p  <=  [head0 x]  ->       (forall x, 2 ^ (Zpos p + 1) <= [head0 x]->          [cont x n] = [x] * 2 ^ [n]) ->       [shiftl_aux_body cont x n] = [x] * 2 ^ [n].
+Theorem spec_shiftl_aux: forall p q x n cont,     2 ^ (Zpos q) <= [head0 x] ->       (forall x, 2 ^ (Zpos p + Zpos q) <= [head0 x] ->          [cont x n] = [x] * 2 ^ [n]) ->       [shiftl_aux p cont x n] = [x] * 2 ^ [n].
+Theorem spec_shiftl_pow2 : forall x n,    [shiftl x n] = [x] * 2 ^ [n].
+Theorem peano_rect_base P a f : peano_rect P a f 0 = a.
+Theorem peano_rect_succ P a f n :  peano_rect P a f (succ n) = f n (peano_rect P a f n).
+Theorem peano_rec_base P a f : peano_rec P a f 0 = a.
+Theorem peano_rec_succ P a f n :  peano_rec P a f (succ n) = f n (peano_rec P a f n).
+Theorem pred_succ n : pred (succ n) = n.
+Theorem pred_sub n : pred n = sub n 1.
+Theorem succ_0_discr n : succ n <> 0.
+Theorem add_0_l n : 0 + n = n.
+Theorem add_succ_l n m : succ n + m = succ (n + m).
+Theorem sub_0_r n : n - 0 = n.
+Theorem sub_succ_r n m : n - succ m = pred (n - m).
+Theorem mul_0_l n : 0 * n = 0.
+Theorem mul_succ_l n m : (succ n) * m = n * m + m.
+Theorem compare_eq_iff n m : (n ?= m) = Eq <-> n = m.
+Theorem compare_lt_iff n m : (n ?= m) = Lt <-> n < m.
+Theorem compare_le_iff n m : (n ?= m) <> Gt <-> n <= m.
+Theorem compare_antisym n m : (m ?= n) = CompOpp (n ?= m).
+Theorem add_0_r n : n + 0 = n.
+Theorem add_comm n m : n + m = m + n.
+Theorem add_assoc n m p : n + (m + p) = n + m + p.
+Theorem mul_comm n m : n * m = m * n.
+Theorem min_l n m : n <= m -> min n m = n.
+Theorem min_r n m : m <= n -> min n m = m.
+Theorem max_l n m : m <= n -> max n m = n.
+Theorem max_r n m : n <= m -> max n m = m.
+Theorem compare_0_r n : (n ?= 0) <> Lt.
+Theorem pos_div_eucl_spec (a:positive)(b:N) :   let (q,r) := pos_div_eucl a b in pos a = q * b + r.
+Theorem div_eucl_spec a b :  let (q,r) := div_eucl a b in a = b * q + r.
+Theorem div_mod' a b : a = b * (a/b) + (a mod b).
+Theorem pos_div_eucl_remainder (a:positive) (b:N) :   b<>0 -> snd (pos_div_eucl a b) < b.
+Theorem mod_lt a b : b<>0 -> a mod b < b.
+Theorem mod_bound_pos a b : 0<=a -> 0<b -> 0 <= a mod b < b.
+Theorem bi_induction :   forall A : N -> Prop, Proper (Logic.eq==>iff) A ->
+Theorem recursion_0 {A} (a:A) (f:N->A->A) : recursion a f 0 = a.
+Theorem recursion_succ {A} (Aeq : relation A) (a : A) (f : N -> A -> A):  Aeq a a -> Proper (Logic.eq==>Aeq==>Aeq) f ->
+Theorem O_or_S : forall n, {m : nat | S m = n} + {0 = n}.
+Theorem eq_nat_dec : forall n m, {n = m} + {n <> m}.
+Theorem dec_eq_nat : forall n m, decidable (n = m).
+Theorem ascii_N_embedding :   forall a : ascii, ascii_of_N (N_of_ascii a) = a.
+Theorem N_ascii_embedding :   forall n:N, (n < 256)%N -> N_of_ascii (ascii_of_N n) = n.
+Theorem ascii_nat_embedding :   forall a : ascii, ascii_of_nat (nat_of_ascii a) = a.
+Theorem nat_ascii_embedding :   forall n : nat, n < 256 -> nat_of_ascii (ascii_of_nat n) = n.
+Theorem neq_sym : forall n m, n ~= m -> m ~= n.
+Theorem eq_stepl : forall x y z, x == y -> x == z -> z == y.
+Theorem succ_inj : forall n1 n2, S n1 == S n2 -> n1 == n2.
+Theorem succ_inj_wd : forall n1 n2, S n1 == S n2 <-> n1 == n2.
+Theorem succ_inj_wd_neg : forall n m, S n ~= S m <-> n ~= m.
+Theorem central_induction :   forall z, A z ->     (forall n, A n <-> A (S n)) ->       forall n, A n.
+Theorem add_pred_l : forall n m, P n + m == P (n + m).
+Theorem add_pred_r : forall n m, n + P m == P (n + m).
+Theorem add_opp_r : forall n m, n + (- m) == n - m.
+Theorem sub_0_l : forall n, 0 - n == - n.
+Theorem sub_succ_l : forall n m, S n - m == S (n - m).
+Theorem sub_pred_l : forall n m, P n - m == P (n - m).
+Theorem sub_pred_r : forall n m, n - (P m) == S (n - m).
+Theorem opp_pred : forall n, - (P n) == S (- n).
+Theorem sub_diag : forall n, n - n == 0.
+Theorem add_opp_diag_l : forall n, - n + n == 0.
+Theorem add_opp_diag_r : forall n, n + (- n) == 0.
+Theorem add_opp_l : forall n m, - m + n == n - m.
+Theorem add_sub_assoc : forall n m p, n + (m - p) == (n + m) - p.
+Theorem opp_involutive : forall n, - (- n) == n.
+Theorem opp_add_distr : forall n m, - (n + m) == - n + (- m).
+Theorem opp_sub_distr : forall n m, - (n - m) == - n + m.
+Theorem opp_inj : forall n m, - n == - m -> n == m.
+Theorem opp_inj_wd : forall n m, - n == - m <-> n == m.
+Theorem eq_opp_l : forall n m, - n == m <-> n == - m.
+Theorem eq_opp_r : forall n m, n == - m <-> - n == m.
+Theorem sub_add_distr : forall n m p, n - (m + p) == (n - m) - p.
+Theorem sub_sub_distr : forall n m p, n - (m - p) == (n - m) + p.
+Theorem sub_opp_l : forall n m, - n - m == - m - n.
+Theorem sub_opp_r : forall n m, n - (- m) == n + m.
+Theorem add_sub_swap : forall n m p, n + m - p == n - p + m.
+Theorem sub_cancel_l : forall n m p, n - m == n - p <-> m == p.
+Theorem sub_cancel_r : forall n m p, n - p == m - p <-> n == m.
+Theorem add_move_l : forall n m p, n + m == p <-> m == p - n.
+Theorem add_move_r : forall n m p, n + m == p <-> n == p - m.
+Theorem sub_move_l : forall n m p, n - m == p <-> - m == p - n.
+Theorem sub_move_r : forall n m p, n - m == p <-> n == p + m.
+Theorem add_move_0_l : forall n m, n + m == 0 <-> m == - n.
+Theorem add_move_0_r : forall n m, n + m == 0 <-> n == - m.
+Theorem sub_move_0_l : forall n m, n - m == 0 <-> - m == - n.
+Theorem sub_move_0_r : forall n m, n - m == 0 <-> n == m.
+Theorem add_simpl_l : forall n m, n + m - n == m.
+Theorem add_simpl_r : forall n m, n + m - m == n.
+Theorem sub_simpl_l : forall n m, - n - m + n == - m.
+Theorem sub_simpl_r : forall n m, n - m + m == n.
+Theorem sub_add : forall n m, m - n + n == m.
+Theorem add_add_simpl_l_l : forall n m p, (n + m) - (n + p) == m - p.
+Theorem add_add_simpl_l_r : forall n m p, (n + m) - (p + n) == m - p.
+Theorem add_add_simpl_r_l : forall n m p, (n + m) - (m + p) == n - p.
+Theorem add_add_simpl_r_r : forall n m p, (n + m) - (p + m) == n - p.
+Theorem sub_add_simpl_r_l : forall n m p, (n - m) + (m + p) == n + p.
+Theorem sub_add_simpl_r_r : forall n m p, (n - m) + (p + m) == n + p.
+Theorem div_mod a b : b<>0 -> a = b*(div a b) + modulo a b.
+Theorem quotrem_eq a b : let (q,r) := quotrem a b in a = q * b + r.
+Theorem ggcd_opp a b :   ggcd (-a) b = (let '(g,(aa,bb)) := ggcd a b in (g,(-aa,bb))).
+Theorem mul_0_r : forall n, n * 0 == 0.
+Theorem mul_succ_r : forall n m, n * (S m) == n * m + n.
+Theorem mul_comm : forall n m, n * m == m * n.
+Theorem mul_add_distr_r : forall n m p, (n + m) * p == n * p + m * p.
+Theorem mul_add_distr_l : forall n m p, n * (m + p) == n * m + n * p.
+Theorem mul_assoc : forall n m p, n * (m * p) == (n * m) * p.
+Theorem mul_1_l : forall n, 1 * n == n.
+Theorem mul_1_r : forall n, n * 1 == n.
+Theorem mul_shuffle0 : forall n m p, n*m*p == n*p*m.
+Theorem mul_shuffle1 : forall n m p q, (n * m) * (p * q) == (n * p) * (m * q).
+Theorem mul_shuffle2 : forall n m p q, (n * m) * (p * q) == (n * q) * (m * p).
+Theorem mul_shuffle3 : forall n m p, n * (m * p) == m * (n * p).
+Theorem wf_clos_trans : well_founded R -> well_founded trans_clos.
+Theorem wf_lex_exp : well_founded leA -> well_founded Lex_Exp.
+Theorem mult_add_ineq: forall xH yH crossH,                0 <= [|xH|] * [|yH|] + [|crossH|] < wwB.
+Theorem alternated_series :   forall Un:nat -> R,     Un_decreasing Un ->     Un_cv Un 0 ->     { l:R | Un_cv (fun N:nat => sum_f_R0 (tg_alt Un) N) l }.
+Theorem alternated_series_ineq :   forall (Un:nat -> R) (l:R) (N:nat),     Un_decreasing Un ->     Un_cv Un 0 ->     Un_cv (fun N:nat => sum_f_R0 (tg_alt Un) N) l ->     sum_f_R0 (tg_alt Un) (S (2 * N)) <= l <= sum_f_R0 (tg_alt Un) (2 * N).
+Theorem le_plus_trans : forall n m p, n <= m -> n <= m + p.
+Theorem lt_plus_trans : forall n m p, n < m -> n < m + p.
+Theorem excluded_middle_informative : forall P:Prop, {P} + {~ P}.
+Theorem classical_indefinite_description :   forall (A : Type) (P : A->Prop), inhabited A ->     { x : A | (exists x, P x) -> P x }.
+Theorem choice :   forall (A B : Type) (R : A->B->Prop),     (forall x : A, exists y : B, R x y) ->     (exists f : A->B, forall x : A, R x (f x)).
+Theorem log_inf_correct :     forall x:positive,       0 <= log_inf x /\ two_p (log_inf x) <= Zpos x < two_p (Z.succ (log_inf x)).
+Theorem log_sup_log_inf :     forall p:positive,       IF Zpos p = two_p (log_inf p) then Zpos p = two_p (log_sup p)     else log_sup p = Z.succ (log_inf p).
+Theorem log_sup_correct2 :     forall x:positive, two_p (Z.pred (log_sup x)) < Zpos x <= two_p (log_sup x).
+Theorem log_near_correct1 : forall p:positive, 0 <= log_near p.
+Theorem log_near_correct2 :     forall p:positive, log_near p = log_inf p \/ log_near p = log_sup p.
+Theorem proj1 : A /\ B -> A.
+Theorem proj2 : A /\ B -> B.
+Theorem iff_refl : forall A:Prop, A <-> A.
+Theorem iff_trans : forall A B C:Prop, (A <-> B) -> (B <-> C) -> (A <-> C).
+Theorem iff_sym : forall A B:Prop, (A <-> B) -> (B <-> A).
+Theorem neg_false : forall A : Prop, ~ A <-> (A <-> False).
+Theorem and_cancel_l : forall A B C : Prop,   (B -> A) -> (C -> A) -> ((A /\ B <-> A /\ C) <-> (B <-> C)).
+Theorem and_cancel_r : forall A B C : Prop,   (B -> A) -> (C -> A) -> ((B /\ A <-> C /\ A) <-> (B <-> C)).
+Theorem and_comm : forall A B : Prop, A /\ B <-> B /\ A.
+Theorem and_assoc : forall A B C : Prop, (A /\ B) /\ C <-> A /\ B /\ C.
+Theorem or_cancel_l : forall A B C : Prop,   (B -> ~ A) -> (C -> ~ A) -> ((A \/ B <-> A \/ C) <-> (B <-> C)).
+Theorem or_cancel_r : forall A B C : Prop,   (B -> ~ A) -> (C -> ~ A) -> ((B \/ A <-> C \/ A) <-> (B <-> C)).
+Theorem or_comm : forall A B : Prop, (A \/ B) <-> (B \/ A).
+Theorem or_assoc : forall A B C : Prop, (A \/ B) \/ C <-> A \/ B \/ C.
+Theorem and_iff_compat_l : forall A B C : Prop,   (B <-> C) -> (A /\ B <-> A /\ C).
+Theorem and_iff_compat_r : forall A B C : Prop,   (B <-> C) -> (B /\ A <-> C /\ A).
+Theorem or_iff_compat_l : forall A B C : Prop,   (B <-> C) -> (A \/ B <-> A \/ C).
+Theorem or_iff_compat_r : forall A B C : Prop,   (B <-> C) -> (B \/ A <-> C \/ A).
+Theorem inst : forall x:A, all (fun x => P x) -> P x.
+Theorem gen : forall (B:Prop) (f:forall y:A, B -> P y), B -> all P.
+Theorem absurd : forall A C:Prop, A -> ~ A -> C.
+Theorem eq_sym : x = y -> y = x.
+Theorem eq_trans : x = y -> y = z -> x = z.
+Theorem f_equal : x = y -> f x = f y.
+Theorem not_eq_sym : x <> y -> y <> x.
+Theorem f_equal2 :   forall (A1 A2 B:Type) (f:A1 -> A2 -> B) (x1 y1:A1)     (x2 y2:A2), x1 = y1 -> x2 = y2 -> f x1 x2 = f y1 y2.
+Theorem f_equal3 :   forall (A1 A2 A3 B:Type) (f:A1 -> A2 -> A3 -> B) (x1 y1:A1)     (x2 y2:A2) (x3 y3:A3),     x1 = y1 -> x2 = y2 -> x3 = y3 -> f x1 x2 x3 = f y1 y2 y3.
+Theorem f_equal4 :   forall (A1 A2 A3 A4 B:Type) (f:A1 -> A2 -> A3 -> A4 -> B)     (x1 y1:A1) (x2 y2:A2) (x3 y3:A3) (x4 y4:A4),     x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> f x1 x2 x3 x4 = f y1 y2 y3 y4.
+Theorem f_equal5 :   forall (A1 A2 A3 A4 A5 B:Type) (f:A1 -> A2 -> A3 -> A4 -> A5 -> B)     (x1 y1:A1) (x2 y2:A2) (x3 y3:A3) (x4 y4:A4) (x5 y5:A5),     x1 = y1 ->     x2 = y2 ->     x3 = y3 -> x4 = y4 -> x5 = y5 -> f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
+Theorem spec_to_Z: forall n : bigZ,   BigN.to_Z (BigZ.to_N n) = ((Z.sgn [n]) * [n])%Z.
+Theorem spec_to_N n:  ([n] = Z.sgn [n] * (BigN.to_Z (BigZ.to_N n)))%Z.
+Theorem spec_to_Z_pos: forall n, (0 <= [n])%Z ->   BigN.to_Z (BigZ.to_N n) = [n].
+Theorem wB_div2: forall x, wB/2  <= x -> wB <= 2 * x.
+Theorem spec_w_div32 : forall a1 a2 a3 b1 b2,      wB/2 <= [|b1|] ->      [[WW a1 a2]] < [[WW b1 b2]] ->      let (q,r) := w_div32 a1 a2 a3 b1 b2 in      [|a1|] * wwB + [|a2|] * wB  + [|a3|] =         [|q|] *  ([|b1|] * wB + [|b2|])  + [[r]] /\      0 <= [[r]] < [|b1|] * wB + [|b2|].
+Theorem wwB_div: wwB  = 2 * (wwB / 2).
+Theorem   spec_ww_div21 : forall a1 a2 b,      wwB/2 <= [[b]] ->      [[a1]] < [[b]] ->      let (q,r) := ww_div21 a1 a2 b in      [[a1]] *wwB+[[a2]] = [[q]] *  [[b]] + [[r]] /\ 0 <= [[r]] < [[b]].
+Theorem ifdec_left :   forall (A B:Prop) (C:Set) (H:{A} + {B}),     ~ B -> forall x y:C, ifdec H x y = x.
+Theorem ifdec_right :   forall (A B:Prop) (C:Set) (H:{A} + {B}),     ~ A -> forall x y:C, ifdec H x y = y.
+Theorem Pigeonhole :     forall (A:Ensemble U) (f:U -> V) (n:nat),       cardinal U A n ->       forall n':nat, cardinal V (Im A f) n' -> n' < n -> ~ injective f.
+Theorem spec_of_Z: forall x, to_Z (of_Z x) = x.
+Theorem spec_0: to_Z zero = 0.
+Theorem spec_1: to_Z one = 1.
+Theorem spec_2: to_Z two = 2.
+Theorem spec_m1: to_Z minus_one = -1.
+Theorem spec_compare :   forall x y, compare x y = Z.compare (to_Z x) (to_Z y).
+Theorem spec_eqb x y : eqb x y = Z.eqb (to_Z x) (to_Z y).
+Theorem spec_ltb x y : ltb x y = Z.ltb (to_Z x) (to_Z y).
+Theorem spec_leb x y : leb x y = Z.leb (to_Z x) (to_Z y).
+Theorem spec_min : forall n m, to_Z (min n m) = Z.min (to_Z n) (to_Z m).
+Theorem spec_max : forall n m, to_Z (max n m) = Z.max (to_Z n) (to_Z m).
+Theorem spec_abs: forall x, to_Z (abs x) = Z.abs (to_Z x).
+Theorem spec_opp: forall x, to_Z (opp x) = - to_Z x.
+Theorem spec_succ: forall n, to_Z (succ n) = to_Z n + 1.
+Theorem spec_add: forall x y, to_Z (add x y) = to_Z x +  to_Z y.
+Theorem spec_pred: forall x, to_Z (pred x) = to_Z x - 1.
+Theorem spec_sub: forall x y, to_Z (sub x y) = to_Z x - to_Z y.
+Theorem spec_mul: forall x y, to_Z (mul x y) = to_Z x * to_Z y.
+Theorem spec_square: forall x, to_Z (square x) = to_Z x *  to_Z x.
+Theorem spec_pow_pos: forall x n, to_Z (pow_pos x n) = to_Z x ^ Zpos n.
+Theorem spec_pow_N: forall x n, to_Z (pow_N x n) = to_Z x ^ Z.of_N n.
+Theorem spec_pow: forall x y, to_Z (pow x y) = to_Z x ^ to_Z y.
+Theorem spec_log2: forall x, to_Z (log2 x) = Z.log2 (to_Z x).
+Theorem spec_sqrt: forall x, to_Z (sqrt x) = Z.sqrt (to_Z x).
+Theorem spec_div_eucl: forall x y,    let (q,r) := div_eucl x y in    (to_Z q, to_Z r) = Z.div_eucl (to_Z x) (to_Z y).
+Theorem spec_modulo:    forall x y, to_Z (modulo x y) = to_Z x mod to_Z y.
+Theorem spec_gcd: forall a b, to_Z (gcd a b) = Z.gcd (to_Z a) (to_Z b).
+Theorem proof_irrelevance_cc : b1 = b2.
+Theorem proof_irrelevance_cci : forall (B:Prop) (b1 b2:B), b1 = b2.
+Theorem div_mod_unique :  forall b q1 q2 r1 r2, r1<b -> r2<b ->   b*q1+r1 == b*q2+r2 -> q1 == q2 /\ r1 == r2.
+Theorem div_unique:  forall a b q r, r<b -> a == b*q + r -> q == a/b.
+Theorem mod_unique:  forall a b q r, r<b -> a == b*q + r -> r == a mod b.
+Theorem div_unique_exact: forall a b q, b~=0 -> a == b*q -> q == a/b.
+Theorem div_small: forall a b, a<b -> a/b == 0.
+Theorem mod_small: forall a b, a<b -> a mod b == a.
+Theorem mod_le: forall a b, b~=0 -> a mod b <= a.
+Theorem div_lt_upper_bound:   forall a b q, b~=0 -> a < b*q -> a/b < q.
+Theorem div_le_upper_bound:   forall a b q, b~=0 -> a <= b*q -> a/b <= q.
+Theorem div_le_lower_bound:   forall a b q, b~=0 -> b*q <= a -> q <= a/b.
+Theorem mod_mod: forall a n, n~=0 ->  (a mod n) mod n == a mod n.
+Theorem mul_mod: forall a b n, n~=0 ->  (a * b) mod n == ((a mod n) * (b mod n)) mod n.
+Theorem add_mod: forall a b n, n~=0 ->  (a+b) mod n == (a mod n + b mod n) mod n.
+Theorem div_mul_le:  forall a b c, b~=0 -> c*(a/b) <= (c*a)/b.
+Theorem add_0_r : forall n, n + 0 == n.
+Theorem add_succ_r : forall n m, n + S m == S (n + m).
+Theorem add_succ_comm : forall n m, S n + m == n + S m.
+Theorem add_comm : forall n m, n + m == m + n.
+Theorem add_1_l : forall n, 1 + n == S n.
+Theorem add_1_r : forall n, n + 1 == S n.
+Theorem add_assoc : forall n m p, n + (m + p) == (n + m) + p.
+Theorem add_cancel_l : forall n m p, p + n == p + m <-> n == m.
+Theorem add_cancel_r : forall n m p, n + p == m + p <-> n == m.
+Theorem add_shuffle0 : forall n m p, n+m+p == n+p+m.
+Theorem add_shuffle1 : forall n m p q, (n + m) + (p + q) == (n + p) + (m + q).
+Theorem add_shuffle2 : forall n m p q, (n + m) + (p + q) == (n + q) + (m + p).
+Theorem add_shuffle3 : forall n m p, n + (m + p) == m + (n + p).
+Theorem sub_1_r : forall n, n - 1 == P n.
+Theorem cos_plus : forall x y:R, cos (x + y) = cos x * cos y - sin x * sin y.
+Theorem classical_proof_irrelevence : T = F.
+Theorem well_founded_induction_type :   forall P:A -> Type,     (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
+Theorem well_founded_induction :   forall P:A -> Set,     (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
+Theorem well_founded_ind :   forall P:A -> Prop,     (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
+Theorem well_founded_induction_type_2 :    (forall (x:A) (x':B),       (forall (y:A) (y':B), R (y, y') (x, x') -> P y y') -> P x x') ->    forall (a:A) (b:B), P a b.
+Theorem Zne_left n m : Zne n m -> Zne (n + - m) 0.
+Theorem Zegal_left n m : n = m -> n + - m = 0.
+Theorem Zle_left n m : n <= m -> 0 <= m + - n.
+Theorem Zle_left_rev n m : 0 <= m + - n -> n <= m.
+Theorem Zlt_left_rev n m : 0 < m + - n -> n < m.
+Theorem Zlt_left_lt n m : n < m -> 0 < m + - n.
+Theorem Zlt_left n m : n < m -> 0 <= m + -1 + - n.
+Theorem Zge_left n m : n >= m -> 0 <= n + - m.
+Theorem Zgt_left n m : n > m -> 0 <= n + -1 + - m.
+Theorem Zgt_left_gt n m : n > m -> n + - m > 0.
+Theorem Zgt_left_rev n m : n + - m > 0 -> n > m.
+Theorem Zle_mult_approx n m p :   n > 0 -> p > 0 -> 0 <= m -> 0 <= m * n + p.
+Theorem Zmult_le_approx n m p :   n > 0 -> n > p -> 0 <= m * n + p -> 0 <= m.
+Theorem Zeven_ex_iff n : Zeven n <-> exists m, n = 2*m.
+Theorem Zodd_ex_iff n : Zodd n <-> exists m, n = 2*m + 1.
+Theorem Zeven_ex n : Zeven n -> exists m, n = 2 * m.
+Theorem Zodd_ex n : Zodd n -> exists m, n = 2 * m + 1.
+Theorem Zeven_2p p : Zeven (2 * p).
+Theorem Zodd_2p_plus_1 p : Zodd (2 * p + 1).
+Theorem Zeven_plus_Zodd a b : Zeven a -> Zodd b -> Zodd (a + b).
+Theorem Zeven_plus_Zeven a b : Zeven a -> Zeven b -> Zeven (a + b).
+Theorem Zodd_plus_Zeven a b : Zodd a -> Zeven b -> Zodd (a + b).
+Theorem Zodd_plus_Zodd a b : Zodd a -> Zodd b -> Zeven (a + b).
+Theorem Zeven_mult_Zeven_l a b : Zeven a -> Zeven (a * b).
+Theorem Zeven_mult_Zeven_r a b : Zeven b -> Zeven (a * b).
+Theorem Zodd_mult_Zodd a b : Zodd a -> Zodd b -> Zodd (a * b).
+Theorem quot_rem_unique : forall b q1 q2 r1 r2 : t,   (0<=r1<b \/ b<r1<=0) -> (0<=r2<b \/ b<r2<=0) ->   b*q1+r1 == b*q2+r2 -> q1 == q2 /\ r1 == r2.
+Theorem quot_unique:  forall a b q r, 0<=a -> 0<=r<b -> a == b*q + r -> q == a÷b.
+Theorem rem_unique:  forall a b q r, 0<=a -> 0<=r<b -> a == b*q + r -> r == a rem b.
+Theorem quot_small: forall a b, 0<=a<b -> a÷b == 0.
+Theorem rem_small: forall a b, 0<=a<b -> a rem b == a.
+Theorem quot_unique_exact a b q: b~=0 -> a == b*q -> q == a÷b.
+Theorem rem_le: forall a b, 0<=a -> 0<b -> a rem b <= a.
+Theorem quot_pos : forall a b, 0<=a -> 0<b -> 0<= a÷b.
+Theorem quot_lt_upper_bound:   forall a b q, 0<=a -> 0<b -> a < b*q -> a÷b < q.
+Theorem quot_le_upper_bound:   forall a b q, 0<b -> a <= b*q -> a÷b <= q.
+Theorem quot_le_lower_bound:   forall a b q, 0<b -> b*q <= a -> q <= a÷b.
+Theorem rem_rem: forall a n, n~=0 ->  (a rem n) rem n == a rem n.
+Theorem mul_rem: forall a b n, n~=0 ->  (a * b) rem n == ((a rem n) * (b rem n)) rem n.
+Theorem add_rem: forall a b n, n~=0 -> 0 <= a*b ->  (a+b) rem n == (a rem n + b rem n) rem n.
+Theorem quot_mul_le:  forall a b c, 0<=a -> 0<b -> 0<=c -> c*(a÷b) <= (c*a)÷b.
+Theorem Sorted_merge : forall l1 l2,   Sorted l1 -> Sorted l2 -> Sorted (merge l1 l2).
+Theorem Permuted_merge : forall l1 l2, Permutation (l1++l2) (merge l1 l2).
+Theorem Sorted_merge_list_to_stack : forall stack l,   SortedStack stack -> Sorted l -> SortedStack (merge_list_to_stack stack l).
+Theorem Permuted_merge_list_to_stack : forall stack l,   Permutation (l ++ flatten_stack stack) (flatten_stack (merge_list_to_stack stack l)).
+Theorem Sorted_merge_stack : forall stack,   SortedStack stack -> Sorted (merge_stack stack).
+Theorem Permuted_merge_stack : forall stack,   Permutation (flatten_stack stack) (merge_stack stack).
+Theorem Sorted_iter_merge : forall stack l,   SortedStack stack -> Sorted (iter_merge stack l).
+Theorem Permuted_iter_merge : forall l stack,   Permutation (flatten_stack stack ++ l) (iter_merge stack l).
+Theorem Sorted_sort : forall l, Sorted (sort l).
+Theorem Permuted_sort : forall l, Permutation l (sort l).
+Theorem leb_total : forall a1 a2, a1 <=? a2 \/ a2 <=? a1.
+Theorem natural_isomorphism_0 : natural_isomorphism N1.zero == N2.zero.
+Theorem natural_isomorphism_succ :   forall n : N1.t, natural_isomorphism (N1.succ n) == N2.succ (natural_isomorphism n).
+Theorem hom_nat_iso : homomorphism natural_isomorphism.
+Theorem iso_nat_iso : isomorphism h12 h21.
+Theorem fold_rec :     forall (A:Type)(P : t -> A -> Type)(f : elt -> A -> A)(i:A)(s:t),      (forall s', Empty s' -> P s' i) ->      (forall x a s' s'', In x s -> ~In x s' -> Add x s' s'' ->        P s' a -> P s'' (f x a)) ->      P s (fold f s i).
+Theorem fold_rec_bis :     forall (A:Type)(P : t -> A -> Type)(f : elt -> A -> A)(i:A)(s:t),      (forall s s' a, s[=]s' -> P s a -> P s' a) ->      (P empty i) ->      (forall x a s', In x s -> ~In x s' -> P s' a -> P (add x s') (f x a)) ->      P s (fold f s i).
+Theorem union_inter_cardinal :    forall s s', cardinal (union s s') + cardinal (inter s s')  = cardinal s  + cardinal s' .
+Theorem eq_add_0 : forall n m, n + m == 0 <-> n == 0 /\ m == 0.
+Theorem eq_add_succ :   forall n m, (exists p, n + m == S p) <->               (exists n', n == S n') \/ (exists m', m == S m').
+Theorem eq_add_1 : forall n m,   n + m == 1 -> n == 1 /\ m == 0 \/ n == 0 /\ m == 1.
+Theorem succ_add_discr : forall n m, m ~= S (n + m).
+Theorem add_pred_l : forall n m, n ~= 0 -> P n + m == P (n + m).
+Theorem add_pred_r : forall n m, m ~= 0 -> n + P m == P (n + m).
+Theorem derivable_continuous_pt :   forall f (x:R), derivable_pt f x -> continuity_pt f x.
+Theorem derivable_continuous : forall f, derivable f -> continuity f.
+Theorem deriv_maximum :   forall f (a b c:R) (pr:derivable_pt f c),     a < c ->     c < b ->     (forall x:R, a < x -> x < b -> f x <= f c) -> derive_pt f c pr = 0.
+Theorem deriv_minimum :   forall f (a b c:R) (pr:derivable_pt f c),     a < c ->     c < b ->     (forall x:R, a < x -> x < b -> f c <= f x) -> derive_pt f c pr = 0.
+Theorem deriv_constant2 :   forall f (a b c:R) (pr:derivable_pt f c),     a < c ->     c < b -> (forall x:R, a < x -> x < b -> f x = f c) -> derive_pt f c pr = 0.
+Theorem derivable_pt_lim_div :   forall (f1 f2:R -> R) (x l1 l2:R),     derivable_pt_lim f1 x l1 ->     derivable_pt_lim f2 x l2 ->     f2 x <> 0 ->     derivable_pt_lim (f1 / f2) x ((l1 * f2 x - l2 * f1 x) / Rsqr (f2 x)).
+Theorem Add_covers :     forall A a:Ensemble U,       Included U a A ->       forall x:U, 	In U A x -> 	~ In U a x -> covers (Ensemble U) (Power_set_PO U A) (Add U a x) a.
+Theorem covers_Add :     forall A a a':Ensemble U,       Included U a A ->       Included U a' A ->       covers (Ensemble U) (Power_set_PO U A) a' a ->       exists x : _, a' = Add U a x /\ In U A x /\ ~ In U a x.
+Theorem covers_is_Add :     forall A a a':Ensemble U,       Included U a A ->       Included U a' A ->       (covers (Ensemble U) (Power_set_PO U A) a' a <-> 	(exists x : _, a' = Add U a x /\ In U A x /\ ~ In U a x)).
+Theorem Singleton_atomic :     forall (x:U) (A:Ensemble U),       In U A x ->       covers (Ensemble U) (Power_set_PO U A) (Singleton U x) (Empty_set U).
+Theorem cauchy_finite :   forall (An Bn:nat -> R) (N:nat),     (0 < N)%nat ->     sum_f_R0 An N * sum_f_R0 Bn N =     sum_f_R0 (fun k:nat => sum_f_R0 (fun p:nat => An p * Bn (k - p)%nat) k) N +     sum_f_R0     (fun k:nat =>       sum_f_R0 (fun l:nat => An (S (l + k)) * Bn (N - l)%nat)       (pred (N - k))) (pred N).
+Theorem div_mod_unique : forall b q1 q2 r1 r2 : t,   0<=r1<abs b -> 0<=r2<abs b ->   b*q1+r1 == b*q2+r2 -> q1 == q2 /\ r1 == r2.
+Theorem div_unique:  forall a b q r, 0<=r<abs b -> a == b*q + r -> q == a/b.
+Theorem mod_unique:  forall a b q r, 0<=r<abs b -> a == b*q + r -> r == a mod b.
+Theorem div_small: forall a b, 0<=a<b -> a/b == 0.
+Theorem mod_small: forall a b, 0<=a<b -> a mod b == a.
+Theorem div_unique_exact a b q: b~=0 -> a == b*q -> q == a/b.
+Theorem mod_le: forall a b, 0<=a -> b~=0 -> a mod b <= a.
+Theorem div_pos : forall a b, 0<=a -> 0<b -> 0<= a/b.
+Theorem div_lt_upper_bound:   forall a b q, 0<b -> a < b*q -> a/b < q.
+Theorem div_le_upper_bound:   forall a b q, 0<b -> a <= b*q -> a/b <= q.
+Theorem div_le_lower_bound:   forall a b q, 0<b -> b*q <= a -> q <= a/b.
+Theorem mod_mod: forall a n, n~=0 ->  (a mod n) mod n == a mod n.
+Theorem mul_mod: forall a b n, n~=0 ->  (a * b) mod n == ((a mod n) * (b mod n)) mod n.
+Theorem add_mod: forall a b n, n~=0 ->  (a+b) mod n == (a mod n + b mod n) mod n.
+Theorem div_mul_le:  forall a b c, 0<=a -> 0<b -> 0<=c -> c*(a/b) <= (c*a)/b.
+Theorem bi_induction :   forall A : nat -> Prop, Proper (eq==>iff) A ->     A 0 -> (forall n : nat, A n <-> A (S n)) -> forall n : nat, A n.
+Theorem pred_succ : forall n : nat, pred (S n) = n.
+Theorem one_succ : 1 = S 0.
+Theorem two_succ : 2 = S 1.
+Theorem add_0_l : forall n : nat, 0 + n = n.
+Theorem add_succ_l : forall n m : nat, (S n) + m = S (n + m).
+Theorem sub_0_r : forall n : nat, n - 0 = n.
+Theorem sub_succ_r : forall n m : nat, n - (S m) = pred (n - m).
+Theorem mul_0_l : forall n : nat, 0 * n = 0.
+Theorem mul_succ_l : forall n m : nat, S n * m = n * m + m.
+Theorem lt_succ_r : forall n m : nat, n < S m <-> n <= m.
+Theorem lt_eq_cases : forall n m : nat, n <= m <-> n < m \/ n = m.
+Theorem lt_irrefl : forall n : nat, ~ (n < n).
+Theorem pred_0 : pred 0 = 0.
+Theorem recursion_0 :   forall {A} (a : A) (f : nat -> A -> A), recursion a f 0 = a.
+Theorem recursion_succ :   forall {A} (Aeq : relation A) (a : A) (f : nat -> A -> A),     Aeq a a -> Proper (eq==>Aeq==>Aeq) f ->       forall n : nat, Aeq (recursion a f (S n)) (f n (recursion a f n)).
+Theorem absurd_set : forall (A:Prop) (C:Set), A -> ~ A -> C.
+Theorem neg_pos_cases : forall n, n ~= 0 <-> n < 0 \/ n > 0.
+Theorem nonpos_pos_cases : forall n, n <= 0 \/ n > 0.
+Theorem neg_nonneg_cases : forall n, n < 0 \/ n >= 0.
+Theorem nonpos_nonneg_cases : forall n, n <= 0 \/ n >= 0.
+Theorem lt_pred_l : forall n, P n < n.
+Theorem le_pred_l : forall n, P n <= n.
+Theorem lt_le_pred : forall n m, n < m <-> n <= P m.
+Theorem nle_pred_r : forall n, ~ n <= P n.
+Theorem lt_pred_le : forall n m, P n < m <-> n <= m.
+Theorem lt_lt_pred : forall n m, n < m -> P n < m.
+Theorem le_le_pred : forall n m, n <= m -> P n <= m.
+Theorem lt_pred_lt : forall n m, n < P m -> n < m.
+Theorem le_pred_lt : forall n m, n <= P m -> n <= m.
+Theorem pred_lt_mono : forall n m, n < m <-> P n < P m.
+Theorem pred_le_mono : forall n m, n <= m <-> P n <= P m.
+Theorem lt_succ_lt_pred : forall n m, S n < m <-> n < P m.
+Theorem le_succ_le_pred : forall n m, S n <= m <-> n <= P m.
+Theorem lt_pred_lt_succ : forall n m, P n < m <-> n < S m.
+Theorem le_pred_lt_succ : forall n m, P n <= m <-> n <= S m.
+Theorem neq_pred_l : forall n, P n ~= n.
+Theorem lt_m1_r : forall n m, n < m -> m < 0 -> n < -1.
+Theorem  spec_w_div21c : forall a1 a2 b,      wB/2 <= [|b|] ->      let (q,r) := w_div21c a1 a2 b in      [|a1|] * wB + [|a2|] = [+|q|] *  [|b|] + [|r|] /\ 0 <= [|r|] < [|b|].
+Theorem C0_id: forall p, [+|C0 p|] = [|p|].
+Theorem add_mult_div_2: forall w,     [|w_add_mul_div (w_pred w_zdigits) w_0 w|] = [|w|] / 2.
+Theorem add_mult_div_2_plus_1: forall w,     [|w_add_mul_div (w_pred w_zdigits) w_1 w|] =       [|w|] / 2 + 2 ^ Zpos (w_digits - 1).
+Theorem add_mult_mult_2: forall w,     [|w_add_mul_div w_1 w w_0|] = 2 * [|w|] mod wB.
+Theorem ww_add_mult_mult_2: forall w,     [[ww_add_mul_div (w_0W w_1) w W0]] = 2 * [[w]] mod wwB.
+Theorem ww_add_mult_mult_2_plus_1: forall w,     [[ww_add_mul_div (w_0W w_1) w wwBm1]] =       (2 * [[w]] + 1) mod wwB.
+Theorem Zplus_mod_one: forall a1 b1, 0 < b1 -> (a1 + b1) mod b1 = a1 mod b1.
+Theorem  spec_w_div2s : forall a1 a2 b,      wB/2 <= [|b|] -> [+|a1|] <= 2 * [|b|] ->      let (q,r) := w_div2s a1 a2 b in      [+|a1|] * wB + [|a2|] = [+|q|] *  (2 * [|b|]) + [+|r|] /\ 0 <= [+|r|] < 2 * [|b|].
+Theorem wB_div_4:  4 * (wB / 4) = wB.
+Theorem Zsquare_mult: forall p, p ^ 2 = p * p.
+Theorem Zsquare_pos: forall p, 0 <= p ^ 2.
+Theorem mult_wwB: forall x y, [|x|] * [|y|] < wwB.
+Theorem wwB_4_wB_4: wwB / 4 = wB / 4 * wB.
+Theorem le_dec : forall n m, {n <= m} + {~ n <= m}.
+Theorem lt_dec : forall n m, {n < m} + {~ n < m}.
+Theorem gt_dec : forall n m, {n > m} + {~ n > m}.
+Theorem ge_dec : forall n m, {n >= m} + {~ n >= m}.
+Theorem dec_le : forall n m, decidable (n <= m).
+Theorem dec_lt : forall n m, decidable (n < m).
+Theorem dec_gt : forall n m, decidable (n > m).
+Theorem dec_ge : forall n m, decidable (n >= m).
+Theorem not_eq : forall n m, n <> m -> n < m \/ m < n.
+Theorem not_le : forall n m, ~ n <= m -> n > m.
+Theorem not_gt : forall n m, ~ n > m -> n <= m.
+Theorem not_ge : forall n m, ~ n >= m -> n < m.
+Theorem not_lt : forall n m, ~ n < m -> n >= m.
+Theorem Zpower_le_monotone a b c :  0 < a -> 0 <= b <= c -> a^b <= a^c.
+Theorem Zpower_lt_monotone a b c :  1 < a -> 0 <= b < c -> a^b < a^c.
+Theorem Zpower_gt_1 x y : 1 < x -> 0 < y -> 1 < x^y.
+Theorem Zmult_power p q r : 0 <= r -> (p*q)^r = p^r * q^r.
+Theorem Zpower_le_monotone3 a b c :  0 <= c -> 0 <= a <= b -> a^c <= b^c.
+Theorem Zpower2_lt_lin n : 0 <= n -> n < 2^n.
+Theorem Zpower2_le_lin n : 0 <= n -> n <= 2^n.
+Theorem Zpower_mod p q n :   0 < n -> (p^q) mod n = ((p mod n)^q) mod n.
+Theorem Zpow_mod_pos_correct a m n :  n <> 0 -> Zpow_mod_pos a m n = (Z.pow_pos a m) mod n.
+Theorem Zpow_mod_correct a m n :  n <> 0 -> Zpow_mod a m n = (a ^ m) mod n.
+Theorem rel_prime_Zpower_r i p q :  0 <= i -> rel_prime p q -> rel_prime p (q^i).
+Theorem rel_prime_Zpower i j p q :  0 <= i ->  0 <= j -> rel_prime p q -> rel_prime (p^i) (q^j).
+Theorem prime_power_prime p q n :  0 <= n -> prime p -> prime q -> (p | q^n) -> p = q.
+Theorem Zdivide_power_2 x p n :  0 <= n -> 0 <= x -> prime p -> (x | p^n) -> exists m, x = p^m.
+Theorem if_zero_0 : forall (A : Type) (a b : A), if_zero a b 0 = a.
+Theorem if_zero_succ :  forall (A : Type) (a b : A) (n : N.t), if_zero a b (S n) = b.
+Theorem def_add_0_l : forall y, 0 +++ y == y.
+Theorem def_add_succ_l : forall x y, S x +++ y == S (x +++ y).
+Theorem def_add_add : forall n m, n +++ m == n + m.
+Theorem def_mul_0_r : forall x, x ** 0 == 0.
+Theorem def_mul_succ_r : forall x y, x ** S y == x ** y +++ x.
+Theorem def_mul_mul : forall n m, n ** m == n * m.
+Theorem ltb_base : forall n, 0 << n = if_zero false true n.
+Theorem ltb_step :   forall m n, S m << n = recursion false (fun n' _ => m << n') n.
+Theorem ltb_0 : forall n, n << 0 = false.
+Theorem ltb_0_succ : forall n, 0 << S n = true.
+Theorem succ_ltb_mono : forall n m, (S n << S m) = (n << m).
+Theorem ltb_lt : forall n m, n << m = true <-> n < m.
+Theorem ltb_ge : forall n m, n << m = false <-> n >= m.
+Theorem even_0 : even 0 = true.
+Theorem even_succ : forall x, even (S x) = negb (even x).
+Theorem half_aux_spec : forall n,  n == fst (half_aux n) + snd (half_aux n).
+Theorem half_aux_spec2 : forall n,  fst (half_aux n) == snd (half_aux n) \/  fst (half_aux n) == S (snd (half_aux n)).
+Theorem half_0 : half 0 == 0.
+Theorem half_1 : half 1 == 0.
+Theorem half_double : forall n,  n == 2 * half n \/ n == 1 + 2 * half n.
+Theorem half_upper_bound : forall n, 2 * half n <= n.
+Theorem half_lower_bound : forall n, n <= 1 + 2 * half n.
+Theorem half_nz : forall n, 1 < n -> 0 < half n.
+Theorem half_decrease : forall n, 0 < n -> half n < n.
+Theorem log_init : forall n, n < 2 -> log n == 0.
+Theorem log_step : forall n, 2 <= n -> log n == S (log (half n)).
+Theorem pow2_log : forall n, 0 < n -> half n < 2^^(log n) <= n.
+Theorem Z_div_mod a b :   b > 0 ->   let (q, r) := Z.div_eucl a b in a = b * q + r /\ 0 <= r < b.
+Theorem Z_div_mod_full a b :   b <> 0 ->   let (q, r) := Z.div_eucl a b in a = b * q + r /\ Remainder r b.
+Theorem Zdiv_eucl_exist : forall (b:Z)(Hb:b>0)(a:Z),  {qr : Z * Z | let (q, r) := qr in a = b * q + r /\ 0 <= r < b}.
+Theorem Zdiv_mod_unique b q1 q2 r1 r2 :   0 <= r1 < Z.abs b -> 0 <= r2 < Z.abs b ->
+Theorem Zdiv_mod_unique_2 :  forall b q1 q2 r1 r2:Z,   Remainder r1 b -> Remainder r2 b ->   b*q1+r1 = b*q2+r2 -> q1=q2 /\ r1=r2.
+Theorem Zdiv_unique_full:  forall a b q r, Remainder r b ->    a = b*q + r -> q = a/b.
+Theorem Zdiv_unique:  forall a b q r, 0 <= r < b ->    a = b*q + r -> q = a/b.
+Theorem Zmod_unique_full:  forall a b q r, Remainder r b ->   a = b*q + r ->  r = a mod b.
+Theorem Zmod_unique:  forall a b q r, 0 <= r < b ->   a = b*q + r -> r = a mod b.
+Theorem Zdiv_small: forall a b, 0 <= a < b -> a/b = 0.
+Theorem Zmod_small: forall a n, 0 <= a < n -> a mod n = a.
+Theorem Zmod_le: forall a b, 0 < b -> 0 <= a -> a mod b <= a.
+Theorem Zdiv_lt_upper_bound:   forall a b q, 0 < b -> a < q*b -> a/b < q.
+Theorem Zdiv_le_upper_bound:   forall a b q, 0 < b -> a <= q*b -> a/b <= q.
+Theorem Zdiv_le_lower_bound:   forall a b q, 0 < b -> q*b <= a -> q <= a/b.
+Theorem Zdiv_sgn: forall a b,   0 <= Z.sgn (a/b) * Z.sgn a * Z.sgn b.
+Theorem Z_div_plus_full_l: forall a b c : Z, b <> 0 -> (a * b + c) / b = a + c / b.
+Theorem Zmod_mod: forall a n, (a mod n) mod n = a mod n.
+Theorem Zmult_mod: forall a b n,  (a * b) mod n = ((a mod n) * (b mod n)) mod n.
+Theorem Zplus_mod: forall a b n,  (a + b) mod n = (a mod n + b mod n) mod n.
+Theorem Zminus_mod: forall a b n,  (a - b) mod n = (a mod n - b mod n) mod n.
+Theorem Zdiv_mult_le:  forall a b c, 0<=a -> 0<=b -> 0<=c -> c*(a/b) <= (c*a)/b.
+Theorem Zmod_POS_correct a b : Zmod_POS a b = snd (Z.pos_div_eucl a b).
+Theorem Zmod'_correct: forall a b, Zmod' a b = a mod b.
+Theorem Zdiv_eucl_extended :   forall b:Z,     b <> 0 ->     forall a:Z,       {qr : Z * Z | let (q, r) := qr in a = b * q + r /\ 0 <= r < Z.abs b}.
+Theorem pred_Sn : forall n:nat, n = pred (S n).
+Theorem not_eq_S : forall n m:nat, n <> m -> S n <> S m.
+Theorem O_S : forall n:nat, 0 <> S n.
+Theorem n_Sn : forall n:nat, n <> S n.
+Theorem le_pred : forall n m, n <= m -> pred n <= pred m.
+Theorem le_S_n : forall n m, S n <= S m -> n <= m.
+Theorem nat_case :  forall (n:nat) (P:nat -> Prop), P 0 -> (forall m:nat, P (S m)) -> P n.
+Theorem nat_double_ind :  forall R:nat -> nat -> Prop,    (forall n:nat, R 0 n) ->    (forall n:nat, R (S n) 0) ->    (forall n m:nat, R n m -> R (S n) (S m)) -> forall n m:nat, R n m.
+Theorem max_l : forall n m : nat, m <= n -> max n m = n.
+Theorem max_r : forall n m : nat, n <= m -> max n m = m.
+Theorem min_l : forall n m : nat, n <= m -> min n m = n.
+Theorem min_r : forall n m : nat, m <= n -> min n m = m.
+Theorem nat_iter_plus :   forall (n m:nat) {A} (f:A -> A) (x:A),     nat_iter (n + m) f x = nat_iter n f (nat_iter m f x).
+Theorem nat_iter_invariant :   forall (n:nat) {A} (f:A -> A) (P : A -> Prop),     (forall x, P x -> P (f x)) ->     forall x, P x -> P (nat_iter n f x).
+Theorem Z_lt_abs_rec :   forall P:Z -> Set,     (forall n:Z, (forall m:Z, Z.abs m < Z.abs n -> P m) -> P n) ->
+Theorem Z_lt_abs_induction :   forall P:Z -> Prop,     (forall n:Z, (forall m:Z, Z.abs m < Z.abs n -> P m) -> P n) -> 
