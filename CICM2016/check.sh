@@ -8,12 +8,19 @@ CITES=""
 MACROS=""
 LABELS=""
 FIGS=""
+CITEP=""
 for FILE in *.tex
 do
     if grep "TODO[^{]" < "$FILE" > /dev/null
     then
         NUM=$(grep -c TODO < "$FILE")
         TODOS=$(echo "$TODOS"; echo "Found $NUM undated TODOs in $FILE")
+        ERR=1
+    fi
+
+    if grep "citep" < "$FILE" > /dev/null
+    then
+        CITEP=$(echo "$CITEP"; echo "Found citep in '$FILE', should use cite")
         ERR=1
     fi
 
@@ -79,6 +86,7 @@ done
 [[ -z "$MACROS" ]] || echo "$MACROS" >> /dev/stderr
 [[ -z "$LABELS" ]] || echo "$LABELS" >> /dev/stderr
 [[ -z "$FIGS"   ]] || echo "$FIGS"   >> /dev/stderr
+[[ -z "$CITEP"  ]] || echo "$CITEP"  >> /dev/stderr
 
 echo "Rendering report.tex" >> /dev/stderr
 touch *.tex
