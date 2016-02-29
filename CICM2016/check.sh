@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-cd /home/chris/Writing/TransferReport
 ERR=0
 
 TODOS=""
@@ -123,17 +122,13 @@ fi
 if [[ -e report.pdf ]]
 then
     PAGES=$(pdfinfo report.pdf | grep Pages | grep -o "[0-9]*$")
-    TOTAL=60
-    REMAINING=$(( TOTAL - PAGES ))
-    NOW=$(date +%s)
-    DEADLINE=$(date -d "2015-12-17" +%s)
-    DAYS=$(( (DEADLINE - NOW) / (60 * 60 * 24) ))
-    SHOULD=$(( TOTAL - DAYS ))
-    if [[ "$REMAINING" -gt "$DAYS" ]]
+    ALLOWED=15
+    if [[ "$PAGES" -gt "$ALLOWED" ]]
     then
-        echo "report.pdf should have $SHOULD pages by now, only has $PAGES" >> /dev/stderr
+        echo "report.pdf should have $ALLOWED pages, instead has $PAGES" >> /dev/stderr
+        ERR=1
     else
-        echo "Page target is $SHOULD, you have $PAGES!"
+        echo "Page target is $ALLOWED, you have $PAGES!"
     fi
 fi
 
