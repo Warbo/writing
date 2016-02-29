@@ -82,7 +82,7 @@ Compared to Haskell, Core is a much simpler language and its representation is r
 
 In practice, we work around these issues with a post-processing stage: for each named definition appearing in the output of \textsc{AstPlugin}, we attempt to reference that name within the GHCi interpreter. Names with the above problems will cause an error, and are discarded.
 
-The result of building a Haskell package with \textsc{AstPlugin} enabled is a database of Haskell definitions, similar in some respects to \textsc{Hoogle} \citep{mitchell2008hoogle}. Definitions are indexed by a combination of their package name, module name and binding name. The definitions themselves are s-expressions representing the Core AST, with non-local references replaced by a combination of package name, module name and binding name, which makes it trivial to look up references in the database. Each definition also has an associated arity and type, obtained during the post-processing step mentioned above.
+The result of building a Haskell package with \textsc{AstPlugin} enabled is a database of Haskell definitions, similar in some respects to \textsc{Hoogle} \cite{mitchell2008hoogle}. Definitions are indexed by a combination of their package name, module name and binding name. The definitions themselves are s-expressions representing the Core AST, with non-local references replaced by a combination of package name, module name and binding name, which makes it trivial to look up references in the database. Each definition also has an associated arity and type, obtained during the post-processing step mentioned above.
 
 \subsection{Toplogical Sorting}
 

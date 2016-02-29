@@ -25,7 +25,7 @@
 \newcommand{\CBind}{\texttt{Bind}}
 
 \begin{figure}
-  \begin{equation*}
+  \begin{equation}
     \begin{split}
       expr\    \rightarrow\ & \CVar\ id                          \\
                          |\ & \CLit\ literal                     \\
@@ -47,7 +47,7 @@
                          |\ & \CRec\ [binder]                    \\
       binder   \rightarrow\ & \CBind\ \mathcal{L}\ expr
     \end{split}
-  \end{equation*}
+  \end{equation}
   Where:
   \begin{tabular}[t]{l @{ $=$ } l}
     $\mathcal{S}$ & string literals    \\
@@ -61,9 +61,9 @@
   \label{fig:coresyntax}
 \end{figure}
 
-We decided to focus on theory exploration in the Haskell programming language as it has mature, state-of-the-art implementations (\qspec{} \citep{QuickSpec} and \hspec{} \citep{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \citep{Hipster} system, is actually implemented by translating to Haskell and invoking \hspec{}.
+We decided to focus on theory exploration in the Haskell programming language as it has mature, state-of-the-art implementations (\qspec{} \cite{QuickSpec} and \hspec{} \cite{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \cite{Hipster} system, is actually implemented by translating to Haskell and invoking \hspec{}.
 
-Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \citep{marlow2010haskell}. Like most \emph{functional} programming languages, Haskell builds upon $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \citep[Appendix C]{sulzmann2007system}.
+Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \cite{marlow2010haskell}. Like most \emph{functional} programming languages, Haskell builds upon $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \cite[Appendix C]{sulzmann2007system}.
 
 The sub-set of Core we consider is shown in Figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major restriction is to ignore type hints (such as explicit casts, and differences between types/kinds/coercions). For brevity, we also omit several other forms of literal (machine words of various sizes, individual characters, etc.), as their treatment is similar to those of strings and numerals. We will use quoted strings to denote names and literals, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr "quux"} and \texttt{LitNum "42"}, and require only that they can be compared for equality.
 
@@ -218,7 +218,7 @@ We can reduce this bias further through the use of \emph{theory exploration} too
 
 In this work we consider the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. The method of conjecture generation is a key characteristic of any theory exploration system, although all existing implementations rely on brute force enumeration to some degree.
 
-We focus on \qspec{} \citep{QuickSpec}, which conjectures equations about Haskell code (these may be fed into another tool, such as \hspec{}, for proving). These conjectures are arrived at through the following stages:
+We focus on \qspec{} \cite{QuickSpec}, which conjectures equations about Haskell code (these may be fed into another tool, such as \hspec{}, for proving). These conjectures are arrived at through the following stages:
 
 \iffalse TODO: Make this more formal?
  V \in Var
@@ -240,7 +240,7 @@ or
   \item A set of equations are then conjectured, relating each class's members.
 \end{enumerate}
 
-Such $conjectures$ can be used in several ways: they can be simplified for direct presentation to the user (by removing any equation which can be derived from the others by rewriting), sent to a more rigorous system like \hspec{} or \textsc{Hipster} for proving, or even serve as a background theory for an automated theorem prover \citep{claessen2013automating}.
+Such $conjectures$ can be used in several ways: they can be simplified for direct presentation to the user (by removing any equation which can be derived from the others by rewriting), sent to a more rigorous system like \hspec{} or \textsc{Hipster} for proving, or even serve as a background theory for an automated theorem prover \cite{claessen2013automating}.
 
 As an example, we can consider a simple signature containing the expressions from Figure \ref{fig:haskellexample}:
 
@@ -317,27 +317,27 @@ We use a standard representation of features as a \emph{feature vector} of numbe
 Clustering is an unsupervised machine learning task for grouping $n$ data points using a similarity metric. There are many variations on this theme, but in our case we make the following choices:
 
 \begin{itemize}
-  \item For simplicity, we use the ``rule of thumb'' given in \citep[pp. 365]{mardia1979multivariate} to fix the number of clusters at $k = \lceil \sqrt{\frac{n}{2}} \rceil$.
+  \item For simplicity, we use the ``rule of thumb'' given in \cite[pp. 365]{mardia1979multivariate} to fix the number of clusters at $k = \lceil \sqrt{\frac{n}{2}} \rceil$.
   \item Data points will be $d$-dimensional feature vectors, as defined above.
   \item We will use euclidean distance (denoted $e$) as our similarity metric.
-  \item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm \citep{lloyd1982least}.
+  \item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm \cite{lloyd1982least}.
 \end{itemize}
 
-This is a standard setup, supported by off-the-shelf tools; in particular we use the implementation provided by Weka \citep{Holmes.Donkin.Witten:1994}, due to its use by ML4PG, which makes our results more easily comparable.
+This is a standard setup, supported by off-the-shelf tools; in particular we use the implementation provided by Weka \cite{Holmes.Donkin.Witten:1994}, due to its use by ML4PG, which makes our results more easily comparable.
 
 Since k-means is iterative, we will use function notation to denote time steps, so $x(t)$ denotes the value of $x$ at time $t$. We denote the clusters as $C^1$ to $C^k$. As the name suggests, k-means uses the mean value of each cluster, which we denote as $\vect{m}^1$ to $\vect{m}^k$, hence:
 
-\begin{equation*}
+\begin{equation}
   m^i_j(t) = \mean{C^i_j}(t) = \frac{\sum_{\vect{x} \in C^i(t)} x_j}{|C^i(t)|} \quad \text{for $t > 0$}
-\end{equation*}
+\end{equation}
 
-Before k-means starts, we must choose \emph{seed} values for $\vect{m}^i(0)$. Many methods have been proposed for choosing these values \citep{arthur2007k}. For simplicity, we will choose values randomly from our data set $S$; this is known as the Forgy method.
+Before k-means starts, we must choose \emph{seed} values for $\vect{m}^i(0)$. Many methods have been proposed for choosing these values \cite{arthur2007k}. For simplicity, we will choose values randomly from our data set $S$; this is known as the Forgy method.
 
 The elements of each cluster $C^i(t)$ are those data points closest to the mean value at the previous time step:
 
-\begin{equation*}
+\begin{equation}
   C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x}, \vect{m}^j(t-1)) \} \quad \text{for $t > 0$}
-\end{equation*}
+\end{equation}
 
 As $t$ increases, the clusters $C^i$ move from their initial location around the ``seeds'', to converge on a local minimum of the ``within-cluster sum of squared error'' objective:
 
