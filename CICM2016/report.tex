@@ -1,3 +1,4 @@
+\iffalse
 \documentclass[]{article}
 
 \usepackage{rotating}
@@ -79,18 +80,60 @@
 \lstnewenvironment{coqblock}{%
   \lstset{language=ML, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
 
+\fi
+
+\documentclass[runningheads,a4paper]{llncs}
+
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+
+\usepackage{url}
+\urldef{\mailsa}\path|cmwarburton@dundee.ac.uk, katya@computing.dundee.ac.uk|
+\newcommand{\keywords}[1]{\par\addvspace\baselineskip
+\noindent\keywordname\enspace\ignorespaces#1}
+
 \begin{document}
 
-\pagestyle{headings}  % switches on printing of running heads
+\mainmatter  % start of an individual contribution
 
-\title{Improving Haskell Theory Exploration}
+% first the title is needed
+\iffalse TODO: actual title \fi
+\title{Lecture Notes in Computer Science:\\Authors' Instructions
+for the Preparation\\of Camera-Ready
+Contributions\\to LNCS/LNAI/LNBI Proceedings}
 
-\author{Chris Warburton}
+% a short form should be given in case it is too long for the running head
+\titlerunning{Lecture Notes in Computer Science: Authors' Instructions}
 
-\affil{University of Dundee,\\
-\texttt{http://tocai.computing.dundee.ac.uk}}
+% the name(s) of the author(s) follow(s) next
+%
+% NB: Chinese authors should write their first names(s) in front of
+% their surnames. This ensures that the names appear correctly in
+% the running heads and the author index.
+%
+\author{Chris Warburton%
+\and Ekaterina Komendantskaya}
+%
+\authorrunning{Lecture Notes in Computer Science: Authors' Instructions}
+% (feature abused for this document to repeat the title also on left hand pages)
 
-\maketitle              % typeset the title of the contribution
+% the affiliations are given next; don't give your e-mail address
+% unless you accept that it will be published
+\institute{University of Dundee,\\
+\mailsa\\
+\url{http://tocai.computing.dundee.ac.uk}}
+
+%
+% NB: a more complex sample for affiliations and the mapping to the
+% corresponding authors can be found in the file "llncs.dem"
+% (search for the string "\mainmatter" where a contribution starts).
+% "llncs.dem" accompanies the document class "llncs.cls".
+%
+
+\toctitle{Lecture Notes in Computer Science}
+\tocauthor{Improving Haskell Theory Exploration}
+\maketitle
 
 \begin{abstract}
 Theory Exploration is a promising approach to improving the quality and understanding of software. It extends previously existing methods available through testing, in languages which are amenable to formal analysis such as those based on pure functional programming. Current theory exploration techniques are limited by their use of exponential time algorithms, which although thorough are ultimately limited to finding simple properties of small systems. We propose a more powerful approach, which uses machine learning algorithms to intelligently choose which parts of a system to explore based on their similarity, hence focusing its efforts on areas which are most likely to lead to discoveries.
