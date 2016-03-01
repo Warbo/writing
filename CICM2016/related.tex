@@ -1,91 +1,20 @@
 \section{Related Work}
 \label{sec:related}
 
-\subsection{Haskell}
-\label{sec:haskelldesc}
-
-Whilst \S \ref{sec:haskell} gave some brief background on Haskell, little explanation was given for why we chose this language rather than, for example Coq or ACL2 (for which recurrent clustering algorithms already exist), or a more widely used language like Java. Here we discuss the relevant language features from a high-level, which motivated our choice:
-
-\begin{description}
-
-\item{Functional}: All control flow in Haskell is performed by function abstraction and application, which we can reason about using standard rules of inference such as \emph{modus ponens}.
-
-\item{Pure}: Execution of actions (e.g. reading files) is separate to evaluation of expressions; hence our reasoning can safely ignore complicated external and non-local interactions.
-
-\item{Statically Typed}: Expression are constrained by \emph{types}, which can be used to eliminate unwanted combinations of values, and hence reduce search spaces; \emph{static} types can be deduced syntactically, without having to execute the code.
-
-\item{Non-strict}: If an evaluation strategy exists for $\beta$-normalising an expression (i.e. performing function calls) without diverging, then a non-strict evaluation strategy will not diverge when evaluating that expression. This is rather technical, but in simple terms it allows us to reason effectively about a Turing-complete language, where evaluation may not terminate. For example, when reasoning about \emph{pairs} of values \hs{(x, y)} and projection functions \hs{fst} and \hs{snd}, we might want to use an ``obvious'' rule such as $\forall \text{\hs{x y}}, \text{\hs{x}} = \text{\hs{fst (x, y)}}$. Haskell's non-strict semantics makes this equation valid; whilst it would \emph{not} be valid in the strict setting common to most other languages, where the expression \hs{fst (x, y)} will diverge if \hs{y} diverges (and hence alter the semantics, if \hs{x} doesn't diverge).
-
-\item{Algebraic Data Types}: These provide a rich grammar for building up user-defined data representations, and an inverse mechanism to inspect these data by \emph{pattern-matching}. For our purposes, the useful consequences of ADTs and pattern-matching include their amenability for inductive proofs and the fact they are \emph{closed}; i.e. an ADT's declaration specifies all of the normal forms for that type. This makes exhaustive case analysis trivial, which would be impossible for \emph{open} types (for example, consider classes in an object oriented language, where new subclasses can be introduced at any time).
-
-\item{Parametricity}: This allows Haskell \emph{values} to be parameterised over \emph{type-level} objects; provided those objects are never inspected. This has the \emph{practical} benefit of enabling \emph{polymorphism}: for example, we can write a polymorphic identity function \hs{id :: forall t. t -> t}. \footnote{Read ``\hs{a :: b}'' as ``\hs{a} has type \hs{b}'' and ``\hs{a -> b}'' as ``the type of functions from \hs{a} to \hs{b}''.} Conceptually, this function takes \emph{two} parameters: a type \hs{t} \emph{and} a value of type \hs{t}; yet only the latter is available in the function body, e.g. \hs{id x = x}. This inability to inspect type-level arguments gives us the \emph{theoretical} benefit of being able to characterise the behaviour of polymorphic functions from their type alone, a technique known as \emph{theorems for free} \cite{wadler1989theorems}.
-
-\item{Type classes}: Along with their various extensions, type classes are interfaces which specify a set of operations over a type (or other type-level object, such as a \emph{type constructor}). Many type classes also specify a set of \emph{laws} which their operations should obey but, lacking a simple mechanism to enforce this, laws are usually considered as documentation. As a simple example, we can define a type class \hs{Semigroup} with the following operation and associativity law:
-
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-op :: forall t. Semigroup t => t -> t -> t
-\end{lstlisting}
-
-$$\forall \text{\hs{x y z}}, \text{\hs{op x (op y z)}} = \text{\hs{op (op x y) z}}$$
-
-The notation \hs{Semigroup t =>} is a \emph{type class constraint}, which restricts the possible types \hs{t} to only those which implement \hs{Semigroup}. \footnote{Alternatively, we can consider \hs{Semigroup t} as the type of ``implementations of \hs{Semigroup} for \hs{t}'', in which case \hs{=>} has a similar role to \hs{->} and we can consider \hs{op} to take \emph{four} parameters: a type \hs{t}, an implementation of \hs{Semigroup t} and two values of type \hs{t}. As with parameteric polymorphism, this extra \hs{Semigroup t} parameter is not available at the value level. Even if it were, we could not alter our behaviour by inspecting it, since Haskell only allows types to implement each type class in at most one way, so there would be no information to branch on.} There are many \emph{instances} of \hs{Semigroup} (types which may be substituted for \hs{t}), e.g. \hs{Integer} with \hs{op} performing addition. Many more examples can be found in the \emph{typeclassopedia} \cite{yorgey2009typeclassopedia}. This ability to constrain types, and the existence of laws, helps us reason about code generically, rather than repeating the same arguments for each particular pair of \hs{t} and \hs{op}.
-
-\item{Equational}: Haskell uses equations at the value level, for definitions; at the type level, for coercions; at the documentation level, for typeclass laws; and at the compiler level, for ad-hoc rewrite rules. This provides us with many \emph{sources} of equations, as well as many possible \emph{uses} for any equations we might discover. Along with their support in existing tools such as SMT solvers, this makes equational conjectures a natural target for theory exploration.
-
-\item{Modularity}: Haskell has a module system, where each module may specify an \emph{export list} containing the names which should be made available for other modules to import. When such a list is given, any expressions \emph{not} on the list are considered \emph{private} to that module, and are hence inaccessible from elsewhere. This mechanism allows modules to provide more guarantees than are available just in their types. For example, a module may represent email addresses in the following way:
-
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth, upquote=true]
-module Email (Email(), at, render) where
-
-data Email = E String String
-
-render :: Email -> String
-render (E u h) = u ++ "@" ++ h
-
-at :: String -> String -> Maybe Email
-at "" h  = Nothing
-at u  "" = Nothing
-at u  h  = Just (E u h)
-\end{lstlisting}
-
-The \hs{Email} type guarantees that its elements have both a user part and a host part (modulo divergence), but it does not provide any guarantees about those parts. We also define the \hs{at} function, a so-called ``smart constructor'', which has the additional guarantee that the \hs{Email}s it returns contain non-empty \hs{String}s. By ommitting the \hs{E} constructor from the export list on the first line \footnote{The syntax \hs{Email()} means we're exporting the \hs{Email} type, but not any of its constructors.}, the only way \emph{other} modules can create an \hs{Email} is by using \hs{at}, which forces the non-empty guarantee to hold globally.
-
-\end{description}
-
-Together, these features make Haskell code highly structured, amenable to logical analysis and subject to many algebraic laws. However, as mentioned with regards to type classes, Haskell itself is incapable of expressing or enforcing these laws (at least, without difficulty \cite{lindley2014hasochism}). This reduces the incentive to manually discover, state and prove theorems about Haskell code, e.g. in the style of interactive theorem proving, as these results may be invalidated by seemingly innocuous code changes. This puts Haskell in a rather special position with regards to the discovery of interesting theorems; namely that many discoveries may be available with very little work, simply because the code's authors are focused on \emph{software} development rather than \emph{proof} development. The same cannot be said, for example, of ITP systems; although our reasoning capabilities may be stronger in an ITP setting, much of the ``low hanging fruit'' will have already been found through the user's dedicated efforts, and hence theory exploration would be unlikely to discover unexpected properties.
-
-Other empirical advantages to studying Haskell, compared to other programming languages or theorem proving systems, include:
-
-\begin{itemize}
-
-\item The large amount of Haskell code which is freely available online, e.g. in repositories like \href{http://hackage.haskell.org}{Hackage}, with which we can experiment.
-
-\item The existence of theory exploration systems such as \hspec{}, and related tools which we may be able to re-use, including conjecture generators like \qspec{}; counterexample finders like \qcheck{}, \textsc{SmallCheck} and \textsc{SmartCheck}; theorem provers like \textsc{Hip} \cite{rosen2012proving}; and other related testing and term-generating systems like \textsc{MuCheck} \cite{le2014mucheck}, \textsc{MagicHaskeller} \cite{katayama2011magichaskeller} and \textsc{Djinn} \cite{augustsson2005djinn}.
-
-\item The remarkable amount of infrastructure which exists for working with Haskell code, including package managers, compilers, interpreters, parsers, static analysers, etc.
-
-\end{itemize}
-
 \subsection{Theory Exploration}
 
-We briefly described theory exploration in \S \ref{sec:theoryexploration}, as the task of discovering \emph{new} theorems in a software or proof library, rather than proving/disproving user-provided statements. The idea was first introduced in the \textsc{Theorema} \cite{buchberger2000theory} system of Buchberger. This provided an interactive environment, similar to computer algebra systems and interactive theorem provers. In this setting, many of our concerns such as the generation of values and deciding which properties to explore are simply delegated to the user; the software would check for correctness, store results and perform searches; again, similar to interactive theorem provers.
+We briefly described theory exploration in \S \ref{sec:theoryexploration}, as the task of discovering \emph{new} theorems in a software or proof library, rather than proving/disproving user-provided statements. This general idea is quite old, with . The current generation of theory exploration tools trace their roots back to the interactive \textsc{Theorema} \cite{buchberger2000theory} system of Buchberger. In such a setting, most of the automation focuses on bookkeeping (such as type-checking, managing scope, etc.) and more traditional automated theorem proving.
 
-Subsequent systems have investigated \emph{automated} theory exploration, for tasks such as lemma discovery. By removing user interaction, these concerns about directing search must be solved by algorithms. As well as \qspec{} and \hspec{} in Haskell, automated theory exploration has been applied to Isabelle \cite{Montano-Rivas.McCasland.Dixon.ea:2012, johansson2009isacosy, Hipster}.
-
-We have focused our attention on \qspec{}, although it does not actually \emph{prove} its results, and hence may not be considered a theory exploration system on its own. However, it does form a vital component of \hspec{}, which uses off-the-shelf automated theorem provers (ATPs) to verify \qspec{}'s conjectures, forming a complete theory exploration system as well as a capable inductive theorem prover (by exploiting theory exploration for lemma generation) \cite{claessen2013automating}. Due to \hspec{}'s use in \textsc{Hipster}, improvements to \qspec{} also benefit work being pursued in Isabelle.
+Subsequent systems have increased the level of automation, and have shown promise in tasks such as lemma discovery. As well as \qspec{} and \hspec{} in Haskell, automated theory exploration has been applied to Isabelle \cite{Montano-Rivas.McCasland.Dixon.ea:2012} \cite{johansson2009isacosy} \cite{Hipster}. Since \qspec{} is used for conjecture generation in many of those systems, they can also benefit from our work with machine learning.
 
 \subsection{Relevance Filtering}
 \label{sec:relevance}
 
-The combinatorial nature of formal systems causes many proof search methods, such as resolution, to have exponential complexity \cite{haken1985intractability}; hence even a modest size increase can turn a trivial problem into an intractable one. Finding efficient alternatives for such algorithms, especially those which are NP-complete (e.g. determining satisfiability) or co-NP-complete (e.g. determining tautologies), seems unlikely, as it would imply progress on the famously intractable open problems of $\text{P} = \text{NP}$ and $\text{NP} = \text{co-NP}$. On the other hand, we can turn this difficulty around: a modest \emph{decrease} in size may turn an intractable problem into a solvable one. We can ensure that the solutions to these reduced problems coincide with the original if we only remove \emph{redundant} information. This leads to the idea of \emph{relevance filtering} (or, \emph{premise selection}, when viewed as the \emph{addition} of relevant information to an initially-empty problem). This is the core idea behind our restriction of theory exploration to intelligently-selected clusters of symbols, rather than whole libraries at a time.
+The combinatorial nature of formal systems causes many proof search methods, such as resolution, to have exponential complexity \cite{haken1985intractability}. The idea of \emph{relevance filtering} (or, \emph{premise selection}) is to reduce the input size of a task by removing redundant or irrelevant information from the input. Our restriction of theory exploration to intelligently-selected clusters of symbols, rather than whole libraries at a time, is the essentially the same idea being applied in a novel setting.
 
 Relevance filtering has mostly been used in automated proof search, where it simplifies problems by removing from consideration those clauses (axioms, definitions, lemmas, etc.) which are deemed \emph{irrelevant}. The technique is used in Isabelle's Sledgehammer tool, during its translation of Isabelle/HOL theories to statements in first order logic: rather than translating the entire theory, only a sub-set of relevant clauses are included. This reduces the size of the problem and speeds up the proof search, but it creates the new problem of determining when a clause is relevant: how do we know what will be required, before we have the proof?
 
-The initial approach taken by Sledgehammer, known as \textsc{MePo} (from \emph{Meng-Paulson} \cite{meng2009lightweight}), gives each clause a score based on the proportion $\frac{m}{n}$ of its symbols which are ``relevant'' (where $n$ is the number of symbols in the clause and $m$ is the number which are relevant). Initially, the relevant symbols are those which occur in the goal to be proved, but whenever a clause is found which scores more than a particular threshold, all of its symbols are then also considered relevant. There are other heuristics applied too, such as increasing the score of user-provided facts (e.g. given by keywords like \texttt{using}), locally-scoped facts, first-order facts and rarely-occuring facts. To choose $r$ relevant clauses for an ATP invocation, we simply order the clauses by decreasing score and take the first $r$ of them.
-
-Recently, a variety of alternative algorithms have also been investigated, for example the \textsc{MaSH} algorithm (Machine Learning for SledgeHammer) \cite{kuhlwein2013mash} uses the ``visibility'' of one theorem from another to determine the relevance of clauses. Visibility is essentially a dependency graph of which theorems were used in the proofs of which other theorems (although the theorems are actually represented as abstract sets of features). To select relevant clauses for a goal, the set of clauses which are visible from the goal's components is generated; this is further reduced by (an efficient approximation of) a na\"{\i}ve Bayes algorithm.
-
-Another example is \emph{multi-output ranking} (MOR), which uses a support vector machine (SVM) approach for selecting relevant axioms from the Mizar Mathematical Library for use by the Vampire ATP system \cite{alama2014premise}. Many more approaches are described and evaluated in \cite{kuhlwein2012overview}, some of which may be directly applicable in the context of theory exploration.
+Various approaches have been proposed in the literature \cite{kuhlwein2013mash} \cite{kuhlwein2012overview} \cite{alama2014premise}, though the original approach is based on the proportion of symbols which a clause has in common with the problem statement \cite{meng2009lightweight} (plus various heuristics).
 
 \subsection{Recurrent Clustering}
 \label{sec:clusteringexpressions}
@@ -98,41 +27,8 @@ ACL2(ml) reasons by analogy: finding theorem statements which are similar to the
 
 Whilst we do not currently reason by analogy, this is an interesting area for future work in theory exploration: given a set of theorems relating particular terms, we might form conjectures regarding similar terms found through clustering.
 
-\iffalse
-We could expand this a bit, e.g. talking about how we both use Weka, etc.
-\fi
-
 \subsection{Feature Extraction}
 
-One major difficulty when applying statistical machine learning algorithms to \emph{languages}, such as Haskell, is the appearance of recursive structures. This can lead to nested expressions of arbitrary depth, which are difficult to compare in numerical ways. One solution, as described in \S \ref{sec:featureextraction}, is to use \emph{feature extraction}; however, our method is not the only possible way to encode recursive structures as fixed-size features.
+One major difficulty when applying statistical machine learning algorithms to \emph{languages}, such as Haskell, is the appearance of recursive structures. This can lead to nested expressions of arbitrary depth, which are difficult to compare in numerical ways. One common approach to this problem is to represent such structures as \emph{sequences}. \emph{Recurrent neural networks} (RNNs) are a popular choice for processing sequences, especially when combined with mechanisms such as \emph{long short-term memory} (LSTM) for preserving information across long sequences \cite{hochreiter1997long}. Such systems have been used, for example, to parse and execute computer programs \cite{zaremba2014learning}. However, learning to parse sequences seems inefficient considering that we already have correctly-parsed ASTs.
 
-The simplest way to encode such inputs is to simply choose a desired size, then pad anything smaller and truncate anything larger. We use this to make our matrices a uniform size, borrowing the idea from ML4PG. Care must be taken to ensure that we are not discarding too much information, that we are not producing features with too many dimensions to be practical, and that there is a uniform ``meaning'' to each feature across different feature vectors. In our case, we avoid many of these problems by transforming the recursive structure of expressions into matrices first; this gives each feature a stable meaning such as ``the $i$th token from the left at the $j$th level of nesting''.
-
-Truncation works best when the input data is arranged with the most significant data first (in a sense, it is ``big-endian''). This is the case for Haskell expressions, since the higher levels of the syntax tree are the most semantically significant; for example, the lower levels may never even be evaluated due to laziness. This allows us to truncate more aggressively than if the leaves were most significant.
-
-By modelling our inputs as points in high-dimensional spaces, we can consider feature extraction as projection into a lower-dimensional space (known as \emph{dimension reduction}). Truncation is a trivial dimension reduction technique; more sophisticated projection functions consider the \emph{distribution} of the input points, and project with the hyperplane which preserves as much of the variance as possible (or, equivalently, reduces the \emph{mutual information} between the points).
-
-Techniques such as \emph{principle component analysis} (PCA) can be used to find these hyperplanes, but unfortunately require their inputs to already have a fixed, integer number of dimensions. In the case of our recursive expressions (which we may consider to have \emph{fractal} dimension), we would need another pre-processing stage to satisfy this requirement.
-
-There are machine learning algorithms which can handle variable-size input, but these are often \emph{supervised} algorithms which require an externally-provided error function to minimise. Error functions can be given for clustering, for example k-means implicitly minimises the function given in equation \ref{eq:kmeansobjective}, but unsupervised algorithms may be preferred for efficiency as they are more direct.
-
-One example of learning from variable-size input is to use \emph{recurrent neural networks} (RNNs). These contain cyclic connections between neurons, unlike the traditional acyclic ``feed-forward'' NNs, allowing state to persist between observations. In this way, each data point can be divided into a sequence of arbitrary length, for example an s-expression, and fed into an RNN one token at a time for processing.
-
-Unfortunately RNNs are difficult to train. The standard way to train NNs is the back-propagation algorithm; when this is extended to handle cycles we get the \emph{backpropagation through time} algorithm \cite{werbos1990backpropagation}. However, this suffers a problem known as the \emph{vanishing} (or \emph{exploding}) \emph{gradient}: error values change exponentially as they propagate back through the cycles, which prevents effective learning of correlations across a sequence, undermining the main advantage of RNNs. The vanishing gradient problem is the subject of current research, with countermeasures including \emph{neuroevolution} (using evolutionary computation techniques rather than back-propagation) and \emph{long short-term memory} (LSTM; introducing special nodes to ``store'' state, rather than having them loop around a cycle \cite{hochreiter1997long}).
-
-Using sequences to represent recursive structures is also problematic: if we want our learning algorithm to exploit structure (such as the depth of a token), it will have to discover how to parse the sequences for itself, which seems wasteful. The \emph{back-propagation through structure} approach \cite{goller1996learning} is a more direct solution to this problem, using a feed-forward NN to learn recursive distributed representations \cite{pollack1990recursive} which correspond to the recursive structure of the inputs. Such distributed representations can also be used for sequences, which we can use to encode sub-trees when the branching factor of nodes is not  uniform \cite{kwasny1995tail}. More recent work has investigated storing recursive structures inside LSTM cells \cite{zhu2015long}.
-
-A simpler alternative for generating recursive distributed representations is to use circular convolution \cite{conf/ijcai/Plate91}. Although promising results are shown for its use in \emph{distributed tree kernels} \cite{zanzotto2012distributed}, our preliminary experiments in applying circular convolution to functional programming expressions found most of the information to be lost in the process; presumably as the expressions are too small.
-
-\emph{Kernel methods} have also been applied to structured information, for example in \cite{Gartner2003} the input data (including sequences, trees and graphs) are represented using \emph{generative models}, such as hidden Markov models, of a fixed size suitable for learning. Many more applications of kernel methods to structured domains are given in \cite{bakir2007predicting}, which could be used to learn more subtle relations between expressions than recurrent clustering alone.
-
-\subsection{K-Means}
-
-We use the Weka tool to perform k-means clustering \cite{Holmes.Donkin.Witten:1994}, since we are more concerned with the application of feature extraction to Haskell and its use in theory exploration, rather than precise tuning of learning algorithms. Since k-means is a standard method, there are many other implementations available. More interestingly, there are many other clustering algorithms we could use, such as \emph{expectation maximisation} \footnote{In fact, k-means is very similar to expectation-maximisation, as it alternates between an \emph{expectation step} (finding the mean value of each cluster) and a \emph{maximisation step} (assigning points to the cluster they're most similar to; or alternatively, \emph{minimising} the distance of each point to the centre of its cluster, as per equation \ref{eq:kmeansobjective}).}, but experiments with ML4PG have shown little difference in their results; in effect, the quality of our features is the bottleneck to learning, so there is no reason to avoid a fast algorithm like k-means.
-
-In any case there are many conservative improvements to the standard k-means algorithm, which could be applied to our setup. For example, a more efficient approach like \emph{yinyang k-means} \cite{conf/icml/DingZSMM15} could make larger input sizes more practical to cluster, especially since recurrent clustering invokes k-means many times. The \emph{k-means++} approach \cite{arthur2007k, bahmani2012scalable} can be used to more carefully select the ``seed'' values for the first timestep, and the \emph{x-means} algorithm \cite{pelleg2000x} is able to estimate how many clusters to use (our \emph{final} clusters should be tuned to maximise the performance of the subsequent theory exploration step, but x-means could still be useful in the recurrent clustering steps).
-
-\iffalse
-TODO: Theory Exploration?
-\cite{johansson2009isacosy}
-\fi
+Whilst neural networks have been applied directly to recursive structures \cite{goller1996learning}, including using LSTM \cite{zhu2015long}, a more popular approach is to use \emph{kernel methods} \cite{bakir2007predicting}. These are promising as a more principled alternative to our current hand-crafted translation of ASTs to vectors.

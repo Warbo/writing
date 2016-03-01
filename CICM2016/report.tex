@@ -6,8 +6,6 @@
 \usepackage{graphicx}
 \usepackage{mathtools}
 \usepackage{amssymb}
-\usepackage{algorithm}
-\usepackage[noend]{algpseudocode}
 \usepackage[T1]{fontenc}
 %\usepackage{enumitem}
 \usepackage{paralist}
@@ -18,69 +16,31 @@
 \usepackage[numbers]{natbib}
 \usepackage{mathpartir}
 \usepackage{mmm}
-\usepackage{subcaption}
-\usepackage{tikz-qtree}
 
 % Treat paragraph as subsubsubsection
 \usepackage{titlesec}
 \setcounter{secnumdepth}{4}
 
-\usepackage{tikz}
-\usetikzlibrary{shapes,arrows,decorations.pathreplacing,calc}
-
 \DeclareMathOperator{\md5}{MD5}
 
-\lstset{
-  frame=none,
-  xleftmargin=2pt,
-  stepnumber=1,
-  numbers=none,
-  numbersep=5pt,
-  numberstyle=\ttfamily\tiny\color[gray]{0.3},
-  columns=flexible,
-  belowcaptionskip=\bigskipamount,
-  captionpos=b,
-  escapeinside={*'}{'*},
-  language=haskell,
-  tabsize=2,
-  emphstyle={\bf},
-  commentstyle=\it,
-  stringstyle=\mdseries\ttfamily,
-  showspaces=false,
-  keepspaces=true,
-  keywordstyle=\bfseries\ttfamily,
-  basicstyle=\small\ttfamily,
-  showstringspaces=false,
-  morecomment=[l]\%,
-}
-
-\newcommand{\fc}{System F\textsubscript{C}}
-
 \newcommand{\blank}{\cdot}
-\newcommand*\mean[1]{\overline{#1}}
-\newcommand*\vect[1]{\mathbf{#1}}
-\newcommand{\argmin}{\operatornamewithlimits{argmin}}
-\newcommand{\feature}[1]{\phi(#1)}
-\newcommand{\id}[1]{\texttt{"#1"}}
-\newcommand{\vlocal}[1]{\CVar\ (\CLocal\ \id{#1})}
-\newcommand{\vglobal}[1]{\CVar\ (\CGlobal\ \id{#1})}
-\newcommand{\cat}{\mbox{\ensuremath{+\!\!+\,}}}
-
-\providecommand{\coq}[1]{\lstinline[language=ML]|#1|}
-
-\lstnewenvironment{haskell}{%
-  \lstset{language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
-
-\lstnewenvironment{coqblock}{%
-  \lstset{language=ML, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
 
 \fi
 
 \documentclass[runningheads,a4paper]{llncs}
 
+\usepackage{amsmath}
 \usepackage{amssymb}
 \setcounter{tocdepth}{3}
 \usepackage{graphicx}
+\usepackage[caption=false]{subfig}
+
+\usepackage{tikz-qtree}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,decorations.pathreplacing,calc}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 
 \usepackage{url}
 \urldef{\mailsa}\path|cmwarburton@dundee.ac.uk, katya@computing.dundee.ac.uk|
@@ -92,20 +52,31 @@
 \newcommand{\qspec}{\textsc{QuickSpec}}
 \newcommand{\hspec}{\textsc{HipSpec}}
 \newcommand{\equal}{=}
+\newcommand{\fc}{System $F_C$}
+
+% Semantic markup
+\providecommand{\coq}[1]{\texttt{#1}}
+\newenvironment{haskell}{\ttfamily}{\par}
+\newenvironment{coqblock}{\ttfamily}{\par}
 \newcommand{\hs}[1]{\texttt{#1}}
+\newcommand*\vect[1]{\mathbf{#1}}
+\newcommand*\mean[1]{\overline{#1}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\feature}[1]{\phi(#1)}
+\newcommand{\id}[1]{\texttt{"#1"}}
+\newcommand{\vlocal}[1]{\CVar\ (\CLocal\ \id{#1})}
+\newcommand{\vglobal}[1]{\CVar\ (\CGlobal\ \id{#1})}
+\newcommand{\cat}{\mbox{\ensuremath{+\!\!+\,}}}
 
 \begin{document}
 
 \mainmatter  % start of an individual contribution
 
 % first the title is needed
-\iffalse TODO: actual title \fi
-\title{Lecture Notes in Computer Science:\\Authors' Instructions
-for the Preparation\\of Camera-Ready
-Contributions\\to LNCS/LNAI/LNBI Proceedings}
+\title{Improving Haskell Theory Exploration}
 
 % a short form should be given in case it is too long for the running head
-\titlerunning{Lecture Notes in Computer Science: Authors' Instructions}
+\titlerunning{Improving Haskell Theory Exploration}
 
 % the name(s) of the author(s) follow(s) next
 %
@@ -116,7 +87,7 @@ Contributions\\to LNCS/LNAI/LNBI Proceedings}
 \author{Chris Warburton%
 \and Ekaterina Komendantskaya}
 %
-\authorrunning{Lecture Notes in Computer Science: Authors' Instructions}
+\authorrunning{Improving Haskell Theory Exploration}
 % (feature abused for this document to repeat the title also on left hand pages)
 
 % the affiliations are given next; don't give your e-mail address
@@ -132,7 +103,7 @@ Contributions\\to LNCS/LNAI/LNBI Proceedings}
 % "llncs.dem" accompanies the document class "llncs.cls".
 %
 
-\toctitle{Lecture Notes in Computer Science}
+%\toctitle{Lecture Notes in Computer Science}
 \tocauthor{Improving Haskell Theory Exploration}
 \maketitle
 
@@ -152,5 +123,7 @@ Theory Exploration is a promising approach to improving the quality and understa
 
 \bibliographystyle{plain}
 \bibliography{../Bibtex}
+
+\input{appendices.tex}
 
 \end{document}

@@ -24,79 +24,41 @@
 \newcommand{\CRec}{\texttt{Rec}}
 \newcommand{\CBind}{\texttt{Bind}}
 
-\begin{figure}
-  \begin{equation}
-    \begin{split}
-      expr\    \rightarrow\ & \CVar\ id                          \\
-                         |\ & \CLit\ literal                     \\
-                         |\ & \CApp\ expr\ expr                  \\
-                         |\ & \CLam\ \mathcal{L}\ expr           \\
-                         |\ & \CLet\ bind\ expr                  \\
-                         |\ & \CCase\ expr\ \mathcal{L}\ [alt]   \\
-                         |\ & \CType                             \\
-      id\      \rightarrow\ & \CLocal\       \mathcal{L}         \\
-                         |\ & \CGlobal\      \mathcal{G}         \\
-                         |\ & \CConstructor\ \mathcal{D}         \\
-      literal\ \rightarrow\ & \CLitNum\ \mathcal{N}              \\
-                         |\ & \CLitStr\ \mathcal{S}              \\
-      alt\     \rightarrow\ & \CAlt\ altcon\ expr\ [\mathcal{L}] \\
-      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{D}             \\
-                         |\ & \CLitAlt\ literal                  \\
-                         |\ & \CDefault                          \\
-      bind\    \rightarrow\ & \CNonRec\ binder                   \\
-                         |\ & \CRec\ [binder]                    \\
-      binder   \rightarrow\ & \CBind\ \mathcal{L}\ expr
-    \end{split}
-  \end{equation}
-  Where:
-  \begin{tabular}[t]{l @{ $=$ } l}
-    $\mathcal{S}$ & string literals    \\
-    $\mathcal{N}$ & numeric literals   \\
-    $\mathcal{L}$ & local identifiers  \\
-    $\mathcal{G}$ & global identifiers \\
-    $\mathcal{D}$ & constructor identifiers
-  \end{tabular}
-
-  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
-  \label{fig:coresyntax}
-\end{figure}
-
 We decided to focus on theory exploration in the Haskell programming language as it has mature, state-of-the-art implementations (\qspec{} \cite{QuickSpec} and \hspec{} \cite{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \cite{Hipster} system, is actually implemented by translating to Haskell and invoking \hspec{}.
 
-Haskell is well-suited to programming language research; indeed, this was a goal of the language's creators \cite{marlow2010haskell}. Like most \emph{functional} programming languages, Haskell builds upon $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \cite[Appendix C]{sulzmann2007system}.
+Like most functional programming languages, Haskell builds upon $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. For simplicity, we will focus on an intermediate representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively large and complex syntax of Haskell proper. Core is based on \fc{}, but for our machine learning purposes we are mostly interested in its syntax; for a more thorough treatment of \fc{} and its use in GHC, see \cite[Appendix C]{sulzmann2007system}.
 
 The sub-set of Core we consider is shown in Figure \ref{fig:coresyntax}; compared to the full language \footnote{As of GHC version 7.10.2, the latest at the time of writing.} our major restriction is to ignore type hints (such as explicit casts, and differences between types/kinds/coercions). For brevity, we also omit several other forms of literal (machine words of various sizes, individual characters, etc.), as their treatment is similar to those of strings and numerals. We will use quoted strings to denote names and literals, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr "quux"} and \texttt{LitNum "42"}, and require only that they can be compared for equality.
 
 \begin{figure}
-  \begin{haskell}
-    data Nat = Z
-             | S Nat
+  \begin{haskell}\begin{verbatim}
+data Nat = Z
+         | S Nat
 
-    plus :: Nat -> Nat -> Nat
-    plus    Z  y = y
-    plus (S x) y = S (plus x y)
+plus :: Nat -> Nat -> Nat
+plus    Z  y = y
+plus (S x) y = S (plus x y)
 
-    mult :: Nat -> Nat -> Nat
-    mult    Z  y = Z
-    mult (S x) y = plus y (mult x y)
+mult :: Nat -> Nat -> Nat
+mult    Z  y = Z
+mult (S x) y = plus y (mult x y)
 
-    odd :: Nat -> Bool
-    odd    Z  = False
-    odd (S n) = even n
+odd :: Nat -> Bool
+odd    Z  = False
+odd (S n) = even n
 
-    even :: Nat -> Bool
-    even    Z  = True
-    even (S n) = odd n
+even :: Nat -> Bool
+even    Z  = True
+even (S n) = odd n\end{verbatim}
   \end{haskell}
   \caption{A Haskell datatype for Peano numerals with some simple arithmetic functions, including mutually-recursive definitions for \hs{odd} and \hs{even}. \hs{Bool} is Haskell's built in boolean type, which can be regarded as \hs{data Bool \equal{} True | False}.}
   \label{fig:haskellexample}
 \end{figure}
 
 \begin{figure}
-  \begin{subfigure}[plus]{\textwidth}
-    \begin{small}
-      \underline{\texttt{plus}}
-      \begin{verbatim}
+  \begin{small}
+    \underline{\texttt{plus}}
+    \begin{verbatim}
 Lam "a" (Lam "y" (Case (Var (Local "a"))
                        "b"
                        (Alt (DataAlt "Z") (Var (Local "y")))
@@ -105,13 +67,10 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
                                                          (Var (Local  "x")))
                                                     (Var (Local "y"))))
                                           "x")))
-      \end{verbatim}
-    \end{small}
-  \end{subfigure}
-  \begin{subfigure}[mult]{\textwidth}
-    \begin{small}
-      \underline{\texttt{mult}}
-      \begin{verbatim}
+    \end{verbatim}
+
+    \underline{\texttt{mult}}
+    \begin{verbatim}
 Lam "a" (Lam "y" (Case (Var (Local "a"))
                        "b"
                        (Alt (DataAlt "Z") (Var (Constructor "Z")))
@@ -121,35 +80,28 @@ Lam "a" (Lam "y" (Case (Var (Local "a"))
                                                          (Var (Local  "x")))
                                                     (Var (Local  "y"))))
                                           "x")))
-      \end{verbatim}
-    \end{small}
-  \end{subfigure}
-  \begin{subfigure}[odd]{\textwidth}
-    \begin{small}
-      \underline{\texttt{odd}}
-      \begin{verbatim}
+    \end{verbatim}
+
+    \underline{\texttt{odd}}
+    \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
               "b"
               (Alt (DataAlt "Z") (Var (Constructor "False")))
               (Alt (DataAlt "S") (App (Var (Global "even"))
                                       (Var (Local  "n")))
                                  "n"))
-      \end{verbatim}
-    \end{small}
-  \end{subfigure}
-  \begin{subfigure}[even]{\textwidth}
-    \begin{small}
-      \underline{\texttt{even}}
-      \begin{verbatim}
+    \end{verbatim}
+
+    \underline{\texttt{even}}
+    \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
               "b"
               (Alt (DataAlt "Z") (Var (Constructor "True")))
               (Alt (DataAlt "S") (App (Var (Global "odd"))
                                       (Var (Local  "n")))
                                  "n"))
-      \end{verbatim}
-    \end{small}
-  \end{subfigure}
+    \end{verbatim}
+  \end{small}
   \caption{Translations of functions in Figure \ref{fig:haskellexample} into the Core syntax of Figure \ref{fig:coresyntax}. Notice the introduction of explicit $\lambda$ abstractions (\texttt{Lam}) and the use of \texttt{Case} to represent piecewise definitions. Fresh variables are chosen arbitrarily as \texttt{"a"}, \texttt{"b"}, etc.}
   \label{fig:coreexample}
 \end{figure}
@@ -158,67 +110,12 @@ Figure \ref{fig:haskellexample} shows some simple Haskell function definitions, 
 
 Note that we exclude representations for type-level entities, including datatype definitions like that of \hs{Nat}. GHC can represent these, but in this work we only consider reducible expressions (i.e. value-level bindings of the form \mbox{\hs{f a b ... = ...}}).
 
-\subsection{QuickCheck}
-\label{sec:quickcheck}
-
-Although unit testing is the de facto industry standard for quality assurance in non-critical systems, the level of confidence it provides is rather low, and totally inadequate for many (e.g. life-) critical systems. To see why, consider the following Haskell function, along with some unit tests:
-
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-factorial 0 = 1
-factorial n = n * factorial (n-1)
-
-fact_base      = factorial 0 == factorial 1
-fact_increases = factorial 3 <= factorial 4
-fact_div       = factorial 4 == factorial 5 `div` 5
-\end{lstlisting}
-
-The intent of the function is to map an input $n$ to an output $n!$. The tests check a few properties of the implementation, including the base case, that the function is monotonically increasing, and a relationship between adjacent outputs. However, these tests will \emph{not} expose a serious problem with the implementation: it diverges on half of its possible inputs!
-
-All of Haskell's built-in numeric types allow negative numbers, which this implementation doesn't take into account. Whilst this is a rather trivial example, it highlights a common problem: unit tests are insufficient to expose incorrect assumptions. In this case, our assumption that numbers are positive has caused a bug in the implementation \emph{and} limited the tests we've written.
-
-If we do manage to spot this error, we might capture it in a \emph{regression test} and update the definition of \hs{factorial} to handle negative numbers, e.g. by taking their absolute value:
-
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-factorial 0 = 1
-factorial n = let nPos = abs n
-               in nPos * factorial (nPos - 1)
-
-fact_neg = factorial 1 == factorial (-1)
-\end{lstlisting}
-
-However, this is \emph{still} not enough, since this function will also accept fractional values\footnote{Since we only use generic numeric operations, the function will be polymorphic with a type of the form \hs{forall t. Num t => t -> t}, where \hs{Num t} constrains the type variable \hs{t} to be numeric. In fact, Haskell will infer extra constraints such as \hs{Eq t} since we have used \hs{==} in the unit tests.}, which will also cause it to diverge. Clearly, by choosing what to test we are biasing the test suite towards those cases we've already taken into account, whilst neglecting the problems we did not expect.
-
-Haskell offers a partial solution to this problem in the form of \emph{property checking}. Tools such as \qcheck{} separate tests into three components: a \emph{property} to check, which unlike a unit test may contain \emph{free variables}; a source of values to instantiate these free variables; and a stopping criterion. Here is how we might restate our unit tests as properties:
-
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-fact_base        = factorial 0 == factorial 1
-fact_increases n = factorial n <= factorial (n+1)
-fact_div       n = factorial n == factorial (n+1) `div` (n+1)
-fact_neg       n = factorial n == factorial (-n)
-\end{lstlisting}
-
-The free variables (all called \hs{n} in this case) are abstracted as function parameters; these parameters are implicitly \emph{universally quantified}, i.e. we've gone from a unit test asserting $factorial(3) \leq factorial(4)$ to a property asserting $\forall n, factorial(n) \leq factorial(n+1)$. Notice that unit tests like \hs{fact\_base} are valid properties; they just assert rather weak statements.
-
-To check these properties, \qcheck{} treats closed terms (like \hs{fact\_base}) just like unit tests: pass if they evaluate to \hs{True}, fail otherwise. For open terms, a random selection of values are generated and passed in via the function parameter; the results are then treated in the same way as closed terms. The default stopping criterion for \qcheck{} (for each test) is when a single generated test fails, or when 100 generated tests pass.
-
-The ability to state \emph{universal} properties in this way avoids some of the bias we encountered with unit tests. In the \hs{factorial} example, this manifests in two ways:
-
-\begin{itemize}
-  \item \qcheck{} cannot test polymorphic functions; they must be \emph{monomorphised} first (instantiated to a particular concrete type). This is a technical limitation, since \qcheck{} must know which type of values to generate, but in our example it would bring the issue with fractional values to our attention.
-
-  \item The generators used by \qcheck{} depend only on the \emph{type} of value they are generating: since \hs{Int} includes positive and negative values, the \hs{Int} generator will output both. This will expose the problem with negative numbers, which we weren't expecting.
-\end{itemize}
-
-Property checking is certainly an improvement over unit testing, but the problem of tests being biased towards expected cases remains, since we are manually specifying the properties to be checked.
-
-We can reduce this bias further through the use of \emph{theory exploration} tools, such as \qspec{} and \hspec{}. These programs \emph{discover} properties of a ``theory'' (e.g. a library), through a combination of brute-force enumeration, random testing and (in the case of \hspec{}) automated theorem proving.
-
 \subsection{Theory Exploration}
 \label{sec:theoryexploration}
 
-In this work we consider the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. The method of conjecture generation is a key characteristic of any theory exploration system, although all existing implementations rely on brute force enumeration to some degree.
+We consider the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. The method of conjecture generation is a key characteristic of any theory exploration system, although all existing implementations rely on brute force enumeration to some degree.
 
-We focus on \qspec{} \cite{QuickSpec}, which conjectures equations about Haskell code (these may be fed into another tool, such as \hspec{}, for proving). These conjectures are arrived at through the following stages:
+We focus on \qspec{} \cite{QuickSpec}, which conjectures equations about Haskell code. These may be fed into another tool, such as \hspec{}, for subsequent proving. These conjectures are arrived at through the following stages:
 
 \iffalse TODO: Make this more formal?
  V \in Var
@@ -234,14 +131,15 @@ or
 \begin{enumerate}
   \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the constants (including functions) from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$ \iffalse TODO: A little awkward; maybe use the above notation? \fi. To ensure the list is finite, function applications are only nested up to a specified depth (by default, 3).
   \item The elements of $terms$ are grouped into equivalence classes, based on their type.
-  \item Each variable is instantiated to a particular value, generated randomly by \qcheck{}.
-  \item For each class, the members are compared (using a pre-specified function, such as equality \hs{==}) to see if these instantiations have caused an observable difference between members. If so, the class is split up to separate such distinguishable members.
-  \item The previous steps of variable instantiation and comparison are repeated until the classes stabilise (i.e. no differences have been observed for some specified number of repetitions).
-  \item A set of equations are then conjectured, relating each class's members.
+  \item The equivalence of terms in each class is tested using \qcheck{}: variables are instantiated to particular values, generated randomly, and the resulting closed expressions are evaluated and compared for equality.
+  \item If a class is found to have non-equal members, it is split up to separate those members.
+  \item The previous steps of testing and splitting are repeated until the classes stabilise (i.e. no differences have been observed for some specified number of repetitions).
+  \item For each class, one member is selected and equations are conjectured that it is equal to each of the other members.
 \end{enumerate}
 
-Such $conjectures$ can be used in several ways: they can be simplified for direct presentation to the user (by removing any equation which can be derived from the others by rewriting), sent to a more rigorous system like \hspec{} or \textsc{Hipster} for proving, or even serve as a background theory for an automated theorem prover \cite{claessen2013automating}.
+Such conjectures can be used in several ways: they can be simplified for direct presentation to the user (by removing any equation which can be derived from the others by rewriting), sent to a more rigorous system like \hspec{} for proving, or even serve as a background theory for an automated theorem prover \cite{claessen2013automating}.
 
+\iffalse
 As an example, we can consider a simple signature containing the expressions from Figure \ref{fig:haskellexample}:
 
 \begin{align*}
@@ -255,11 +153,11 @@ Together with a set of variables, say $V_{\texttt{Nat}} = \{a, b, c\}$, \qspec{}
                      & \texttt{S}\ c,\ \texttt{plus Z},\ \texttt{plus}\ a,\ \dots ]
 \end{align*}
 
-Notice that functions such as \hs{plus} and \hs{mult} are valid terms, despite not being applied to any arguments. In addition, Haskell curries functions, so these binary functions will be treated as unary functions which return unary functions. This is required as the construction of $terms$ applies functions to one argument at a time.
+Notice that functions such as \hs{plus} and \hs{mult} are valid terms, despite not being applied to any arguments. In addition, Haskell curries multi-argument functions, allowing them to be applied to one argument at a time, as used in the construction of $terms$.
 
 \begin{figure}
   % To reproduce, run 'quickSpec nat' in haskell_example/src/QuickSpecExample.hs
-  \begin{haskell}
+  \begin{verbatim}
                   plus a b = plus b a
                   plus a Z = a
          plus a (plus b c) = plus b (plus a c)
@@ -276,71 +174,28 @@ Notice that functions such as \hs{plus} and \hs{mult} are valid terms, despite n
            even (plus a a) = even Z
           even (times a a) = even a
 plus (mult a b) (mult a c) = mult a (plus b c)
-  \end{haskell}
+  \end{verbatim}
   \caption{Equations conjectured by \qspec{} for the functions in Figure \ref{fig:haskellexample}; after simplification.}
   \label{fig:qspecresult}
 \end{figure}
 
 These terms will be grouped into five classes, one each for \hs{Nat}, \hs{Nat -> Nat}, \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool} and \hs{Bool}. As the variables $a$, $b$ and $c$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until eventually the equations in Figure \ref{fig:qspecresult} are conjectured.
+\fi
 
-Although complete, this enumeration approach is wasteful: many terms are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. Here we know that addition and multiplication are closely related, and hence obey many algebraic laws. Our machine learning technique aims to predict these kinds of relations between functions, so we can create small signatures which nevertheless have the potential to give rise to many equations.
+Although complete, this enumeration approach is wasteful: many terms are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. For example, we know that addition and multiplication are closely related, and hence obey many algebraic laws. Our machine learning technique aims to predict these kinds of relations between functions, so we can create small signatures which nevertheless have the potential to give rise to many equations.
 
-\qspec{} (and \hspec{}) is also compatible with Haskell's existing testing infrastructure, such that an invocation of \texttt{cabal test} can run these tools alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and \textsc{Criterion}.
-
+\iffalse
+TODO
 In fact, there are similarities between the way a TE system like \qspec{} can generalise from checking \emph{particular} properties to \emph{inventing} new ones, and the way counterexample finders like \qcheck{} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. One of our aims is to understand the implications of this generalisation, the lessons that each can learn from the other's approach to term generation, and the consequences for testing and QA in general.
+\fi
 
 \subsection{Clustering}
 \label{sec:clustering}
 
 Our approach to scaling up \qspec{} takes inspiration from two sources. The first is relevance filtering, which makes expensive algorithms used in theorem proving more practical by limiting the size of their inputs. We describe this approach in more details in \S \ref{sec:relevance}. Relevance filtering is a practical tool which has existing applications in software, such as the \emph{Sledgehammer} component of the Isabelle/HOL theorem prover.
 
-Despite the idea's promise, we cannot simply invoke existing relevance filter algorithms in our theory exploration setting. The reason is that relevance filtering is a supervised learning method, i.e. it would require a distinguished expression to compare everything against. Theory exploration does not have such a distinguished expression; instead, we are interested in relationships between \emph{any} terms generated from a signature, and hence we must consider the relevance of \emph{all terms} to \emph{all other terms}.
+Despite the idea's promise, we cannot simply invoke existing relevance filter algorithms in our theory exploration setting. The reason is that relevance filtering is a supervised learning method, i.e. it would require a distinguished expression to compare everything against. Theory exploration does not have such a distinguished expression; instead, we are interested in relationships between \emph{all} terms in a signature, and hence we must consider the relevance of \emph{all terms} to \emph{all other terms}.
 
 A natural fit for this task is \emph{clustering}, which attempts to group similar inputs together in an unsupervised way. Based on their success in discovering relationships and patterns between expressions in Coq and ACL2 (in the ML4PG and ACL2(ml) tools respectively), we hypothesise that clustering methods can fulfil the role of relevance filters for theory exploration: intelligently breaking up large signatures into smaller ones more amenable to brute force enumeration, such that related expressions are explored together.
 
-\subsubsection{Feature Extraction}
-\label{sec:featureextraction}
-
-Before describing clustering in detail, we must introduce the idea of \emph{feature extraction}. This is the conversion of ``raw'' input data, such as audio, images or (in our case) Core expressions, into a form more suited to machine learning algorithms. By pre-processing our data in this way, we can re-use the same ``off-the-shelf'' machine learning algorithms in a variety of domains.
-
-We use a standard representation of features as a \emph{feature vector} of numbers $\vect{x} = (x_1, \dots, x_d)$ where $x_i \in \mathbb{R}$ (we use \textbf{bold face} to represent vectors, including feature vectors). \footnote{In fact, practical implementations will use an approximate format such as IEEE 754 floating point numbers.} For learning purposes this has some important advantages over raw expressions:
-
-\begin{itemize}
-  \item All of our feature vectors will be the same size, i.e. they will all have length (or \emph{dimension}) $d$. Many machine learning algorithms only work with inputs of a uniform size; feature extraction allows us to use these algorithms in domains where the size of each input is not known, may vary or may even be unbounded. For example, element-wise comparison of feature vectors is trivial (compare the $i$th elements for $1 \leq i \leq d$); for expressions this is not so straightforward, as their nesting may give rise to very different shapes.
-  \item Unlike our expressions, which are discrete, we can continuously transform one feature vector into another. This enables many powerful machine learning algorithms to be used, such as those based on \emph{gradient descent} or, in our case, arithmetic means.
-  \item Feature vectors can be chosen to represent the relevant information in a more compressed form than the raw data; for example, we might replace verbose, descriptive identifiers with sequential numbers. This reduces the input size of the machine learning problem, improving efficiency.
-\end{itemize}
-
-\subsubsection{K-Means}
-\label{sec:kmeans}
-
-Clustering is an unsupervised machine learning task for grouping $n$ data points using a similarity metric. There are many variations on this theme, but in our case we make the following choices:
-
-\begin{itemize}
-  \item For simplicity, we use the ``rule of thumb'' given in \cite[pp. 365]{mardia1979multivariate} to fix the number of clusters at $k = \lceil \sqrt{\frac{n}{2}} \rceil$.
-  \item Data points will be $d$-dimensional feature vectors, as defined above.
-  \item We will use euclidean distance (denoted $e$) as our similarity metric.
-  \item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm \cite{lloyd1982least}.
-\end{itemize}
-
-This is a standard setup, supported by off-the-shelf tools; in particular we use the implementation provided by Weka \cite{Holmes.Donkin.Witten:1994}, due to its use by ML4PG, which makes our results more easily comparable.
-
-Since k-means is iterative, we will use function notation to denote time steps, so $x(t)$ denotes the value of $x$ at time $t$. We denote the clusters as $C^1$ to $C^k$. As the name suggests, k-means uses the mean value of each cluster, which we denote as $\vect{m}^1$ to $\vect{m}^k$, hence:
-
-\begin{equation}
-  m^i_j(t) = \mean{C^i_j}(t) = \frac{\sum_{\vect{x} \in C^i(t)} x_j}{|C^i(t)|} \quad \text{for $t > 0$}
-\end{equation}
-
-Before k-means starts, we must choose \emph{seed} values for $\vect{m}^i(0)$. Many methods have been proposed for choosing these values \cite{arthur2007k}. For simplicity, we will choose values randomly from our data set $S$; this is known as the Forgy method.
-
-The elements of each cluster $C^i(t)$ are those data points closest to the mean value at the previous time step:
-
-\begin{equation}
-  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x}, \vect{m}^j(t-1)) \} \quad \text{for $t > 0$}
-\end{equation}
-
-As $t$ increases, the clusters $C^i$ move from their initial location around the ``seeds'', to converge on a local minimum of the ``within-cluster sum of squared error'' objective:
-
-\begin{equation} \label{eq:kmeansobjective}
-  \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
-\end{equation}
+We use \emph{k-means} clustering, implemented in the Weka tool \cite{Holmes.Donkin.Witten:1994} by Lloyd's algorithm \cite{lloyd1982least}, as this setup is used by ML4PG and ACL2(ml). For simplicity, we will cluster $n$ points into $k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters, following the ``rule of thumb'' given in \cite[pp. 365]{mardia1979multivariate}, and will use randomly-selected elements of our data set to determine the initial clusters (known as the Forgy method).

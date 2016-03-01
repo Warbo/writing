@@ -4,16 +4,16 @@
 \subsection{Recurrent Clustering}
 \label{sec:recurrentclustering}
 
-We adapt the methodology of \emph{recurrent clustering} proposed in \cite{DBLP:journals/corr/HerasK14, heras2013proof}, and suggest a new recurrent clustering and feature extraction algorithm for Haskell, which we then evaluate as a relevance filter technique for theory exploration. As a clustering algorithm, the aim of recurrent clustering is to identify similarities in a set of data points (in our case, Core expressions). Its distinguishing characteristic is to \emph{combine} feature extraction and clustering into a single recursive algorithm (shown as Algorithm \ref{alg:recurrent}), which goes beyond a simple syntactic characterisation, to allow the features of an expression to depend on those it references. Here we describe our approach to recurrent clustering and compare its similarity and differences to those of ML4PG and ACL2(ml).
+We adapt the methodology of \emph{recurrent clustering} proposed in \cite{DBLP:journals/corr/HerasK14} \cite{heras2013proof}, and suggest a new recurrent clustering and feature extraction algorithm for Haskell, which we then evaluate as a relevance filter technique for theory exploration. As a clustering algorithm, the aim of recurrent clustering is to identify similarities in a set of data points (in our case, Core expressions). Rather than clustering expressions directly, we first transform them into numeric vectors in a process called \emph{feature extraction}. The distinguishing characteristic of recurrent clustering is to \emph{combine} feature extraction and clustering into a single recursive algorithm (shown as Algorithm \ref{alg:recurrent}), which allows the feature vector of an expression to depend on those of the expressions it references. Here we describe our approach to recurrent clustering and compare its similarity and differences to those of ML4PG and ACL2(ml).
 
-We consider our algorithm in two stages: the first transforms the nested structure of expressions into a flat feature vector representation; the second converts the discrete symbols of Core syntax into features (real numbers), which we will denote as the function $\phi$.
+We consider our algorithm in two stages: the first transforms the nested structure of expressions into a flat vector representation; the second converts the discrete symbols of Core syntax into features (real numbers), which we will denote using the function $\phi$.
 
 \subsubsection{Expressions to Vectors}
 \label{sec:expressionstovectors}
 
-Our recurrent clustering algorithm makes use of the k-means algorithm described in \S \ref{sec:kmeans}, which considers the elements of a feature vector to be \emph{orthogonal}. Hence we must ensure that similar expressions not only give rise to similar numerical values, but crucially that these values appear \emph{at the same position} in the feature vectors. Since different patterns of nesting can alter the ``shape'' of expressions, simple traversals (breadth-first, depth-first, post-order, etc.) may cause features from equivalent sub-expressions to be mis-aligned. For example, consider the following expressions, which represent pattern-match clauses with different patterns but the same body (\hs{\vlocal{y}}):
+Our recurrent clustering algorithm is based on k-means clustering, which considers the elements of a feature vector to be \emph{orthogonal}. Hence we must ensure that similar expressions not only give rise to similar numerical values, but crucially that these values appear \emph{at the same position} in the feature vectors. Since different patterns of nesting can alter the ``shape'' of expressions, simple traversals (breadth-first, depth-first, post-order, etc.) may cause features from equivalent sub-expressions to be mis-aligned. For example, consider the following expressions, which represent pattern-match clauses with different patterns but the same body (\hs{\vlocal{y}}):
 
-\begin{equation}
+\begin{equation}\label{eq:xy}
   \begin{array}{r@{}l@{}l@{}}
     X\ &=\ \CAlt\ (\CDataAlt\ \id{C})\ & (\vlocal{y}) \\
     Y\ &=\ \CAlt\ \CDefault\           & (\vlocal{y})
@@ -48,41 +48,11 @@ The method we use to ``flatten'' expressions, described below, is a variation of
 
 Here $\frac{1}{2}$ of the original 6 features align, which is more than $breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2 zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
 
-To perform this flattening we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the $toTree$ function shown in Figure \ref{fig:totree}. We follow the presentation in \cite{blundell2012bayesian} and define rose trees recursively as follows: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}. The results are illustrated in Figure \ref{fig:rosetreeexample}.
-
-\begin{figure}
-  \begin{align*}
-    toTree(e) &=
-    \begin{cases}
-      (\feature{\CVar},     toTree(e_1))                                 & \text{if $e = \CVar\ e_1$} \\
-      (\feature{\CLit},     toTree(e_1))                                 & \text{if $e = \CLit\ e_1$} \\
-      (\feature{\CApp},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CApp\ e_1\ e_2$} \\
-      (\feature{\CLam},     toTree(e_1))                                 & \text{if $e = \CLam\ l_1\ e_1$} \\
-      (\feature{\CLet},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CLet\ e_1\ e_2$} \\
-      (\feature{\CCase},    toTree(e_1), toTree(a_1), \dots)             & \text{if $e = \CCase\ e_1\ l_1\ a_1\ \dots$} \\
-      (\feature{\CType})                                                & \text{if $e = \CType$} \\
-      (\feature{\CLocal},   (\feature{l_1}))                            & \text{if $e = \CLocal\ l_1$} \\
-      (\feature{\CGlobal},  (\feature{g_1}))                            & \text{if $e = \CGlobal\ g_1$} \\
-      (\feature{\CConstructor})                                         & \text{if $e = \CConstructor\ d_1$} \\
-      (\feature{\CLitNum})                                              & \text{if $e = \CLitNum\ n_1$} \\
-      (\feature{\CLitStr})                                              & \text{if $e = \CLitStr\ s_1$} \\
-      (\feature{\CAlt},     toTree(e_1), toTree(e_2))                   & \text{if $e = \CAlt\ e_1\ e_2\ l_1\ \dots$}  \\
-      (\feature{\CDataAlt})                                             & \text{if $e = \CDataAlt\ g_1$}  \\
-      (\feature{\CLitAlt},  toTree(e_1))                                & \text{if $e = \CLitAlt\ e_1$}  \\
-      (\feature{\CDefault})                                             & \text{if $e = \CDefault$}  \\
-      (\feature{\CNonRec},  toTree(e_1))                                & \text{if $e = \CNonRec\ e_1$}  \\
-      (\feature{\CRec},     toTree(e_1), \dots)                         & \text{if $e = \CRec\ e_1\ \dots$} \\
-      (\feature{\CBind},    toTree(e_1))                                & \text{if $e = \CBind\ l_1\ e_1$}
-    \end{cases}
-  \end{align*}
-  \caption{Transforming Core expressions of Figure \ref{fig:coresyntax} to rose trees. The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors have no internal structure for us to compare; they can only be compared based on their types, which we do not currently support. We also ignore values from $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\phi$, and we conjecture that the effect on clustering real code is low.}
-  \label{fig:totree}
-\end{figure}
+To perform this flattening we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the function $toTree$ given in Figure \ref{fig:totree}. Intuitively, these rose trees are simply s-expression representations of the ASTs, illustrated for the \hs{odd} function in Figure \ref{fig:rosetreeexample}.
 
 \begin{figure}
   \centering
-  \begin{subfigure}{\textwidth}
-    \begin{small}
+  \begin{scriptsize}
       \Tree[ .$\feature{\CLam}$
                 $\feature{\id{a}}$
                 [ .$\feature{\CCase}$
@@ -104,13 +74,12 @@ To perform this flattening we first transform the nested tokens of an expression
                                     [ .$\feature{\CLocal}$
                                          $\feature{\id{n}}$ ]]]
                           $\feature{\id{n}}$ ]]]
-    \end{small}
-    \caption{Rose tree for the expression \hs{odd} from Figure \ref{fig:coreexample}. Each (sub-) rose tree is rendered with its feature at the node and sub-trees beneath.}
-    \label{fig:rosetreeexample}
-  \end{subfigure}
-  \vspace{1ex}
-  \begin{subfigure}{\textwidth}
-    \begin{equation}
+  \end{scriptsize}
+  \caption[Rose tree for odd]{\label{fig:rosetreeexample} Rose tree for the expression \hs{odd} from Figure \ref{fig:coreexample}. Each (sub-) rose tree is rendered with its feature at the node and sub-trees beneath.}
+\end{figure}
+
+\begin{figure}
+    \begin{equation*}
       \begin{bmatrix}
         \feature{\CLam}      & 0                       & 0                 & 0                   & 0               & 0                \\
         \feature{\id{a}}     & \feature{\CCase}        & 0                 & 0                   & 0               & 0                \\
@@ -120,32 +89,20 @@ To perform this flattening we first transform the nested tokens of an expression
         \feature{\CGlobal}   & \feature{\CLocal}       & 0                 & 0                   & 0               & 0                \\
         \feature{\id{even}}  & \feature{\id{n}}        & 0                 & 0                   & 0               & 0
       \end{bmatrix}
-    \end{equation}
+    \end{equation*}
     \caption{Matrix generated from Figure \ref{fig:rosetreeexample}, padded to 6 columns. Each level of nesting in the tree corresponds to a row in the matrix.}
     \label{fig:matrixexample}
-  \end{subfigure}
-  \vspace{1ex}
-  \begin{subfigure}{\textwidth}
-    \begin{equation}
-      (\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \feature{\CAlt}, \feature{\CAlt}, 0, 0, \dots
-     \end{equation}
-     \caption{(Prefix of) the feature vector for \hs{odd}, constructed by concatenating the rows of \ref{fig:matrixexample}. Ignoring padding, the features are in breadth-first order.}
-     \label{fig:vectorexample}
-  \end{subfigure}
-  \caption{Feature extraction applied to the expression \hs{odd} from Figure \ref{fig:coreexample}.}
 \end{figure}
 
-These rose trees are then turned into matrices, as shown in Figure \ref{fig:matrixexample}, by gathering the features of adjacent (sub-) trees at each level of nesting, and concatenating them together (written as $\cat$):
+\begin{figure}
+    \begin{equation*}
+      (\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \feature{\CAlt}, \feature{\CAlt}, 0, 0, \dots
+     \end{equation*}
+     \caption{(Prefix of) the feature vector for \hs{odd}, constructed by concatenating the rows of \ref{fig:matrixexample}. Ignoring padding, the features are in breadth-first order.}
+     \label{fig:vectorexample}
+\end{figure}
 
-\begin{equation} \label{eq:level}
-  level(l, (f, T_1, \dots, T_{n_T})) =
-    \begin{cases}
-      (f)                                                    & \text{if $l = 1$} \\
-      level(l - 1, T_1) \cat \dots \cat level(l - 1, T_{n_T}) & \text{if $l > 1$}
-    \end{cases}
-\end{equation}
-
-Given a rose tree $t$ we can define its matrix $\mathbf{M}$ by $\mathbf{M}_i = pad(level(i, t))$, where $pad$ either truncates or appends zeros, until the row has a fixed length $c$. We also truncate/pad the number of rows to match a fixed number $r$. This way, all expressions give rise to $r \times c$ matrices, where the left-most features at each each level are aligned.
+These rose trees are then turned into matrices, as shown in Figure \ref{fig:matrixexample}. Each row $i$ of the matrix contains the features at depth $i$ in the rose tree, with any required padding added on the right. These matrices are either padded with $0$ or truncated, to fit a fixed size $r \times c$.
 
 \begin{sloppypar}
 Feature vectors are then simply the concatenation of matrix rows $\mathbf{M}_1 \cat \mathbf{M}_2 \cat \dots \cat \mathbf{M}_r$, as shown in Figure \ref{fig:vectorexample}:
@@ -210,78 +167,7 @@ Instead, we use the approach taken in the latest versions of ML4PG and encode gl
 
 Where $\vect{C}$ are our clusters (in some arbitrary order). This is where the recurrent nature of the algorithm appears: to determine $\vect{C}$ we must perform k-means clustering \emph{during} feature extraction; yet that clustering step, in turn, requires that we perform feature extraction.
 
-\begin{figure}
-  \centering
-  \begin{subfigure}{\textwidth}
-    \centering
-    \begin{tikzpicture}[node distance=2cm]
-      \tikzset{vertex/.style = {minimum size=1.5em}}
-      \tikzset{edge/.style = {->,> = latex'}}
-
-      \node[vertex]                at (0.5\textwidth, 3)   (z)     {\hs{Z}};
-      \node[vertex]                at (0.5\textwidth, 0)   (s)     {\hs{S}};
-      \node[vertex]                at (0,             1.5) (plus)  {\hs{plus}};
-      \node[vertex, anchor=east]   at (\textwidth,    1.5) (false) {\hs{False}};
-      \node[vertex, right of=plus]                         (mult)  {\hs{mult}};
-      \node[vertex, left of=false]                         (odd)   {\hs{odd}};
-      \node[vertex, left of=odd]                           (even)  {\hs{even}};
-      \node[vertex, left of=even]                          (true)  {\hs{True}};
-
-      \draw[edge, dashed]     (z)     to (plus);
-      \draw[edge, dashed]     (z)     to (mult);
-      \draw[edge, dashed]     (z)     to (odd);
-      \draw[edge, dashed]     (z)     to (even);
-      \draw[edge, dashed]     (s)     to (plus);
-      \draw[edge, dashed]     (s)     to (mult);
-      \draw[edge, dashed]     (s)     to (odd);
-      \draw[edge, dashed]     (s)     to (even);
-      \draw[edge, dashed]     (false) to (odd);
-      \draw[edge, dashed]     (true)  to (even);
-      \draw[edge]             (plus)  to (mult);
-      \draw[edge]             (even)  to (odd);
-      \draw[edge]             (odd)   to (even);
-      \draw[edge, loop above] (plus)  to (plus);
-      \draw[edge, loop above] (mult)  to (mult);
-    \end{tikzpicture}
-
-    \caption{Dependency graph for Figure \ref{fig:coreexample}. Loops indicate recursive functions, double arrows indicate mutual recursion. Dashed lines show references to data constructors, which we do not consider in this work.}
-    \label{fig:dagexample}
-  \end{subfigure}
-  \begin{subfigure}{\textwidth}
-    \centering
-    \tikzstyle{block} = [rectangle, draw]
-    \tikzstyle{line}  = [draw, -latex']
-    \begin{tikzpicture}[node distance=2cm]
-      \node [block] (plusset) {
-        \begin{tikzpicture}[node distance = 2cm]
-          \node [block] (plus) {\hs{plus}};
-        \end{tikzpicture}
-      };
-      \node [block, right of=plusset] (parityset) {
-        \begin{tikzpicture}[node distance = 1cm]
-          \node [block]               (odd)  {\hs{odd}};
-          \node [block, below of=odd] (even) {\hs{even}};
-        \end{tikzpicture}
-      };
-      \node [block, right of=parityset] (multset) {
-        \begin{tikzpicture}[node distance = 2cm]
-          \node [block] (mult) {\hs{mult}};
-        \end{tikzpicture}
-      };
-
-      \path [line] (plusset)   -- (parityset);
-      \path [line] (parityset) -- (multset);
-    \end{tikzpicture}
-    \caption{One possible topological sorting of simply connected components for Figure \ref{fig:dagexample} (ignoring constructors). \hs{even} and \hs{odd} are mutually recursive, neither can appear before the other, so they are grouped into one component and handled concurrently by Algorithm \ref{alg:recurrent}.}
-    \label{fig:sccexample}
-  \end{subfigure}
-  \caption{Sorting functions from Figure \ref{fig:coreexample} into dependency order.}
-  \label{fig:dependencyexample}
-\end{figure}
-
-For this recursive process to be well-founded, we perform a topological sort on declarations based on their dependencies (the expressions they reference). In this way, we can avoid looking up expressions which haven't been clustered yet. To perform our sort, we construct a directed graph, where each declaration is a node and edges denote an ``is referenced by'' relation. An example dependency graph is given in Figure \ref{fig:dependencyexample}.
-
-In a topological sort we say that $A < B$ for nodes $A$ and $B$ if we can reach $B$ by following edges from $A$ (if $A$ and $B$ cannot be reached from each other, their order is arbitrary). This is slightly complicated in Haskell (compared to Coq, for example), since general recursion is permitted and hence the dependency graph may contain cycles. To handle this, we use an algorithm such as Tarjan's \cite{tarjan1972depth} to produce a sorted list of \emph{strongly connected components} (SCCs), where each SCC is a mutually-recursive sub-set of the declarations (as shown in Figure \ref{fig:sccexample}). If an identifier cannot be found in any cluster, it must appear in the same SCC as the expression we are processing; hence we use the constant feature value $f_{recursion}$.
+For this recursive process to be well-founded, we perform a topological sort on declarations based on their dependencies (the expressions they reference). In this way, we can avoid looking up expressions which haven't been clustered yet. To handle mutual recursion we use Tarjan's algorithm \cite{tarjan1972depth} to produce a sorted list of \emph{strongly connected components} (SCCs), where each SCC is a mutually-recursive sub-set of the declarations. If an identifier cannot be found in any cluster, it must appear in the same SCC as the expression we are processing; hence we use the constant feature value $f_{recursion}$.
 
 By working through the sorted list of SCCs, storing the features of each top-level expression as they are calculated, our algorithm can be computed \emph{iteratively} rather than recursively, as shown in Algorithm \ref{alg:recurrent}.
 
@@ -302,6 +188,7 @@ By working through the sorted list of SCCs, storing the features of each top-lev
   \label{alg:recurrent}
 \end{algorithm}
 
+\iffalse
 As an example of this recurrent process, we can consider the Peano arithmetic functions from Figure \ref{fig:coreexample}. A valid topological ordering is given in Figure \ref{fig:sccexample}, which can be our value for $d$ (eliding Core expressions to save space):
 
 \begin{equation}
@@ -323,6 +210,7 @@ We can then trace the execution of Algorithm \ref{alg:recurrent} as follows:
 \end{itemize}
 
 Even in this very simple example we can see a few features of our algorithm emerge. For example, \hs{odd} and \hs{even} will always appear in the same cluster, since they only differ in their choice of constructor names (which are discarded by $toTree$) and recursive calls (which are replaced by $f_{recursion}$). A more extensive investigation of these features requires a concrete implementation, in particular to pin down values for the parameters such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.
+\fi
 
 \subsubsection{Comparison}
 
@@ -332,7 +220,7 @@ There are two major differences between our algorithm and that of ML4PG: mutual-
 
 The special handling required for mutual recursion is discussed above (namely, topological sorting of expressions and the $f_{recursion}$ feature). Such handling is not present in ML4PG, since the Coq code it analyses must, by virtue of the language, be written in dependency order to begin with. Coq \emph{does} have limited support for mutually-recursive functions, of the following form:
 
-\begin{coqblock}
+\begin{verbatim}
 Fixpoint even n := match n with
                        | O   => true
                        | S m => odd m
@@ -341,7 +229,7 @@ Fixpoint even n := match n with
                        | O   => false
                        | S m => even m
                    end.
-\end{coqblock}
+\end{verbatim}
 
 However, this is relatively uncommon and unsupported by ML4PG.
 
