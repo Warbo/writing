@@ -1,0 +1,72 @@
+\iffalse
+%\iftrue
+\section*{Appendix: Syntax and Translation}
+
+\begin{figure}
+  \begin{equation}
+    \begin{split}
+      expr\    \rightarrow\ & \CVar\ id                          \\
+                         |\ & \CLit\ literal                     \\
+                         |\ & \CApp\ expr\ expr                  \\
+                         |\ & \CLam\ \mathcal{L}\ expr           \\
+                         |\ & \CLet\ bind\ expr                  \\
+                         |\ & \CCase\ expr\ \mathcal{L}\ [alt]   \\
+                         |\ & \CType                             \\
+      id\      \rightarrow\ & \CLocal\       \mathcal{L}         \\
+                         |\ & \CGlobal\      \mathcal{G}         \\
+                         |\ & \CConstructor\ \mathcal{D}         \\
+      literal\ \rightarrow\ & \CLitNum\ \mathcal{N}              \\
+                         |\ & \CLitStr\ \mathcal{S}              \\
+      alt\     \rightarrow\ & \CAlt\ altcon\ expr\ [\mathcal{L}] \\
+      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{D}             \\
+                         |\ & \CLitAlt\ literal                  \\
+                         |\ & \CDefault                          \\
+      bind\    \rightarrow\ & \CNonRec\ binder                   \\
+                         |\ & \CRec\ [binder]                    \\
+      binder   \rightarrow\ & \CBind\ \mathcal{L}\ expr
+    \end{split}
+  \end{equation}
+  Where:
+  \begin{tabular}[t]{l @{ $=$ } l}
+    $\mathcal{S}$ & string literals    \\
+    $\mathcal{N}$ & numeric literals   \\
+    $\mathcal{L}$ & local identifiers  \\
+    $\mathcal{G}$ & global identifiers \\
+    $\mathcal{D}$ & constructor identifiers
+  \end{tabular}
+
+  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
+  \label{fig:coresyntax}
+\end{figure}
+
+\begin{figure}
+  \begin{align*}
+    toTree(e) &=
+    \begin{cases}
+      (\feature{\CVar},     toTree(e_1))                                 & \text{if $e = \CVar\ e_1$} \\
+      (\feature{\CLit},     toTree(e_1))                                 & \text{if $e = \CLit\ e_1$} \\
+      (\feature{\CApp},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CApp\ e_1\ e_2$} \\
+      (\feature{\CLam},     toTree(e_1))                                 & \text{if $e = \CLam\ l_1\ e_1$} \\
+      (\feature{\CLet},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CLet\ e_1\ e_2$} \\
+      (\feature{\CCase},    toTree(e_1), toTree(a_1), \dots)             & \text{if $e = \CCase\ e_1\ l_1\ a_1\ \dots$} \\
+      (\feature{\CType})                                                & \text{if $e = \CType$} \\
+      (\feature{\CLocal},   (\feature{l_1}))                            & \text{if $e = \CLocal\ l_1$} \\
+      (\feature{\CGlobal},  (\feature{g_1}))                            & \text{if $e = \CGlobal\ g_1$} \\
+      (\feature{\CConstructor})                                         & \text{if $e = \CConstructor\ d_1$} \\
+      (\feature{\CLitNum})                                              & \text{if $e = \CLitNum\ n_1$} \\
+      (\feature{\CLitStr})                                              & \text{if $e = \CLitStr\ s_1$} \\
+      (\feature{\CAlt},     toTree(e_1), toTree(e_2))                   & \text{if $e = \CAlt\ e_1\ e_2\ l_1\ \dots$}  \\
+      (\feature{\CDataAlt})                                             & \text{if $e = \CDataAlt\ g_1$}  \\
+      (\feature{\CLitAlt},  toTree(e_1))                                & \text{if $e = \CLitAlt\ e_1$}  \\
+      (\feature{\CDefault})                                             & \text{if $e = \CDefault$}  \\
+      (\feature{\CNonRec},  toTree(e_1))                                & \text{if $e = \CNonRec\ e_1$}  \\
+      (\feature{\CRec},     toTree(e_1), \dots)                         & \text{if $e = \CRec\ e_1\ \dots$} \\
+      (\feature{\CBind},    toTree(e_1))                                & \text{if $e = \CBind\ l_1\ e_1$}
+    \end{cases}
+  \end{align*}
+  \caption{Transforming Core expressions of Figure \ref{fig:coresyntax} to rose trees. The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors have no internal structure for us to compare; they can only be compared based on their types, which we do not currently support. We also ignore values from $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\phi$, and we conjecture that the effect on clustering real code is low.}
+  \label{fig:totree}
+We follow the presentation in \cite{blundell2012bayesian} and define rose trees recursively as follows: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}.
+\end{figure}
+
+\fi
