@@ -7,10 +7,14 @@ ERR=0 # Indicates failure, will be our exit code
 function checkLatex {
     FAIL=0 # A checkLatex-specific version of ERR
     for FUNC in checkLatexUndatedTodos checkLatexDatedTodos checkLatexRefs \
-                checkLatexCites checkLatexMacros checkLatexLabels          \
-                checkLatexFigs checkLatexCitep
+                checkLatexCites checkLatexCiteTodos checkLatexMacros       \
+                checkLatexLabels checkLatexFigs checkLatexCitep            \
+                checkLatexDupeCites
     do
-        mapFiles "$FUNC" || FAIL=1
+        for FILE in *.tex
+        do
+            "$FUNC" "$FILE" || FAIL=1
+        done
     done
     return "$FAIL"
 }
@@ -48,11 +52,10 @@ function checkWarnings {
     CITES=$(echo "$WARNINGS" | grep 'Citation `'  | sed -e 's/.*`\(.*\)'"'.*/\1/g")
     while read -r CITE
     do
-        grep "^@[^{]*{$CITE,$" < ~/Writing/Bibtex.bib > /dev/null ||
-            {
-                ERR=1
-                echo "Citation '$CITE' missing" >> /dev/stderr
-            }
+        grep "^@[^{]*{$CITE,$" < ~/Writing/Bibtex.bib > /dev/null || {
+            ERR=1
+            echo "Citation '$CITE' missing" >> /dev/stderr
+        }
     done < <(echo "$CITES")
 
     # Check for non-citation warnings
@@ -120,16 +123,52 @@ function checkLatexDatedTodos {
 }
 
 function checkLatexRefs {
-    # No forward-references
+    # Check references
+    LABELS=$(cat *.tex | grep -o '\\label{[^}]*}')
     [[ "x$1" = "xintro.tex" ]] || {
         while read -r REF
         do
-            echo "File '$1' contains reference '$REF'" >> /dev/stderr
-        done < <(grep -o '\ref{sec:[^}]*}' < "$1")
+            if echo "$LABELS" | grep -o "label{$REF}" > /dev/null
+            then
+                # Report references, to allow checking for forward references
+                echo "File '$1' contains reference '$REF'" >> /dev/stderr
+            else
+                echo "File '$1' contains unknown reference '$REF'" >> /dev/stderr
+                ERR=1
+            fi
+        done < <(grep -o '\ref{sec:[^}]*}' < "$1" | grep -o '{.*}' | grep -o "[^{}]*")
     }
 }
 
 function checkLatexCites {
+    # Check citations exist in Bibtex.bib
+
+    # We need to handle optional arguments like \cite[foo]{bar}
+    while read -r CITE
+    do
+        citationExists "$CITE" || {
+            echo "Citation '$CITE' in '$1' wasn't found" >> /dev/stderr
+            ERR=1
+        }
+    done < <(grep -o '\\cite[^{]*{[^}]*' < "$1" | sed -e 's/.*{//g')
+}
+
+function checkLatexDupeCites {
+    while read -r CITE
+    do
+        COUNT=$(cat *.tex | grep -c "cite[^{]*{$CITE}")
+        if [[ "$COUNT" -lt 1 ]]
+        then
+            echo "Citation '$CITE' appears '$COUNT' times, which seems wrong" >> /dev/stderr
+        elif [[ "$COUNT" -gt 1 ]]
+        then
+            echo "Cited '$CITE' '$COUNT' times" >> /dev/stderr
+        fi
+    done < <(grep -o 'cite[^{]*{[^}]*' < "$1" | sed -e 's/.*{//g')
+}
+
+function checkLatexCiteTodos {
+    # Write "CITE" to mean 'citation needed'
     if grep CITE < "$1" > /dev/null
     then
         NUM=$(grep -c CITE < "$1")
@@ -183,13 +222,6 @@ function checkLatexCitep {
 
 # Helpers
 
-function mapFiles {
-    for FILE in *.tex
-    do
-        "$1" "$FILE"
-    done
-}
-
 RENDER="" # Cache for render output. Reset to force rerendering.
 RENDERFAIL=0 # Lets us fail early if rendering is broken. Don't reset this.
 function render {
@@ -219,6 +251,10 @@ function render {
 
 function getBibStart {
      grep -an "RUNNING bibtex" | head -n1 | cut -d ':' -f 1
+}
+
+function citationExists {
+    grep "^@[^{]*{$1,$" < ~/Writing/Bibtex.bib > /dev/null
 }
 
 # Toggle appendices on and off, using \iffalse and \iftrue, for page counting
