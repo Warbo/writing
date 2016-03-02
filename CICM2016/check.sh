@@ -16,7 +16,7 @@ function checkLatex {
 }
 
 function checkRender {
-    render || {
+    render > /dev/null || {
         ERR=1
         echo "Couldn't render PDF" >> /dev/stderr
         return 1
@@ -57,9 +57,9 @@ function checkWarnings {
 
     # Check for non-citation warnings
     NONCIT=$(echo "$WARNINGS" | grep -v 'Citation `'                      |
-                    grep -v "There were undefined citations." |
-                    grep -v "Citation(s) may have changed."   |
-                    grep -v "Rerun to get cross-references right.")
+                                grep -v "There were undefined citations." |
+                                grep -v "Citation(s) may have changed."   |
+                                grep -v "Rerun to get cross-references right.")
     [[ -z "$NONCIT" ]] || {
         echo "$NONCIT" >> /dev/stderr
         echo "There were warnings from the renderer" >> /dev/stderr
@@ -72,7 +72,7 @@ function checkPageCount {
     disableAppendices
 
     RENDER="" # Invalidate cached version
-    render || {
+    render > /dev/null || {
         ERR=1
         echo "Couldn't render without appendices" >> /dev/stderr
         restoreAppendices
@@ -92,7 +92,7 @@ function checkPageCount {
     # Put everything back
     restoreAppendices
     RENDER="" # Invalidate cached version
-    render
+    render > /dev/null
 }
 
 # Per-file checks invoked by checkLatex
@@ -221,6 +221,8 @@ function getBibStart {
      grep -an "RUNNING bibtex" | head -n1 | cut -d ':' -f 1
 }
 
+# Toggle appendices on and off, using \iffalse and \iftrue, for page counting
+
 WITHAPPENDICES=""
 WITHOUTAPPENDICES=""
 function rememberAppendices {
@@ -245,24 +247,24 @@ function rememberAppendices {
     }
 }
 
+function fiddleAppendices {
+    sed -i -e "$1" appendices.tex
+}
+
 function enableWithAppendices {
-    # Enable \iftrue
-    sed -i -e appendices.tex 's/^%\(.*WITH APPENDICES\)/\1/g'
+    fiddleAppendices 's/^%\(.*WITH APPENDICES\)/\1/g'
 }
 
 function enableWithoutAppendices {
-    # Enable \iffalse
-    sed -i -e appendices.tex 's/^%\(.*WITHOUT APPENDICES\)/\1/g'
+    fiddleAppendices 's/^%\(.*WITHOUT APPENDICES\)/\1/g'
 }
 
 function disableWithAppendices {
-    # Disable \iftrue
-    sed -i -e appendices.tex 's/^%*\(.*WITH APPENDICES\)/%\1/g'
+    fiddleAppendices 's/^%*\(.*WITH APPENDICES\)/%\1/g'
 }
 
 function disableWithoutAppendices {
-    # Disable \iffalse
-    sed -i -e appendices.tex 's/^%*\(.*WITHOUT APPENDICES\)/%\1/g'
+    fiddleAppendices 's/^%*\(.*WITHOUT APPENDICES\)/%\1/g'
 }
 
 function disableAppendices {
