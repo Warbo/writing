@@ -4,9 +4,9 @@
 \subsection{Recurrent Clustering}
 \label{sec:recurrentclustering}
 
-We adapt the methodology of \emph{recurrent clustering} proposed in \cite{DBLP:journals/corr/HerasK14} \cite{heras2013proof}, and suggest a new recurrent clustering and feature extraction algorithm for Haskell, which we then evaluate as a relevance filter technique for theory exploration. As a clustering algorithm, the aim of recurrent clustering is to identify similarities in a set of data points (in our case, Core expressions). Rather than clustering expressions directly, we first transform them into numeric vectors in a process called \emph{feature extraction}. The distinguishing characteristic of recurrent clustering is to \emph{combine} feature extraction and clustering into a single recursive algorithm (shown as Algorithm \ref{alg:recurrent}), which allows the feature vector of an expression to depend on those of the expressions it references. Here we describe our approach to recurrent clustering and compare its similarity and differences to those of ML4PG and ACL2(ml).
+Rather than clustering Core expressions directly, we first perform \emph{feature extraction} to transform them into numeric \emph{feature vectors}. We adapt the methodology of \emph{recurrent clustering} proposed in \cite{DBLP:journals/corr/HerasK14} \cite{heras2013proof}, which combines feature extraction and clustering into a single recursive algorithm, such that the feature vector of an expression depends on the feature vectors of those expressions it references. We suggest a new recurrent clustering and feature extraction algorithm for Haskell (shown in Algorithm \ref{alg:recurrent}) and compare its similarity and differences to those of ML4PG and ACL2(ml).
 
-We consider our algorithm in two stages: the first transforms the nested structure of expressions into a flat vector representation; the second converts the discrete symbols of Core syntax into features (real numbers), which we will denote using the function $\phi$.
+We describe our algorithm in two stages: the first transforms the nested structure of expressions into a flat vector representation; the second converts the discrete symbols of Core syntax into features (real numbers), which we will denote using the function $\phi$.
 
 \subsubsection{Expressions to Vectors}
 \label{sec:expressionstovectors}
@@ -35,7 +35,7 @@ Here the features corresponding to the common sub-expression $\CLocal\ \id{y}$ a
 
 If we were to align these features optimally, by padding the fourth column rather than the sixth, then $\frac{2}{3}$ of features would be guaranteed to match, making the similarity of the vectors more closely match our intuition and depend less on coincidence.
 
-The method we use to ``flatten'' expressions, described below, is a variation of breadth-first traversal which pads each level of nesting to a fixed size $c$ (for \emph{columns}). This doesn't guarantee alignment, but it does prevent mis-alignment from accumulating across different levels of nesting. Our method would align these features into the following vectors, if $c = 2$: \footnote{In fact, the $toTree$ function would ignore the constructor identifier $\id{C}$ and never produce the feature $\feature{\id{C}}$. However, this example is still accurate in terms of laying out the features as given.}
+The method we use to ``flatten'' expressions, described below, is a variation of breadth-first traversal which pads each level of nesting to a fixed size $c$ (for \emph{columns}). This doesn't guarantee alignment, but it does prevent mis-alignment from accumulating across different levels of nesting. Our method would align these features into the following vectors, if $c = 2$: \footnote{In fact, the constructor identifier $\id{C}$ would not appear in the vector, but this example is still accurate in terms of laying out the features as given.}
 
 \begin{small}
   \begin{equation}\label{eq:flattened}
@@ -48,7 +48,7 @@ The method we use to ``flatten'' expressions, described below, is a variation of
 
 Here $\frac{1}{2}$ of the original 6 features align, which is more than $breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2 zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
 
-To perform this flattening we first transform the nested tokens of an expression into a \emph{rose tree} of features, using the function $toTree$ given in Figure \ref{fig:totree}. Intuitively, these rose trees are simply s-expression representations of the ASTs, illustrated for the \hs{odd} function in Figure \ref{fig:rosetreeexample}.
+To perform this flattening we first transform the nested tokens of an expression into a \emph{rose tree} of features. Intuitively, these are simply an s-expression representation of the Core syntax, with the feature extraction function $\phi$ mapped over the labels. The full transformation is given in Appendix \ref{sec:rosetree}, and Figure \ref{fig:rosetreeexample} shows the result for the \hs{odd} function.
 
 \begin{figure}
   \centering
@@ -97,7 +97,7 @@ To perform this flattening we first transform the nested tokens of an expression
 These rose trees are then turned into matrices, as shown in Figure \ref{fig:matrixexample}. Each row $i$ of the matrix contains the features at depth $i$ in the rose tree, read left-to-right, followed by any required padding. These matrices are then either truncated, or padded with rows (on the bottom) or columns (on the right) of zeros, to fit a fixed size $r \times c$.
 
 \begin{sloppypar}
-Finally, matrices are turned into vectors by simply concatenating the rows from top to bottom, hence the matrix from Figure \ref{fig:matrixexample} will begin $(\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \feature{\CAlt}, \feature{\CAlt}, \dots$.
+Finally, matrices are turned into vectors by concatenating the rows from top to bottom, hence Figure \ref{fig:matrixexample} will produce a vector beginning $(\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \feature{\CAlt}, \feature{\CAlt}, \dots$.
 \end{sloppypar}
 
 \subsubsection{Symbols to Features}
@@ -137,7 +137,7 @@ To encode \emph{local} identifiers $\mathcal{L}$ we would like a quantity which 
 
 We again use $\alpha$ to separate these features from those of other constructs.
 
-Since numerals, strings and constructor identifiers are discarded during conversion to rose trees, the only remaining case is global identifiers $\mathcal{G}$. Since these are declared \emph{outside} the body of an expression, we cannot perform the same indexing trick as we did for local identifiers. We also cannot directly encode the form of the identifiers, e.g. using a scheme like G{\"o}del numbering, since this is essentially arbitrary and has no effect on their semantic meaning (referencing other expressions).
+We discard the contents of literals and constructor identifiers when converting to rose trees, so the only remaining case is global identifiers $\mathcal{G}$. Since these are declared \emph{outside} the body of an expression, we cannot perform the same indexing trick as for local identifiers. We also cannot directly encode the form of the identifiers, e.g. using a scheme like G{\"o}del numbering, since this is essentially arbitrary and has no effect on their semantic meaning (referencing other expressions).
 
 Instead, we use the approach taken in the latest versions of ML4PG and encode global identifiers \emph{indirectly}, by looking up the expressions which they \emph{reference}:
 
@@ -195,37 +195,3 @@ We can then trace the execution of Algorithm \ref{alg:recurrent} as follows:
 
 Even in this very simple example we can see a few features of our algorithm emerge. For example, \hs{odd} and \hs{even} will always appear in the same cluster, since they only differ in their choice of constructor names (which are discarded by $toTree$) and recursive calls (which are replaced by $f_{recursion}$). A more extensive investigation of these features requires a concrete implementation, in particular to pin down values for the parameters such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.
 \fi
-
-\subsubsection{Comparison}
-
-Our algorithm is most similar to that of ML4PG, as our transformation maps the elements of a syntax tree to distinct cells in a matrix. In contrast, the matrices produced by ACL2(ml) \emph{summarise} the tree elements: providing, for each level of the tree, the number of variables, nullary symbols, unary symbols, etc.
-
-There are two major differences between our algorithm and that of ML4PG: mutual-recursion and types.
-
-The special handling required for mutual recursion is discussed above (namely, topological sorting of expressions and the $f_{recursion}$ feature). Such handling is not present in ML4PG, since the Coq code it analyses must, by virtue of the language, be written in dependency order to begin with. Coq \emph{does} have limited support for mutually-recursive functions, of the following form:
-
-\begin{verbatim}
-Fixpoint even n := match n with
-                       | O   => true
-                       | S m => odd m
-                   end
-    with odd  n := match n with
-                       | O   => false
-                       | S m => even m
-                   end.
-\end{verbatim}
-
-However, this is relatively uncommon and unsupported by ML4PG.
-
-The more interesting differences come from our handling (or lack thereof) for types. Coq and ACL2 are at opposite ends of the typing spectrum, with the former treating types as first class entities of the language whilst the latter is untyped (or \emph{unityped}). In both cases, we have a \emph{single} language to analyse, by ML4PG and ACL2(ml) respectively.\footnote{ML4PG can also analyse Coq's \textsc{Ltac} meta-language. Haskell has its own meta-language, Template Haskell, but here we only consider the regular Haskell which it generates.}
-
-The situation is different for Haskell, where the type level is distinct from the value level, and there are strict rules for how they can influence each other. In particular, Haskell values can depend on types (via the type class mechanism) but types cannot depend on values.
-
-In our initial approach, we restrict ourselves to the value level. This has several consequences:
-
-\begin{itemize}
-  \item Although they are values, we cannot distinguish between data constructors, other than using exact equality. Hence they are discarded by $toTree$.
-  \item Since Core uses a single \texttt{Lam} abstraction for both value- and type-level parameters, we cannot always distinguish between them. This can cause a function's Core arity to be greater than its Haskell arity.
-\end{itemize}
-
-There is certainly promise in including types in our analysis, by pairing every term with its type as in ML4PG. This will allow fine-grained distinction of expressions which are otherwise identical, especially data constructors. Integrating types into our algorithm, and extracting them from Core expressions, is hence left as future work.
