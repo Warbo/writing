@@ -1,6 +1,6 @@
 \section{Evaluation}
 \label{sec:evaluation}
-
+\iffalse
 We have applied our recurrent clustering algorithm to several scenarios, with mixed results. A major difficulty in evaluating these clusters is that we have no ``ground truth'', i.e. there is no objectively correct way to compare expressions. Instead, we provide a qualitative overview of the more interesting characteristics.
 
 As a simple example, we clustered (Haskell equivalents of) the running examples used to present ACL2(ml) \cite{heras2013proof}, shown in Figure \ref{fig:lisp}. These include tail-recursive and non-tail-recursive implementations of several functions. We expect those with similar \emph{structure} to be clustered together, rather than those which implement the same function. The results are shown in Figure \ref{fig:haskellcluster}, where we can see the ``\hs{Tail}'' functions clearly distinguished, with little distinction between the tail recursive and na\"{\i}ve implementations.
@@ -136,3 +136,4 @@ The following less-serious problems were also encountered while applying \textsc
 It seems like this recurrent clustering method has promise, although it will require a more thorough exploration of the parameters to obtain more intuitively reliable results. These clusters can then be used in several ways to perform theory exploration; the most na\"{\i}ve way being to explore each cluster as \qspec{} signature in its own right. \textsc{ML4HS} already provides this functionality, although the lack of test generators severely limits what can be discovered.
 
 As alluded to previously, we also have the opportunity to reason by \emph{analogy}. Similar to the work on ACL2(ml) \cite{heras2013proof}, we could produce a general ``scheme'' from each equation we find (either through \qspec{} or by data mining test suites); like Isabelle approaches have shown \cite{Montano-Rivas.McCasland.Dixon.ea:2012}, these schemes could then be instantiated to a variety of similar values, in an attempt to find new theorems which are analogues of existing results from a different context. ``Mutating'' existing theorem statements in such a way would also increase the chance of any result being considered interesting; since it's likely that the unmodified statement was deemed interesting, and the new result would not in general follow as a simple logical consequence.
+\fi

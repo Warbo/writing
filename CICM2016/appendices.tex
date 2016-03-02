@@ -1,9 +1,14 @@
-\iffalse
-%\iftrue
-\section*{Appendix: Syntax and Translation}
+%\iffalse  % WITHOUT APPENDICES
+\iftrue    % WITH APPENDICES
 
-\begin{figure}
-  \begin{equation}
+\appendix
+
+\section{Core Syntax}\label{sec:core}
+
+We use a simplified syntax for the GHC Core language, given below in BNF style ($[]$ and $(,)$ denote repetition and grouping, respectively). We mechanically translate the full GHC Core language into this sub-set, which does not contain types, prior to performing recurrent clustering.
+
+%\begin{figure}
+  \begin{equation}\label{fig:coresyntax}
     \begin{split}
       expr\    \rightarrow\ & \CVar\ id                          \\
                          |\ & \CLit\ literal                     \\
@@ -34,13 +39,16 @@
     $\mathcal{G}$ & global identifiers \\
     $\mathcal{D}$ & constructor identifiers
   \end{tabular}
+%\end{figure}
 
-  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
-  \label{fig:coresyntax}
-\end{figure}
+\section{Rose Trees}\label{sec:rosetree}
 
-\begin{figure}
-  \begin{align*}
+The $toTree$ function shown below transforms Core expressions, described in Appendix \ref{sec:core} to rose trees. We follow the presentation in \cite{blundell2012bayesian} and define rose trees recursively as follows: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}.
+
+The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors have no internal structure for us to compare; they can only be compared based on their types, which we do not currently support. We also ignore values from $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\phi$, and we conjecture that the effect on clustering real code is low.
+
+%\begin{figure}
+  \begin{align*}\label{fig:totree}
     toTree(e) &=
     \begin{cases}
       (\feature{\CVar},     toTree(e_1))                                 & \text{if $e = \CVar\ e_1$} \\
@@ -64,9 +72,7 @@
       (\feature{\CBind},    toTree(e_1))                                & \text{if $e = \CBind\ l_1\ e_1$}
     \end{cases}
   \end{align*}
-  \caption{Transforming Core expressions of Figure \ref{fig:coresyntax} to rose trees. The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors have no internal structure for us to compare; they can only be compared based on their types, which we do not currently support. We also ignore values from $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\phi$, and we conjecture that the effect on clustering real code is low.}
-  \label{fig:totree}
-We follow the presentation in \cite{blundell2012bayesian} and define rose trees recursively as follows: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}.
-\end{figure}
+
+%\end{figure}
 
 \fi

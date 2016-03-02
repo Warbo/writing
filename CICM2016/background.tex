@@ -35,14 +35,6 @@ The sub-set of Core we consider is shown in Figure \ref{fig:coresyntax}; compare
 data Nat = Z
          | S Nat
 
-plus :: Nat -> Nat -> Nat
-plus    Z  y = y
-plus (S x) y = S (plus x y)
-
-mult :: Nat -> Nat -> Nat
-mult    Z  y = Z
-mult (S x) y = plus y (mult x y)
-
 odd :: Nat -> Bool
 odd    Z  = False
 odd (S n) = even n
@@ -57,31 +49,6 @@ even (S n) = odd n\end{verbatim}
 
 \begin{figure}
   \begin{small}
-    \underline{\texttt{plus}}
-    \begin{verbatim}
-Lam "a" (Lam "y" (Case (Var (Local "a"))
-                       "b"
-                       (Alt (DataAlt "Z") (Var (Local "y")))
-                       (Alt (DataAlt "S") (App (Var (Constructor "S"))
-                                               (App (App (Var (Global "plus"))
-                                                         (Var (Local  "x")))
-                                                    (Var (Local "y"))))
-                                          "x")))
-    \end{verbatim}
-
-    \underline{\texttt{mult}}
-    \begin{verbatim}
-Lam "a" (Lam "y" (Case (Var (Local "a"))
-                       "b"
-                       (Alt (DataAlt "Z") (Var (Constructor "Z")))
-                       (Alt (DataAlt "S") (App (App (Var (Global "plus"))
-                                                    (Var (Local  "y")))
-                                               (App (App (Var (Global "mult"))
-                                                         (Var (Local  "x")))
-                                                    (Var (Local  "y"))))
-                                          "x")))
-    \end{verbatim}
-
     \underline{\texttt{odd}}
     \begin{verbatim}
 Lam "a" (Case (Var (Local "a"))
@@ -143,43 +110,19 @@ Such conjectures can be used in several ways: they can be simplified for direct 
 As an example, we can consider a simple signature containing the expressions from Figure \ref{fig:haskellexample}:
 
 \begin{align*}
-  \Sigma_{\texttt{Nat}} = \{\texttt{Z}, \texttt{S}, \texttt{plus}, \texttt{mult}, \texttt{odd}, \texttt{even}\}
+  \Sigma_{\texttt{Nat}} = \{\texttt{Z}, \texttt{S}, \texttt{odd}, \texttt{even}\}
 \end{align*}
 
 Together with a set of variables, say $V_{\texttt{Nat}} = \{a, b, c\}$, \qspec{}'s enumeration will resemble the following:
 
 \begin{align*}
-  terms_{\texttt{Nat}} = [& \texttt{Z},\ \texttt{S},\ \texttt{plus},\ \texttt{mult},\ \texttt{odd},\ \texttt{even},\ a,\ b,\ c,\ \texttt{S Z},\ \texttt{S}\ a,\ \texttt{S}\ b, \\
-                     & \texttt{S}\ c,\ \texttt{plus Z},\ \texttt{plus}\ a,\ \dots ]
+  terms_{\texttt{Nat}} = [& \texttt{Z},\ \texttt{S},\ \texttt{odd},\ \texttt{even},\ a,\ b,\ c,\ \texttt{S Z},\ \texttt{S}\ a,\ \texttt{S}\ b, \\
+                     & \texttt{S}\ c,\ \texttt{odd Z},\ \texttt{odd}\ a,\ \dots ]
 \end{align*}
 
-Notice that functions such as \hs{plus} and \hs{mult} are valid terms, despite not being applied to any arguments. In addition, Haskell curries multi-argument functions, allowing them to be applied to one argument at a time, as used in the construction of $terms$.
+Notice that functions such as \hs{odd} and \hs{even} are valid terms, despite not being applied to any arguments. In addition, Haskell curries multi-argument functions, allowing them to be applied to one argument at a time, as used in the construction of $terms$.
 
-\begin{figure}
-  % To reproduce, run 'quickSpec nat' in haskell_example/src/QuickSpecExample.hs
-  \begin{verbatim}
-                  plus a b = plus b a
-                  plus a Z = a
-         plus a (plus b c) = plus b (plus a c)
-                  mult a b = mult b a
-                  mult a Z = Z
-         mult a (mult b c) = mult b (mult a c)
-              plus a (S b) = S (plus a b)
-              mult a (S b) = plus a (mult a b)
-         mult a (plus b b) = mult b (plus a a)
-                 odd (S a) = even a
-            odd (plus a a) = odd Z
-           odd (times a a) = odd a
-                even (S a) = odd a
-           even (plus a a) = even Z
-          even (times a a) = even a
-plus (mult a b) (mult a c) = mult a (plus b c)
-  \end{verbatim}
-  \caption{Equations conjectured by \qspec{} for the functions in Figure \ref{fig:haskellexample}; after simplification.}
-  \label{fig:qspecresult}
-\end{figure}
-
-These terms will be grouped into five classes, one each for \hs{Nat}, \hs{Nat -> Nat}, \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool} and \hs{Bool}. As the variables $a$, $b$ and $c$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until eventually the equations in Figure \ref{fig:qspecresult} are conjectured.
+These terms will be grouped into four classes, one each for \hs{Nat}, \hs{Nat -> Nat}, \hs{Nat -> Bool} and \hs{Bool}. As the variables $a$, $b$ and $c$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until eventually the equations such as $odd (S a) = even a$ and $even (S a) = odd a$ are conjectured.
 \fi
 
 Although complete, this enumeration approach is wasteful: many terms are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. For example, we know that addition and multiplication are closely related, and hence obey many algebraic laws. Our machine learning technique aims to predict these kinds of relations between functions, so we can create small signatures which nevertheless have the potential to give rise to many equations.

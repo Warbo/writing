@@ -94,23 +94,11 @@ To perform this flattening we first transform the nested tokens of an expression
     \label{fig:matrixexample}
 \end{figure}
 
-\begin{figure}
-    \begin{equation*}
-      (\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \feature{\CAlt}, \feature{\CAlt}, 0, 0, \dots
-     \end{equation*}
-     \caption{(Prefix of) the feature vector for \hs{odd}, constructed by concatenating the rows of \ref{fig:matrixexample}. Ignoring padding, the features are in breadth-first order.}
-     \label{fig:vectorexample}
-\end{figure}
-
-These rose trees are then turned into matrices, as shown in Figure \ref{fig:matrixexample}. Each row $i$ of the matrix contains the features at depth $i$ in the rose tree, with any required padding added on the right. These matrices are either padded with $0$ or truncated, to fit a fixed size $r \times c$.
+These rose trees are then turned into matrices, as shown in Figure \ref{fig:matrixexample}. Each row $i$ of the matrix contains the features at depth $i$ in the rose tree, read left-to-right, followed by any required padding. These matrices are then either truncated, or padded with rows (on the bottom) or columns (on the right) of zeros, to fit a fixed size $r \times c$.
 
 \begin{sloppypar}
-Feature vectors are then simply the concatenation of matrix rows $\mathbf{M}_1 \cat \mathbf{M}_2 \cat \dots \cat \mathbf{M}_r$, as shown in Figure \ref{fig:vectorexample}:
+Finally, matrices are turned into vectors by simply concatenating the rows from top to bottom, hence the matrix from Figure \ref{fig:matrixexample} will begin $(\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \feature{\CAlt}, \feature{\CAlt}, \dots$.
 \end{sloppypar}
-
-\begin{equation}
-  featureVec(e) = pad(level(1, toTree(e))) \cat \dots \cat pad(level(r, toTree(e)))
-\end{equation}
 
 \subsubsection{Symbols to Features}
 \label{sec:symbolstofeatures}
@@ -141,19 +129,15 @@ We now define the function $\phi$, which turns terminal symbols of Core syntax i
   \end{aligned}
 \end{equation}
 
-To encode \emph{local} identifiers $\mathcal{L}$ we would like a quantity which gives equal values for $\alpha$-equivalent expressions (i.e. renaming an identifier shouldn't affect the feature). To do this, the $toTree$ function maintains a \emph{context} as it recurses through expressions (we elided this from Figure \ref{fig:totree} for clarity). The context is a list of the local identifiers which are in scope, prepended as they are encountered. The context is initially empty, and only extended when $toTree$ calls itself recursively.
-
-For example, when calculating $toTree(\CLam\ i\ e)$ in context $\vect{x}$, we make the recursive call $toTree(e)$ in the context of \emph{$\vect{x}$ prepended with $i$} (i.e. $(i) \cat \vect{x}$). Similar extensions of the context are performed in the cases of \CBind, \CCase\footnote{The $\mathcal{L}$ value in a \CCase\ expression is bound to the expression being matched against; a technical detail to preserve sharing.}, \CAlt\ (which may introduce an arbitrary number of local identifiers) and \CLet\ (where identifiers are taken from occurrences of \CBind\ in the first expression).
-
-Well-formed Haskell declarations do not contain free variables (or, equivalently, free variables are encoded as global identifiers rather than local identifiers). Hence if we apply $toTree$ to (the Core expression corresponding to) such declarations we are guaranteed that $l \in \mathcal{L}$ will appear in the context whenever we encounter $\feature{l}$. In which case we define:
+To encode \emph{local} identifiers $\mathcal{L}$ we would like a quantity which gives equal values for $\alpha$-equivalent expressions (i.e. renaming an identifier shouldn't affect the feature). To do this, we use the \emph{de Bruijn index} of the identifier \cite{de1972lambda}, denoted $i_l$:
 
 \begin{equation} \label{eq:localfeature}
-  \feature{l} = i + 2 \alpha \quad \text{if $l \in \mathcal{L}$}
+  \feature{l} = i_l + 2 \alpha \quad \text{if $l \in \mathcal{L}$}
 \end{equation}
 
-Where $i$ is the index of the first occurrence of $l$ in the context. This tells us how many binders a variable is nested inside, relative to the point it was introduced. This is invariant under renaming, as we wanted, and is known as the \emph{de Bruijn index} of $l$. We again use $\alpha$ to separate these features from those of other constructs.
+We again use $\alpha$ to separate these features from those of other constructs.
 
-Since the $toTree$ function discards numerals, strings and constructor identifiers, the only remaining case is global identifiers $\mathcal{G}$. Since these are declared \emph{outside} the body of an expression, we cannot perform the same indexing trick as we did for local identifiers. We also cannot directly encode the form of the identifiers, e.g. using a scheme like G{\"o}del numbering, since this is essentially arbitrary and has no effect on their semantic meaning (referencing other expressions).
+Since numerals, strings and constructor identifiers are discarded during conversion to rose trees, the only remaining case is global identifiers $\mathcal{G}$. Since these are declared \emph{outside} the body of an expression, we cannot perform the same indexing trick as we did for local identifiers. We also cannot directly encode the form of the identifiers, e.g. using a scheme like G{\"o}del numbering, since this is essentially arbitrary and has no effect on their semantic meaning (referencing other expressions).
 
 Instead, we use the approach taken in the latest versions of ML4PG and encode global identifiers \emph{indirectly}, by looking up the expressions which they \emph{reference}:
 
@@ -165,9 +149,9 @@ Instead, we use the approach taken in the latest versions of ML4PG and encode gl
     \end{cases}
 \end{equation}
 
-Where $\vect{C}$ are our clusters (in some arbitrary order). This is where the recurrent nature of the algorithm appears: to determine $\vect{C}$ we must perform k-means clustering \emph{during} feature extraction; yet that clustering step, in turn, requires that we perform feature extraction.
+Where $C_i$ are our clusters (in some arbitrary order). This is where the recurrent nature of the algorithm appears: to determine the contents of $C_i$, we must perform k-means clustering \emph{during} feature extraction; yet that clustering step, in turn, requires that we perform feature extraction.
 
-For this recursive process to be well-founded, we perform a topological sort on declarations based on their dependencies (the expressions they reference). In this way, we can avoid looking up expressions which haven't been clustered yet. To handle mutual recursion we use Tarjan's algorithm \cite{tarjan1972depth} to produce a sorted list of \emph{strongly connected components} (SCCs), where each SCC is a mutually-recursive sub-set of the declarations. If an identifier cannot be found in any cluster, it must appear in the same SCC as the expression we are processing; hence we use the constant feature value $f_{recursion}$.
+For this recursive process to be well-founded, we perform a topological sort on declarations based on their dependencies (the expressions they reference). In this way, we can avoid looking up expressions which haven't been clustered yet. To handle mutual recursion we use Tarjan's algorithm \cite{tarjan1972depth} to produce a sorted list of \emph{strongly connected components} (SCCs), where each SCC is a mutually-recursive sub-set of the declarations. If an identifier cannot be found amongst those clustered so far, it must appear in the same SCC as the expression we are processing; hence we give that identifier the constant feature value $f_{recursion}$.
 
 By working through the sorted list of SCCs, storing the features of each top-level expression as they are calculated, our algorithm can be computed \emph{iteratively} rather than recursively, as shown in Algorithm \ref{alg:recurrent}.
 
