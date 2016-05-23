@@ -2,7 +2,8 @@
 
 # Build slides.md with Beamer
 function slides {
-    pandoc -w dzslides --standalone --self-contained --filter pandoc-citeproc -o slides.html slides.md
+    pandoc -t slidy --standalone --self-contained --filter pandoc-citeproc \
+           --filter panpipe --filter panhandle -o slides.html slides.md
 }
 
 # Build abstract.md
@@ -17,8 +18,8 @@ pids=()
 trap 'kill "${pids[@]}"' EXIT
 slides &
 pids+=("$!")
-abstract &
-pids+=("$!")
+#abstract &
+#pids+=("$!")
 
 echo "Waiting for ${pids[*]}"
 wait
