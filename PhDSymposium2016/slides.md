@@ -1,13 +1,24 @@
 ---
 title: Exploring Software with Symbolic and Statistical Algorithms
-author: Chris Warburton
+author: |
+  Chris Warburton<br/>
+  Supervisors: Alison Pease, Ekaterina Komendantskaya
 link-citations: true
 bibliography: /home/chris/Writing/Bibtex.bib
 ---
 
 # Overview #
 
- - Motivation and Aims
+```{pipe="tee renderPic.sh" style="display: none;"}
+#!/usr/bin/env bash
+
+cat > $1.dit
+nix-shell -p ditaa --run "ditaa '$1.dit' '$1.png' > /dev/null 2> /dev/null"
+DATA=$(base64 -w 0 < "$1.png")
+echo "<img src='data:image/png;base64,$DATA' alt='$1' />" | pandoc -f html -t json
+```
+
+ - Motivation and Aims `chmod +x renderPic.sh`{pipe="sh" style="display: none;"}
  - Intro to Haskell
  - Symbolic: Theory Exploration (TE)
  - Statistical: Recurrent Clustering
@@ -64,6 +75,7 @@ Haskell is well suited to exploration:
 
  - Strong mathematical base:
     - Compiles into System F~C~ (a variant of lambda calculus) [@sulzmann2007system]
+    - Corresponds (via Curry-Howard) to intuitionistic logic, but unsound
     - Type system is algebraic
     - Encourages algebraic style for functions
     - Polymorphism leads to "free theorems"
@@ -138,7 +150,6 @@ Conjectured equations, relating elements of the signature
 ``` haskell
            length x == length (reverse x)
 length (append x y) == length x + length y
-length (append x y) == length (append y x)
 reverse (reverse x) == x
                 ... == ...
 ```
@@ -185,47 +196,188 @@ Two problems:
 Two solutions:
 
  - Flatten expressions into vectors, trying to maintain alignment of sub-expressions.
- - Use clustering to handle references; this creates as recursive algorithm.
+ - Use clustering to handle references; this leads to a recursive algorithm.
 
 # Recurrent Clustering: Flattening Expressions #
 
 Convert the Haskell code into "Core", a syntax for System F~C~:
 
-``` haskell
-append = Lam a (Lam y (Case a b (Alt Nil         y)
-                                (Alt (Cons x xs) (App (App Cons x)
-                                                      (App (App append xs)
-                                                           y)))))
+```{.haskell style="font-size: 0.8em;"}
+append = Lam a (Lam y (Case (Var (Local a))
+                            b
+                            (Alt DataAlt (Var Constructor) (Var (Local y)))
+                            (Alt DataAlt (App (App (Var Constructor) (Var (Local x)))
+                                              (Var (Local xs)))
+                                         (App (App (Var Constructor) (Var (Local x)))
+                                              (App (App (Var (Global append))
+                                                        (Var (Local xs)))
+                                                   (Var (Local y)))))))
+```
+
+```{pipe="cat > out.tex" style="display: none;"}
+\documentclass[]{article}
+
+\usepackage[paperheight=9in,paperwidth=3in,margin=0in,landscape]{geometry}
+
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{amssymb,amsmath}
+\usepackage{paralist}
+\usepackage{tikz-qtree}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{5}
+\newcommand{\feature}[1]{\phi(#1)}
+\newcommand{\id}[1]{\texttt{"#1"}}
+\newcommand{\CVar}{\texttt{Var}}
+\newcommand{\CLit}{\texttt{Lit}}
+\newcommand{\CApp}{\texttt{App}}
+\newcommand{\CLam}{\texttt{Lam}}
+\newcommand{\CLet}{\texttt{Let}}
+\newcommand{\CCase}{\texttt{Case}}
+\newcommand{\CType}{\texttt{Type}}
+\newcommand{\CLocal}{\texttt{Local}}
+\newcommand{\CGlobal}{\texttt{Global}}
+\newcommand{\CConstructor}{\texttt{Constructor}}
+\newcommand{\CLitNum}{\texttt{LitNum}}
+\newcommand{\CLitStr}{\texttt{LitStr}}
+\newcommand{\CAlt}{\texttt{Alt}}
+\newcommand{\CDataAlt}{\texttt{DataAlt}}
+\newcommand{\CLitAlt}{\texttt{LitAlt}}
+\newcommand{\CDefault}{\texttt{Default}}
+\newcommand{\CNonRec}{\texttt{NonRec}}
+\newcommand{\CRec}{\texttt{Rec}}
+\newcommand{\CBind}{\texttt{Bind}}
+
+\begin{document}
+\begin{figure}
+      \begin{tikzpicture}[sibling distance=0pt]
+        \tikzset{sibling distance=0pt}
+        \tikzset{level distance=20pt}
+        \Tree[ .$\CLam$
+                $\id{a}$
+                [ .$\CLam$
+                   $\id{y}$
+                   [ .$\CCase$
+                      [ .$\CVar$
+                         [ .$\CLocal$
+                            $\id{a}$ ]]
+                      $\id{b}$
+                      [ .$\CAlt$
+                         $\CDataAlt$
+                         [ .$\CVar$
+                            $\CConstructor$ ]
+                            [ .$\CVar$
+                               [ .$\CLocal$
+                                  $\id{y}$ ]]]
+                      [ .$\CAlt$
+                         $\CDataAlt$
+                         [ .$\CApp$
+                            [ .$\CApp$
+                               [ .$\CVar$
+                                  $\CConstructor$ ]
+                               [ .$\CVar$
+                                  [ .$\CLocal$
+                                     $\id{x}$ ]]]
+                            [ .$\CVar$
+                               [ .$\CLocal$
+                                  $\id{xs}$ ]]]
+                         [ .$\CApp$
+                            [ .$\CApp$
+                               [ .$\CVar$
+                                  $\CConstructor$ ]
+                               [ .$\CVar$
+                                  [ .$\CLocal$
+                                     $\id{x}$ ]]]
+                            [ .$\CApp$
+                               [ .$\CApp$
+                                  [ .$\CVar$
+                                     [ .$\CGlobal$
+                                        $\id{append}$ ]]
+                                  [ .$\CVar$
+                                     [ .$\CLocal$
+                                        $\id{xs}$ ]]]
+                               [ .$\CVar$
+                                  [ .$\CLocal$
+                                     $\id{y}$ ]]]]]]]]
+      \end{tikzpicture}
+\end{figure}
+\end{document}
+```
+
+```{.unwrap pipe="bash"}
+set -e
+pdflatex out 1>&2
+convert -density 150 out.pdf -quality 90 out.png
+DATA=$(base64 -w 0 < "out.png")
+echo "<img width="100%" src='data:image/png;base64,$DATA' alt='Tree' />" | pandoc -f html -t json
 ```
 
 # Recurrent Clustering: Flattening Expressions #
 
 Arrange tree-structed expression into matrix:
 
-```{pipe="cat > ml4hs.dit" style="display: none;"}
-+--------+--------+--------+--------+
-| Lam    |        |        |        |
-+--------+--------+--------+--------+
-| a      | Lam    |        |        |
-+--------+--------+--------+--------+
-| y      | Case   |        |        |
-+--------+--------+--------+--------+
-| a      | b      | Alt    | Alt    |
-+--------+--------+--------+--------+
-| Nil    | y      | Cons   | App    |
-+--------+--------+--------+--------+
-| x      | xs     | App    | App    |
-+--------+--------+--------+--------+
-| Cons   | x      | App    | y      |
-+--------+--------+--------+--------+
-| append | xs     |        |        |
-+--------+--------+--------+--------+
+```{.unwrap pipe="./renderPic.sh Matrix"}
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+| Lam         |             |        |             |         |     |     |       |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+| a           | Lam         |        |             |         |     |     |       |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+| y           | Case        |        |             |         |     |     |       |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+| Var         | b           | Alt    | Alt         |         |     |     |       |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+| Local       | DataAlt     | Var    | Var         | DataAlt | App | App |       |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+| a           | Constructor | Local  | App         | Var     | App | App |       |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+| y           | Var         | Var    | Local       | Var     | Var | App | Var   |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+| Constructor | Local       | xs     | Constructor | Local   | Var | Var | Local |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+|x            | x           | Global | Local       | y       |     |     |       |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
+|append       | xs          |        |             |         |     |     |       |
++-------------+-------------+--------+-------------+---------+-----+-----+-------+
 ```
 
 Then concatenate the rows (padded with 0):
 
-```haskell
-[Lam, 0, 0, 0, a, Lam, 0, 0, y, Case, 0, 0, a, b, Alt, Alt, Nil, ...]
+```{.unwrap pipe="./renderPic.sh Vector"}
++-----+---+---+---+---+---+---+---+---+-----+---+---+---+---+---+---+---+------+---+--
+| Lam | 0 | 0 | 0 | 0 | 0 | 0 | 0 | a | Lam | 0 | 0 | 0 | 0 | 0 | 0 | y | Case | 0 | ...
++-----+---+---+---+---+---+---+---+---+-----+---+---+---+---+---+---+---+------+---+--
 ```
 
 # Recurrent Clustering: Calculating Features #
@@ -240,7 +392,7 @@ Then concatenate the rows (padded with 0):
 
 # Recurrent Clustering for Theory Exploration #
 
-```{pipe="cat > ml4hs.dit" style="display: none;"}
+```{.unwrap pipe="./renderPic.sh ML4HS"}
 /-------\ +----------------------------------------------------+
 |Hackage| |ML4HS               +---------+                     |
 \-------/ |                 /->|QuickSpec|-\                   |
@@ -256,17 +408,10 @@ Then concatenate the rows (padded with 0):
           +----------------------------------------------------+
 ```
 
-```{.unwrap pipe="sh | pandoc -f html -t json"}
-nix-shell -p ditaa --run "ditaa ml4hs.dit ml4hs.png > /dev/null 2> /dev/null"
-DATA=$(base64 -w 0 < ml4hs.png)
-echo "<img src='data:image/png;base64,$DATA' alt='ML4HS' />"
-```
-
-Use similarity, determined by recurrent clustering, to break up large software libraries into many small signatures.
-
-Explore all concurrently.
-
-Combine the results.
+ - Read all definitions from a Haskell package
+ - Use similarity, determined by recurrent clustering, to break up into many small signatures
+ - Explore all concurrently
+ - Combine the results
 
 # Current Work #
 
