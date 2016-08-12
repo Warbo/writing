@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-cd /home/chris/Writing/TransferReport
+DIR=/home/chris/Writing/TransferReport
+cd "$DIR" || {
+    echo "Couldn't cd to '$DIR'" >> /dev/stderr
+    exit 1
+}
+
 ERR=0
 
 TODOS=""
@@ -42,6 +47,8 @@ do
         do
             SLASH=$(echo "$USAGE" | cut -c 1)
             BRACE=$(echo "$USAGE" | rev | cut -c 1)
+
+            # shellcheck disable=SC1003
             [[ "x$SLASH" = 'x\' ]] || continue
             [[ "x$BRACE" = 'x{' ]] || {
                 MACROS=$(echo "$MACROS"; echo "Put {} after \\$MACRO in $FILE")
@@ -82,7 +89,7 @@ done
 [[ -z "$FIGS"   ]] || echo "$FIGS"   >> /dev/stderr
 
 echo "Rendering report.tex" >> /dev/stderr
-touch *.tex
+touch ./*.tex
 RENDER=$(make 2>&1) || {
     echo "Couldn't render report.tex"
     ERR=1

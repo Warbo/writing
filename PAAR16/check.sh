@@ -124,7 +124,7 @@ function checkLatexDatedTodos {
 
 function checkLatexRefs {
     # Check references
-    LABELS=$(cat *.tex | grep -o '\\label{[^}]*}')
+    LABELS=$(cat ./*.tex | grep -o '\\label{[^}]*}')
     [[ "x$1" = "xintro.tex" ]] || {
         while read -r REF
         do
@@ -156,7 +156,7 @@ function checkLatexCites {
 function checkLatexDupeCites {
     while read -r CITE
     do
-        COUNT=$(cat *.tex | grep -c "cite[^{]*{$CITE}")
+        COUNT=$(cat ./*.tex | grep -c "cite[^{]*{$CITE}")
         if [[ "$COUNT" -lt 1 ]]
         then
             echo "Citation '$CITE' appears '$COUNT' times, which seems wrong" >> /dev/stderr
@@ -184,7 +184,10 @@ function checkLatexMacros {
         do
             SLASH=$(echo "$USAGE" | cut -c 1)
             BRACE=$(echo "$USAGE" | rev | cut -c 1)
+
+            # shellcheck disable=SC1003
             [[ "x$SLASH" = 'x\' ]] || continue
+
             [[ "x$BRACE" = 'x{' ]] || {
                 echo "Put {} after \\$MACRO in $1" >> /dev/stderr
                 ERR=1
@@ -236,9 +239,8 @@ function render {
     fi
 
     # Perform rendering
-    touch *.tex
     echo "Rendering report.tex" >> /dev/stderr
-    touch *.tex
+    touch ./*.tex
     RENDER=$(make 2>&1) || {
         echo "Couldn't render report.tex" >> /dev/stderr
         ERR=1

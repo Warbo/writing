@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Build slides.md with Beamer
 function slides {
     pandoc -w dzslides --standalone --self-contained --filter pandoc-citeproc -o slides.html slides.md
@@ -15,5 +17,5 @@ pids+=("$!")
 abstract &
 pids+=("$!")
 
-echo "Waiting for ${pids[@]}"
+echo "Waiting for ${pids[*]}"
 wait

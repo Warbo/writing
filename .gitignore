@@ -7,3 +7,4 @@ pandoc-templates
 *.bbl
 *.blg
 Bibtex.bib~*
+auto

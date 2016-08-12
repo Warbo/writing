@@ -6,5 +6,5 @@ while true
 do
     echo "SIZE $i"
     env time -f "%e" QuickSpecMeasure "$i" 2>&1
-    i=$(($i + 1))
+    i=$((i + 1))
 done

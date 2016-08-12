@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+<style>
+  html { background-color: black; }
+  body { background-color: white; border-radius: 12px}
+  /* A section is a slide. It's size is 800x600, and this will never change */
+  section {
+      font-family: Arial, serif;
+      font-size: 20pt;
+    }
+  address, blockquote, dl, fieldset, form, h1, h2, h3, h4, h5, h6, hr, ol, p, pre, table, ul, dl { padding: 10px 20px 10px 20px; }
+  h1, h2, h3 {
+    text-align: center;
+    margin: 10pt 10pt 20pt 10pt;
+  }
+  ul, ol {
+    margin: 10px 10px 10px 50px;
+  }
+  section.titleslide h1 { margin-top: 200px; }
+  h1.title { margin-top: 150px; }
+  h1 { font-size: 180%; }
+  h2 { font-size: 120%; }
+  h3 { font-size: 100%; }
+  q { quotes: "“" "”" "‘" "’"; }
+  blockquote { font-style: italic }
+  /* Figures are displayed full-page, with the caption on
+     top of the image/video */
+  figure {
+    background-color: black;
+  }
+  figcaption {
+    margin: 70px;
+  }
+  footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 40px;
+    text-align: right;
+    background-color: #F3F4F8;
+    border-top: 1px solid #CCC;
+  }
+
+  /* Transition effect */
+  /* Feel free to change the transition effect for original
+     animations. See here:
+     https://developer.mozilla.org/en/CSS/CSS_transitions
+     How to use CSS3 Transitions: */
+  section {
+      -moz-transition: left 400ms linear 0s;
+      -webkit-transition: left 400ms linear 0s;
+      -ms-transition: left 400ms linear 0s;
+      transition: left 400ms linear 0s;
+  }
+
+  /* Before */
+  section { left: -150%; }
+  /* Now */
+  section[aria-selected] { left: 0; }
+  /* After */
+  section[aria-selected] ~ section { left: +150%; }
+
+  /* Incremental elements */
+
+  /* By default, visible */
+  .incremental > * { opacity: 1; }
+
+  /* The current item */
+  .incremental > *[aria-selected] { color: red; opacity: 1; }
+
+  /* The items to-be-selected */
+  .incremental > *[aria-selected] ~ * { opacity: 0.2; }
+</style>
+</head>
+<body>
+<section id="scaling-automated-theory-exploration-in-haskell" class="slide level1">
+<h1>Scaling Automated Theory Exploration in Haskell</h1>
+<style type="text/css">
+body {
+  color: #000000;
+}
+</style>
+<table style="width: 100%;">
+<tr>
+<td style="text-align: left;">
+Chris Warburton
+</td>
+<td style="text-align: right;">
+Katya Komendantskaya
+</td>
+</tr>
+<tr style="font-size: 0.8em;">
+<td style="text-align: left;">
+cmwarburton@dundee.ac.uk
+</td>
+<td style="text-align: right;">
+e.komendantskaya@dundee.ac.uk
+</td>
+</tr>
+<tr style="text-align: center;">
+<td colspan="2">
+University of Dundee
+</td>
+</tr>
+<tr style="text-align: center;">
+<td colspan="2">
+<pre><code>Scottish Theorem Proving 2015-10-07</code></pre>
+</td>
+</tr>
+</table>
+<p><span style="bottom: 10px; position: absolute; font-size: 0.8em;"> This work was supported by EPSRC grant 1526504 - Machine-Learning Methods in Functional Programming and Interactive Therorem Proving </span></p>
+</section>
+<section id="theory-exploration" class="slide level1">
+<h1>Theory Exploration</h1>
+<div style="width: 100%; text-align: center;">
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>Σ</mi><mo>,</mo><mi>V</mi><mo stretchy="false" form="postfix">)</mo><mover><mo accent="false">→</mo><mrow><mi>T</mi><mi>E</mi></mrow></mover><mtext mathvariant="normal">Terms</mtext><mo stretchy="false" form="prefix">(</mo><mi>Σ</mi><mo>,</mo><mi>V</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(\Sigma, V) \overset{TE}{\rightarrow} \text{Terms}(\Sigma, V)</annotation></semantics></math></p>
+</div>
+<p>Theory Exploration describes any system for turning a &quot;theory&quot; (signature and variables) into theorems of that theory, which are <em>well-formed</em>, <em>provable</em> and <em>interesting</em>.</p>
+<div class="incremental">
+<h2 id="comparison-criteria">Comparison Criteria</h2>
+<ul>
+<li><strong>How do we generate conjectures?</strong></li>
+<li><strong>How do we guarantee well-formedness?</strong></li>
+<li><strong>How do we prove conjectures?</strong></li>
+<li><strong>What is considered &quot;interesting&quot;?</strong></li>
+</ul>
+</div>
+</section>
+<section id="interactive-theory-exploration" class="slide level1">
+<h1>(Interactive) Theory Exploration</h1>
+<blockquote>
+<p>Mathematical theory exploration proceeds by applying, under the guidance of a human user, various algorithmic reasoners for producing new formulae from given ones and aims at building up (large) mathematical knowledge bases in an efficient, reliable, well-structured, re-usable, and flexible way. -- (Buchberger 2004)</p>
+</blockquote>
+<p>Example: Theorema</p>
+<ul>
+<li><strong>How do we generate conjectures?</strong> User-driven</li>
+<li><strong>How do we guarantee well-formedness?</strong> Types and pre-conditions</li>
+<li><strong>How do we prove conjectures?</strong> ATP (eg. Otter)</li>
+<li><strong>What is considered &quot;interesting&quot;?</strong> User-driven</li>
+</ul>
+</section>
+<section id="automated-theory-exploration" class="slide level1">
+<h1>Automated Theory Exploration</h1>
+<blockquote>
+<p><del>Mathematical</del><sup>Automated</sup> theory exploration proceeds by applying, <del>under the guidance of a human user</del>, various algorithmic reasoners for producing new formulae from given ones and aims at building up (large) mathematical knowledge bases in an efficient, reliable, well-structured, re-usable, and flexible way.</p>
+</blockquote>
+<p>Examples: IsaCoSy, Hipster, <strong>HipSpec</strong></p>
+<ul>
+<li><strong>How do we generate conjectures?</strong> QuickSpec: equivalence classes of enumerated expressions</li>
+<li><strong>How do we guarantee well-formedness?</strong> Types</li>
+<li><strong>How do we prove conjectures?</strong> SMT (eg. Z3)</li>
+<li><strong>What is considered &quot;interesting&quot;?</strong> Un-derivable from previous equations</li>
+</ul>
+</section>
+<section id="why-automated-theory-exploration" class="slide level1">
+<h1>Why Automated Theory Exploration?</h1>
+<ul>
+<li>Exposing problematic assumptions ✔</li>
+<li>Finding simple relationships ✔</li>
+<li>Autonomous, open-ended, anytime ✔</li>
+<li>Scales poorly with theory &amp; formula size ✘</li>
+<li>Can't propose new notions/definitions ✘</li>
+</ul>
+<div class="incremental">
+<p><strong>Problem:</strong> Doesn't seem to align very well with general Mathematics</p>
+</div>
+<div class="incremental">
+<p><strong>Solution:</strong> Aligns well with <em>programming</em></p>
+</div>
+</section>
+<section id="why-haskell" class="slide level1">
+<h1>Why Haskell?</h1>
+<ul>
+<li><strong>Equational</strong>: definitions, rewrite rules &amp; coercions</li>
+<li><strong>Pure:</strong> Effects are separate from computation</li>
+<li><strong>Strong types</strong>: Algebraic datatypes, parametricity</li>
+<li><strong>Popular:</strong> Relatively large code repositories (eg. Hackage)</li>
+<li><strong>Already studied:</strong> QuickSpec, HipSpec</li>
+</ul>
+<p>Haskell code often follows algebraic laws which Haskell is unable to express!</p>
+</section>
+<section id="identifying-improvements" class="slide level1">
+<h1>Identifying Improvements</h1>
+<p>HipSpec is state-of-the-art. How might it be improved?</p>
+<ul>
+<li><strong>Well-formedness:</strong> Types work well enough</li>
+<li><strong>Proof:</strong> ATP works well enough</li>
+</ul>
+<div class="incremental">
+<ul>
+<li>Focus on:
+<ul>
+<li><strong>Automation</strong></li>
+<li><strong>Conjecture generation</strong></li>
+<li><strong>Interestingness criteria</strong></li>
+</ul></li>
+</ul>
+</div>
+</section>
+<section id="automation-ml4hs" class="slide level1">
+<h1>Automation: ML4HS</h1>
+<pre><code></code></pre>
+<div>
+<img src="data:image/png;base64,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" alt="ML4HS" />
+</div>
+<ul>
+<li>Modular framework for exploring real Haskell code (not toy examples)
+<ul>
+<li>Input: name/location of a Haskell package</li>
+<li>Output: QuickSpec conjectures (send to HipSpec for proofs)</li>
+</ul></li>
+</ul>
+</section>
+<section id="automation-ml4hs-1" class="slide level1">
+<h1>Automation: ML4HS</h1>
+<ul>
+<li>Fetch/build dependencies (Nix)</li>
+<li>Download &amp; build package (Cabal)</li>
+<li>Extract names &amp; ASTs (GHC plugin)</li>
+<li>Discard errors:
+<ul>
+<li>Non-exported names</li>
+<li>Core artefacts (eg. dictionaries, type params)</li>
+<li>Ill-typed signatures (eg. if monomorphise fails)</li>
+</ul></li>
+<li>Divide: identify related sub-sets</li>
+<li>Conquer: invoke QuickSpec on each</li>
+</ul>
+</section>
+<section id="conjecture-generation-divide-and-conquer" class="slide level1">
+<h1>Conjecture Generation: Divide and Conquer</h1>
+<ul>
+<li>Inspired by relevance filtering in Sledgehammer and clustering in ML4PG</li>
+<li>No need to compare everything to everything else</li>
+<li>Initial approach: cluster by similarity of ASTs
+<ul>
+<li>Recurrent clustering, as found in ML4PG</li>
+</ul></li>
+</ul>
+<pre><code></code></pre>
+<div>
+<img src="data:image/png;base64,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" alt="DC" />
+</div>
+</section>
+<section id="conjecture-generation-future-work" class="slide level1">
+<h1>Conjecture Generation: Future Work</h1>
+<ul>
+<li>More clustering approaches:
+<ul>
+<li>Pair-wise relevance filtering (eg. naive bayes)?</li>
+<li>Off-the-shelf ML classifiers?</li>
+</ul></li>
+<li>Enumeration scales exponentially (in theory)
+<ul>
+<li>In reality: types constrain combinations</li>
+<li>Search problem: Well-studied in AI</li>
+</ul></li>
+<li>Other approaches:
+<ul>
+<li>Only search previous counterexamples (Graffiti)</li>
+<li>Best-first search for interestingness (AM, HR)</li>
+<li>Relevance filtering (Sledgehammer)</li>
+</ul></li>
+</ul>
+</section>
+<section id="interestingness-future-work" class="slide level1">
+<h1>&quot;Interestingness&quot;: Future Work</h1>
+<ul>
+<li>Un-derivability is elegant, but misses some intuitions
+<ul>
+<li>&quot;Non-obvious&quot; reductions</li>
+<li>Irrelevant/incidental relationships</li>
+</ul></li>
+<li>Well-studied in Machine Learning and Data Mining
+<ul>
+<li>e.g. surprise, utility, novelty, artificial curiosity</li>
+</ul></li>
+<li>What kinds of properties do we tend to care about?
+<ul>
+<li>Look at what we tend to test!</li>
+</ul></li>
+<li>More ideas wanted!</li>
+</ul>
+</section>
+<section id="applications" class="slide level1">
+<h1>Applications</h1>
+<ul>
+<li>Lemma generation (eg. HipSpec)</li>
+<li>Finding redundancy/duplication</li>
+<li>Aiding debugging/refactoring</li>
+<li>Finding isomorphisms</li>
+<li>Finding rewrite rules</li>
+<li>Finding new typeclasses (instances of &quot;laws&quot;)
+<ul>
+<li>Concept formation may help here too!</li>
+</ul></li>
+</ul>
+</section>
+<section id="acknowlegements" class="slide level1">
+<h1>Acknowlegements</h1>
+<p>Thank you to the HipSpec team at Chalmers University (Moa Johansson, Koen Claessen, Nick Smallbone, Dan Rosén and Irene Lobo Valbuena) for useful discussions of these ideas, and Ouanis Seddaoui for help with our implementation.</p>
+<div class="references">
+
+</div>
+</section>
+<!-- {{{{ dzslides core
+#
+#
+#     __  __  __       .  __   ___  __
+#    |  \  / /__` |    | |  \ |__  /__`
+#    |__/ /_ .__/ |___ | |__/ |___ .__/ core :€
+#
+#
+# The following block of code is not supposed to be edited.
+# But if you want to change the behavior of these slides,
+# feel free to hack it!
+#
+-->
+
+<div id="progress-bar"></div>
+
+<!-- Default Style -->
+<style>
+  * { margin: 0; padding: 0; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+  [role="note"] { display: none; }
+  body {
+    width: 800px; height: 600px;
+    margin-left: -400px; margin-top: -300px;
+    position: absolute; top: 50%; left: 50%;
+    overflow: hidden;
+    display: none;
+  }
+  .view body {
+    position: static;
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    display: inline-block;
+    overflow: visible; overflow-x: hidden;
+    /* undo Dz.onresize */
+    transform: none !important;
+    -moz-transform: none !important;
+    -webkit-transform: none !important;
+    -o-transform: none !important;
+    -ms-transform: none !important;
+  }
+  .view head, .view head > title { display: block }
+  section {
+    position: absolute;
+    pointer-events: none;
+    width: 100%; height: 100%;
+  }
+  .view section {
+    pointer-events: auto;
+    position: static;
+    width: 800px; height: 600px;
+    margin: -150px -200px;
+    float: left;
+
+    transform: scale(.4);
+    -moz-transform: scale(.4);
+    -webkit-transform: scale(.4);
+    -o-transform: scale(.4);
+    -ms-transform: scale(.4);
+  }
+  .view section > * { pointer-events: none; }
+  section[aria-selected] { pointer-events: auto; }
+  html { overflow: hidden; }
+  html.view { overflow: visible; }
+  body.loaded { display: block; }
+  .incremental {visibility: hidden; }
+  .incremental[active] {visibility: visible; }
+  #progress-bar{
+    bottom: 0;
+    position: absolute;
+    -moz-transition: width 400ms linear 0s;
+    -webkit-transition: width 400ms linear 0s;
+    -ms-transition: width 400ms linear 0s;
+    transition: width 400ms linear 0s;
+  }
+  .view #progress-bar {
+    display: none;
+  }
+</style>
+
+<script>
+  var Dz = {
+    remoteWindows: [],
+    idx: -1,
+    step: 0,
+    html: null,
+    slides: null,
+    progressBar : null,
+    params: {
+      autoplay: "1"
+    }
+  };
+
+  Dz.init = function() {
+    document.body.className = "loaded";
+    this.slides = Array.prototype.slice.call($$("body > section"));
+    this.progressBar = $("#progress-bar");
+    this.html = document.body.parentNode;
+    this.setupParams();
+    this.onhashchange();
+    this.setupTouchEvents();
+    this.onresize();
+    this.setupView();
+  }
+
+  Dz.setupParams = function() {
+    var p = window.location.search.substr(1).split('&');
+    p.forEach(function(e, i, a) {
+      var keyVal = e.split('=');
+      Dz.params[keyVal[0]] = decodeURIComponent(keyVal[1]);
+    });
+  // Specific params handling
+    if (!+this.params.autoplay)
+      $$.forEach($$("video"), function(v){ v.controls = true });
+  }
+
+  Dz.onkeydown = function(aEvent) {
+    // Don't intercept keyboard shortcuts
+    if (aEvent.altKey
+      || aEvent.ctrlKey
+      || aEvent.metaKey
+      || aEvent.shiftKey) {
+      return;
+    }
+    if ( aEvent.keyCode == 37 // left arrow
+      || aEvent.keyCode == 38 // up arrow
+      || aEvent.keyCode == 33 // page up
+    ) {
+      aEvent.preventDefault();
+      this.back();
+    }
+    if ( aEvent.keyCode == 39 // right arrow
+      || aEvent.keyCode == 40 // down arrow
+      || aEvent.keyCode == 34 // page down
+    ) {
+      aEvent.preventDefault();
+      this.forward();
+    }
+    if (aEvent.keyCode == 35) { // end
+      aEvent.preventDefault();
+      this.goEnd();
+    }
+    if (aEvent.keyCode == 36) { // home
+      aEvent.preventDefault();
+      this.goStart();
+    }
+    if (aEvent.keyCode == 32) { // space
+      aEvent.preventDefault();
+      this.toggleContent();
+    }
+    if (aEvent.keyCode == 70) { // f
+      aEvent.preventDefault();
+      this.goFullscreen();
+    }
+    if (aEvent.keyCode == 79) { // o
+      aEvent.preventDefault();
+      this.toggleView();
+    }
+  }
+
+  /* Touch Events */
+
+  Dz.setupTouchEvents = function() {
+    var orgX, newX;
+    var tracking = false;
+
+    var db = document.body;
+    db.addEventListener("touchstart", start.bind(this), false);
+    db.addEventListener("touchmove", move.bind(this), false);
+
+    function start(aEvent) {
+      aEvent.preventDefault();
+      tracking = true;
+      orgX = aEvent.changedTouches[0].pageX;
+    }
+
+    function move(aEvent) {
+      if (!tracking) return;
+      newX = aEvent.changedTouches[0].pageX;
+      if (orgX - newX > 100) {
+        tracking = false;
+        this.forward();
+      } else {
+        if (orgX - newX < -100) {
+          tracking = false;
+          this.back();
+        }
+      }
+    }
+  }
+
+  Dz.setupView = function() {
+    document.body.addEventListener("click", function ( e ) {
+      if (!Dz.html.classList.contains("view")) return;
+      if (!e.target || e.target.nodeName != "SECTION") return;
+
+      Dz.html.classList.remove("view");
+      Dz.setCursor(Dz.slides.indexOf(e.target) + 1);
+    }, false);
+  }
+
+  /* Adapt the size of the slides to the window */
+
+  Dz.onresize = function() {
+    var db = document.body;
+    var sx = db.clientWidth / window.innerWidth;
+    var sy = db.clientHeight / window.innerHeight;
+    var transform = "scale(" + (1/Math.max(sx, sy)) + ")";
+
+    db.style.MozTransform = transform;
+    db.style.WebkitTransform = transform;
+    db.style.OTransform = transform;
+    db.style.msTransform = transform;
+    db.style.transform = transform;
+  }
+
+
+  Dz.getNotes = function(aIdx) {
+    var s = $("section:nth-of-type(" + aIdx + ")");
+    var d = s.$("[role='note']");
+    return d ? d.innerHTML : "";
+  }
+
+  Dz.onmessage = function(aEvent) {
+    var argv = aEvent.data.split(" "), argc = argv.length;
+    argv.forEach(function(e, i, a) { a[i] = decodeURIComponent(e) });
+    var win = aEvent.source;
+    if (argv[0] === "REGISTER" && argc === 1) {
+      this.remoteWindows.push(win);
+      this.postMsg(win, "REGISTERED", document.title, this.slides.length);
+      this.postMsg(win, "CURSOR", this.idx + "." + this.step);
+      return;
+    }
+    if (argv[0] === "BACK" && argc === 1)
+      this.back();
+    if (argv[0] === "FORWARD" && argc === 1)
+      this.forward();
+    if (argv[0] === "START" && argc === 1)
+      this.goStart();
+    if (argv[0] === "END" && argc === 1)
+      this.goEnd();
+    if (argv[0] === "TOGGLE_CONTENT" && argc === 1)
+      this.toggleContent();
+    if (argv[0] === "SET_CURSOR" && argc === 2)
+      window.location.hash = "#" + argv[1];
+    if (argv[0] === "GET_CURSOR" && argc === 1)
+      this.postMsg(win, "CURSOR", this.idx + "." + this.step);
+    if (argv[0] === "GET_NOTES" && argc === 1)
+      this.postMsg(win, "NOTES", this.getNotes(this.idx));
+  }
+
+  Dz.toggleContent = function() {
+    // If a Video is present in this new slide, play it.
+    // If a Video is present in the previous slide, stop it.
+    var s = $("section[aria-selected]");
+    if (s) {
+      var video = s.$("video");
+      if (video) {
+        if (video.ended || video.paused) {
+          video.play();
+        } else {
+          video.pause();
+        }
+      }
+    }
+  }
+
+  Dz.setCursor = function(aIdx, aStep) {
+    // If the user change the slide number in the URL bar, jump
+    // to this slide.
+    aStep = (aStep != 0 && typeof aStep !== "undefined") ? "." + aStep : ".0";
+    window.location.hash = "#" + aIdx + aStep;
+  }
+
+  Dz.onhashchange = function() {
+    var cursor = window.location.hash.split("#"),
+        newidx = 1,
+        newstep = 0;
+    if (cursor.length == 2) {
+      newidx = ~~cursor[1].split(".")[0];
+      newstep = ~~cursor[1].split(".")[1];
+      if (newstep > Dz.slides[newidx - 1].$$('.incremental > *').length) {
+        newstep = 0;
+        newidx++;
+      }
+    }
+    this.setProgress(newidx, newstep);
+    if (newidx != this.idx) {
+      this.setSlide(newidx);
+    }
+    if (newstep != this.step) {
+      this.setIncremental(newstep);
+    }
+    for (var i = 0; i < this.remoteWindows.length; i++) {
+      this.postMsg(this.remoteWindows[i], "CURSOR", this.idx + "." + this.step);
+    }
+  }
+
+  Dz.back = function() {
+    if (this.idx == 1 && this.step == 0) {
+      return;
+    }
+    if (this.step == 0) {
+      this.setCursor(this.idx - 1,
+                     this.slides[this.idx - 2].$$('.incremental > *').length);
+    } else {
+      this.setCursor(this.idx, this.step - 1);
+    }
+  }
+
+  Dz.forward = function() {
+    if (this.idx >= this.slides.length &&
+        this.step >= this.slides[this.idx - 1].$$('.incremental > *').length) {
+        return;
+    }
+    if (this.step >= this.slides[this.idx - 1].$$('.incremental > *').length) {
+      this.setCursor(this.idx + 1, 0);
+    } else {
+      this.setCursor(this.idx, this.step + 1);
+    }
+  }
+
+  Dz.goStart = function() {
+    this.setCursor(1, 0);
+  }
+
+  Dz.goEnd = function() {
+    var lastIdx = this.slides.length;
+    var lastStep = this.slides[lastIdx - 1].$$('.incremental > *').length;
+    this.setCursor(lastIdx, lastStep);
+  }
+
+  Dz.toggleView = function() {
+    this.html.classList.toggle("view");
+
+    if (this.html.classList.contains("view")) {
+      $("section[aria-selected]").scrollIntoView(true);
+    }
+  }
+
+  Dz.setSlide = function(aIdx) {
+    this.idx = aIdx;
+    var old = $("section[aria-selected]");
+    var next = $("section:nth-of-type("+ this.idx +")");
+    if (old) {
+      old.removeAttribute("aria-selected");
+      var video = old.$("video");
+      if (video) {
+        video.pause();
+      }
+    }
+    if (next) {
+      next.setAttribute("aria-selected", "true");
+      if (this.html.classList.contains("view")) {
+        next.scrollIntoView();
+      }
+      var video = next.$("video");
+      if (video && !!+this.params.autoplay) {
+        video.play();
+      }
+    } else {
+      // That should not happen
+      this.idx = -1;
+      // console.warn("Slide doesn't exist.");
+    }
+  }
+
+  Dz.setIncremental = function(aStep) {
+    this.step = aStep;
+    var old = this.slides[this.idx - 1].$('.incremental > *[aria-selected]');
+    if (old) {
+      old.removeAttribute('aria-selected');
+    }
+    var incrementals = $$('.incremental');
+    if (this.step <= 0) {
+      $$.forEach(incrementals, function(aNode) {
+        aNode.removeAttribute('active');
+      });
+      return;
+    }
+    var next = this.slides[this.idx - 1].$$('.incremental > *')[this.step - 1];
+    if (next) {
+      next.setAttribute('aria-selected', true);
+      next.parentNode.setAttribute('active', true);
+      var found = false;
+      $$.forEach(incrementals, function(aNode) {
+        if (aNode != next.parentNode)
+          if (found)
+            aNode.removeAttribute('active');
+          else
+            aNode.setAttribute('active', true);
+        else
+          found = true;
+      });
+    } else {
+      setCursor(this.idx, 0);
+    }
+    return next;
+  }
+
+  Dz.goFullscreen = function() {
+    var html = $('html'),
+        requestFullscreen = html.requestFullscreen || html.requestFullScreen || html.mozRequestFullScreen || html.webkitRequestFullScreen;
+    if (requestFullscreen) {
+      requestFullscreen.apply(html);
+    }
+  }
+  
+  Dz.setProgress = function(aIdx, aStep) {
+    var slide = $("section:nth-of-type("+ aIdx +")");
+    if (!slide)
+      return;
+    var steps = slide.$$('.incremental > *').length + 1,
+        slideSize = 100 / (this.slides.length - 1),
+        stepSize = slideSize / steps;
+    this.progressBar.style.width = ((aIdx - 1) * slideSize + aStep * stepSize) + '%';
+  }
+  
+  Dz.postMsg = function(aWin, aMsg) { // [arg0, [arg1...]]
+    aMsg = [aMsg];
+    for (var i = 2; i < arguments.length; i++)
+      aMsg.push(encodeURIComponent(arguments[i]));
+    aWin.postMessage(aMsg.join(" "), "*");
+  }
+  
+  function init() {
+    Dz.init();
+    window.onkeydown = Dz.onkeydown.bind(Dz);
+    window.onresize = Dz.onresize.bind(Dz);
+    window.onhashchange = Dz.onhashchange.bind(Dz);
+    window.onmessage = Dz.onmessage.bind(Dz);
+  }
+
+  window.onload = init;
+</script>
+
+
+<script> // Helpers
+  if (!Function.prototype.bind) {
+    Function.prototype.bind = function (oThis) {
+
+      // closest thing possible to the ECMAScript 5 internal IsCallable
+      // function 
+      if (typeof this !== "function")
+      throw new TypeError(
+        "Function.prototype.bind - what is trying to be fBound is not callable"
+      );
+
+      var aArgs = Array.prototype.slice.call(arguments, 1),
+          fToBind = this,
+          fNOP = function () {},
+          fBound = function () {
+            return fToBind.apply( this instanceof fNOP ? this : oThis || window,
+                   aArgs.concat(Array.prototype.slice.call(arguments)));
+          };
+
+      fNOP.prototype = this.prototype;
+      fBound.prototype = new fNOP();
+
+      return fBound;
+    };
+  }
+
+  var $ = (HTMLElement.prototype.$ = function(aQuery) {
+    return this.querySelector(aQuery);
+  }).bind(document);
+
+  var $$ = (HTMLElement.prototype.$$ = function(aQuery) {
+    return this.querySelectorAll(aQuery);
+  }).bind(document);
+
+  $$.forEach = function(nodeList, fun) {
+    Array.prototype.forEach.call(nodeList, fun);
+  }
+
+</script>
+<!-- vim: set fdm=marker: }}} -->
+</body>
+</html>

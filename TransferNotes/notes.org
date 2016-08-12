@@ -139,3 +139,20 @@
  - How does matrix size/density affect performance?
  - How do the parameters (e.g. alpha) affect the results?
  - What happens if we don't left-align the sub-trees?
+
+* Priorities
+** High: include as future work
+ - Types
+ - Kernel methods; probably not in the current system though
+ - More powerful systems, e.g. Idris TT
+ - More relaxed criteria, e.g. various interestingness measures, rather than proofs
+ - Applying theory formation, especially predicate invention
+** Medium: e.g. use for comparisons
+ - Precision/recall with Isabelle
+ - Alternative ways to handle recursion, e.g. inlining
+ - Refinement types, etc.
+ - Recurrent vs. non-recurrent
+ - Use in finding typeclasses/instances
+ - Effect of parameters (e.g. cluster number)
+** Low: ignore for now
+ - More specific clustering, e.g. delta functions
