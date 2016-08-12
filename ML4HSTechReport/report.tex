@@ -1,0 +1,105 @@
+\documentclass[]{article}
+
+\usepackage{rotating}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[T1]{fontenc}
+%\usepackage{enumitem}
+\usepackage{paralist}
+\usepackage{csquotes}
+\usepackage[affil-it]{authblk}
+\usepackage{listings}
+\usepackage{fixltx2e}
+\usepackage[numbers]{natbib}
+\usepackage{mathpartir}
+\usepackage{mmm}
+\usepackage{subcaption}
+\usepackage{tikz-qtree}
+
+% Treat paragraph as subsubsubsection
+\usepackage{titlesec}
+\setcounter{secnumdepth}{4}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,decorations.pathreplacing,calc}
+
+\DeclareMathOperator{\md5}{MD5}
+
+\lstset{
+  frame=none,
+  xleftmargin=2pt,
+  stepnumber=1,
+  numbers=none,
+  numbersep=5pt,
+  numberstyle=\ttfamily\tiny\color[gray]{0.3},
+  columns=flexible,
+  belowcaptionskip=\bigskipamount,
+  captionpos=b,
+  escapeinside={*'}{'*},
+  language=haskell,
+  tabsize=2,
+  emphstyle={\bf},
+  commentstyle=\it,
+  stringstyle=\mdseries\ttfamily,
+  showspaces=false,
+  keepspaces=true,
+  keywordstyle=\bfseries\ttfamily,
+  basicstyle=\small\ttfamily,
+  showstringspaces=false,
+  morecomment=[l]\%,
+}
+
+\newcommand{\fc}{System F\textsubscript{C}}
+
+\newcommand{\blank}{\cdot}
+\newcommand*\mean[1]{\overline{#1}}
+\newcommand*\vect[1]{\mathbf{#1}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\feature}[1]{\phi(#1)}
+\newcommand{\id}[1]{\texttt{"#1"}}
+\newcommand{\vlocal}[1]{\CVar\ (\CLocal\ \id{#1})}
+\newcommand{\vglobal}[1]{\CVar\ (\CGlobal\ \id{#1})}
+\newcommand{\cat}{\mbox{\ensuremath{+\!\!+\,}}}
+
+\newcommand{\qcheck}{\textsc{QuickCheck}}
+\newcommand{\qspec}{\textsc{QuickSpec}}
+\newcommand{\hspec}{\textsc{HipSpec}}
+\newcommand{\equal}{=}
+\newcommand{\hs}[1]{\texttt{#1}}
+
+\providecommand{\coq}[1]{\lstinline[language=ML]|#1|}
+
+\lstnewenvironment{haskell}{%
+  \lstset{language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+
+\lstnewenvironment{coqblock}{%
+  \lstset{language=ML, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+
+\begin{document}
+
+\pagestyle{headings}  % switches on printing of running heads
+
+\title{Application of Clustering to Theory Exploration in Haskell}
+
+\author{Chris Warburton}
+
+\affil{University of Dundee,\\
+\texttt{http://tocai.computing.dundee.ac.uk}}
+
+\maketitle              % typeset the title of the contribution
+
+% \begin{abstract}
+% Theory Exploration is a promising approach to improving the quality and understanding of software. It extends previously existing methods available through testing, in languages which are amenable to formal analysis such as those based on pure functional programming. Current theory exploration techniques are limited by their use of exponential time algorithms, which although thorough are ultimately limited to finding simple properties of small systems. We propose a more powerful approach, which uses machine learning algorithms to intelligently choose which parts of a system to explore based on their similarity, hence focusing its efforts on areas which are most likely to lead to discoveries.
+
+% \end{abstract}
+
+\citep{hughes1989functional}
+
+\bibliographystyle{plain}
+\bibliography{../Bibtex}
+
+\end{document}
