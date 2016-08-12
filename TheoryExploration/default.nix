@@ -16,6 +16,7 @@ let bootSrc  = (import <nixpkgs> {}).fetchgit {
  in with pkgs;
     stdenv.mkDerivation {
       name        = "theory-exploration-notes";
+      src         = ./.;
       buildInputs = [
 
         # Document rendering tools
