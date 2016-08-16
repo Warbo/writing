@@ -32,7 +32,8 @@ let haskell-te = null;#latestGit { url = http://chriswarbo.net/git/haskell-te.gi
 
         for S in $styles
         do
-          cp "$S" .
+          NAME=$(basename "$S" | sed -e 's/.*-//g')
+          cp "$S" ./"$NAME"
         done
 
         cp "${../Bibtex.bib}" ./Bibtex.bib
