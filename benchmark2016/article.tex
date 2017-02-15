@@ -1,0 +1,38 @@
+\title{An Approach to Benchmark Conjecture Generators}
+\author{
+        Chris Warburton \\
+                University of Dundee\\
+}
+\date{\today}
+
+\documentclass[12pt]{article}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+
+Many algorithms and approaches have been developed to automate the discovery of new mathematical theorems, but it is difficult to compare their performance in a quantitative way. Existing approaches include precision/recall measurements on existing theories, but these rely on some form of ground truth, i.e. which theorems are ``worth'' producing.
+
+We propose that the extensive test suites used to benchmark automated theorem provers can be repurposed to create benchmarks for theory exploration systems. We provide a tool to automatically perform this conversion, given an existing benchmark suite in SMT-LIB format \cite{BarFT-SMTLIB}.
+
+\section{Previous approaches}\label{previous approaches}
+
+Theory exploration tools such as IsaCoSy \cite{Johansson.Dixon.Bundy:conjecture-generation}, QuickSpec and IsaScheme have been evaluated using the standard library of the Isabelle theorem prover as their ground truth.
+
+ALGORITHM:
+
+Concatenate all definitions from all files together.
+For each definition, prefix its name with the filename it came from and update all references.
+Normalise all local variable names.
+Remove any identical definitions, leaving the first one in place and updating any references to the removed definitions to use this one.
+Repeat, until no further removals are possible.
+
+\bibliographystyle{plain}
+\bibliography{./Bibtex}
+
+\end{document}

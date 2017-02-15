@@ -15,4 +15,5 @@ in with pkgs;
 {
   ML4HSTechReport   = callPackage ./ML4HSTechReport   {};
   theoryExploration = callPackage ./TheoryExploration {};
+  benchmark2016     = import ./benchmark2016;
 }
