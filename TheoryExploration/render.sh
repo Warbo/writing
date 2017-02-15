@@ -1,5 +1,6 @@
 #!/bin/sh
-nix-shell --show-trace --command "bash" <<'EOF'
+nix-shell -E 'with import <nixpkgs> {}; callPackage ./. {}' \
+          --show-trace --command "bash" <<'EOF'
   for src in *.md
   do
     doc=$(basename "$src" .md)
