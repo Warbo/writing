@@ -22,7 +22,7 @@ with rec {
     name = "${cmd}-stabilise-data";
     buildInputs  = [ haskell-te jq ];
     buildCommand = ''
-      MAX_MEM=3000000 MAX_SECS=300 SAMPLE_SIZES="5 10 15" REPS=30 ${cmd} | jq -s '.' > "$out"
+      MAX_KB=3000000 MAX_SECS=300 SAMPLE_SIZES="5 10 15" REPS=30 ${cmd} | jq -s '.' > "$out"
     '';
   };
 
