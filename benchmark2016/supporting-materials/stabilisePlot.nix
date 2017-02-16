@@ -15,8 +15,8 @@ with rec {
   haskell-te = import (pkgs.fetchFromGitHub {
     owner  = "Warbo";
     repo   = "haskell-te";
-    rev    = "e7c3a63";
-    sha256 = "1gbicp70pmys78ix9xhai317ran1psf25x4jzmv1dkxbg0rycgl4";
+    rev    = "131f788";
+    sha256 = "0nfh2iklci3h08dfzam652baq0yvkx8pfnb5fwjh7id0grhsddcy";
   });
 
   getData = cmd: setup: pkgs.stdenv.mkDerivation {
@@ -35,7 +35,9 @@ with rec {
   };
 
   mlSpec = rec {
-    data = getData "mlspecBench" "";
+    data = getData "mlspecBench" ''
+      export JVM_OPTS="-Xmx168m -Xms168m -XX:PermSize=32m -XX:MaxPermSize=32m -Xss1m"
+    '';
   };
 };
 
