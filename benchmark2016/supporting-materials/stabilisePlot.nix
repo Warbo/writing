@@ -7,7 +7,7 @@ with rec {
     writeScript;
 
   inherit (lib)
-    fold range stringToCharacters take toInt;
+    range stringToCharacters take toInt;
 
   haskell-te = import (pkgs.fetchFromGitHub {
     owner  = "Warbo";
@@ -211,16 +211,7 @@ with rec {
       # Generate some semi-plausible data to test with
       src  =
         with rec {
-          data = runCommand "test-data.json" { buildInputs = [ jq ]; } ''
-            # Convert time strings to floats
-            jq 'map(. + {
-                  "results": (.results | map(. + {
-                    "time": (.time | tonumber)
-                  }))
-                })' > "$out" \
-                    < ${writeScript "test-data" (toJSON [correlated gaussian])}
-          '';
-
+          data = writeScript "test-data" (toJSON [correlated uniform]);
           correlated = {
             info    = 1;
             results = map (n: {
@@ -232,7 +223,7 @@ with rec {
                           (range 1 30);
           };
 
-          gaussian = {
+          uniform = {
             info    = 2;
             results = map (n: {
                             time    = randomise n;
@@ -249,36 +240,9 @@ with rec {
               hash   = hashString "sha256" (toString n);
               digits = stringToCharacters "0123456789";
               valid  = filter (c: elem c digits) (stringToCharacters hash);
-
-              # Append digits, just in case we hit a purely alphabetical hash ;)
-              uniform = valid ++ digits;
-
-              # Separate the digits at odd and even positions, to get two
-              # uniformly chosen lists of digits
-              uniforms = fold (d: acc: { u = [d] ++ acc.v; v = acc.u; })
-                              { u = []; v = []; }
-                              uniform;
-
-              u = "0." + concatStringsSep "" (take 10 uniforms.u);
-              v = "0." + concatStringsSep "" (take 10 uniforms.v);
-
-              runPy = expr: import (runCommand "calc"
-                {
-                  buildInputs = [ pythonPackages.python ];
-                }
-                ''
-                  {
-                    printf '"'
-                    echo -e 'from math import *\nprint(str(${expr})),' |
-                      python
-                    printf '"'
-                  } > "$out"
-                '');
-
-              x = runPy ''sqrt(-2 * log(${u})) * cos(2 * pi * ${v})'';
-              y = runPy ''sqrt(-2 * log(${u})) * sin(2 * pi * ${v})'';
             };
-            x;
+            # Append digits, just in case we hit a purely alphabetical hash ;)
+            toInt (concatStringsSep "" (valid ++ digits));
         };
         plotsOf "test" data;
 
