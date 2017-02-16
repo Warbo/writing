@@ -204,11 +204,11 @@ with rec {
             with rec {
               # Generate digits uniformly, by taking a hash and discarding a-f
               hash   = hashString "sha256" (toString n);
-              digits = stringToCharacters "0123456789";
+              digits = stringToCharacters "1234567890";
               valid  = filter (c: elem c digits) (stringToCharacters hash);
             };
             # Append digits, just in case we hit a purely alphabetical hash ;)
-            toInt (concatStringsSep "" (valid ++ digits));
+            toInt (concatStringsSep "" (take 5 (valid ++ digits)));
         };
         plotsOf "test" data;
 
