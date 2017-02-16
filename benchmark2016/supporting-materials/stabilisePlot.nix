@@ -34,7 +34,7 @@ with rec {
     data = getData "mlspecBench";
   };
 
-  barChart =
+  chart =
     with {
       plotter = pkgs.writeScript "bar.py" ''
         #!/usr/bin/env python
@@ -148,49 +148,15 @@ with rec {
       makeWrapper "${plotter}" "$out" --prefix PATH : "${env}/bin"
     '';
 
-    barChartOf = name: data:
+    chartsOf = name: data:
       stdenv.mkDerivation {
         name         = "barchart-${name}";
         buildInputs  = [ graphicsmagick ];
         buildCommand = ''
-          function matching() {
-            echo "$1" | sed -e "s/ordered/$2/g"
-          }
-
           mkdir -p "$out"
           cd "$out"
           echo "Plotting bar charts for ${data}" 1>&2
-          "${barChart}" < "${data}"
-
-          echo "Combining plots" 1>&2
-          for ORD in bar-ordered-*.png
-          do
-            SHUF=$(matching "$ORD" "shuffled")
-            COMB=$(matching "$ORD" "combined")
-            gm convert "$ORD" "$SHUF" -append "$COMB"
-          done
-
-          for LAG in $(seq 1 4)
-          do
-            for ORD in lag-"$LAG"-ordered-*.png
-            do
-              SHUF=$(matching "$ORD" "shuffled")
-              COMB=$(matching "$ORD" "combined")
-              gm convert "$ORD" "$SHUF" +append "$COMB"
-            done
-          done
-
-          for ORD in lag-1-ordered-*
-          do
-            NUM=$(echo "$ORD" | sed -e 's/lag-1-ordered-//g' |
-                                sed -e 's/\.png//g')
-            FINAL="lag-$NUM.png"
-            gm convert "lag-1-combined-$NUM.png" \
-                       "lag-2-combined-$NUM.png" \
-                       "lag-3-combined-$NUM.png" \
-                       "lag-4-combined-$NUM.png" \
-                       -append "$FINAL"
-          done
+          "${chart}" < "${data}"
         '';
       };
 
@@ -198,12 +164,12 @@ with rec {
       pkgs.runCommand "stabilisePlotsOf-${name}"
         {
           inherit data;
-          bars = barChartOf name data;
+          charts = chartsOf name data;
         }
         ''
           mkdir "$out"
-          cp -rv "$data" "$out/data.json"
-          cp -rv "$bars" "$out/bars"
+          cp -rv "$data"   "$out/data.json"
+          cp -rv "$charts" "$out/charts"
         '';
 
     plotTests = stdenv.mkDerivation {
@@ -249,16 +215,19 @@ with rec {
       doCheck    = true;
       checkPhase = ''
         echo "Testing plots from $src" 1>&2
-        for MODE in ordered shuffled combined
+        for SET in 1 2
         do
-          for SET in $(seq 1 3)
+          for F in bars lag acorr
           do
-            [[ -f "$src/bars/bar-$MODE-$SET.png" ]] || {
-              echo "Missing bar chart $MODE $SET" 1>&2
+            [[ -f "$src/charts/$F-$SET.png" ]] || {
+              echo "Missing $F charts for $SET" 1>&2
               exit 1
             }
           done
         done
+      '';
+      installPhase = ''
+        echo "Pass" > "$out"
       '';
     };
 };
@@ -267,8 +236,8 @@ pkgs.runCommand "stabilisePlot"
   {
     quickSpecData = quickSpec.data;
        mlSpecData = mlSpec.data;
-    quickSpecBars = barChartOf "quickSpec" quickSpec.data;
-       mlSpecBars = barChartOf    "mlSpec"    mlSpec.data;
+    quickSpecBars = chartsOf "quickSpec" quickSpec.data;
+       mlSpecBars = chartsOf    "mlSpec"    mlSpec.data;
   }
   ''
     mkdir "$out"
