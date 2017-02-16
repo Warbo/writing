@@ -7,7 +7,7 @@ with rec {
     writeScript;
 
   inherit (lib)
-    range stringToCharacters take toInt;
+    fold range stringToCharacters take toInt;
 
   haskell-te = import (pkgs.fetchFromGitHub {
     owner  = "Warbo";
@@ -46,35 +46,85 @@ with rec {
         import random
 
         def time_of(r):
+          """Return the time taken by a benchmark; 0 if it failed."""
           return r["time"] if r["failure"] is None else 0
 
         def draw_bar(data, mode, size):
+          """Draw a bar chart of `data`; `mode` and `size` are for labels."""
           N = len(data)
           x = range(N)
-
-          plt.figure(figsize=(8, 3))
           plt.bar(x, data, width=1/1.5, color="blue", log=True)
           plt.title("Sample size %s, %s" % (size, mode))
 
-          plt.savefig("bar-%s-%s.png" % (mode, size))
-
         def draw_bars(times, shuffled, index):
+          """Draw one bar chart for `times` and one for `shuffled`. Put next to
+          each other for easy comparison."""
+          plt.figure(figsize=(8, 6))
+
           # Write the ordered times
+          plt.subplot(2, 1, 1)
           draw_bar(times, "ordered", sizes[index])
 
           # Write the shuffled times
+          plt.subplot(2, 1, 2)
           draw_bar(shuffled, "shuffled", sizes[index])
 
+          plt.savefig("bars-%s.png" % sizes[index])
+
         def lag_plot(lag, times, mode, index):
-          plt.figure(figsize=(8, 8))
+          """Draw a lag plots for the `times` series."""
           plt.plot(times[lag:], times[:-1*lag], 'kx')
           plt.title("Lag %s, sample size %s, %s" % (lag, sizes[index], mode))
 
-          plt.savefig("lag-%s-%s-%s.png" % (lag, mode, sizes[index]))
-
-        def lag_plots(times, mode, index):
+        def lag_plots(times, shuffled, index):
+          """Draw 4 lag plots for `times` and `shuffled`."""
+          plt.figure(figsize=(12, 24))
+          plot_num = 0
           for lag in [1,2,3,4]:
-            lag_plot(lag, times, mode, index)
+            plot_num += 1
+            plt.subplot(4, 2, plot_num)
+            lag_plot(lag, times, "ordered", index)
+
+            plot_num += 1
+            plt.subplot(4, 2, plot_num)
+            lag_plot(lag, shuffled, "shuffled", index)
+          plt.savefig("lag-%s.png" % sizes[index])
+
+        def correlation(data, mode, index):
+          """Plot the autocorrelation function for `data`."""
+
+          # Lift any integers to floats, so division won't truncate
+          float_data = map(float, data)
+
+          # Normalise our data, ready for autocorrelation. Begin by subtracting
+          # the mean, so that our data becomes centred about zero.
+          centred_data = [x - np.mean(float_data) for x in float_data]
+
+          # Shrink the data such that it has a unit norm: we calculate the norm
+          # (`ord=1` for L1 norm, `ord=2` for L2 norm, etc.), then divide each
+          # element by this value (or an appropriate epsilon, if the norm is 0).
+          normed_data = np.divide(centred_data,
+                                  max(np.linalg.norm(centred_data, ord=2),
+                                      sys.float_info.epsilon))
+
+          plt.acorr(normed_data,
+                    maxlags=None, usevlines=True, normed=True, lw=2)
+
+          plt.title(
+            "Autocorrelation, sample size %s, %s" % (sizes[index], mode))
+
+        def correlations(times, shuffled, index):
+          """Plot autocorrelation for ordered and shuffled series."""
+          plt.figure(figsize=(12, 3))
+
+          axis = plt.subplot(1, 2, 1)
+          axis.set_xbound(lower=-0.5)
+          correlation(times, "ordered", index)
+
+          axis = plt.subplot(1, 2, 2)
+          axis.set_xbound(lower=-0.5)
+          correlation(shuffled, "shuffled", index)
+          plt.savefig("acorr-%s.png" % sizes[index])
 
         # For each run of data, render an ordered figure and a shuffled figure
         data  = json.loads(sys.stdin.read())
@@ -87,9 +137,8 @@ with rec {
           shuffled = [x for x in times]
           random.Random(42).shuffle(shuffled)
 
-          draw_bars(times,    shuffled,   index)
-          lag_plots(times,    "ordered",  index)
-          lag_plots(shuffled, "shuffled", index)
+          for f in (draw_bars, lag_plots, correlations):
+            f(times, shuffled, index)
       '';
       env = with pythonPackages; python.buildEnv.override rec {
         extraLibs = [ numpy matplotlib pillow scipy ];
@@ -104,15 +153,43 @@ with rec {
         name         = "barchart-${name}";
         buildInputs  = [ graphicsmagick ];
         buildCommand = ''
+          function matching() {
+            echo "$1" | sed -e "s/ordered/$2/g"
+          }
+
           mkdir -p "$out"
           cd "$out"
           echo "Plotting bar charts for ${data}" 1>&2
           "${barChart}" < "${data}"
+
+          echo "Combining plots" 1>&2
           for ORD in bar-ordered-*.png
           do
-            SHUF=$(echo "$ORD" | sed -e 's/ordered/shuffled/g')
-            COMB=$(echo "$ORD" | sed -e 's/ordered/combined/g')
+            SHUF=$(matching "$ORD" "shuffled")
+            COMB=$(matching "$ORD" "combined")
             gm convert "$ORD" "$SHUF" -append "$COMB"
+          done
+
+          for LAG in $(seq 1 4)
+          do
+            for ORD in lag-"$LAG"-ordered-*.png
+            do
+              SHUF=$(matching "$ORD" "shuffled")
+              COMB=$(matching "$ORD" "combined")
+              gm convert "$ORD" "$SHUF" +append "$COMB"
+            done
+          done
+
+          for ORD in lag-1-ordered-*
+          do
+            NUM=$(echo "$ORD" | sed -e 's/lag-1-ordered-//g' |
+                                sed -e 's/\.png//g')
+            FINAL="lag-$NUM.png"
+            gm convert "lag-1-combined-$NUM.png" \
+                       "lag-2-combined-$NUM.png" \
+                       "lag-3-combined-$NUM.png" \
+                       "lag-4-combined-$NUM.png" \
+                       -append "$FINAL"
           done
         '';
       };
@@ -134,8 +211,17 @@ with rec {
       # Generate some semi-plausible data to test with
       src  =
         with rec {
-          data = writeScript "test-data" (toJSON [corr uncorr]);
-          corr = {
+          data = runCommand "test-data.json" { buildInputs = [ jq ]; } ''
+            # Convert time strings to floats
+            jq 'map(. + {
+                  "results": (.results | map(. + {
+                    "time": (.time | tonumber)
+                  }))
+                })' > "$out" \
+                    < ${writeScript "test-data" (toJSON [correlated gaussian])}
+          '';
+
+          correlated = {
             info    = 1;
             results = map (n: {
                             time    = (2 * n) + 3;
@@ -146,7 +232,7 @@ with rec {
                           (range 1 30);
           };
 
-          uncorr = {
+          gaussian = {
             info    = 2;
             results = map (n: {
                             time    = randomise n;
@@ -159,12 +245,40 @@ with rec {
 
           randomise = n:
             with rec {
+              # Generate digits uniformly, by taking a hash and discarding a-f
               hash   = hashString "sha256" (toString n);
               digits = stringToCharacters "0123456789";
               valid  = filter (c: elem c digits) (stringToCharacters hash);
-              prefix = take 4 (valid ++ digits);
+
+              # Append digits, just in case we hit a purely alphabetical hash ;)
+              uniform = valid ++ digits;
+
+              # Separate the digits at odd and even positions, to get two
+              # uniformly chosen lists of digits
+              uniforms = fold (d: acc: { u = [d] ++ acc.v; v = acc.u; })
+                              { u = []; v = []; }
+                              uniform;
+
+              u = "0." + concatStringsSep "" (take 10 uniforms.u);
+              v = "0." + concatStringsSep "" (take 10 uniforms.v);
+
+              runPy = expr: import (runCommand "calc"
+                {
+                  buildInputs = [ pythonPackages.python ];
+                }
+                ''
+                  {
+                    printf '"'
+                    echo -e 'from math import *\nprint(str(${expr})),' |
+                      python
+                    printf '"'
+                  } > "$out"
+                '');
+
+              x = runPy ''sqrt(-2 * log(${u})) * cos(2 * pi * ${v})'';
+              y = runPy ''sqrt(-2 * log(${u})) * sin(2 * pi * ${v})'';
             };
-            toInt (concatStringsSep "" prefix);
+            x;
         };
         plotsOf "test" data;
 
