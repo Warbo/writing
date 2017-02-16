@@ -15,8 +15,8 @@ with rec {
   haskell-te = import (pkgs.fetchFromGitHub {
     owner  = "Warbo";
     repo   = "haskell-te";
-    rev    = "131f788";
-    sha256 = "0nfh2iklci3h08dfzam652baq0yvkx8pfnb5fwjh7id0grhsddcy";
+    rev    = "62f442f";
+    sha256 = "0dpfmmkx7qckay8bdy88cwx5klibn0yn6lxr1kgq9i106p1kzi9l";
   });
 
   getData = cmd: setup: pkgs.stdenv.mkDerivation {
@@ -26,7 +26,7 @@ with rec {
     buildInputs  = [ haskell-te jq ];
     buildCommand = ''
       ${setup}
-      MAX_KB=3000000 MAX_SECS=300 SAMPLE_SIZES="5 10 15" REPS=30 ${cmd} | jq -s '.' > "$out"
+      MAX_SECS=600 SAMPLE_SIZES="5 10 15 100" REPS=30 ${cmd} | jq -s '.' > "$out"
     '';
   };
 
