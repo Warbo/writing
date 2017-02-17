@@ -16,8 +16,8 @@ rec {
   haskell-te-src  = pkgs.fetchFromGitHub {
     owner  = "Warbo";
     repo   = "haskell-te";
-    rev    = "d1a6da7";
-    sha256 = "1hc5m2phay8zvyqws47bzbrjlc98hm98caiikgivwd9a6phzkpqc";
+    rev    = "4502f26";
+    sha256 = "15dq6gi2r8s9r3yfddivvk0ng1id5j36hcfilmjc65wclanzj3i3";
   };
 
   getData = cmd: setup: pkgs.stdenv.mkDerivation {
