@@ -16,7 +16,10 @@ rec {
 
         def time_of(r):
           """Return the time taken by a benchmark; 0 if it failed."""
-          return r["time"] if r["failure"] is None else 0
+          field_of(r, "time", 0)
+
+        def field_of(r, field, default):
+          return r[field] if r["failure"] is None else default
 
         def draw_bar(data, mode, size):
           """Draw a bar chart of `data`; `mode` and `size` are for labels."""
@@ -113,12 +116,24 @@ rec {
 
           for f in (draw_bars, lag_plots, correlations):
             f(times, shuffled, index)
+
+        precisions = [{"mean"   : np.mean([field_of(r, "precision", 0)
+                                           for r in run["results"]]),
+                       "stddev" : np.std([field_of(r, "precision", 0)
+                                          for r in run["results"]])}
+                      for run in data]
+        recalls    = [{"mean"   : np.mean([field_of(r, "recall", 0)
+                                           for r in run["results"]]),
+                       "stddev" : np.std([field_of(r, "recall", 0)
+                                          for r in run["results"]])}
+                      for run in data]
+        print(repr({"precisions":precisions,"recalls":recalls}))
       '';
       env = with pythonPackages; python.buildEnv.override rec {
         extraLibs = [ numpy matplotlib pillow scipy ];
       };
     };
-    runCommand "bar.py" { buildInputs = [ makeWrapper ]; } ''
+    runCommand "chart.py" { buildInputs = [ makeWrapper ]; } ''
       makeWrapper "${plotter}" "$out" --prefix PATH : "${env}/bin"
     '';
 
@@ -128,7 +143,7 @@ rec {
         buildCommand = ''
           mkdir -p "$out"
           cd "$out"
-          echo "Plotting bar charts for ${data}" 1>&2
+          echo "Plotting charts for ${data}" 1>&2
           "${chart}" < "${data}"
         '';
       };

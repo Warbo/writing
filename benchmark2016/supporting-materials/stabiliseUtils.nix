@@ -16,21 +16,42 @@ rec {
   haskell-te-src  = pkgs.fetchFromGitHub {
     owner  = "Warbo";
     repo   = "haskell-te";
-    rev    = "61eda0f";
-    sha256 = "0jga5jv1jg6a1gaxz68il41kh6cdc1xjaly799davf0y9qmxh462";
+    rev    = "6c784f0";
+    sha256 = "0qsyy8vf49q9qwy4ai99dhrpi6n0bz5fmfa7mbm8pjlp84980fzl";
   };
 
-  getData = cmd: setup: pkgs.stdenv.mkDerivation {
+  getData = cmd: precisionRecallOfData (pkgs.stdenv.mkDerivation {
     # Forces tests to be run before we spend ages getting the data
     inherit plotTests;
     name = "${cmd}-stabilise-data";
     buildInputs  = [ haskell-te jq ];
     buildCommand = ''
-      ${setup}
-      export EXPLORATION_MEM=3000000
-      MAX_SECS=600 SAMPLE_SIZES="5 10 15 100" REPS=30 ${cmd} | jq -s '.' > "$out"
+      ${explorationOptions}
+      SAMPLE_SIZES="5 10 15 100" ${cmd} | jq -s '.' > "$out"
     '';
-  };
+  });
+
+  explorationOptions = ''
+    export        JVM_OPTS="-Xmx168m -Xms168m -Xss1m"
+    export EXPLORATION_MEM=3000000
+    export        MAX_SECS=600
+    export            REPS=30
+  '';
+
+  smallTheoryData = cmd: precisionRecallOfData (stdenv.mkDerivation {
+    name         = "${cmd}-small-theory-data";
+    hte          = haskell-te-src;
+    buildInputs  = [ haskell-te jq ];
+    buildCommand = ''
+     ${explorationOptions}
+     for B in "$hte"/benchmarks/*.smt2
+     do
+       NAME=$(basename "$B" .smt2)
+       mkdir -p "$out"
+       ${cmd} < "$B"| jq -s '.' > "$out/$NAME.json"
+     done
+    '';
+  });
 
   precisionRecallOfData = data:
     stdenv.mkDerivation {
@@ -43,47 +64,95 @@ rec {
           grep -v "^Depth" < "$1" || echo ""
         }
 
-        while read -r EXECUTION
-        do
-          SAMPLE_SIZE=$(echo "$EXECUTION" | jq -r '.info')
-          echo "Analysing samples of size $SAMPLE_SIZE" 1>&2
-          REP=0
-          while read -r ITERATION
+        function processFile {
+          while read -r EXECUTION
           do
-            # Get the names used in this sample (choose_sample is deterministic)
-            REP=$(( REP + 1 ))
-            echo "Analysing iteration $REP" 1>&2
+            SAMPLE_SIZE=$(echo "$EXECUTION" | jq -r '.info')
+            echo "Analysing samples of size $SAMPLE_SIZE" 1>&2
+            REP=0
+            while read -r ITERATION
+            do
+              # Get the names used in this sample (choose_sample is deterministic)
+              REP=$(( REP + 1 ))
+              echo "Analysing iteration $REP" 1>&2
 
-            echo "Obtaining the sample used by this iteration" 1>&2
-            SAMPLED_NAMES=$(choose_sample "$SAMPLE_SIZE" "$REP")
-            SAMPLED_JSON=$(echo "$SAMPLED_NAMES" | jq -R '.' | jq -s '.')
-            export SAMPLED_NAMES
+              echo "Obtaining the sample used by this iteration" 1>&2
+              SAMPLED_NAMES=$(choose_sample "$SAMPLE_SIZE" "$REP")
+              SAMPLED_JSON=$(echo "$SAMPLED_NAMES" | jq -R '.' | jq -s '.')
+              export SAMPLED_NAMES
 
-            echo "Extracting equations found by this iteration" 1>&2
-            STDOUT=$(echo "$ITERATION" | jq -r '.stdout')
-            EQUATIONS=$(stripMsgs "$STDOUT" | jq -s '.' | decode)
+              echo "Extracting equations found by this iteration" 1>&2
+              STDOUT=$(echo "$ITERATION" | jq -r '.stdout')
+              EQUATIONS=$(stripMsgs "$STDOUT" | jq -s '.' | decode)
 
-            echo "Fetching conjectures reachable from this sample" 1>&2
-            WANTED=$(echo "$EQUATIONS" | conjectures_for_sample)
+              echo "Fetching conjectures reachable from this sample" 1>&2
+              WANTED=$(echo "$EQUATIONS" | conjectures_for_sample)
 
-            echo "Annotating the iteration with these results" 1>&2
-            echo "$ITERATION" | jq --argjson sample "$SAMPLED_JSON"   \
-                                   --argfile wanted <(echo "$WANTED") \
-                                   '. + {"sample"    : $sample} + $wanted'
-          done < <(echo "$EXECUTION" | jq -c '.results | .[]') |
-            jq -s --argfile execution <(echo "$EXECUTION") \
-               '$execution + {"results": .}'
-        done < <(jq -c '.[] | .' < "$src") | jq -s '.' > "$out"
+              echo "Annotating the iteration with these results" 1>&2
+              echo "$ITERATION" | jq --argjson sample "$SAMPLED_JSON"   \
+                                     --argfile wanted <(echo "$WANTED") \
+                                     '. + {"sample"    : $sample} + $wanted'
+            done < <(echo "$EXECUTION" | jq -c '.results | .[]') |
+              jq -s --argfile execution <(echo "$EXECUTION") \
+                 '$execution + {"results": .}'
+          done < <(jq -c '.[] | .' < "$1") | jq -s '.'
+        }
+
+        if [[ -f "$src" ]]
+        then
+          processFile "$src" > "$out"
+        else
+          mkdir -p "$out"
+          for F in "$src"/*
+          do
+            NAME=$(basename "$F")
+            processFile "$F" > "$out/$NAME"
+          done
+        fi
       '';
     };
 
   quickSpec = rec {
-    data = precisionRecallOfData (getData "quickspecBench" "");
+    data  = getData "quickspecBench";
+    small = smallTheoryData "quickspecBench";
   };
 
   mlSpec = rec {
-    data = precisionRecallOfData (getData "mlspecBench" ''
-      export JVM_OPTS="-Xmx168m -Xms168m -XX:PermSize=32m -XX:MaxPermSize=32m -Xss1m"
-    '');
+    data  = getData "mlspecBench";
+    small = smallTheoryData "mlspecBench";
+  };
+
+  getStats =
+    with {
+      script = writeScript "getStats.py" ''
+        """Given a JSON array of numbers on stdin, returns mean and stddev."""
+        import json
+        import numpy as np
+
+        data = json.loads(sys.stdin.read())
+        print(json.dumps({"mean"   : np.mean(data),
+                          "stddev" : np.stddev(data)}))
+      '';
+      env = with pythonPackages; python.buildEnv.override rec {
+        extraLibs = [ numpy matplotlib pillow scipy ];
+      };
+    };
+    runCommand "stats.py" { buildInputs = [ makeWrapper ]; } ''
+      makeWrapper "${script}" "$out" --prefix PATH : "${env}/bin"
+    '';
+
+  precisionRecallTable = stdenv.mkDerivation {
+    mlspec    = mlSpec.small;
+    quickspec = quickSpec.small;
+
+    name         = "precision-recall-table";
+    buildInputs  = [ jq ];
+    buildCommand = ''
+      for F in "$mlspec"/*
+      do
+        NAME=$(basename "$F" .json)
+        MLMEAN=$(jq ' ' < "$F")
+      done
+    '';
   };
 }
