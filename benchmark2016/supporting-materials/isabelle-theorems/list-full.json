@@ -1,0 +1,9 @@
+a ++ [] = a
+rev (rev a) = a
+rev (map a b) = map a (rev b)
+foldl a (foldl a b c) d = foldl a b (c ++ d)
+len (rev a) = len a
+(a ++ b) ++ c = a ++ (b ++ c)
+(rev a) ++ (rev b) = rev (b ++ a)
+(map a b) ++ (map a c) = map a (b ++ c)
+foldr a b (foldr a c d) = foldr a (b ++ c) d
