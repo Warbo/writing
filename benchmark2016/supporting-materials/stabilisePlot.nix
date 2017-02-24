@@ -4,8 +4,8 @@ pkgs.runCommand "stabilisePlot"
   {
     quickSpecData = quickSpec.data;
        mlSpecData = mlSpec.data;
-    quickSpecBars = chartsOf "quickSpec" quickSpec.data;
-       mlSpecBars = chartsOf    "mlSpec"    mlSpec.data;
+    quickSpecBars = plotsOf "quickSpec" quickSpec.data;
+       mlSpecBars = plotsOf    "mlSpec"    mlSpec.data;
   }
   ''
     mkdir "$out"
