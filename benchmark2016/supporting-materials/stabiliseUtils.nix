@@ -20,12 +20,17 @@ rec {
 
   haskell-te      = import haskell-te-src;
   haskell-te-defs = import "${haskell-te-src}/nix-support" {};
-  haskell-te-src  = pkgs.fetchFromGitHub {
+  haskell-te-src  = trace "FIXME: USE GITHUB NOT DISK" pkgs.fetchgit {
+    url = /home/chris/Programming/haskell-te;
+    rev = "542728d";
+    sha256 = "1pg1vyvkdc3pfcskszhhhh6pp5l8z6n00gbwlfqfd3cd3ghk32sd";
+  };
+  /*pkgs.fetchFromGitHub {
     owner  = "Warbo";
     repo   = "haskell-te";
-    rev    = "4bdfcf0";
+    rev    = "542728d";
     sha256 = "15p5738hpv9gqqr4lhwxqfjbcnld4i6skf7hz6mj2j25y99f2833";
-  };
+  };*/
 
   getData = cmd: precisionRecallOfData (pkgs.stdenv.mkDerivation {
     # Forces tests to be run before we spend ages getting the data
@@ -73,7 +78,13 @@ rec {
             mkdir -p "$out"
             if [[ -n "$SKIP_DATA" ]]
             then
-              echo '[{"cmd":"${cmd}","info":"","results":[]}]' > "$out/$NAME.json"
+              echo '[{"cmd":"${cmd}","info":"dummy data","results":[
+                      {"time":    1.23,
+                       "failure": null,
+                       "stdin":   "/dev/null",
+                       "stdout":  "/dev/null",
+                       "stderr":  "/dev/null"}
+                    ]}]' > "$out/$NAME.json"
             else
               ${cmd} < "$B"| jq -s '.' > "$out/$NAME.json"
             fi
@@ -230,10 +241,16 @@ rec {
     buildInputs = [];
     buildCommand = ''
       cp -r "$collated" "$out"
-      for D in "$out"/*
+      while read -r JSONFILE
       do
-
-      done
+        SUFF=$(echo "$JSONFILE" | sed -e "s@$out@@g")
+         DIR=$(dirname "$SUFF")
+        NAME=$(basename "$JSONFILE" .json)
+        mkdir -p "$out/$DIR/$NAME"
+        pushd "$out/$DIR/$NAME"
+          plot < "$JSONFILE"
+        popd
+      done < <(find "$out" -name "*.json")
     '';
   };
 
