@@ -16,21 +16,18 @@ rec {
     mapAttrs range stringToCharacters take toInt;
 
   inherit (callPackage ./drawStabilisePlots.nix {})
-    plotsOf plotTests;
+    plotsOf plotTests plot;
+
+  miller = callPackage ./miller.nix {};
 
   haskell-te      = import haskell-te-src;
   haskell-te-defs = import "${haskell-te-src}/nix-support" {};
-  haskell-te-src  = trace "FIXME: USE GITHUB NOT DISK" pkgs.fetchgit {
-    url = /home/chris/Programming/haskell-te;
-    rev = "542728d";
-    sha256 = "1pg1vyvkdc3pfcskszhhhh6pp5l8z6n00gbwlfqfd3cd3ghk32sd";
-  };
-  /*pkgs.fetchFromGitHub {
+  haskell-te-src  = pkgs.fetchFromGitHub {
     owner  = "Warbo";
     repo   = "haskell-te";
-    rev    = "542728d";
-    sha256 = "15p5738hpv9gqqr4lhwxqfjbcnld4i6skf7hz6mj2j25y99f2833";
-  };*/
+    rev    = "cd3b0f8";
+    sha256 = "1sxz00isy7g47vyipmldmk9hk6yzbyvz8cj8ha8q2djkx77w58yx";
+  };
 
   getData = cmd: precisionRecallOfData (pkgs.stdenv.mkDerivation {
     # Forces tests to be run before we spend ages getting the data
@@ -59,7 +56,7 @@ rec {
   explorationOptions = ''
     export        JVM_OPTS="-Xmx168m -Xms168m -Xss1m"
     export EXPLORATION_MEM=3000000
-    export        MAX_SECS=600
+    export        MAX_SECS=120
     export            REPS=30
   '';
 
@@ -214,6 +211,8 @@ rec {
           hashSpec  = go "hashspecBench";
         };
 
+  small = mapAttrs (n: v: v.small) results;
+
   attrsToDirs = attrs:
     with rec {
       names     = attrNames attrs;
@@ -238,12 +237,13 @@ rec {
   graphed = stdenv.mkDerivation {
     inherit collated;
     name = "graphed";
-    buildInputs = [];
+    buildInputs = [ plot ];
     buildCommand = ''
       cp -r "$collated" "$out"
+      chmod +w -R "$out"
       while read -r JSONFILE
       do
-        SUFF=$(echo "$JSONFILE" | sed -e "s@$out@@g")
+        SUFF=$(echo "$JSONFILE" | sed -e "s@$out/@@g")
          DIR=$(dirname "$SUFF")
         NAME=$(basename "$JSONFILE" .json)
         mkdir -p "$out/$DIR/$NAME"
@@ -274,19 +274,54 @@ rec {
     '';
 
   precisionRecallTable = stdenv.mkDerivation {
-    inherit collated;
     name         = "precision-recall-table";
-    buildInputs  = [ jq ];
+    data         = attrsToDirs small;
+    buildInputs  = [ jq miller ];
     buildCommand = ''
-      for D in "$collated"/*
+      for D in "$data"/*
       do
         pushd "$D"
         DNAME=$(basename "$D")
+        echo "In $D" 1>&2
+        find "$D" 1>&2
         mkdir -p "$out/$DNAME"
         for F in ./*
         do
-          FNAME=$(basename "$F")
-          #MEAN=$(jq ' ' < data)
+          FNAME=$(basename "$F" .json)
+          echo "GOT FNAME $FNAME" 1>&2
+          if echo "$F" | grep "\.json$" > /dev/null
+          then
+            cp -r "$F" "$out/$DNAME/"
+
+            while read -r LINE
+            do
+              echo "FIXME: Should we be discarding divide-by-zero? Ask Jianguo" 1>&2
+
+              P_DATA=$(echo "$LINE" | jq -r '.precisions |
+                                             map(select(type == "number")) |
+                                             ["precision"] + . | .[]')
+
+              PREC=$(echo "$P_DATA" |
+                     mlr --icsv --ojson stats1 -a mean,stddev -f precision)
+
+              R_DATA=$(echo "$LINE" | jq -r '.recalls |
+                                             map(select(type == "number")) |
+                                             ["recall"] + . | .[]')
+
+              REC=$(echo "$R_DATA" |
+                    mlr --icsv --ojson stats1 -a mean,stddev -f recall)
+
+              echo "$LINE" | jq --slurpfile prec <(echo "$PREC") \
+                                --slurpfile  rec <(echo "$REC")  \
+                                '. + $prec[0] + $rec[0]'
+            done < <(jq -c '.[] | {
+                                    "cmd":        .cmd,
+                                    "info":       .info,
+                                    "precisions": .results | map(.precision),
+                                    "recalls":    .results | map(.recall)
+                                  }' < "$F") |
+              jq -s '.' > "$out/$DNAME/$FNAME.precrec"
+          fi
         done
         popd
       done
