@@ -1,12 +1,12 @@
 ;; a + 0 = a
 (assert-not (forall ((a Nat))
-  (= (plus a constructor-Z)
+  (= (plus a constructorZ)
      a)))
 
 ;; a * 0 = 0
 (assert-not (forall ((a Nat))
-  (= (times a constructor-Z)
-     constructor-Z)))
+  (= (times a constructorZ)
+     constructorZ)))
 
 ;; a + b = b + a
 (assert-not (forall ((a Nat) (b Nat))
@@ -25,12 +25,12 @@
 
 ;; a + (S b) = S (a + b)
 (assert-not (forall ((a Nat) (b Nat))
-  (= (plus a (constructor-S b))
-     (constructor-S (plus a b)))))
+  (= (plus a (constructorS b))
+     (constructorS (plus a b)))))
 
 ;; a * (S b) = a + (a * b)
 (assert-not (forall ((a Nat) (b Nat))
-  (= (times a (constructor-S b))
+  (= (times a (constructorS b))
      (plus a (times a b)))))
 
 ;; a * b = b * a
@@ -50,8 +50,8 @@
 
 ;; (S m) + n = m + (S n)
 (assert-not (forall ((n Nat) (m Nat))
-  (= (plus (constructor-S m) n)
-     (plus m (constructor-S n)))))
+  (= (plus (constructorS m) n)
+     (plus m (constructorS n)))))
 
 ;; x + (y + z) = y + (x + z)
 (assert-not (forall ((x Nat) (y Nat) (z Nat))

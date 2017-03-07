@@ -3,17 +3,17 @@
 ;; (a * m) + m = (a + (S 0)) * m
 (assert-not (forall ((a Nat) (m Nat))
   (= (plus (times a m) m)
-     (times (plus a (constructor-S constructor-Z)) m))))
+     (times (plus a (constructorS constructorZ)) m))))
 
 ;; m + (a * m) = (a + (S 0)) * m
 (assert-not (forall ((a Nat) (m Nat))
   (= (plus m (times a m))
-     (times (plus a (constructor-S constructor-Z)) m))))
+     (times (plus a (constructorS constructorZ)) m))))
 
 ;; m+m=((S0)+(S0))*m
 (assert-not (forall ((m Nat))
   (= (plus m m)
-     (times (plus (constructor-S constructor-Z) (constructor-S constructor-Z)) m))))
+     (times (plus (constructorS constructorZ) (constructorS constructorZ)) m))))
 
 ;; (lx*ly)*(rx*ry)=lx*(ly*(rx*ry))
 (assert-not (forall ((lx Nat) (ly Nat) (rx Nat) (ry Nat))
@@ -32,12 +32,12 @@
 
 ;; x^((S(S0)) * n) = (x^n)*(x^n)
 (assert-not (forall ((x Nat) (n Nat))
-  (= (exp x (times (constructor-S (constructor-S constructor-Z)) n))
+  (= (exp x (times (constructorS (constructorS constructorZ)) n))
      (times (exp x n) (exp x n)))))
 
 ;; x^((S(S(S0)))*n)=x*((x^n)*(x^n))
 (assert-not (forall ((x Nat) (n Nat))
-  (= (exp x (times (constructor-S (constructor-S (constructor-S constructor-Z))) n))
+  (= (exp x (times (constructorS (constructorS (constructorS constructorZ))) n))
      (times x (times (exp x n) (exp x n))))))
 
 ;; (lx*ly)*(rx*ry)=(lx*rx)+(ly*ry)
@@ -62,32 +62,32 @@
 
 ;; a*(S0)=a
 (assert-not (forall ((a Nat))
-  (= (times a (constructor-S constructor-Z))
+  (= (times a (constructorS constructorZ))
      a)))
 
 ;; (S0)*a=a
 (assert-not (forall ((a Nat))
-  (= (times (constructor-S constructor-Z) a)
+  (= (times (constructorS constructorZ) a)
      a)))
 
 ;; (x^q)*x=x^(Sq)
 (assert-not (forall ((x Nat) (q Nat))
   (= (times (exp x q) x)
-     (exp x (constructor-S q)))))
+     (exp x (constructorS q)))))
 
 ;; x*(x^q)=x^(Sq)
 (assert-not (forall ((x Nat) (q Nat))
   (= (times x (exp x q))
-     (exp x (constructor-S q)))))
+     (exp x (constructorS q)))))
 
 ;; x*x=x^(S(S0))
 (assert-not (forall ((x Nat))
   (= (times x x)
-     (exp x (constructor-S (constructor-S constructor-Z))))))
+     (exp x (constructorS (constructorS constructorZ))))))
 
 ;; x^(S0)=x
 (assert-not (forall ((x Nat))
-  (= (exp x (constructor-S constructor-Z))
+  (= (exp x (constructorS constructorZ))
      x)))
 
 ;; (lx*ly)*(rx*ry)=rx*((lx*ly)*ry)
@@ -97,23 +97,23 @@
 
 ;; x+0=x
 (assert-not (forall ((x Nat))
-  (= (plus x constructor-Z)
+  (= (plus x constructorZ)
      x)))
 
 ;; x*0=0
 (assert-not (forall ((x Nat))
-  (= (times x constructor-Z)
-     constructor-Z)))
+  (= (times x constructorZ)
+     constructorZ)))
 
 ;; (S0)^x=S0
 (assert-not (forall ((x Nat))
-  (= (exp (constructor-S constructor-Z) x)
-     (constructor-S constructor-Z))))
+  (= (exp (constructorS constructorZ) x)
+     (constructorS constructorZ))))
 
 ;; y+(Sz)=S(y+z)
 (assert-not (forall ((z Nat))
-  (= (plus y (constructor-S z))
-     (constructor-S (plus y z)))))
+  (= (plus y (constructorS z))
+     (constructorS (plus y z)))))
 
 ;; y+x=x+y
 (assert-not (forall ((y Nat) (y Nat))
@@ -137,7 +137,7 @@
 
 ;; x*(Sz)=x+(x*z)
 (assert-not (forall ((x Nat) (z Nat))
-  (= (times x (constructor-S z))
+  (= (times x (constructorS z))
      (plus x (times x z)))))
 
 ;; x*(y+z)=(x*y)+(x*z)

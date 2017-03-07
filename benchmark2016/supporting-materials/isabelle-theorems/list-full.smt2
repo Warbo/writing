@@ -1,6 +1,6 @@
 ;; a ++ [] = a
 (assert-not (par (t) (forall ((a (List t)))
-  (= (append a constructor-Nil)
+  (= (append a constructorNil)
      a))))
 
 ;; rev (rev a) = a
