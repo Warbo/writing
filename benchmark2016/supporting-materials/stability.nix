@@ -1,29 +1,11 @@
-{ haskell-te, haskell-te-defs, haskell-te-src, miller, pkgs }:
+{ buildEnv, callPackage, haskell-te, haskell-te-defs, haskell-te-src, jq, lib,
+  makeWrapper, miller, pythonPackages, runCommand, sampledBenchmarkData, stdenv,
+  writeScript }:
 
+with builtins;
+with lib;
 rec {
-  inherit (pkgs)
-    buildEnv callPackage jq lib makeWrapper pythonPackages runCommand stdenv
-    writeScript;
-
-  inherit (lib)
-    mapAttrs range stringToCharacters take toInt;
-
-  inherit (callPackage ./drawStabilisePlots.nix {})
-    plotsOf plotTests plot;
-
-
-
-  results =
-    let go = cmd: let data = getData cmd; in {
-          "data.json" = data;
-          plots       = plotsOf cmd data;
-          small       = smallTheoryData cmd;
-        };
-     in {
-          quickSpec = go "quickspecBench";
-          mlSpec    = go "mlspecBench";
-          hashSpec  = go "hashspecBench";
-        };
+  stabilityPlots = mapAttrs plotsOf sampledBenchmarkData;
 
   small = mapAttrs (n: v: v.small) results;
 
@@ -183,7 +165,7 @@ rec {
       done
     '';
     installPhase = ''
-      echo "Pass" > "$out"
+      echo 'true' > "$out"
     '';
   };
 }

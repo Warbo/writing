@@ -13,8 +13,11 @@ rec {
                sha256 = "1cx5cfsp4iiwq8921c15chn1mhjgzydvhdcmrvjmqzinxyz71bzh";
              }) { config = {}; };
 
-  inherit pkgs
-    callPackage;
+  # callPackage automatically fill in function arguments, if they're defined in
+  # pkgs or the extra set we provide here
+  callPackage = pkgs.newScope {
+    inherit haskell-te-src haskell-te haskell-te-defs miller;
+  };
 
   # This repository contains the software we're discussing, and its benchmarks
   haskell-te-src  = pkgs.fetchFromGitHub {

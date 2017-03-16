@@ -1,29 +1,27 @@
-{}:
+{ haskell-te, jq, lib, stdenv }:
 
+with lib;
 rec {
-  getData = cmd: precisionRecallOfData (pkgs.stdenv.mkDerivation {
-    # Forces tests to be run before we spend ages getting the data
-    inherit plotTests;
-    name = "${cmd}-stabilise-data";
+  testData = cmd: writeScript "${cmd}-test-data" (toJSON (map (info: {
+      inherit cmd s;
+      results = [{
+        failure = null;
+        time    = 123;
+        stdout  = "/dev/null";
+        stderr  = "/dev/null";
+      }];
+    }) [5 10 15 100]));
+
+  getData = cmd: stdenv.mkDerivation {
+    name         = "${cmd}-stabilise-data";
     buildInputs  = [ haskell-te jq ];
-    SKIP_DATA    = getEnv "SKIP_DATA";
     buildCommand = ''
-      if [[ -n "$SKIP_DATA" ]]
-      then
-        for S in 5 10 15 100
-        do
-          jq -n --arg info "$S" \
-             '{"cmd":"${cmd}","info":$info, "results":[{
-               "failure":null, "time": 1.23, "stdout": "/dev/null",
-               "stderr": "/dev/null"
-              }]}'
-        done | jq -s '.' > "$out"
-      else
-        ${explorationOptions}
-        SAMPLE_SIZES="5 10 15 100" ${cmd} | jq -s '.' > "$out"
-      fi
+      ${explorationOptions}
+      SAMPLE_SIZES="5 10 15 100" ${cmd} | jq -s '.' > "$out"
     '';
-  });
+  };
+
+  sampledBenchmarkData = genAttrs [ "quickSpec" "mlSpec" "hashSpec" ] getData;
 
   explorationOptions = ''
     export        JVM_OPTS="-Xmx168m -Xms168m -Xss1m"
@@ -32,36 +30,42 @@ rec {
     export            REPS=30
   '';
 
-  smallTheoryData = cmd:
-    with rec {
-      data = stdenv.mkDerivation {
-        name         = "${cmd}-small-theory-data";
-        hte          = haskell-te-src;
-        SKIP_DATA    = getEnv "SKIP_DATA";
-        buildInputs  = [ haskell-te jq ];
-        buildCommand = ''
-          ${explorationOptions}
-          for B in "$hte"/benchmarks/*.smt2
-          do
-            NAME=$(basename "$B" .smt2)
-            mkdir -p "$out"
-            if [[ -n "$SKIP_DATA" ]]
-            then
-              echo '[{"cmd":"${cmd}","info":"dummy data","results":[
-                      {"time":    1.23,
-                       "failure": null,
-                       "stdin":   "/dev/null",
-                       "stdout":  "/dev/null",
-                       "stderr":  "/dev/null"}
-                    ]}]' > "$out/$NAME.json"
-            else
-              ${cmd} < "$B"| jq -s '.' > "$out/$NAME.json"
-            fi
-          done
-        '';
-      };
-    };
-    stdenv.mkDerivation {
+  smallTheoryTestData = cmd: processSmallTheory (stdenv.mkDerivation {
+    name         = "${cmd}-small-theory-data";
+    hte          = haskell-te-src;
+    buildInputs  = [ haskell-te jq ];
+    buildCommand = ''
+      for B in "$hte"/benchmarks/*.smt2
+      do
+        NAME=$(basename "$B" .smt2)
+        mkdir -p "$out"
+        echo '[{"cmd":"${cmd}","info":"dummy data","results":[
+                {"time":    1.23,
+                "failure": null,
+                "stdin":   "/dev/null",
+                "stdout":  "/dev/null",
+                "stderr":  "/dev/null"}
+              ]}]' > "$out/$NAME.json"
+      done
+    '';
+  });
+
+  smallTheoryData = cmd: processSmallTheory (stdenv.mkDerivation {
+    name         = "${cmd}-small-theory-data";
+    hte          = haskell-te-src;
+    buildInputs  = [ haskell-te jq ];
+    buildCommand = ''
+      ${explorationOptions}
+      for B in "$hte"/benchmarks/*.smt2
+      do
+        NAME=$(basename "$B" .smt2)
+        mkdir -p "$out"
+        ${cmd} < "$B"| jq -s '.' > "$out/$NAME.json"
+      done
+    '';
+  });
+
+  processSmallTheory = data: stdenv.mkDerivation {
       inherit data;
       name         = "small-theory-precision-recall";
       buildInputs  = [ haskell-te-defs.tipBenchmarks.tools jq ];
