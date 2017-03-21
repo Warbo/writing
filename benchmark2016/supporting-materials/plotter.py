@@ -107,17 +107,5 @@ def main(data):
         for f in (draw_bars, lag_plots, correlations):
             f(times, shuffled, sizes[index])
 
-        precisions = [{"mean"   : np.mean([field_of(r, "precision", 0)
-                                           for r in run["results"]]),
-                       "stddev" : np.std([field_of(r, "precision", 0)
-                                          for r in run["results"]])}
-                      for run in data]
-        recalls    = [{"mean"   : np.mean([field_of(r, "recall", 0)
-                                           for r in run["results"]]),
-                       "stddev" : np.std([field_of(r, "recall", 0)
-                                          for r in run["results"]])}
-                      for run in data]
-        print(repr({"precisions":precisions,"recalls":recalls}))
-
 if __name__ == '__main__':
     main(json.loads(sys.stdin.read()))

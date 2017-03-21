@@ -10,7 +10,7 @@ with rec {
 
   # Raw benchmark data, i.e. how long each system takes to run
   inherit (callPackage ./benchmark-runs.nix {})
-    sampledBenchmarkData;
+    sampledBenchmarkData sampledTestData;
 
   # Precision/recall analysis of data, i.e. how "good" the output is
   inherit (callPackage ./precision-recall.nix {})
@@ -22,14 +22,19 @@ with rec {
 
   # Sanity checks, to look for dependencies/bias in the data
   inherit (callPackage ./stability.nix {
-            inherit sampledBenchmarkData;
+            inherit sampledBenchmarkData sampledTestData;
           })
-    plotTests stabilityPlots;
+    examplePlots plotTests stabilityPlots;
 };
 
-# Force tests to run *before* we expose this stuff to Nix; otherwise we might
-# spend ages generating data, which then gets mangled by some trivial error
-assert all (test: import "${test}") [ plotTests ];
 {
-  inherit stabilityPlots;
+  # Not directly used by the paper, but useful for debugging, e.g. via nix-repl.
+  debug = {
+    inherit examplePlots plotTests sampledBenchmarkData sampledTestData
+            stabilityPlots;
+  };
+
+  # Force tests to run before we even attempt to gather data; otherwise we might
+  # spend ages running experiments, which then get mangled by some trivial typo.
+  support = assert all (test: import "${test}") [ plotTests ]; ./default.nix;
 }

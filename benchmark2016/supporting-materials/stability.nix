@@ -1,6 +1,6 @@
 { buildEnv, callPackage, haskell-te, haskell-te-defs, haskell-te-src, jq, lib,
-  makeWrapper, miller, pythonPackages, runCommand, sampledBenchmarkData, stdenv,
-  writeScript }:
+  makeWrapper, miller, pythonPackages, runCommand, sampledBenchmarkData,
+  sampledTestData, stdenv, writeScript }:
 
 with builtins;
 with lib;
@@ -100,61 +100,17 @@ rec {
 
   plotTests = stdenv.mkDerivation {
     name = "plot-tests";
-    src  =
-      # Generate some semi-plausible data to test with
-      with rec {
-        data = runCommand "test-data.json" { buildInputs = [ jq ]; } ''
-          jq 'map(. + {"results": (.results | map(. + {
-                         "precision" : (.precision | tonumber),
-                         "recall"    : (.recall    | tonumber)
-                       }))})' < "${rawData}" > "$out"
-        '';
 
-        rawData    = writeScript "raw-data.json" (toJSON [correlated uniform]);
+    names = attrNames examplePlots;
+    plots = attrValues examplePlots;
 
-        correlated = {
-          info    = 1;
-          results = map (n: {
-                          time      = (2 * n) + 3;
-                          failure   = if elem n [3 8]
-                                         then n + 20
-                                         else null;
-                          precision = "0." + toString n;
-                          recall    = "0." + toString (n * 2);
-                        })
-                        (range 1 30);
-        };
-
-        uniform = {
-          info    = 2;
-          results = map (n: {
-                          time      = randomise n;
-                          failure   = if elem n [3 8]
-                                         then n + 20
-                                         else null;
-                          precision = "0." + toString (randomise (n * 127));
-                          recall    = "0." + toString (randomise (n * 131));
-                        })
-                        (range 1 30);
-        };
-
-        randomise = n:
-          with rec {
-            # Generate digits uniformly, by taking a hash and discarding a-f
-            hash   = hashString "sha256" (toString n);
-            digits = stringToCharacters "1234567890";
-            valid  = filter (c: elem c digits) (stringToCharacters hash);
-          };
-          # Append digits, just in case we hit a purely alphabetical hash ;)
-          toInt (concatStringsSep "" (take 5 (valid ++ digits)));
-      };
-      plotsOf "test" data;
-
-    doCheck    = true;
-    checkPhase = ''
-      echo "Testing plots from $src" 1>&2
-      for SET in 1 2
+    buildCommand = ''
+      echo "Testing plots" 1>&2
+      for plot in $plots
       do
+        echo "PLOT: $plot" 1>&2
+      done
+      exit 1
         for F in bars lag acorr
         do
           [[ -f "$src/charts/$F-$SET.png" ]] || {
@@ -162,10 +118,62 @@ rec {
             exit 1
           }
         done
-      done
+      #done
     '';
-    installPhase = ''
-      echo 'true' > "$out"
-    '';
+
+    installPhase = ''echo 'true' > "$out"'';
   };
+
+  # Generate some semi-plausible data to test with
+  examplePlots =
+    with rec {
+
+      data = {
+        inherit (sampledTestData) hashspecBench mlspecBench quickspecBench;
+        correlated = writeScript "correlated.json" (toJSON correlated);
+        uniform    = writeScript    "uniform.json" (toJSON uniform   );
+      };
+
+      rawData = writeScript "raw-data.json" (toJSON [[correlated] [uniform]]);
+
+      # Data with obvious dependencies
+      correlated = [{
+        info    = 1;
+        results = map (n: {
+                        time      = (2 * n) + 3;
+                        failure   = if elem n [3 8]
+                                       then n + 20
+                                       else null;
+                        precision = "0." + toString n;
+                        recall    = "0." + toString (n * 2);
+                      })
+                      (range 1 30);
+      }];
+
+      # Uniformly distributed data, generated from the digits of SHA256 hashes
+      uniform = [{
+        info    = 2;
+        results = map (n: {
+                        time      = randomise n;
+                        failure   = if elem n [3 8]
+                                       then n + 20
+                                       else null;
+                        precision = "0." + toString (randomise (n * 127));
+                        recall    = "0." + toString (randomise (n * 131));
+                      })
+                      (range 1 30);
+      }];
+
+      # Helper for turning hashes into numbers
+      randomise = n:
+        with rec {
+          # Generate digits uniformly, by taking a hash and discarding a-f
+          hash   = hashString "sha256" (toString n);
+          digits = stringToCharacters "1234567890";
+          valid  = filter (c: elem c digits) (stringToCharacters hash);
+        };
+        # Append digits, just in case we hit a purely alphabetical hash ;)
+        toInt (concatStringsSep "" (take 5 (valid ++ digits)));
+    };
+    mapAttrs plotsOf data;
 }

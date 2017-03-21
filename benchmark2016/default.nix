@@ -2,10 +2,10 @@ with import <nixpkgs> {};
 with builtins;
 
 stdenv.mkDerivation {
-  name = "benchmark-article";
-  src  = ./.;
-  SKIP_DATA   = getEnv "SKIP_DATA";
-  support     = import ./supporting-materials;
+  inherit (import ./supporting-materials) support;
+
+  name        = "benchmark-article.pdf";
+  src         = ./.;
   buildInputs = [
     bash
     gnumake

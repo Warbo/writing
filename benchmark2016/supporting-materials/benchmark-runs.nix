@@ -2,33 +2,42 @@
 
 with lib;
 rec {
-  testData = cmd: writeScript "${cmd}-test-data" (toJSON (map (info: {
-      inherit cmd s;
-      results = [{
-        failure = null;
-        time    = 123;
-        stdout  = "/dev/null";
-        stderr  = "/dev/null";
-      }];
-    }) [5 10 15 100]));
 
-  getData = cmd: stdenv.mkDerivation {
-    name         = "${cmd}-stabilise-data";
+  ## This part deals with samples from the TIP benchmark suite
+
+  # Runs a benchmark
+  getData = type: options: cmd: stdenv.mkDerivation (options // {
+    name         = "${cmd}-${type}-data";
     buildInputs  = [ haskell-te jq ];
     buildCommand = ''
-      ${explorationOptions}
-      SAMPLE_SIZES="5 10 15 100" ${cmd} | jq -s '.' > "$out"
+      ${cmd} | jq -s '.' > "$out"
     '';
+  });
+
+  # Results to use in analysis
+  fullData = getData "stabilise" explorationOptions;
+
+  # Only takes one sample and has shorter timeout, to test our pipeline
+  testData = getData "test" (explorationOptions // {
+    MAX_SECS = "120";
+    REPS     = "1";
+  });
+
+  forEachTool = genAttrs [ "hashspecBench" "mlspecBench" "quickspecBench" ];
+
+  sampledTestData = forEachTool testData;
+
+  sampledBenchmarkData = forEachTool fullData;
+
+  explorationOptions = {
+    JVM_OPTS        = "-Xmx168m -Xms168m -Xss1m";
+    EXPLORATION_MEM = "3000000";
+    MAX_SECS        = "3600";
+    REPS            = "30";
+    SAMPLE_SIZES    = "5 10 15 100";
   };
 
-  sampledBenchmarkData = genAttrs [ "quickSpec" "mlSpec" "hashSpec" ] getData;
-
-  explorationOptions = ''
-    export        JVM_OPTS="-Xmx168m -Xms168m -Xss1m"
-    export EXPLORATION_MEM=3000000
-    export        MAX_SECS=120
-    export            REPS=30
-  '';
+  ## This part deals with small, known theories of Nats and Lists
 
   smallTheoryTestData = cmd: processSmallTheory (stdenv.mkDerivation {
     name         = "${cmd}-small-theory-data";
