@@ -10,7 +10,7 @@ rec {
     name         = "${cmd}-${type}-data";
     buildInputs  = [ haskell-te jq ];
     buildCommand = ''
-      ${cmd} | jq -s '.' > "$out"
+      ${cmd} | jq -s '. | map(. + {"timeout": ${options.MAX_SECS}})' > "$out"
     '';
   });
 
@@ -19,8 +19,9 @@ rec {
 
   # Only takes one sample and has shorter timeout, to test our pipeline
   testData = getData "test" (explorationOptions // {
-    MAX_SECS = "120";
-    REPS     = "1";
+    MAX_SECS     = "120";
+    REPS         = "3";
+    SAMPLE_SIZES = "10 20 30 40 50 60";
   });
 
   forEachTool = genAttrs [ "hashspecBench" "mlspecBench" "quickspecBench" ];
