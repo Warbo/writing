@@ -21,7 +21,7 @@ We can define functions on these, e.g.
 
 ```
  plus(Z,    y) = y                            Standard recursive definition of +
- plus(S(n), y) = S(plus(x, y))
+ plus(S(x), y) = S(plus(x, y))
 
 times(Z,    y) = Z                            Standard recursive definition of ×
 times(S(x), y) = plus(y, times(x, y))
@@ -30,10 +30,10 @@ times(S(x), y) = plus(y, times(x, y))
 We can write equations involving these, e.g.
 
 ```
-∀x : ℕ, plus(Z, x) = x                          0 + x = x
-∀x : ℕ, plus(x, Z) = x                          x + 0 = x
-∀x : ℕ, plus(x, x) = times(S(S(Z)), x)          x + x = 2 × x
-∀x : ℕ, ∀y : ℕ, plus(x, y) = plus(y, x)         x + y = y + x
+∀x : ℕ, plus(Z, x) = x                          i.e. 0 + x = x
+∀x : ℕ, plus(x, Z) = x                          i.e. x + 0 = x
+∀x : ℕ, plus(x, x) = times(S(S(Z)), x)          i.e. x + x = 2 × x
+∀x : ℕ, ∀y : ℕ, plus(x, y) = plus(y, x)         i.e. x + y = y + x
 ...
 ```
 
@@ -72,7 +72,10 @@ equal.
 
 This approach is exhaustive, since it produces every possible term. That means
 it's guaranteed to find an equation if it exists; but it will also perform a lot
-of work comparing terms which we may consider unrelated.
+of work comparing terms which we may consider unrelated. For example, if we give
+the system definitions of `plus`, `times` and `parseHTTPHeader`, it will treat
+them all as black boxes, despite the fact that `plus` and `times` are very
+similar (compare their definitions above).
 
 #### Aside: Generating New Functions ####
 
@@ -168,7 +171,9 @@ definitions      Buckets                                  Equations     Output
 ```
 
 Proposal two: use the same approach of bucketing, but try to be smart about
-which definitions we group together by comparing the definitions themselves.
+which definitions we group together by comparing the definitions themselves
+(consider the above example of `plus`, `times` and `parseHTTPHeader`).
+
 We've implemented one particular algorithm to do this (Katya's "recurrent
 clustering" algorithm), but there could potentially be many more (e.g. using
 models like bag of words, latent semantic analysis, word2vec, etc.).
@@ -227,7 +232,7 @@ difference?
 For example, here are runtimes (in seconds, on a logarithmic scale) for the
 baseline system (QuickSpec), running with sets of size 5:
 
-```{pipe="sh | pandoc -f html -t json"}
+```{.unwrap pipe="sh | pandoc -f html -t json"}
 printf '<img src="data:image/png;base64,'
 base64 -w 0 < ./root/quickspec-bars-5.png
 printf '" alt="QuickSpec runtimes (seconds) for sample size 5" />'
@@ -238,7 +243,7 @@ executed, and show no trend compared to the shuffled bars beneath, indicating
 that each samples' run is independent (no effects from caching, etc.). Here are
 the same samples, run through our smart bucketing system (MLSpec) instead:
 
-```{pipe="sh | pandoc -f html -t json"}
+```{.unwrap pipe="sh | pandoc -f html -t json"}
 printf '<img src="data:image/png;base64,'
 base64 -w 0 < ./root/mlspec-bars-5.png
 printf '" alt="QuickSpec runtimes (seconds) for sample size 5" />'
