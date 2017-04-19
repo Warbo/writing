@@ -7,15 +7,19 @@ with builtins;
 rec {
   # All definitions; useful for debugging
   debug = rec {
+
     # General utilities, etc. including nixpkgs and haskell-te
     defs = import ./defs.nix;
     inherit (defs)
-      callPackage;
+      callPackage attrsToDir;
 
     # Raw benchmark data, i.e. how long each system takes to run
     benchmark-runs = callPackage ./benchmark-runs.nix {};
     inherit (benchmark-runs)
       sampledBenchmarkData sampledTestData;
+
+    # Raw bucketing data, i.e. how many equations we throw away by bucketing
+    bucketing-runs = callPackage ./bucketing-runs.nix {};
 
     # Precision/recall analysis of data, i.e. how "good" the output is
     precision-recall = callPackage ./precision-recall.nix {};
@@ -40,6 +44,8 @@ rec {
   # The definitions required by the paper. We force tests to run before allowing
   # any data access; otherwise we might spend ages running experiments, which
   # then get mangled by some trivial typo.
-  support = assert all (test: import "${test}") [ plotTests ];
-    trace "FIXME: Put some actual definitions here" ./default.nix;
+  support = assert all (test: import "${test}") (with debug; [ plotTests ]);
+            with debug; attrsToDir {
+              "bucketing-graph.png" = bucketing-runs.bucketing-graph;
+            };
 }

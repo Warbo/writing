@@ -10,17 +10,14 @@ stdenv.mkDerivation {
     bash
     gnumake
     (texlive.combine {
-      inherit (texlive) scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms;
+      inherit (texlive)
+        scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms
+        frankenstein csquotes;
     })
   ];
   buildPhase =
     let cmd = "pdflatex -interaction=nonstopmode -halt-on-error --shell-escape article";
      in ''
-          if [[ -n "$SKIP_DATA" ]]
-          then
-            sed -i article.tex -e 's/Warburton/Warburton (TESTING DATA)/g'
-          fi
-
           cp -r "$support" ./support
           cp ${../Bibtex.bib} ./Bibtex.bib
           ${cmd}

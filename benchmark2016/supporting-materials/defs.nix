@@ -1,5 +1,6 @@
 # Useful stuff, which we'll use over and over
 
+with builtins;
 rec {
   # Nixpkgs, the main Nix package repository. We assume there's some version
   # available at the path <nixpkgs>, but using it willy nilly could affect our
@@ -35,4 +36,21 @@ rec {
 
   # A commandline tool for manipulating CSV data, performing statistics, etc.
   miller = pkgs.callPackage ./miller.nix {};
+
+  # Take in { "foo/bar" = A; "baz" = B; ... } and produce a directory containing
+  # symlinks foo/bar -> ${A}, baz -> ${B}, etc.
+  attrsToDir = attrs:
+    with rec {
+      cmds  = map (name: let val = attrs."${name}";
+                          in ''
+                               DIR=$(dirname "${name}")
+                               mkdir -p "$out/$DIR"
+                               ln -s "${val}" "$out/${name}"
+                             '')
+                  (attrNames attrs);
+    };
+    pkgs.runCommand "attrsToDir" {} ''
+      mkdir -p "$out"
+      ${concatStringsSep "\n" cmds}
+    '';
 }

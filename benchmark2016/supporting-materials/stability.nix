@@ -101,27 +101,24 @@ rec {
   plotTests = stdenv.mkDerivation {
     name = "plot-tests";
 
-    names = attrNames examplePlots;
+    names = attrNames  examplePlots;
     plots = attrValues examplePlots;
 
     buildCommand = ''
       echo "Testing plots" 1>&2
       for plot in $plots
       do
-        echo "PLOT: $plot" 1>&2
-      done
-      exit 1
         for F in bars lag acorr
         do
-          [[ -f "$src/charts/$F-$SET.png" ]] || {
-            echo "Missing $F charts for $SET" 1>&2
+          ls "$plot/charts/$F"-*.png | grep "/charts/" > /dev/null || {
+            echo "Missing $F-* chart(s) for $plot" 1>&2
             exit 1
           }
         done
-      #done
-    '';
+      done
 
-    installPhase = ''echo 'true' > "$out"'';
+      echo 'true' > "$out"
+    '';
   };
 
   # Generate some semi-plausible data to test with

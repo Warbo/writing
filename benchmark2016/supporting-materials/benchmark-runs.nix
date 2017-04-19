@@ -21,7 +21,7 @@ rec {
   testData = getData "test" (explorationOptions // {
     MAX_SECS     = "120";
     REPS         = "3";
-    SAMPLE_SIZES = "10 20 30 40 50 60";
+    SAMPLE_SIZES = "10 20 50 100 150 200";
   });
 
   forEachTool = genAttrs [ "hashspecBench" "mlspecBench" "quickspecBench" ];

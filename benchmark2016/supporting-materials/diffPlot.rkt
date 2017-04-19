@@ -31,25 +31,38 @@
                                   (sample-size ,(string->number
                                                  (symbol->string size))))))))))
 
+(define colors '(black red blue green purple yellow))
+
 (parameterize ([plot-width    500]
                [plot-height   500]
                [plot-x-label  #f]
                [plot-y-label  #f])
-  (plot-file (list (map (lambda (sys)
-                          (points (map (lambda (point)
-                                         (list (sassoc 'sample-size point)
-                                               (sassoc 'mean        point)))
-                                       (second sys))))
-                        data)
-                   (map (lambda (sys)
-                          (error-bars (map (lambda (point)
-                                             (define l (sassoc 'lower-95 point))
-                                             (define u (sassoc 'upper-95 point))
-                                             (list (sassoc 'sample-size point)
-                                                   (/ (+ l u) 2)
-                                                   (/ (- u l) 2)))
-                                           (second sys))))
-                        data))
+  (plot-file (foldl (lambda (sys result)
+                      (define name (first  sys))
+                      (define vals (second sys))
+
+                      ;; Pop the next colour off the list. Ugly, but works.
+                      (define color (first colors))
+                      (set! colors (cdr colors))
+
+                      (append result
+                              (list (points
+                                     (map (lambda (point)
+                                            (list (sassoc 'sample-size point)
+                                                  (sassoc 'mean        point)))
+                                          vals)
+                                     #:color color)
+                                    (error-bars
+                                     (map (lambda (point)
+                                            (define l (sassoc 'lower-95 point))
+                                            (define u (sassoc 'upper-95 point))
+                                            (list (sassoc 'sample-size point)
+                                                  (/ (+ l u) 2)
+                                                  (/ (- u l) 2)))
+                                          vals)
+                                     #:color color))))
+                    '()
+                    data)
              "diffPlot.svg"))
 
 ;(eprintf (~a data))

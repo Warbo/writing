@@ -1,4 +1,4 @@
-\title{An Approach to Benchmark Conjecture Generators}
+\title{An Approach to Benchmarking Conjecture Generators}
 \author{
         Chris Warburton \\
                 University of Dundee\\
@@ -7,6 +7,12 @@
 
 \documentclass[12pt]{article}
 
+\usepackage{attrib}
+\usepackage{csquotes}
+
+\usepackage{graphicx}
+\graphicspath{ {support/} }
+
 \begin{document}
 \maketitle
 
@@ -14,13 +20,64 @@
 
 \end{abstract}
 
+\begin{displayquote}
+  There is frequently more to be learn'd from the unexpected questions of a
+  child than the discourses of men.
+  \attrib{--- John Locke}
+\end{displayquote}
+
 \section{Introduction}
 
-Many algorithms and approaches have been developed to automate the discovery of new mathematical theorems, but it is difficult to compare their performance in a quantitative way. Existing approaches include precision/recall measurements on existing theories, but these rely on some form of ground truth, i.e. which theorems are ``worth'' producing.
+The field of mathematics has been transformed by the introduction of computers:
+calculations are now routinely automated, allowing humans to focus their efforts
+on higher-level, more creative activities like proving theorems; \emph{automated
+theorem proving} (ATP) seeks to automate this process too, and was one of the
+first tasks studied in the field of artificial intelligence
+\cite{newell1956logic, sutcliffe2001evaluating}. Despite this effort, ATP
+methods are not widely used by traditional mathematicians, although they have
+seen use in applied areas such as hardware and software verification
+\cite{Moore:2003}.
 
-We propose that the extensive test suites used to benchmark automated theorem provers can be repurposed to create benchmarks for theory exploration systems. We provide a tool to automatically perform this conversion, given an existing benchmark suite in SMT-LIB format \cite{BarFT-SMTLIB}.
+Even if ATP became widespread, the automation of theorem proving would still
+leave an important aspect of mathematics inaccessible to computers: conjecturing
+those theorems (and the definitions they involve) in the first place. Automated
+methods for posing good conjectures have obvious applications for those who must
+invent a constant stream of novel questions, e.g. for examinations or research.
+A larger impact may be found in areas such as computer programming, security and
+verification, where the benefits of formal methods are hindered by the
+difficulty of their application; tools to aid this process, e.g. by proposing
+test cases, can reduce this cost.
 
-\section{Previous approaches}\label{previous approaches}
+Many automated systems and algorithms have been developed to generate
+conjectures, but it is difficult to judge or compare their performance in a
+quantitative way. There are many aspects to consider when judging the quality of
+a conjecture: how likely it is to be true, how difficult it is to prove, its
+implications, and so on.
+
+One way to make these subjective, ambiguous properties more concrete is to
+choose a well-studied theory, with a set of existing theorems that are deemed to
+be useful or important in some way, and treat these as a \em{ground truth}
+against which we can compare conjectures generated from the same theory.
+
+A common choice of ground truth is the standard library of a theorem prover,
+such as Isabelle/HOL; the library authors have gone to the effort of stating,
+proving and including these theorems in every copy of their software, which is a
+good indication that they are useful or important.
+
+One problem with this approach is the small size of these libraries. For
+example, a benchmark based on Isabelle/HOL's theory of natural numbers contains
+only FIXME definitions and FIXME theorems. Whilst such benchmarks allow
+comparison between different approaches, their narrow scope doesn't provide much
+indication of performance in different, especially \emph{novel}, domains.
+
+We propose that the extensive test suites which are already used to benchmark
+automated theorem provers can be repurposed to create benchmarks for conjecture
+generation systems. We provide a benchmark suite, automatically derived from the
+Tons of Inductive Problems (TIP) benchmark suite, as well as software to convert
+other benchmarks written in the same TIP format (an extension of the SMT-LIB
+format \cite{BarFT-SMTLIB}).
+
+\section{Existing Evaluations}\label{previous approaches}
 
 Theory exploration tools such as IsaCoSy \cite{Johansson.Dixon.Bundy:conjecture-generation}, QuickSpec and IsaScheme have been evaluated using the standard library of the Isabelle theorem prover as their ground truth.
 
@@ -31,6 +88,10 @@ For each definition, prefix its name with the filename it came from and update a
 Normalise all local variable names.
 Remove any identical definitions, leaving the first one in place and updating any references to the removed definitions to use this one.
 Repeat, until no further removals are possible.
+
+\section{Evaluation}
+
+\includegraphics{bucketing-graph}
 
 \bibliographystyle{plain}
 \bibliography{./Bibtex}
