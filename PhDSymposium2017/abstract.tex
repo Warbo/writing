@@ -1,0 +1,284 @@
+\documentclass[]{default}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{amssymb,amsmath}
+\usepackage{paralist}
+\usepackage{tikz-qtree}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={Quantitative Benchmarks for Theory Exploration},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{5}
+\newcommand{\feature}[1]{\phi(#1)}
+\newcommand{\id}[1]{\texttt{"#1"}}
+\newcommand{\CVar}{\texttt{Var}}
+\newcommand{\CLit}{\texttt{Lit}}
+\newcommand{\CApp}{\texttt{App}}
+\newcommand{\CLam}{\texttt{Lam}}
+\newcommand{\CLet}{\texttt{Let}}
+\newcommand{\CCase}{\texttt{Case}}
+\newcommand{\CType}{\texttt{Type}}
+\newcommand{\CLocal}{\texttt{Local}}
+\newcommand{\CGlobal}{\texttt{Global}}
+\newcommand{\CConstructor}{\texttt{Constructor}}
+\newcommand{\CLitNum}{\texttt{LitNum}}
+\newcommand{\CLitStr}{\texttt{LitStr}}
+\newcommand{\CAlt}{\texttt{Alt}}
+\newcommand{\CDataAlt}{\texttt{DataAlt}}
+\newcommand{\CLitAlt}{\texttt{LitAlt}}
+\newcommand{\CDefault}{\texttt{Default}}
+\newcommand{\CNonRec}{\texttt{NonRec}}
+\newcommand{\CRec}{\texttt{Rec}}
+\newcommand{\CBind}{\texttt{Bind}}
+
+\title{Quantitative Benchmarks for Theory Exploration}
+  \author{Chris Warburton \\
+          University of Dundee \\
+          \texttt{cmwarburton@dundee.ac.uk}}
+\date{}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+  \emph{Automated theory exploration} has the potential to help scientists,
+  mathematicians and programmers discover unexpected properties of their models,
+  theories and programs; but has so far been limited to small-scale experiments,
+  with hand-picked data and qualitative results. We address these problems by
+  introducing a novel benchmark suite, orders of magnitude larger than previous
+  data sets, and use it to evaluate a variety of theory exploration approaches
+  (both existing and novel) and measure how they scale. It is our hope that the
+  availability of a robust method for comparing systems will encourage
+  competition and innovation in this field, as it has done for e.g.\ automated
+  theorem proving.
+\end{abstract}
+
+\section{Introduction}\label{introduction}
+
+Many fields represent knowledge using \emph{formal systems}, for example
+scientific models, mathematical theories and computer programs. As requirements
+grow, these systems can be modified in two ways: becoming more complicated, and
+becoming more numerous. Complication makes a system's behaviour harder to
+predict, whilst proliferation dilutes the attention that can be given to each
+particular system. This impacts aspects like safety and security, for example
+proving that a program will never leak confidential information, or that a model
+of some mechanism will never enter an unsafe configuration.
+
+One way to mitigate these problems is through automation: \emph{automated theory
+exploration} is the task of discovering interesting properties and behaviours of
+a given formal system, such as a software library or set of equations. Such
+tools can be used by domain experts, to discover structure, redundancy and
+patterns in a system; and, more importantly, to be \emph{surprised} by
+unexpected insights.
+
+\section{Background}\label{background}
+
+\begin{figure}
+  \begin{equation*}
+    plus(zero,    y) = y \\
+    plus(succ(x), y) = succ(plus(x, y)) \\
+    length(nil)        = zero \\
+    length(cons(x, y)) = succ(length(y)) \\
+    append(nil,       z) = z \\
+    append(cons(x,y), z) = cons(x, append(y, z)) \\
+    map(f, nil)        = nil \\
+    map(f, cons(x, y)) = cons(f(x), map(f, y))
+  \end{equation*}
+  \caption{Functions.}
+  \label{fig:defs}
+\end{figure}
+
+Our running example will be the software library\footnote{Our treatment of
+  software is directly applicable to mathematics \cite{wadler2015propositions},
+  and is also applicable to scientific models if we encode them as programs
+  which output predicted observations \cite{davies1990physical}
+} in figure~\ref{fig:defs}
+
+functions for manipulating data. This
+
+We can think of this as an axiomatic equational theory; it's also We will concentrate on the example of a software library, but this is
+
+The problem of \emph{automated theorem proving} (ATP) was one of the first tasks
+studied in the field of artificial intelligence \cite{newell1956logic,
+  sutcliffe2001evaluating}: given some statement about a formal system, prove
+that it is true. Many ATP approaches have been devised, and systems are compared
+by evaluating their performance on large benchmark problems, such as TPTP
+(Thousands of Problems for Theorem Provers).
+
+In contrast, theory \emph{exploration}progress in ATP has been through progTheory theorem proving a the  experts with a system for  discovering the behaviour of such systems has impact may  can exhibit Both present challenges to understandingare As these systems become more complexcomputers become ever more important in research, industry and
+society, so does the ability to program them effectively, economically
+and \emph{correctly}. Whilst tools exist to help programmers understand
+and manipulate software, ranging from linters \cite{Johnson78lint} through to
+formal verification systems \cite{boyer1983proof}, these are often limited in
+scope (e.g.\ to syntax rather than semantics) or require precise guidance from
+the user. One reason is that automating the search for patches
+\cite{Forrest.Nguyen.Weimer.ea:2009}, refactorings, optimisations
+\cite{phothilimthana2016scaling}, proofs \cite{rosen2012proving}, and other
+routine programming tasks is prohibitively expensive due to the size of the
+search space.
+
+We investigate the use of machine learning techniques to restrict such
+search spaces more intelligently than uninformed local search,
+specifically the use of \emph{clustering} to aid \emph{theory
+exploration} (TE) in discovering program equivalences.
+
+\section{Background}\label{background}
+
+\subsection{Theory Exploration}\label{theory-exploration}
+
+Our work builds on the existing TE system
+\textsc{QuickSpec}\cite{QuickSpec}, which finds equivalent expressions
+in the Haskell programming language \cite{marlow2010haskell}, built from a user-provided
+\emph{signature} of constants and variables. For example, given a
+signature of the list-manipulating functions \texttt{reverse},
+\texttt{length} and \texttt{append}, plus two list variables \texttt{x}
+and \texttt{y}, \textsc{QuickSpec} will discover that
+\texttt{reverse\ (reverse\ x)} is equivalent to \texttt{x}; that
+\texttt{length\ (reverse\ x)} is equivalent to \texttt{length\ x}; that
+\texttt{length\ (append\ x\ y)} is equivalent to
+\texttt{length\ (append\ y\ x)}; and so on. These are discovered by
+enumerating all well-typed combinations of the signature's constants and
+variables, then randomly instantiating the variables \cite{claessen2011quickcheck} and comparing the
+resulting closed terms. Any expressions which remain indistiguishable
+after hundreds of instantiations are conjectured to be equivalent and,
+after removing redundancies, are produced as output. These conjectures
+can be sent through a theorem prover \cite{claessen2013automating} and used to inform tests,
+optimisations, refactoring, verification, or simply to help the
+programmer learn more about the code.
+
+Due to its exponential complexity, this enumerating procedure is limited
+to producing small expressions from signatures with only a few elements.
+Such small signatures give little chance for serendipitous discoveries,
+which undermines the algorithm's potential to present programmers with
+new, unexpected information.
+
+\subsection{Recurrent Clustering}\label{recurrent-clustering}
+
+To reduce the user's need to cherry-pick signatures, our approach
+accepts a large signature (e.g.\ a complete Haskell package) and uses
+statistical machine learning methods to select smaller signatures
+automatically, using a \emph{recurrent clustering} method inspired by
+those of \textsc{ML4PG} \cite{journals/corr/abs-1212-3618} and \textsc{ACL2(ml)} \cite{Heras.Komendantskaya.Johansson.ea:2013}.
+
+Recurrent clustering attempts to cluster expressions based on their
+Abstract Syntax Trees (ASTs), an example of which is shown in Figure~\ref{fig:astexample}. First the recursively-structured ASTs are
+transformed into vectors of fixed length, by truncating the tree
+structure and listing the node labels in breadth-first order.
+
+These labels are then turned into \emph{features} (real numbers), using the function $\phi$ which replaces keywords with fixed values and local variables with context-dependent values (known as \emph{de Bruijn indices} \cite{de1972lambda}). To replace global variables, $\phi$ first performs another round of clustering (hence the name
+``recurrent''), without including the current expression; each global
+variable is replaced by its cluster index found by this ``inner'' round
+of clustering.
+
+\begin{figure}
+    \begin{small}
+      \begin{tikzpicture}[sibling distance=0pt]
+        \tikzset{sibling distance=0pt}
+        \tikzset{level distance=20pt}
+        \Tree[ .$\CLam$
+                  $\id{a}$
+                  [ .$\CCase$
+                       [ .$\CVar$
+                            [ .$\CLocal$
+                                 $\id{a}$ ]]
+                       $\id{b}$
+                       [ .$\CAlt$
+                            $\CDataAlt$
+                            [ .$\CVar$
+                                 $\CConstructor$ ]]
+                       [ .$\CAlt$
+                            $\CDataAlt$
+                            [ .$\CApp$
+                                 [ .$\CVar$
+                                      [ .$\CGlobal$
+                                           $\id{even}$ ]]
+                                 [ .$\CVar$
+                                      [ .$\CLocal$
+                                           $\id{n}$ ]]]
+                            $\id{n}$ ]]]
+      \end{tikzpicture}
+    \end{small}
+    \caption{AST for the \texttt{odd} function. The variable names \texttt{a}, \texttt{b}, etc.\ are chosen arbitrarily.}
+    \label{fig:astexample}
+\end{figure}
+
+These recursive calls to the clustering algorithm (we use a standard
+\emph{k-means} implementation) allow expressions to be compared in a
+principled way: the similarity of expressions depends on the similarity of the expressions they reference, and so on recursively. In practice, this recursive
+algorithm can be implemented in an iterative way, by accumulating the set of expressions to cluster in topological order of their dependency graph.
+
+Figure~\ref{fig:astexample} shows the AST for the following Haskell function \texttt{odd}, which determines if a Peano numeral is odd:
+
+\begin{lstlisting}[language=Haskell]
+odd  Z    = False
+odd (S n) = even n
+
+even  Z    = True
+even (S n) = odd n
+\end{lstlisting}
+
+The \texttt{odd} function references four global variables: \texttt{Z}, \texttt{S}, \texttt{False} and \texttt{even}. Our algorithm doesn't yet distinguish between data constructors, so the only global reference we replace is \texttt{even}. Likewise, the definition of \texttt{even} references \texttt{Z}, \texttt{S}, \texttt{True} and \texttt{odd}. For mutual recursion like this, there is no valid topological order, so we use a sentinel value as the feature.
+
+These feature vectors are sent through a k-means clustering algorithm, using the \textsc{Weka} machine learning library. For example, the feature vector for \texttt{odd} (padded to 6 labels for each level of the tree) will begin:
+
+\begin{equation*}
+  (\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \dots
+\end{equation*}
+
+\section{Implementation}\label{implementation}
+
+We obtain ASTs from Haskell projects using a bespoke plugin for the GHC
+compiler. From these ASTs, we extract type information which is used to append variables to the signature; and dependency information, which is used to topologically sort the clustering rounds. We then invoke our iterative algorithm, which alternates between feature extraction and clustering until all elements of the signature have been clustered. Each cluster is converted into a \textsc{QuickSpec} signature, by extracting those functions which a) have an argument type which we can randomly generate and b) have an output type which we can compare. \textsc{QuickSpec} is invoked on each signature, and the resulting sets of conjectures are combined.
+
+\section{Results}\label{results}
+
+We have developed a machine learning approach for analysing Haskell code, including a
+bespoke feature extraction method and a full implementation pipeline for turning Haskell packages into sets of equations.
+
+\section{Difficulties and Future Work}\label{future-work}
+
+The most difficult aspect of performing this exploration was obtaining real code in a usable format, due to the myriad edge-cases encountered. We make extensive use of Haskell's existing infrastructure, including the \textsc{GHC} compiler, the \textsc{cabal} build system, the \textsc{Hackage} code repository and the \textsc{Nix} package manager. Unfortunately, some of these systems are rather monolithic, which makes it difficult to invoke particular algorithms, such as \textsc{GHC}'s type class resolution, on their own. Whilst we have worked around these issues, e.g.\ using meta-programming, this introduces unnecessary latency, fragility and complexity.
+
+Our investigation of recurrent clustering and theory exploration only scratches the surface of combining symbolic and statistical AI algorithms. As well as benchmarking our approach against other techniques, there are many similar opportunities to be explored, where the reasoning power of symbolic algorithms can be guided and supervised by statistical, data-driven processes.
+
+\bibliographystyle{plain}
+\bibliography{./Bibtex}
+
+\end{document}
