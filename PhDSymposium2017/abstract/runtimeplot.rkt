@@ -3,40 +3,54 @@
 (require math/statistics)
 (require plot/pict)
 
-;; We want the 95% confidence interval
-(define confidence 0.95)
-(define alpha (/ (- 1 confidence) 2))
+(define (make-func points)
+  (define sorted (sort points (lambda (x y)
+                                (<= (first x) (first y)))))
 
-;; Look up alpha in standard table of z scores
-(define z-score 1.96)
+  ;; y1 is the value at k=0, y2 is the value at k=1, k is
+  ;; our position between the two (from 0 to 1)
+  (define (interpolate k y1 y2)
+    (+ (* (- 1 k) y1)
+       (*      k  y2)))
 
-(define (sassoc k l)
-  (second (assoc k l)))
+  ;; At what fraction of the distance from x1 to x2 is x?
+  (define (distance x x1 x2)
+    (if (= x1 x2)
+        0 ;; Arbitrarily
+        (let ()
+          (define x-norm   (- x  x1))
+          (define max-norm (- x2 x1))
+          (/ x-norm max-norm))))
+
+  (lambda (x)
+    (define lower
+      (foldl (lambda (point lowest)
+               (if (<= (first point) x)
+                   point
+                   lowest))
+             (first sorted)
+             sorted))
+
+    (define upper
+      (foldl (lambda (point highest)
+               (if (<= (first point) x)
+                   highest
+                   point))
+             (last sorted)
+             (reverse sorted)))
+
+    (define k    (distance x (first lower) (first upper)))
+    (interpolate k (second lower) (second upper))))
 
 (define input
   (read-json))
 
-#;(define data
-  (hash-map input
-            (lambda (sys sizes)
-              (list sys
-                    (hash-map (string->jsexpr (file->string sizes))
-                              (lambda (size diffs)
-                                (define m    (mean diffs))
-                                (define var  (variance diffs))
-                                (define serr (/ var (sqrt (length diffs))))
-                                `((mean        ,m)
-                                  (upper-95    ,(+ m (* z-score serr)))
-                                  (lower-95    ,(- m (* z-score serr)))
-                                  (sample-size ,(string->number
-                                                 (symbol->string size))))))))))
-
 (define colors '(black red blue green purple yellow))
 
-(parameterize ([plot-width    500]
-               [plot-height   500]
-               [plot-x-label  #f]
-               [plot-y-label  #f])
+(parameterize ([plot-width   500]
+               [plot-height  500]
+               [plot-x-label #f]
+               [plot-y-label #f])
   (plot-file
    (foldl (lambda (arg result)
                   (define name  (first  arg))
@@ -44,6 +58,17 @@
                   (define vals  (map (lambda (f)
                                        (string->jsexpr (file->string f)))
                                      files))
+
+                  ;; Plotting a line requires a function defined for all inputs,
+                  ;; but we only have a set of samples, so we must interpolate
+                  ;; between them
+                  (define point-samples
+                    (foldl (lambda (point result)
+                             (cons (list (hash-ref point 'size)
+                                         (string->number
+                                          (hash-ref point 'median))) result))
+                           '()
+                           vals))
 
                   ;; Pop the next colour off the list. Ugly, but works.
                   (define color (first colors))
@@ -57,6 +82,10 @@
                                                (hash-ref point 'median))))
                                       vals)
                                  #:color color)
+
+                                (function (make-func point-samples)
+                                          #:color color)
+
                                 (error-bars
                                  (map (lambda (point)
                                         (define l (string->number
@@ -71,4 +100,4 @@
                 '()
                 (hash-map input (lambda (sys point-files)
                                   (list sys point-files))))
-         "diffPlot.svg"))
+         "runtimes-plot.svg"))
