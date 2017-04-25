@@ -90,269 +90,168 @@
   \emph{Automated theory exploration} has the potential to help scientists,
   mathematicians and programmers discover unexpected properties of their models,
   theories and programs; but has so far been limited to small-scale experiments,
-  with hand-picked data and qualitative results. We address these problems by
-  introducing a novel benchmark suite, orders of magnitude larger than previous
-  data sets, and use it to evaluate a variety of theory exploration approaches
-  (both existing and novel) and measure how they scale. It is our hope that the
-  availability of a robust method for comparing systems will encourage
-  competition and innovation in this field.
+  with only a few, hand-picked, data points. We address this problem by
+  re-purposing existing benchmarks from the theorem proving domain, producing an
+  order of magnitude more data for evaluation, and use it to evaluate the
+  performance of a state of the art exploration system. To combat the long run
+  times of these systems, we also propose a pre-processing method to identify
+  promising subsets of a theory, sacrificing completeness to gain speed. It is
+  our hope that the availability of robust evaluation methods, and scalable
+  algorithms, will encourage competition and innovation, making theory
+  exploration more useful and relevant as a formal methods tool.
 \end{abstract}
 
 \section{Introduction}\label{introduction}
 
 Many fields represent knowledge using \emph{formal systems}, for example
-scientific models, mathematical theories and computer programs. As requirements
-increase, these systems can grow in two ways: becoming more complex, and
-becoming more numerous. Complexification makes a system's behaviour harder to
-predict, whilst proliferation dilutes the attention that can be given to each
-particular system. This impacts aspects like safety and security, for example
-proving that software will not leak confidential information, or that mechanisms
-will not enter unsafe configurations.
+scientific models, mathematical theories and computer programs. These systems
+can be extended to meet new demands in two ways: the systems can be made more
+complex, or many new systems can be defined. Complexification makes a system's
+behaviour harder to predict, whilst proliferation dilutes the attention that can
+be given to each particular system. This presents a challenge for experts
+needing to characterise the behaviour of such systems, for example to prove
+properties related to protocol security or mechanical safety.
 
-One way to handle this growth is through automation: formal systems are easily
-represented in software, and techniques like \emph{automated theory exploration}
-(ATE) and \emph{automated theorem proving} (ATP) can help experts to discovery
-and verify the properties they do or do not want the system to exhibit. ATP is a
-mature field, with many competing implementations and competitive benchmarks. In
-contrast, ATE has seen little attention, and existing systems have mostly been
-evaluated qualitatively, on only a few hand-picked examples.
-
-We propose a benchmarking methodology for ATE systems, to evaluate and compare
-their performance on many large problems. We apply our benchmark to existing ATE
-systems, as well as two novel approaches.
+One way to help these experts is through automation: formal systems are easily
+represented as software, and techniques like \emph{automated theory exploration}
+can help experts to discover properties of a system, whether expected or
+surprising, desirable or not.
 
 \section{Background}\label{background}
 
-\begin{figure}
-  \begin{equation*}
-    \begin{aligned}
-      \name{plus}(\name{zero},         y) &= y                                   \\
-      \name{plus}(\name{succ}(x),      y) &= \name{succ}(\name{plus}(x, y))      \\
-      \name{length}(\name{nil})           &= \name{zero}                         \\
-      \name{length}(\name{cons}(x, y))    &= \name{succ}(\name{length}(y))       \\
-      \name{append}(\name{nil},        z) &= z                                   \\
-      \name{append}(\name{cons}(x,y),  z) &= \name{cons}(x, \name{append}(y, z)) \\
-      \name{map}(f,           \name{nil}) &= \name{nil}                          \\
-      \name{map}(f,    \name{cons}(x, y)) &= \name{cons}(f(x), \name{map}(f, y))
-    \end{aligned}
-  \end{equation*}
-  \caption{Definitions for $\name{plus}$, $\name{length}$, $\name{append}$ and
-    $\name{map}$. $\name{zero}$ and $\name{succ}$, $\name{nil}$ and
-    $\name{cons}$ are symbols encoding natural numbers and lists, respectively.
-    $\name{constants}$ and $variables$ are distinguished by
-    typeface.}\label{fig:defs}
-\end{figure}
+An example of a simple formal system is the following software
+library:
 
-Our running example will be the small software library defined in
-figure~\ref{fig:defs}\footnote{Our approach can also be applied directly to
-  mathematical theories~\cite{wadler2015propositions}, and to scientific models
-  encoded as programs~\cite{davies1990physical}}. One property of this library
-is that the following programs are equivalent (for all $f$, $x$ and $y$):
+\begin{equation*}
+  \begin{aligned}
+    \name{append}(\name{nil},        z) &= z                                   \\
+    \name{append}(\name{cons}(x,y),  z) &= \name{cons}(x, \name{append}(y, z)) \\
+    \name{map}(f,           \name{nil}) &= \name{nil}                          \\
+    \name{map}(f,    \name{cons}(x, y)) &= \name{cons}(f(x), \name{map}(f, y))
+  \end{aligned}
+\end{equation*}
+
+These equations define two functions, $\name{append}$ (for joining one list to
+another) and $\name{map}$ (for applying a function to the elements of a list),
+based on the way they rearrange particular constants ($\name{nil}$ and
+$\name{cons}$, which encode lists à la Lisp) and variables ($f$, $x$, $y$, $z$).
+One \emph{property} of this library is that the following expressions are
+equivalent:
 
 \begin{equation}\label{eq:mapappend}
   \name{map}(f, \name{append}(x, y)) =
     \name{append}(\name{map}(f, x), \name{map}(f, y))
 \end{equation}
 
-The $\name{map}$ function applies an arbitrary function to all of the elements
-in a list; $\name{append}$ joins one list to the end of another. Property
-\ref{eq:mapappend} states that $\name{map}$ distributes over $\name{append}$,
-i.e.\ we can perform $\name{map}$ and $\name{append}$ in either order and get
-the same result. This is useful, since it may be much faster to run
-$\name{map}(f, x)$ and $\name{map}(f, y)$ in parallel on different machines,
-then $\name{append}$ the results; compared to $\name{append}$ing the inputs and
-running one big $\name{map}$.\footnote{This is one half of the ``MapReduce''
-  model for parallel programming.~\cite{dean2008mapreduce}}
+This states that $\name{map}$ distributes over $\name{append}$, i.e.\ we can
+perform $\name{map}$ and $\name{append}$ in either order and get the same
+result. This is useful, since it may be much faster to run $\name{map}(f, x)$
+and $\name{map}(f, y)$ in parallel on different machines, then $\name{append}$
+the results; compared to $\name{append}$ing the inputs and running one big
+$\name{map}$.\footnote{This is one half of the ``MapReduce'' model for parallel
+  programming.~\cite{dean2008mapreduce}.}
 
-There are two aspects to finding these properties:
+Most automation of formal systems focuses on \emph{automated theorem proving}
+(ATP), which dates back to the early days of artificial
+intelligence~\cite{newell1956logic}. In ATP, the user gives a particular
+property statement (like \ref{eq:mapappend}) to the program up front, and the
+program searches for a proof. Modern ATP systems, such as
+CVC4~\cite{barrett2011cvc4}, compete regularly to prove as many benchmark
+problems as they can, as quickly as possible~\cite{sutcliffe2006state}.
 
-\begin{enumerate}
-\item We must \emph{state} the property, singling it out for attention, because
-  it is somehow \emph{interesting}.
+\emph{Automated Theory Exploration} (ATE) is the task of taking in a formal
+system (such as the definitions of $\name{map}$ and $\name{append}$ above) and
+giving out interesting properties, like \ref{eq:mapappend}.\footnote{ATE doesn't
+  require a proof of these properties; we can use ATP tools for that.} ATE has
+seen little attention, partly because of its resource usage, and partly because
+it is difficult to evaluate: what makes a property ``interesting''? Many general
+measures have been proposed\cite{colton2000notion}, but for comparison purposes
+we can stick to known theories and simply check if a human has bothered to state
+these properties before!
 
-\item We must \emph{demonstrate} the property, providing evidence such as a
-  formal proof or empirical tests.
-\end{enumerate}
+Existing ATE programs have been evaluated this way on theories of lists and
+natural numbers taken from the Isabelle proof
+assistant~\cite{claessen2013automating}. The discovered properties are compared
+against those in Isabelle, to see how many match up. Unfortunately these are the
+only data sets used, and each is rather small (containing 9 and 12 properties,
+respectively). This is not enough data from which to draw meaningful comparisons
+or extrapolations.
 
-\subsection{Automated Theorem Proving}
+\section{Contributions}
 
-Much work has been done on \emph{demonstrating} such properties, through the use
-of automated theorem proving. ATP has been an active area of study in artificial
-intelligence since the field was founded~\cite{newell1956logic,
-  sutcliffe2001evaluating}, and modern ATP systems such as CVC4, SPASS and
-Vampire take part in regular competitions~\cite{CASC}: attempting to prove as
-much as possible, as quickly as possible, from large benchmark suites such as
-TPTP (Thousands of Problems for Theorem Provers)~\cite{TPTP}.
+\subsection{Benchmarking}
 
-\subsection{Theory Exploration}
-
-We focus on the less-developed problem of \emph{conjecturing} properties:
-choosing some particular property, from the infinite number of possibilities,
-because it is somehow ``interesting''. Many measures of interestingness have
-been proposed\cite{INTERESTING}; John Conway proposed that a good conjecture
-should be ``outrageous''\cite{CONWAY}, but we also need some degree of
-\emph{plausibility} to avoid obvious falsehoods, even if we defer full proofs
-to a later stage.
-
-A particularly simple way to check if a property is interesting is to see if a
-human has already bothered to state it. If the theory given to an ATE system has
-already been studied by mathematicians, we can judge the quality of the system's
-output by comparing it against a corpus of known properties.
-
-Existing ATE systems have taken this approach, using theories and properties
-from the Isabelle proof assistant. Unfortunately, only two theories (natural
-numbers and lists) have been used to compare systems, and these only contain
-FIXME properties. This is not enough data to draw meaningful comparisons or
-extrapolations from.
-
-\section{Benchmarking}
-
-We propose a larger benchmark suite, containing many more definitions and
-properties, similar to those which drive competition in ATP. In fact, we can
-take the definitions and theorems from existing ATP benchmarks and repurpose
-them as the corpus of an ATE benchmark! We have chosen the TIP (Tons of
-Inductive Problems) benchmark~\cite{TIP} as the corpus for our approach, since
-it \begin{inlinelist}
+We address the problem of ATE evaluation by implementing a much larger benchmark
+suite, containing 343 properties of 269 definitions. We take these from an
+existing ATP benchmark called TIP\cite{claessen2015tip}, since it
+\begin{inlinelist}
 \item separates definitions from theorems
 \item allows higher-order functions (like $\name{map}$)
 \item incorporates many tricky problems from the theorem-proving literature
+\item contains problems of immediate relevance to software verification
 \end{inlinelist}.
 
-Each of TIP's FIXME problems contains a set of definitions and a single theorem.
-We collect up all of the distinct definitions from all of the problems, to form
-one large theory. We collect up the theorems as our corpus, to compare ATE
-results against. Since FIXME is far larger than previously attempted theories,
-we also provide tools to uniformly sample a subset of definitions and their
-theorems.
+Each TIP property is given alongside all of its required definitions. We
+re-purpose these for the ATE setting, by pooling together all of
+the definitions\footnote{Including custom functions to construct and destruct
+  constant values (like $\name{nil}$ and $\name{cons}$), we get 3595
+  definitions, most of which are redundant copies used in many problems.
+  Discarding these leaves 269 distinct definitions.} and all of the properties.
+
+We provide a tool to sample subsets of these definitions, along with the subset
+of properties which apply to that sample, so that theories of various sizes can
+be generated for evaluating ATE systems.
+
+\subsection{Scaling}\label{recurrent-clustering}
+
+In the worst case, ATE scales exponentially with the number of definitions in a
+theory. We have also investigated ways to mitigate this using \emph{relevance
+  filtering}~\cite{meng2009lightweight}: given a large theory, can we explore
+only those definitions which we expect to yield interesting properties? We have
+implemented such a filter based on
+\emph{recurrent clustering}~\cite{journals/corr/abs-1212-3618}, which compares
+the syntax trees of a theory's definitions to find those which are similar. We
+have also made a purely random filter, to control for the effect of
+\emph{filtering itself}. These can be used as a pre-processor for any ATE system
+and work is ongoing to evaluate their effect on property recall and performance.
 
 \section{Results}
 
-Figure FIXME compares the median run times of the existing
-\textsc{QuickSpec}\cite{QuickSpec} system across a variety of theory sizes,
-sampled from our benchmark. Figure FIXME shows the average proportion of corpus
-properties that were found for each sample. sizesFigure FIXME shows the run times of various
-\section{Background}\label{background}
-
-\subsection{Theory Exploration}\label{theory-exploration}
-
-Our work builds on the existing TE system
-, which finds equivalent expressions
-in the Haskell programming language~\cite{marlow2010haskell}, built from a user-provided
-\emph{signature} of constants and variables. For example, given a
-signature of the list-manipulating functions \texttt{reverse},
-\texttt{length} and \texttt{append}, plus two list variables \texttt{x}
-and \texttt{y}, \textsc{QuickSpec} will discover that
-\texttt{reverse\ (reverse\ x)} is equivalent to \texttt{x}; that
-\texttt{length\ (reverse\ x)} is equivalent to \texttt{length\ x}; that
-\texttt{length\ (append\ x\ y)} is equivalent to
-\texttt{length\ (append\ y\ x)}; and so on. These are discovered by
-enumerating all well-typed combinations of the signature's constants and
-variables, then randomly instantiating the variables~\cite{claessen2011quickcheck} and comparing the
-resulting closed terms. Any expressions which remain indistiguishable
-after hundreds of instantiations are conjectured to be equivalent and,
-after removing redundancies, are produced as output. These conjectures
-can be sent through a theorem prover~\cite{claessen2013automating} and used to inform tests,
-optimisations, refactoring, verification, or simply to help the
-programmer learn more about the code.
-
-Due to its exponential complexity, this enumerating procedure is limited
-to producing small expressions from signatures with only a few elements.
-Such small signatures give little chance for serendipitous discoveries,
-which undermines the algorithm's potential to present programmers with
-new, unexpected information.
-
-\subsection{Recurrent Clustering}\label{recurrent-clustering}
-
-To reduce the user's need to cherry-pick signatures, our approach
-accepts a large signature (e.g. a complete Haskell package) and uses
-statistical machine learning methods to select smaller signatures
-automatically, using a \emph{recurrent clustering} method inspired by
-those of \textsc{ML4PG}~\cite{journals/corr/abs-1212-3618} and \textsc{ACL2(ml)}~\cite{Heras.Komendantskaya.Johansson.ea:2013}.
-
-Recurrent clustering attempts to cluster expressions based on their
-Abstract Syntax Trees (ASTs), an example of which is shown in Figure~\ref{fig:astexample}. First the recursively-structured ASTs are
-transformed into vectors of fixed length, by truncating the tree
-structure and listing the node labels in breadth-first order.
-
-These labels are then turned into \emph{features} (real numbers), using the function $\phi$ which replaces keywords with fixed values and local variables with context-dependent values (known as \emph{de Bruijn indices}~\cite{de1972lambda}). To replace global variables, $\phi$ first performs another round of clustering (hence the name
-``recurrent''), without including the current expression; each global
-variable is replaced by its cluster index found by this ``inner'' round
-of clustering.
-
 \begin{figure}
-    \begin{small}
-      \begin{tikzpicture}[sibling distance=0pt]
-        \tikzset{sibling distance=0pt}
-        \tikzset{level distance=20pt}
-        \Tree[ .$\CLam$
-                  $\id{a}$
-                  [ .$\CCase$
-                       [ .$\CVar$
-                            [ .$\CLocal$
-                                 $\id{a}$ ]]
-                       $\id{b}$
-                       [ .$\CAlt$
-                            $\CDataAlt$
-                            [ .$\CVar$
-                                 $\CConstructor$ ]]
-                       [ .$\CAlt$
-                            $\CDataAlt$
-                            [ .$\CApp$
-                                 [ .$\CVar$
-                                      [ .$\CGlobal$
-                                           $\id{even}$ ]]
-                                 [ .$\CVar$
-                                      [ .$\CLocal$
-                                           $\id{n}$ ]]]
-                            $\id{n}$ ]]]
-      \end{tikzpicture}
-    \end{small}
-    \caption{AST for the \texttt{odd} function. The variable names \texttt{a}, \texttt{b}, etc.\ are chosen arbitrarily.}
-    \label{fig:astexample}
+  \centering
+  \includegraphics[width=0.45\textwidth]{runtimes}
+  \caption{Median runtime of the QuickSpec ATE system for 30 iterations on
+    theories of various size, sampled from TIP. Error bars show the
+    interquartile range. We time out at 1000 seconds.}\label{fig:runtimes}
 \end{figure}
 
-These recursive calls to the clustering algorithm (we use a standard
-\emph{k-means} implementation) allow expressions to be compared in a
-principled way: the similarity of expressions depends on the similarity of the expressions they reference, and so on recursively. In practice, this recursive
-algorithm can be implemented in an iterative way, by accumulating the set of expressions to cluster in topological order of their dependency graph.
+Figure~\ref{fig:runtimes} shows the median run time of the existing
+\textsc{QuickSpec}\cite{QuickSpec} system as we explore theories of various size
+sampled from our benchmark. We have found that the time taken can vary greatly,
+even among theories of the same size, with most finishing after a few seconds
+but some taking hours; this can be seen by the increase in range for larger
+theories, despite the median remaining low.
 
-Figure~\ref{fig:astexample} shows the AST for the following Haskell function \texttt{odd}, which determines if a Peano numeral is odd:
+This variance makes current ATE systems inconvenient for widespread use. Finding
+a pattern in these long-running inputs is current work; our hope is to make such
+tools more predictable and tractable using approaches like our relevance filter.
 
-\begin{lstlisting}[language=Haskell]
-odd  Z    = False
-odd (S n) = even n
+\section{Future Work}\label{future-work}
 
-even  Z    = True
-even (S n) = odd n
-\end{lstlisting}
+There are many promising directions that this work enables. Our benchmark is
+currently limited to ATE systems using Haskell; integrating other languages
+would allow wider comparisons, e.g. to IsaCoSy and IsaScheme which use Isabelle.
 
-The \texttt{odd} function references four global variables: \texttt{Z}, \texttt{S}, \texttt{False} and \texttt{even}. Our algorithm doesn't yet distinguish between data constructors, so the only global reference we replace is \texttt{even}. Likewise, the definition of \texttt{even} references \texttt{Z}, \texttt{S}, \texttt{True} and \texttt{odd}. For mutual recursion like this, there is no valid topological order, so we use a sentinel value as the feature.
+Machine learning is a promising direction for scaling ATE, since its approximate
+methods may be more efficient than existing searches, and its data-driven
+approach is well suited to handle fuzzy concepts such as ``interestingness''.
+Our benchmark can act as both a fitness function and a training corpus for such
+efforts.
 
-These feature vectors are sent through a k-means clustering algorithm, using the \textsc{Weka} machine learning library. For example, the feature vector for \texttt{odd} (padded to 6 labels for each level of the tree) will begin:
-
-\begin{equation*}
-  (\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \dots )
-\end{equation*}
-
-\section{Implementation}\label{implementation}
-
-We obtain ASTs from Haskell projects using a bespoke plugin for the GHC
-compiler. From these ASTs, we extract type information which is used to append variables to the signature; and dependency information, which is used to topologically sort the clustering rounds. We then invoke our iterative algorithm, which alternates between feature extraction and clustering until all elements of the signature have been clustered. Each cluster is converted into a \textsc{QuickSpec} signature, by extracting those functions which
-\begin{inlinelist}
-\item have an argument type which we can randomly generate
-\item have an output type which we can compare
-\end{inlinelist}. \textsc{QuickSpec} is invoked on each signature, and the resulting sets of conjectures are combined.
-
-\section{Results}\label{results}
-
-We have developed a machine learning approach for analysing Haskell code, including a
-bespoke feature extraction method and a full implementation pipeline for turning Haskell packages into sets of equations.
-
-\section{Difficulties and Future Work}\label{future-work}
-
-The most difficult aspect of performing this exploration was obtaining real code in a usable format, due to the myriad edge-cases encountered. We make extensive use of Haskell's existing infrastructure, including the \textsc{GHC} compiler, the \textsc{cabal} build system, the \textsc{Hackage} code repository and the \textsc{Nix} package manager. Unfortunately, some of these systems are rather monolithic, which makes it difficult to invoke particular algorithms, such as \textsc{GHC}'s type class resolution, on their own. Whilst we have worked around these issues, e.g.\ using meta-programming, this introduces unnecessary latency, fragility and complexity.
-
-Our investigation of recurrent clustering and theory exploration only scratches the surface of combining symbolic and statistical AI algorithms. As well as benchmarking our approach against other techniques, there are many similar opportunities to be explored, where the reasoning power of symbolic algorithms can be guided and supervised by statistical, data-driven processes.
+Our system can explore \emph{arbitrary} code, not just our benchmarks. Besides
+listing properties, potential applications include tools for optimisation (if
+coupled to a profiler) and refactoring (e.g. using properties to propose new
+abstractions).
 
 \bibliographystyle{plain}
 \bibliography{./Bibtex}

@@ -11,7 +11,7 @@ runCommand "phd-symposium-2017-abstract.pdf"
     acm      = ./acm_proc_article-sp.cls;
     bibtex   = ../../Bibtex.bib;
 
-    inherit data;
+    #inherit data;
   }
   ''
     # Put LaTeX stuff in place
@@ -21,7 +21,8 @@ runCommand "phd-symposium-2017-abstract.pdf"
     cp -v "$acm" ./acm_proc_article-sp.cls
 
     # Put supporting material in place
-    ln -s "$data" ./data
+    ln -s "${./runtimes.png}" ./runtimes.png
+    #ln -s "$data" ./data
 
     # Render
     export HOME="$PWD"
