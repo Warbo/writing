@@ -48,9 +48,13 @@
 (define colors '(black red blue green purple yellow))
 
 (parameterize ([plot-width   500]
-               [plot-height  500]
-               [plot-x-label #f]
-               [plot-y-label #f])
+               [plot-height  300]
+               [plot-x-label "Theory size"]
+               [plot-y-label "Runtime (seconds)"]
+	       [point-sym 'times]
+	       #;[plot-y-transform  log-transform]
+	       #;[plot-y-ticks (log-ticks)]
+	       #;[plot-x-ticks (linear-ticks #:divisors '(1 5 10))])
   (plot-file
    (foldl (lambda (arg result)
                   (define name  (first  arg))
@@ -83,7 +87,7 @@
                                       vals)
                                  #:color color)
 
-                                (function (make-func point-samples)
+                                #;(function (make-func point-samples)
                                           #:color color)
 
                                 (error-bars
@@ -100,4 +104,7 @@
                 '()
                 (hash-map input (lambda (sys point-files)
                                   (list sys point-files))))
-         "runtimes-plot.svg"))
+         "runtimes-plot.svg"
+	 #:x-min 0
+	 #:x-max 20
+         #:y-max 1000))

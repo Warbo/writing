@@ -5,20 +5,24 @@ with lib;
 rec {
   tex = callPackage ../tex.nix {};
 
-  haskell-te = import (latestGit {
-    url = "/home/chris/Programming/haskell-te";
-  });
+  haskell-te =
+    with rec {
+      local = "/home/chris/Programming/haskell-te";
+    };
+    import (latestGit {
+      url = if pathExists local then local else "http://chriswarbo.net/git/haskell-te.git";
+    });
 
   samples = haskell-te.drawSamples {
-    sizes = map (n: n * 5) (range 1 5/*20*/);
-    reps  = 5/*30*/;
+    sizes = range 5 19;
+    reps  = 30;
   };
 
   runtimes = with rec {
     sizes = attrNames samples;
     names = attrNames samples."${head sizes}".averageTimes;
   };
-  genAttrs names (name: map (size: runCommand "tagged"
+  genAttrs names (name: map (size: runCommand "tagged-${name}-${size}"
                                      {
                                        inherit size;
                                        tool  = name;
