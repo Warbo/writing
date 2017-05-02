@@ -7,7 +7,10 @@ rec {
 
   samples = drawSamples sizes reps;
 
-  bucketing-data = abort "FIXME: bucketing-data";
+  bucketing-data = runCommand "not-implemented" {} ''
+    echo "FIXME: bucketing-data" 1>&2
+    exit 1
+  '';
 
   bucketing-graph = runCommand "bucketing-graph.png"
     {
