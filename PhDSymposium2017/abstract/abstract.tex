@@ -73,6 +73,8 @@
 \newcommand{\CRec}{\texttt{Rec}}
 \newcommand{\CBind}{\texttt{Bind}}
 
+\setlength{\belowcaptionskip}{-10pt}
+
 \newlist{inlinelist}{enumerate*}{1}
 \setlist*[inlinelist,1]{%
   label= (\roman*),
@@ -98,8 +100,15 @@
   promising subsets of a theory, sacrificing completeness to gain speed. It is
   our hope that the availability of robust evaluation methods, and scalable
   algorithms, will encourage competition and innovation, making theory
-  exploration more useful and relevant as a formal methods tool.
+  exploration more useful and relevant in formal methods.
 \end{abstract}
+
+%\vspace{-2mm}
+
+\textbf{Keywords:} Theory exploration, automated reasoning, automated theorem
+proving
+
+%\vspace{-2mm}
 
 \section{Introduction}\label{introduction}
 
@@ -117,10 +126,14 @@ represented as software, and techniques like \emph{automated theory exploration}
 can help experts to discover properties of a system, whether expected or
 surprising, desirable or not.
 
+\vspace{-2mm}
+
 \section{Background}\label{background}
 
 An example of a simple formal system is the following software
 library:
+
+\vspace{-5mm}
 
 \begin{equation*}
   \begin{aligned}
@@ -137,6 +150,8 @@ based on the way they rearrange particular constants ($\name{nil}$ and
 $\name{cons}$, which encode lists à la Lisp) and variables ($f$, $x$, $y$, $z$).
 One \emph{property} of this library is that the following expressions are
 equivalent:
+
+\vspace{-3mm}
 
 \begin{equation}\label{eq:mapappend}
   \name{map}(f, \name{append}(x, y)) =
@@ -169,8 +184,9 @@ measures have been proposed\cite{colton2000notion}, but for comparison purposes
 we can stick to known theories and simply check if a human has bothered to state
 these properties before!
 
-Existing ATE programs have been evaluated this way on theories of lists and
-natural numbers taken from the Isabelle proof
+Existing ATE programs such as \textsc{QuickSpec}~\cite{QuickSpec} and
+\textsc{IsaCoSy}~\cite{johansson2009isacosy} have been evaluated this way on
+theories of lists and natural numbers taken from the Isabelle proof
 assistant~\cite{claessen2013automating}. The discovered properties are compared
 against those in Isabelle, to see how many match up. Unfortunately these are the
 only data sets used, and each is rather small (containing 9 and 12 properties,
@@ -220,21 +236,22 @@ and work is ongoing to evaluate their effect on property recall and performance.
 \begin{figure}
   \centering
   \includegraphics[width=0.45\textwidth]{runtimes}
-  \caption{Median runtime of the QuickSpec ATE system for 30 iterations on
-    theories of various size, sampled from TIP. Error bars show the
+  \vspace{-3mm}
+  \caption{Median runtime of the \textsc{QuickSpec} ATE system for 30 iterations
+    on theories of various size, sampled from TIP. Error bars show the
     interquartile range. We time out at 1000 seconds.}\label{fig:runtimes}
+  \vspace{-5mm}
 \end{figure}
 
-Figure~\ref{fig:runtimes} shows the median run time of the existing
-\textsc{QuickSpec}\cite{QuickSpec} system as we explore theories of various size
-sampled from our benchmark. We have found that the time taken can vary greatly,
-even among theories of the same size, with most finishing after a few seconds
-but some taking hours; this can be seen by the increase in range for larger
-theories, despite the median remaining low.
+Figure~\ref{fig:runtimes} shows the median run time of \textsc{QuickSpec} as we
+explore theories of various size sampled from our benchmark. We have found that
+the time taken can vary greatly, even among theories of the same size, with most
+finishing after a few seconds but some taking hours; this can be seen by the
+increase in range for larger theories, despite the median remaining low.
 
 This variance makes current ATE systems inconvenient for widespread use. Finding
-a pattern in these long-running inputs is current work; our hope is to make such
-tools more predictable and tractable using approaches like our relevance filter.
+a pattern in these long-running inputs is current work; our hope is that
+approaches like our relevance filter make ATE more predictable and tractable.
 
 \section{Future Work}\label{future-work}
 
