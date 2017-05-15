@@ -8,3 +8,4 @@ pandoc-templates
 *.blg
 Bibtex.bib~*
 auto
+result
