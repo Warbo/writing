@@ -33,7 +33,7 @@ with pkgs;
 {
   ML4HSTechReport   = isolated "ML4HSTechReport" ''
     with import <nixpkgs> {};
-    callPackage ./ML4HSTechReport { bibtex = ${./Bibtex.bib}; }
+    callPackage ${./ML4HSTechReport} { bibtex = ${./Bibtex.bib}; }
   '';
 
   theoryExploration = isolated "TheoryExploration" ''
