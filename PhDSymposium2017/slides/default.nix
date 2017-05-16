@@ -1,11 +1,12 @@
 with import <nixpkgs> {};
-
 with rec {
   tex = callPackage ../tex.nix {};
 };
 
+{ bibtex ? ../../Bibtex.bib }:
 runCommand "phd-symposium-2017-slides.html"
   {
+    inherit bibtex;
     buildInputs = [ ditaa ghostscript haskellPackages.pandoc-citeproc
                     imagemagick pandoc panpipe panhandle tex ];
 
@@ -20,5 +21,6 @@ runCommand "phd-symposium-2017-slides.html"
 
     pandoc -t slidy --standalone --self-contained --filter pandoc-citeproc \
                     --filter panpipe --filter panhandle \
+                    --bibliography="$bibtex" \
                     -o "$out" "$slides"
   ''

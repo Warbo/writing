@@ -1,7 +1,8 @@
-{ fetchurl, latestGit, stdenv, texlive }:
+{ fetchurl, latestGit, stdenv, texlive, bibtex ? ../Bibtex.bib }:
 
 let haskell-te = null;#latestGit { url = http://chriswarbo.net/git/haskell-te.git; };
  in stdenv.mkDerivation {
+      inherit bibtex;
       name = "ml4hs-tech-report";
       src  = ./.;
 
@@ -36,7 +37,7 @@ let haskell-te = null;#latestGit { url = http://chriswarbo.net/git/haskell-te.gi
           cp "$S" ./"$NAME"
         done
 
-        cp "${../Bibtex.bib}" ./Bibtex.bib
+        cp "$bibtex" ./Bibtex.bib
 
         $cmd
 

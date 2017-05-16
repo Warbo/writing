@@ -1,17 +1,15 @@
 with import <nixpkgs> {};
-
 with callPackage ./support.nix {};
 
+{ bibtex ? ../../Bibtex.bib }:
 runCommand "phd-symposium-2017-abstract.pdf"
   {
+    inherit bibtex;
     buildInputs = [ tex ];
 
     abstract = ./abstract.tex;
     class    = ./sig-alternate.cls;
     acm      = ./acm_proc_article-sp.cls;
-    bibtex   = ../../Bibtex.bib;
-
-    #inherit data;
   }
   ''
     # Put LaTeX stuff in place

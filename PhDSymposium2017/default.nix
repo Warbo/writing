@@ -1,4 +1,4 @@
 {
-  abstract = import ./abstract;
-  slides   = import ./slides;
+  abstract = import ./abstract {};
+  slides   = import ./slides   {};
 }
