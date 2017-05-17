@@ -1,11 +1,12 @@
 ---
 title: Quantitative Benchmarking for Theory Exploration
-author: Chris Warburton
+author: |
+  Chris Warburton<br/>
+  University of Dundee<br/>
+  c.m.warburton@dundee.ac.uk
 link-citations: true
 bibliography: /home/chris/Writing/Bibtex.bib
 ---
-
-Institution, etc. to title
 
 # Motivation #
 
@@ -45,20 +46,22 @@ map(f, append(xs, ys)) = append(map(f, xs), map(f, ys))
 Problems:
 
  - Inefficient (e.g. uses brute-force)
- - Ambiguous goals/definitions. How do we evaluate at the level of:
-    - Conjecture
-    - Theory
-    - System
+ - Ambiguous goals/definitions (e.g. what is "interesting"?)
 
 # Research Questions #
 
-1) How do we evaluate conjectures?
+ 1. How do we evaluate conjectures?
+    - Finding theorems is trivial!
 
-2) How do we evaluate/compare sets of conjectures?
+ 2. How do we evaluate/compare sets of conjectures?
+    - We want to find more than one conjecture
+    - Repeating a good conjecture 100 times isn't a good set!
 
-3) How do we evaluate/compare theory exploration systems?
+ 3. How do we evaluate/compare theory exploration systems?
+    - Brute-force can optimise anything
+    - How do we compare "practical" performance?
 
-# Evaluating Conjectures
+# Q1. Evaluating Conjectures
 
 What is "interesting"?
 
@@ -76,10 +79,14 @@ In practice:
 
  - Existing tools are far from human performance
  - Comparing tool's output to human's output is challenge enough
- - For evaluation, "interesting" ~= "appears in existing corpus of theorems"
-TODO: Assuming it generalises, evaluate in known/studied theories
+ - Simplifying assumptions:
+    - Exploration method doesn't overfit to a particular theory
+    - Results on known theories should generalise to novel ones
+    - For known theories, "interesting" ~= "appears in existing corpus"
 
-#
+# Q2. Evaluating Sets of Conjectures
+
+Given a well-studied theory and a corpus of known theorems/conjectures
 
 # Existing Systems #
 
