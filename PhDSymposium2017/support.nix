@@ -7,39 +7,45 @@ rec {
 
   haskell-te =
     with rec {
-      local = "/home/chris/Programming/haskell-te";
+      local = /home/chris/Programming/haskell-te;
     };
-    import (latestGit {
-      url = if pathExists local
+    import (if pathExists local
                then local
-               else "http://chriswarbo.net/git/haskell-te.git";
-    });
+               else latestGit {
+                      url = "http://chriswarbo.net/git/haskell-te.git";
+                    });
 
-  samples = haskell-te.drawSamples {
-    sizes = range 5 19;
-    reps  = 30;
-  };
+  samples =
+    with {
+      dataJSON = getEnv "DATA_JSON";
+    };
+    if dataJSON == ""
+       then haskell-te.resultsFor {
+              sizes = range 5 19;
+              reps  = 30;
+            }
+       else trace "Taking data from DATA_JSON file ${dataJSON}"
+                  haskell-te.analyseData (fromJSON (readFile dataJSON));
 
-  runtimes = with rec {
-    sizes = attrNames samples;
-    names = attrNames samples."${head sizes}".averageTimes;
-  };
-  genAttrs names (name: map (size: runCommand "tagged-${name}-${size}"
-                                     {
-                                       inherit size;
-                                       tool  = name;
-                                       times = samples."${size}"
-                                                      .averageTimes
-                                                      ."${name}";
-                                       buildInputs = [ jq ];
-                                     }
-                                     ''
-                                       jq --argjson size "$size"             \
-                                          --arg     tool "$tool"             \
-                                          '. + {"tool":$tool, "size":$size}' \
-                                          < "$times" > "$out"
-                                     '')
-                            sizes);
+  runtimes =
+    with rec {
+      tools = attrNames samples.averageTimes;
+      sizes = attrNames samples.averageTimes."${head tools}";
+    };
+    genAttrs tools
+             (tool: map (size: runCommand "tagged-${tool}-${size}"
+                          {
+                            inherit size tool;
+                            times = samples.averageTimes."${tool}"."${size}";
+                            buildInputs = [ jq ];
+                          }
+                          ''
+                            jq --argjson size "$size"             \
+                               --arg     tool "$tool"             \
+                               '. + {"tool":$tool, "size":$size}' \
+                               < "$times" > "$out"
+                          '')
+                        sizes);
 
   runtimePlot = runCommand "runtimes.svg"
     {
