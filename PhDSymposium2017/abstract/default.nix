@@ -1,5 +1,5 @@
 with import <nixpkgs> {};
-with callPackage ./support.nix {};
+with (callPackage ../support.nix {});
 
 { bibtex ? ../../Bibtex.bib }:
 runCommand "phd-symposium-2017-abstract.pdf"
