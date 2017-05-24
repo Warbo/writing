@@ -105,6 +105,6 @@
                 (hash-map input (lambda (sys point-files)
                                   (list sys point-files))))
          "runtimes-plot.svg"
-	 #:x-min 0
-	 #:x-max 20
-         #:y-max 1000))
+         #:x-min 0
+         #:x-max 20
+         #:y-max 200))

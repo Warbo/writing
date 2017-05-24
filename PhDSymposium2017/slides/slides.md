@@ -48,7 +48,17 @@ Problems:
  - Inefficient (e.g. uses brute-force)
  - Ambiguous goals/definitions (e.g. what is "interesting"?)
 
-# Research Questions #
+# Existing Approaches #
+
+ - Generating conjectures in first order logic (e.g. Graffiti, HR)
+ - Our focus is higher-order logic (functional programming, proof assistants)
+ - Three main systems for HOL:
+    - IsaCoSy: Isabelle, constraint solving [@johansson2009isacosy]
+    - IsaScheme: Isabelle, templates/schemas [@montanoscheme]
+    - QuickSpec: Haskell, random testing [@QuickSpec]
+        - Used by Hipspec[@claessen2013automating] and Hipster[@Hipster]
+
+# Questions #
 
  1. How do we evaluate conjectures?
     - Finding theorems is trivial!
@@ -70,8 +80,9 @@ What is "interesting"?
 In theory:
 
  - Important for evaluating performance in novel domains
- - Many competing/complementary measures proposed
- - Some objective (e.g. statement vs proof size), some subjective (e.g. compression progress)
+ - Many competing/complementary measures proposed [@colton2000notion]
+ - Some objective (e.g. statement vs proof size), some subjective (e.g.
+   compression progress)
 
 . . .
 
@@ -80,24 +91,16 @@ In practice:
  - Existing tools are far from human performance
  - Comparing tool's output to human's output is challenge enough
  - Simplifying assumptions:
-    - Exploration method doesn't overfit to a particular theory
-    - Results on known theories should generalise to novel ones
     - For known theories, "interesting" ~= "appears in existing corpus"
+    - Performance should generalise to novel theories (modulo overfitting)
 
 # Q2. Evaluating Sets of Conjectures
 
-Given a well-studied theory and a corpus of known theorems/conjectures
+Given a corpus of known theorems/conjectures and a set of proposed conjectures:
 
-# Existing Systems #
-
- - Generating conjectures in first order logic (e.g. Graffiti, HR)
- - Our focus is higher-order logic (functional programming, proof assistants)
- - Three main systems for HOL:
-    - IsaCoSy in Isabelle, uses constraint solving
-    - IsaScheme in Isabelle, uses templates/schemas
-    - QuickSpec in Haskell, uses testing
-        - Used by Hipspec and Hipster
-TODO: use author names as references?
+ - Precision is % of proposed which are in corpus
+ - Recall is % of corpus which was proposed
+ - Used in previous work
 
 # Existing Evaluations #
 
@@ -110,98 +113,136 @@ Problems:
 
  - Only two theories used (natural numbers and lists)
  - Theories are small
-    - Natural numbers: 4 definitions, 12 statements
-    - Lists: 6 definitions, 9 statements
+    - Natural numbers: ~4 definitions, 12 theorems
+    - Lists: ~6 definitions, 9 theorems
 
-# Our Approach #
+```{.unwrap pipe="sh | pandoc -f html -t json"}
+printf '<img src="data:image/png;base64,'
+base64 -w0 < "$TABLE_IMAGE"
+printf '" />'
+```
+
+# Our Proposal #
 
  - Use a larger corpus of definitions and statements
  - Generate theories of a desired size (number of definitions) by sampling
- - Automate the whole exploration and evaluation process:
-    - Sample a theory
-    - Translate into a tool's native format
-    - Set up the tool
-    - Time the exploration process
-    - Extract conjectures
-    - Compare to corpus
+ - Identify corpus theorems involving those definitions
+ - Average precision/recall over many samples
 
 . . .
 
 Benefits:
 
- - Empirical, statistical evaluations and comparisons
- - Focuses on efficiency problems, by sampling larger sizes
- - Provides an unambiguous goal for implementors
+ - Replaces ambiguity with empirical, numerical measurements
+ - Shows variance
+ - More likely to generalise
 
-# Our Corpus #
-TODO: Maybe change heading, etc. to show WHY TIP? and WHAT WE'VE DONE
-Our definitions and statements are taken from the TIP theorem proving benchmark:
+# Q3. Evaluating Systems
+
+ - No single objective to maximise
+    - Are we prepared to wait longer for quality?
+ - Important criteria:
+    - Precision
+    - Recall
+    - Run time
+    - Variance
+    - Scaling behaviour
+
+. . .
+
+Sampling theories from a large corpus provides two opportunities:
+
+ - Pairwise difference of systems, given the same samples
+ - Measure scaling by varying #definitions in the samples
+
+# Corpus Source #
+
+We chose the TIP theorem proving benchmark [@claessen2015tip]
 
  - Separates definitions from theorem statements
  - Order of magnitude larger than before (219 definitions, 343 statements)
  - Higher-order (e.g. includes `map`)
  - Includes problems from the theorem proving literature
  - Includes problems relevant to programming/verification
- - Simple format, with tools for translation to Haskell, Isabelle, etc.
+ - Simple format, with translation to Haskell, Isabelle, etc.
  - Not written by us (no cheating!)
 
-# Our Corpus #
-
-We transform TIP from theorem proving to theory exploration:
+# Generating Our Corpus #
 
  - Pool together all definitions (~3500)
- - Add constructor/destructor functions for each datatype
- - Remove duplicates (leaves 269)
- - Provide uniform sampling of definitions (such that > 0 applicable theorems)
- - Provide the theorems applicable to a given sample
+ - Add constructors/destructors for datatypes
+ - Remove duplicate definitions (leaves 269)
+ - Sampler for definitions (with > 0 theorems)
+ - Query theorems for a given sample
 
-# Illustration #
+ - We also provide automate the whole exploration and evaluation process:
+    - Sampling
+    - Translating to appropriate language
+    - Timing exploration
+    - Extracting conjectures from output
+    - Comparing to corpus
 
-We have applied our benchmarking methodology to the Qui......
+# Example #
 
-QUICKSPEC GRAPH
+We have applied our benchmarking methodology to QuickSpec
 
-RECALL GRAPH
-
-PAIRWISE DIFFERENCE (QUICKSPEC VS ISACOSY)?
+```{.unwrap pipe="sh"}
+# | pandoc -f html -t json
+jq -sR '[{"unMeta":{}},[{"t":"RawBlock","c":["html",.]}]]' < /home/chris/Writing/PhDSymposium2017/abstract/runtimes.svg
+#printf '[{"unMeta":{}},[{"RawBlock":{"Format":"html"}}
+#echo "<html><body>"
+#cat /home/chris/Writing/PhDSymposium2017/slides/runtimes.svg
+#echo "</body></html>"
+#printf '<img src="/home/chris/Writing/PhDSymposium2017/slides/runtimes.svg" />'
+#printf '<img src="data:image/svg;base64,'
+#base64 -w0 < /home/chris/Writing/PhDSymposium2017/slides/runtimes.svg
+#printf '" />'
+```
 
 # Observations #
 
- - Runtime depends heavily on the theory contents
-    - TODO: Use pairwise difference to compare
- - High variance (mostly very fast or very slow), increasing with theory size
  - Lots of room for improvement!
+ - Runtime depends heavily on the theory contents
+ - High variance (mostly very fast or very slow), increasing with theory size
+ - ~85% take <200s
+ - Above 200s, most time out
+ - Further investigation needed:
+    - What causes a long-running theory?
+    - Precision/recall: Currently 0%, corpus querying too coarse-grained
 
-TODO: Come back to questions, with answers
+# Potential Improvement #
 
-# advantages/benefits (remaining problems)
+ - QuickSpec tries every combination of the inputs
+ - Choosing a *subset* to explore improves efficiency by avoiding useless
+   combinations
+    - Incomplete, reduces recall
+ - Need *smart* ways to choose subsets
+    - Combine *relevance filtering* with *recurrent clustering*
+ - Currently implemented: experiments pending
 
-TODO: Rename
- - New approaches needed to reduce runtime and variance
- - Recall
+# Summary #
 
-# Idea 1: Bucketing #
+ 1. How do we evaluate conjectures?
+    - Use known theories and look up in corpus
 
- - Smaller theories tend to be faster
- - If we're given a large theory, split it into many smaller "buckets"
- - Initial approach: bucket "randomly", to see what effect it has
+ 2. How do we evaluate/compare sets of conjectures?
+    - Precision/recall against large corpus
 
-# Idea 2: Relevance Filtering #
+ 3. How do we evaluate/compare theory exploration systems?
+    - Repeated sampling from a large benchmark
+    - Gather statistics on runtime, precision and recall
+    - Compare systems using pairwise difference
 
- - Used in theorem proving to choose which lemmas seem relevant to proving a
-   conjecture.
- - We have no conjecture to begin with, but maybe we can use the definitions?
- - Algorithms:
-    - Recurrent clustering
+ 4. Narrowing down search space can improve efficiency
 
 # Future Work #
 
- - Machine learning
-    - Using benchmark corpus as training data
-    - Using benchmark as fitness function
-    - Careful to avoid overfitting!
  - Extending to other implementations/languages
  - Use benchmark to evaluate/compare new approaches
+ - Machine learning
+    - Benchmark as training data
+    - Benchmark as fitness function
+    - Hygiene to avoid overfitting!
  - Study applications of theory exploration to realistic problems
     - Lemma generation has been studied
     - Program optimisation
@@ -214,7 +255,7 @@ All code available at chriswarbo.net/git and github.com/Warbo
  - `theory-exploration-benchmarks`: TIP -> theory exploration converter
  - `haskell-te`: Benchmarking for QuickSpec
  - `isaplanner-tip`: Benchmarking for IsaCoSy
- - `mlspec`: Runs QuickSpec on buckets
+ - `mlspec`: Exploring subsets
 
 All results (modulo hardware speed) are reproducible using Nix. Please let me
 know if you have any problems!
