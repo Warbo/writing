@@ -2,13 +2,14 @@ with import <nixpkgs> {};
 with builtins;
 
 stdenv.mkDerivation {
-  inherit (import ./supporting-materials) support;
+  inherit (import ./supporting-materials) support latex;
 
   name        = "benchmark-article.pdf";
   src         = ./.;
   buildInputs = [
     bash
     gnumake
+    unzip
     (texlive.combine {
       inherit (texlive)
         scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms
@@ -19,7 +20,9 @@ stdenv.mkDerivation {
     let cmd = "pdflatex -interaction=nonstopmode -halt-on-error --shell-escape article";
      in ''
           cp -r "$support" ./support
-          cp ${../Bibtex.bib} ./Bibtex.bib
+          ln -s ${../Bibtex.bib} ./Bibtex.bib
+          unzip "$latex"
+          find .
           ${cmd}
           bibtex article
           ${cmd}

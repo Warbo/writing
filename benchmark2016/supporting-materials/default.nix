@@ -41,11 +41,15 @@ rec {
       examplePlots plotTests stabilityPlots;
   };
 
+  # Journal of Automated Reasoning LaTeX files, from
+  # http://www.springer.com/cda/content/document/cda_downloaddocument/?SGWID=0-0-45-468198-0
+  latex = ./LaTeX.zip;
+
   # The definitions required by the paper. We force tests to run before allowing
   # any data access; otherwise we might spend ages running experiments, which
   # then get mangled by some trivial typo.
   support = assert all (test: import "${test}") (with debug; [ plotTests ]);
             with debug; attrsToDir {
-              "bucketing-graph.png" = bucketing-runs.bucketing-graph;
+              #"bucketing-graph.png" = bucketing-runs.bucketing-graph;
             };
 }
