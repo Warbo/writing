@@ -1,0 +1,11 @@
+From: Chris Warburton
+Date: Fri, 16 Jun 2017 11:58:26 +0100
+Subject: Re: Benchmark paper: Journal of Automated Reasoning LaTeX
+Message-Id: <90a4cf0afdce266e-af642e6a043c0029-artemis@nixos>
+References: <90a4cf0afdce266e-0-artemis@nixos>
+In-Reply-To: <90a4cf0afdce266e-0-artemis@nixos>
+
+Added LaTeX, switched article to use their template, build passing.
+
+Note: had to disable some stuff in supporting-materials, but it was
+broken anyway.
