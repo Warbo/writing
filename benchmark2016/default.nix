@@ -2,32 +2,28 @@ with import <nixpkgs> {};
 with builtins;
 
 stdenv.mkDerivation {
-  inherit (import ./supporting-materials) support latex;
+  inherit (import ./supporting-materials) buildInputs support latex;
 
-  name        = "benchmark-article.pdf";
-  src         = ./.;
-  buildInputs = [
-    bash
-    gnumake
-    unzip
-    (texlive.combine {
-      inherit (texlive)
-        scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms
-        frankenstein csquotes;
-    })
-  ];
-  buildPhase =
-    let cmd = "pdflatex -interaction=nonstopmode -halt-on-error --shell-escape article";
-     in ''
-          cp -r "$support" ./support
-          ln -s ${../Bibtex.bib} ./Bibtex.bib
-          unzip "$latex"
-          find .
-          ${cmd}
-          bibtex article
-          ${cmd}
-          ${cmd}
-        '';
+  name = "benchmark-article.pdf";
+  src  = ./article.tex;
+
+  unpackPhase = "true";
+  buildPhase  = ''
+    function render {
+      pdflatex -interaction=nonstopmode -halt-on-error \
+               --shell-escape article
+    }
+
+    cp "$src" article.tex
+    cp -r "$support" ./support
+    ln -s ${../Bibtex.bib} ./Bibtex.bib
+    unzip "$latex"
+
+    render
+    bibtex article
+    render
+    render
+  '';
 
   installPhase = ''
     cp article.pdf "$out"

@@ -5,6 +5,17 @@
 with builtins;
 
 rec {
+  buildInputs = with import <nixpkgs> {}; [
+    bash
+    gnumake
+    unzip
+    (texlive.combine {
+      inherit (texlive)
+        scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms
+        frankenstein csquotes;
+    })
+  ];
+
   # All definitions; useful for debugging
   debug = rec {
 
