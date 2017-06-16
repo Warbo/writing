@@ -1,0 +1,10 @@
+From: Chris Warburton
+Date: Fri, 16 Jun 2017 12:03:13 +0100
+State: new
+Subject: Benchmark paper graphs
+Message-Id: <dbccbbf10f4b3ba4-0-artemis@nixos>
+
+Make the existing graphs build for benchmark paper. These are:
+
+ - Benchmark times for QuickSpec
+ - Benchmark precision/recall for QuickSpec
