@@ -1,0 +1,7 @@
+From: Chris Warburton
+Date: Mon, 12 Jun 2017 19:21:45 +0100
+State: new
+Subject: Benchmark paper: Journal of Automated Reasoning LaTeX
+Message-Id: <90a4cf0afdce266e-0-artemis@nixos>
+
+Get LaTeX setup from JAR and port benchmark2016 to it.
