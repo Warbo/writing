@@ -152,7 +152,7 @@ following AST:
                         |
                         +-- succ -- succ -- zero
 
-We replacing variables (`x`), and skolem constants (none in this AST), to get:
+We replace variables (`x`), and skolem constants (none in this AST), to get:
 
                         +-- *
                         |
@@ -219,7 +219,7 @@ level", such as typeclasses or interfaces.
 
 ### LF ###
 
-LF is one of the logical frameworks used by MMT. It's a dependently-typed λ
+LF is one of the logical frameworks used by MMT. It's a dependently-typed lambda
 calculus, which may be easier to programmatically manipulate than e.g. Coq's
 Calculus of Constructions, or GHC Core. Useful to keep in mind, alongside
 alternatives like Idris's "TT" language, or Gabriel Gonzalez's languages like
@@ -324,7 +324,7 @@ re-discover it.
 
 One way to mitigate some of the search space problem would be to automatically
 generate an experiment: if some property is "measurable", and we have many
-potential ways to repair our theory, we could make create several theories, each
-with a different repair, and compare the "measurable" quantities we can derive
-from them: if there is disagreement, we have an empirical way to determine which
-is "better".
+potential ways to repair our theory, we could create several theories, each with
+a different repair, and compare the "measurable" quantities we can derive from
+them: if there is disagreement, we have an empirical way to determine which is
+"better".
