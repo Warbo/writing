@@ -3,136 +3,240 @@
 Most of the research presented at CICM fell into the following broad themes:
 
  - Standards for system interoperability; in particular OpenMath and Semantic
-   LaTeX, tools/infrastructure for discovering/converting/manipulating these, as
-   well as a couple of EU projects with this goal (OpenDreamKit and SC^2).
- - New UIs, mostly for existing systems, e.g. MathHub.info
+   LaTeX, and tools/infrastructure for discovering/converting/manipulating
+   these.
+ - New UIs for existing tools.
+ - New formal systems/frameworks.
 
-## Raw Notes ##
+## Interoperability ##
 
-OpenDreamKit: EU project to combine FOSS math tools (GAP, Sage, Jupyter, etc.)
+Part of this effort comes from two EU projects designed to improve
+interoperability between Free Software projects for mathematics.
 
-SCSCP: Protocol for symbolic algebra systems
- - Eh, just bog standard RPC :(
+OpenDreamKit aims to combine existing FOSS math tools, such as GAP (a language
+specialising in group theory), Sage (a Python frontend for accessing and
+combining many computer algebra and scientific/numerical computing systems) and
+Jupyter (a browser-based "interactive notebook" UI).
 
-MMT:
- - Meta-meta-theory
- - Describe things in a formal system, proofs are optional, etc.
+### OpenMath ###
 
-"Math in the Middle":
- - Rather than hard-coding interfaces between systems (e.g. a GAP plugin for
-   Sage), try to make a formal mathematical description of what an APIs is/does.
- - Use reasoning tools on these formal descriptions, e.g. to derive conversions,
-   etc.
+OpenDreamKit seems to have embraced OpenMath as a standard for interoperability,
+with an approach dubbed "Math in the Middle". In this approach, rather than
+hard-coding O(n^2) interfaces between systems (e.g. GAP to Sage, Sage to GAP,
+Maxima to Sage, GAP to Maxima, etc.), instead we treat 'maths itself' as a
+standard, by giving formal descriptions (at various levels of detail) of each
+system, so that automated reasoning systems can do the work of translating. An
+RPC mechanism called SCSCP has also been formalised, as a way to send OpenMath
+data and invoke commands over the network.
 
-Useful for describing things in a high-level way (hand-waving over the
-specifics, and hence remaining more generally applicable); as well as drilling
-down into details of how things are implemented in some particular system. Also
-allows choice of logic (e.g. Coq-compatible, etc.)
+The MMT ("meta-meta-theory") framework has been used to do this formalisation,
+due to its flexibility (e.g. there's a choice of underlying logic, proofs are
+optional, etc.)
 
-How might these be useful for discovering, exploring, etc.? One idea is if we
-want to call out to external tools, e.g. as a portfolio, it can be useful to
-have a common tongue.
+One criticism of OpenMath is the amount of effort required to specify a "content
+dictionary", describing what particular mathematical objects are. A more
+lightweight approach is Math Object Identifiers, which are similar in spirit to
+DOIs but for mathematical objects (e.g. functions, proofs, etc.). These are used
+on MathHub.info, for example.
 
-Also useful to have a high-level format to represent ideas, which we may find
-instances of (e.g. groups, which may be out there in Maths land, but might not
-be an e.g. typeclass, etc.)
+Regarding potential uses of OpenMath and its infrastructure, since it's designed
+as an interchange format it may be useful for plugging into existing tools.
+HipSpec already plugs QuickSpec into external tools (e.g. Z3 and CVC4); maybe
+there's scope for plugging into more tools, for verification and exploration?
 
-SC^2:
- - EU project to combine satisfiability (e.g. SMT) and symbolic computation.
+Making theory exploration tools accessible to others, via a standard i/o format
+may be beneficial too. We currently allow input in the form of TIP, and in the
+form of Haskell; we output a simple JSON encoding of equations. As a minimum, we
+could output an OpenMath encoding. In fact, our `reduce-equations` tool, which
+simplifies a given set of equations by removing redundancies, could be augmented
+to allow OpenMath i/o; there are existing OpenMath representations and parsers/
+pretty-printers for Haskell available on Hackage. Since all of our conjectures
+are equations, with expressions composed of variables, constants and function
+application, that's the only part of OpenMath we need to use.
 
-SMT-LIB issue - models may be "larger" than the problem. Example:
+More elaborately, we could relate the functions we're given (as GHC Core ASTs)
+to known mathematical objects, like addition, multiplication, etc. This seems
+like quite a lot of effort, so maybe avoid it for now.
 
-  ∃x. x^2 = 2
+### SMT-LIB ###
 
-This definition only involves ℕ, but therea re no models/solutions in ℕ. There
-*are* solutions in ℝ, i.e. {±⎷2}, but how do we represent them?
+The other EU project mentioned is SC^2, which aims to combine tools for
+satisfiability (e.g. SMT solvers like Z3) with tools for symbolic computation
+(e.g. computer algebra systems).
 
-SMT(-LIB) requires syntactically-distinct expressions/values to be different
-values, i.e. they must all be canonical (for example, if a representation of ℤ
-has distinct constructions for +0 and -0, then as far as SMT(-LIB) is concerned,
-these are different values.
+During the OpenMath workshop, James Davenport presented an overview of the
+SMT-LIB format used by SMT solvers, its incompatibilities with OpenMath, and how
+both formats could be improved and brought closer together.
 
-This makes it hard to represent (algebraic) reals, which would be useful for the
-above example, since choosing primitive constructors such that no distinct
-combinations correspond to the same number is very hard.
+This was interesting for two reasons: SMT solvers are widely used as backends
+for automated theorem proving (e.g. Isabelle's SledgeHammer and Haskell's
+HipSpec); and the SMT-LIB format is used as the basis for the TIP format (TIP is
+to HOL as SMT-LIB is to FOL).
 
-MOI:
- - Math Object Identifier
- - Similar in spirit to DOI
- - Used on MathHub.info
+One interesting issue is that SMT-LIB requires that syntactically-distinct
+expressions in a model must be semantically-distinct values in the theory. For
+example, we can't encode the integers in a way that gives distinct +0 and -0,
+since those will be considered different values, and hence our theory won't
+behave the same as the integers. This is apparently a problem when attempting to
+encode theories like the algebraic real numbers, since there must only be one
+possible encoding/representation for each number.
 
-There are Python bindings for OpenMath, made for GAP as part of OpenDreamKit
+### Semantic LaTeX ###
 
-Would OpenMath be useful for our purposes? All of our conjectures are of the
-form:
+Semantic LaTeX is a collection of LaTeX macros for marking up particular objects
+in mathematical formulae, rather than focusing on just the presentation. A
+running example was "Jacobi polynomials", which are typically written as `P`
+with a bunch of subscripts and superscripts, which isn't particularly machine
+readable; instead, we can use a LaTeX macro to specify that we want a Jacobi
+polynomial, with various parameters, and it will be rendered as normal, but
+*also* be usable by other software.
 
-    {"relation": "~=",
-     "lhs": ...,
-     "rhs": ...}
+As an example, each Semantic LaTeX macro has an entry in the Digital Library of
+Mathematical Functions, which is curated by NIST in the US. Translations into
+computer algebra systems are included in the database, so that the LaTeX source
+can be re-used without having to maintain two versions of every formula.
 
-We could look up "content dictionaries" for:
+Projects were also proposed to use machine learning methods (e.g. from natural
+language processing) to try and infer the semantics of regular LaTeX, and
+perform automatic conversion if possible.
 
- - Conjectures (i.e. may/may not be true)
- - Universal quantifiers
- - Function application
+In a similar vein, the "metaTeX" project was described, which is an attempt to
+infer a "truthiness"/probability for TeX formulas. This still seems to be at the
+idea stage, but a general-purpose machine learning approach to this problem
+would be *very* useful in a variety of contexts; for example, guiding search
+towards more likely lemmas/conjectures/etc. or for a "query by committee"
+approach to deciding interestingness.
 
-We could also model GHCCore as a content dictionary. Haskell names are interesting, as they can be canonical, etc. Language should be versioned too!
+## New UIs/Tools ##
 
-Maybe we could write a GHC.Core interpreter? What about a type inference algorithm? Meh, not yet :)
+### ML4PG ###
 
-What about Idris TT? Screw it, this isn't productive!
+Katya presented ML4PG, with the focus on its combination of existing machine
+learning programs and interactive theorem provers (namely Coq). Previously
+published work on ML4PG focused on data mining tactics, written in Coq's Ltac
+language. This proved to be less informative than the proof terms themselves,
+which this work focused on. The emphasis was on the conversion of dependently-
+typed expressions into vectors via recurrent clustering, and how that manages to
+make semantically meaningful distinctions. The example being uses of the `foldl`
+function, where some uses appeared in one cluster and others occurred elsewhere,
+when there are no syntactic differences between the expressions. This is because
+the names being used had already been clustered, and some were deemed similar
+(e.g. a summing function and a list concatenation function), whilst the others
+were significantly different.
 
-Maybe nice to have a JSON -> OpenMath layer on our output.
+A variant of this algorithm is the one used in MLSpec for Haskell; although the
+Haskell version doesn't have access to the types, and doesn't use the centrality
+information from the clusters.
 
-reduce-equations might benefit from having an OpenMath reader/writer, since it's
-currently hard-coded to our own ad-hoc format.
+### ENIGMA ###
 
-What if we rename to, say, IPFS hashes? Given output from GHC AstPlugin, insert
-each into IPFS as, say, GHC Core ASTs. Use the hash as the "canonical" name,
-which we can look up (if wanted) via IPFS. Problem is mutual recursion; we'd
-have to add such definitions together. We don't want spurious hash changes, so
-we'd have to add *only* those mutually-recursive defs in a set together,
-etc. Look at IP Linked Data: maybe not worth translating into (i.e. keep strings
-of Core), but maybe it can help us handle mutual recursion. What if we
-parameterise?
+Another supervised learning system from Josef Urban et al. for premise selection
+and re-proving in first-order ATP systems (E and Vampire).
 
-    x = (foo (bar baz) bar)
+The most interesting aspect is how expression trees are represented as inputs to
+the machine learning system (e.g. like the tree-flattening done by ML4PG). In
+this case, AST nodes for variables and skolem constants are replaced with
+special symbols, since they don't occur in the signature. The resulting tree is
+then traversed to find all paths containing three nodes. For example, take the
+following AST:
 
-                ||
-                \/
+                        +-- x
+                        |
+            +-- plus ---+
+            |           |
+            |           +-- x
+    equal --+
+            |           +-- x
+            |           |
+            +-- times --+
+                        |
+                        +-- succ -- succ -- zero
 
-    x = (0   (1   2  ) 1  )
+We replacing variables (`x`), and skolem constants (none in this AST), to get:
 
-This is similar to using de Bruijn indices for names. We then instantiate:
+                        +-- *
+                        |
+            +-- plus ---+
+            |           |
+            |           +-- *
+    equal --+
+            |           +-- *
+            |           |
+            +-- times --+
+                        |
+                        +-- succ -- succ -- zero
 
-    (apply x foo bar baz)
 
-Does this help us? Still references names :/
+The paths containing 3 nodes are:
 
-LF:
- - Dependently-types λ calculus. Maybe easier to programmatically manipulate
-   than e.g. Co(I)C (Calculus of ((Co-)Inductive) Constructions)
+ - `equal`, `plus`, `*`
+ - `equal`, `plus`, `*`
+ - `equal`, `times`, `*`
+ - `equal`, `times`, `succ`
+ - `times`, `succ`, `succ`
+ - `succ`, `succ`, `zero`
 
-DLMF:
- - Digital library of Mathematical functions
+The "`equal`, `plus`, `*`" path appears twice, so it has value 2; the rest
+appear once so they have value 1. All other possible paths for the theory's
+signature have value 0. These are all put into a massive (sparse) vector, and
+used as training data for supervised learning.
 
-Semantic LaTeX:
- - Unreleased?
+The downsides to this approach are that the trees are encoded in a rather
+indirect way, so the impact of their structure on the expression (e.g. by
+including a `not`) may be difficult to learn; and the size of the vectors grows
+exponentially with the signature size, since it's including all combinations.
+Even with sparse vectors, this seems inefficient.
 
-MathScheme:
- - Integrate computer algebra systems with ATP/ITP
+### WebLurch ###
 
-Biform theories:
- - Theories include symbols, expressions (ASTs), "transformers" and axioms
- - The axioms allow "algebraic" reasoning (CAS)
- - ASTs allow "algorithmic" reasoning.
+A "Mathematical word processor", available at nathancarter.github.io/webluch
 
-metaTeX:
- - Learn to assign a "truthiness"/probability to TeX sentences.
+This is a nice browser-based WYSIWYG document editor, based on TinyMCE, which
+allows literate programming. Semantically-meaningful expressions are put into
+text-boxes, which can be arranged arbitrarily among the prose on a page. The
+content of these boxes can be marked up as an AST, and sent to a variety of
+"backends" to be manipulated in arbitrary ways. Some examples demonstrated were
+formal proofs sent into Lean, programs which were pretty-printed to Python and
+Javascript, and OpenMath "content dictionary" documents.
 
-SOAR(?) Computational analogy ("cat" and "car" example)
+Some nice features are that it's all client-side Javascript, so no server
+backend is needed (although it's not usable from `file://` due to 3rd-party
+scripts; it can be run from a local static file server, or IPFS). It also has no
+separate database; all data is stored in the HTML document, and parsed out by
+the Javascript, so it should be easily shareable, versionable, etc.
 
-Quotation and evaluation:
+### Theory Diagrams ###
+
+Many "theory diagrams" were shown, mostly modelled with MMT and OpenMath. One
+particularly interesting use was generating "model pathway diagrams" to
+represent quantities and laws in a physical theory (the example being
+semiconductor physics).
+
+These might be a nice way to present anything with a "value level" and a "law
+level", such as typeclasses or interfaces.
+
+## New Formal Systems/Frameworks ##
+
+### LF ###
+
+LF is one of the logical frameworks used by MMT. It's a dependently-typed λ
+calculus, which may be easier to programmatically manipulate than e.g. Coq's
+Calculus of Constructions, or GHC Core. Useful to keep in mind, alongside
+alternatives like Idris's "TT" language, or Gabriel Gonzalez's languages like
+Dhall and Morte.
+
+### MathScheme ###
+
+An approach to integrating computer algebra systems with ATP/ITP. The idea is to
+use "biform theories", which include include symbols, expressions (ASTs),
+"transformers" and axioms. The axioms allow "algebraic" reasoning (e.g. computer
+algebra systems), whilst the ASTs allow "algorithmic" reasoning (e.g. automated
+or interactive theorem proving, and computation).
+
+One particularly nice approach was the embedding of quotation and evaluation in
+a logic. The description is that we can quote (some) logical terms into a
+representation of their syntax, run some algorithms on that syntax (e.g. to
+convert into a normal form), and re-evaluate the result in the logic:
 
     +----------------------------+
     | Language                   |
@@ -160,94 +264,24 @@ In a system with reflection, syntax objects are part of the language:
     |                                                        |
     +--------------------------------------------------------+
 
-Theory diagrams:
- - Model pathway diagrams to represent quantities and laws
- - Could these be used to present typeclasses/interfaces?
+The tricky part seems to be getting this "global" quotation/evaluation to be
+consistent; there are existing "local" approaches, e.g. in Agda, but they're
+less amenable to this algebraic/algorithmic split, because new syntax
+representations need to be written manually every time.
 
-ENIGMA:
- - Josef Urban et al.
- - Premise selection, etc. for E, Vampire, etc.
- - Replace AST nodes of variables with a single symbol
- - Replace skolem constants with another (single) symbol
- - Count all paths of three nodes
+### Theory Repair ###
 
-For example, take the following AST:
+Alan Bundy's talk was about how to automatically "repair" a theory which doesn't
+work in the way it should. An example is a robot, with some internal model of
+the world, which either observes something that its model forbids, or predicts
+things which cannot happen.
 
-                        +-- x
-                        |
-            +-- plus ---+
-            |           |
-            |           +-- x
-    equal --+
-            |           +-- x
-            |           |
-            +-- times --+
-                        |
-                        +-- succ -- succ -- zero
-
-Replacing variables (`x`), and skolem constants (none in this AST), we get:
-
-                        +-- *
-                        |
-            +-- plus ---+
-            |           |
-            |           +-- *
-    equal --+
-            |           +-- *
-            |           |
-            +-- times --+
-                        |
-                        +-- succ -- succ -- zero
-
-
-The paths containing 3 nodes are:
-
- - `equal`, `plus`, `*`
- - `equal`, `plus`, `*`
- - `equal`, `times`, `*`
- - `equal`, `times`, `succ`
- - `times`, `succ`, `succ`
- - `succ`, `succ`, `zero`
-
-The "`equal`, `plus`, `*`" path appears twice, so it has value 2; the rest have
-value 1. All other possible paths for the theory's signature have value 0. These
-are all put into a massive (sparse) vector, and used as training data for
-supervised learning.
-
-ATP: disjunction of formulas; proof by contradiction (e.g. SLD resolution)
-succeeds when we get an empty set of formulas/clauses.
-
-This is because disjunction of no formulae is trivially false, and hence a
-contradiction.
-
-Think `any someList`, which is false if `someList` is empty (whilst
-`all someList` would be true).
-
-WebLurch:
- - nathancarter.github.io/webluch
- - "Mathematical word processor"
- - WYSIWYG document editor
- - Allows literate programming:
-  - Text-boxes for semantically-meaningful expressions
-  - Content of these boxes can be marked up as an AST
-  - "Backend" can manipulate these in arbitrary ways
-   - Stitching together formal proofs and checking them
-   - Spitting out valid Python and/or Javascript code, and running it
- - No separate database; all data is stored in the HTML document.
- - Whole "application" is client-side Javascript; no server.
- - Not usable from `file://` due to 3rd-party scripts, but can run from IPFS
-
-VMEXT:
- - Attempt to unify many redundant tree formats for expressions
- - Allows semantic info
-
-Theory repair:
- - Example is unification in resolution proofs in first-order logic
- - Should be extendable to other systems, with some work
- - If we can prove something we don't want, change the theory to make such
-   unification fail
- - If we can't prove something we do want, change the theory to make the failing
-   unification succeed
+The running example uses unification in resolution proofs in first-order logic,
+but the idea should be extendable to other systems, with some work. The main
+point is that if we can prove something we don't want, we should change the
+theory to make the unifications used in that proof fail. Dually, if we can't
+prove something we do want, we should change the theory to make the failing
+unifications succeed.
 
 For example:
 
@@ -255,8 +289,10 @@ For example:
     Mother(Camilla, Harry)
     Mother(x, z) ^ Mother(y, z) -> x = y
 
-This lets us prove `Diana = Camilla`, which we don't want. We can break the
-unification in many ways; one way is to split the `Mother` predicate into two:
+This theory gives a few concrete facts, along with the general statement that
+people only have one mother. This is faulty, since it lets us prove
+`Diana = Camilla`, which we don't want. We can break the unifications that lead
+to this in many ways; one way is to split the `Mother` predicate into two:
 
     Mother(Diana,    Harry)
     Mother'(Camilla, Harry)
@@ -283,11 +319,12 @@ of separate `Mother` and `StepMother` predicates, we might want an extra
     StepMother(x, y) -> Motherlike(x, y)
 
 This could be found via anti-unification, for example, but we might as well use
-the extra argument approach.
+the extra argument approach to retain the connection, instead of having to
+re-discover it.
 
 One way to mitigate some of the search space problem would be to automatically
 generate an experiment: if some property is "measurable", and we have many
 potential ways to repair our theory, we could make create several theories, each
-with a different repair, and sompare the "measurable" quantities we can derive
+with a different repair, and compare the "measurable" quantities we can derive
 from them: if there is disagreement, we have an empirical way to determine which
 is "better".
