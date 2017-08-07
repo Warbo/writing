@@ -69,7 +69,8 @@ grestore
 % \titlerunning{Short form of title}        % if too long for running head
 
 \author{Chris Warburton% \and
-                %Second Author % etc
+        Alison Pease
+        % TODO: Invite Katya? Even if she only offers some help, can acknowledge
 }
 
 % \authorrunning{Short form of author list} % if too long for running head
@@ -88,8 +89,32 @@ grestore
 
 
 \maketitle
+IGNORE ISABELLE THEORIES FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+IGNORE CLUSTERING FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+intro (motivation, high-level background, eval is a problem),
+background,
+our proposal,
+application (evaluation),
+discussion (e.g. philosophical bits),
+future work, conclusions, etc.
+
+COMPARE COLTON ET AL.
+
+Evaluation of conjectures, sets of conjectures, systems
+what constitutes a good/desired output (in each author's terms)? This combines
+their evaluation with their (system-specific) assumptions (e.g. IsaCoSy doesn't
+generate redundant terms: non-redundancy is clearly a goal, but it's not measured
+in eval since it's assumed based on system's construction)
+
+Look carefully at each system's (paper's) eval section
+Make a table like tabl 1 of Colton et al
+
+Make it clear that methodology is the point (it's not just a detail, like in a
+chemistry paper for example)
 
 \begin{abstract}
+  % TODO: Write abstract sooner rather than layer
 Insert your abstract here. Include keywords, PACS and mathematical
 subject classification numbers as needed.
 \keywords{First keyword \and Second keyword \and More}
@@ -99,6 +124,17 @@ subject classification numbers as needed.
 
 \section{Introduction}
 \label{intro}
+
+% TODO: Preaching to the choir;
+% Jumping around a bit, rephrase
+% Look at phd symposium 2017, moa's conjecture synthesis paper, etc.
+% We can just jump straight in to automated conjecture generation
+
+% Maybe lay out argument in bullet points; flesh out sentences later
+
+% Lay out the field of TE: motivation, systems, evaluation, problems...
+% Compare to
+
 The field of mathematics has been transformed by the introduction of computers:
 calculations are now routinely automated, allowing humans to focus their efforts
 on higher-level, more creative activities like proving theorems; \emph{automated
@@ -108,6 +144,8 @@ first tasks studied in the field of artificial intelligence
 methods are not widely used by traditional mathematicians, although they have
 seen use in applied areas such as hardware and software verification
 \cite{Moore:2003}.
+
+% FIXME: Be more specific about our contributions
 
 Even if ATP became widespread, the automation of theorem proving would still
 leave an important aspect of mathematics inaccessible to computers: conjecturing
@@ -137,7 +175,7 @@ good indication that they are useful or important.
 
 One problem with this approach is the small size of these libraries. For
 example, a benchmark based on Isabelle/HOL's theory of natural numbers contains
-only FIXME definitions and FIXME theorems. Whilst such benchmarks allow
+only 4 definitions and 12 theorems. Whilst such benchmarks allow
 comparison between different approaches, their narrow scope doesn't provide much
 indication of performance in different, especially \emph{novel}, domains.
 
@@ -159,18 +197,42 @@ prover as their ground truth.
 ALGORITHM:
 
 Concatenate all definitions from all files together.
-For each definition, prefix its name with the filename it came from and update all references.
+For each definition, prefix its name with the filename it came from and update
+all references.
 Normalise all local variable names.
-Remove any identical definitions, leaving the first one in place and updating any references to the removed definitions to use this one.
+Remove any identical definitions, leaving the first one in place and updating
+any references to the removed definitions to use this one.
 Repeat, until no further removals are possible.
 
 \section{Evaluation}
 \label{sec:evaluation}
 
-%\includegraphics{bucketing-graph}
+We have applied our benchmarking methodology to the QuickSpec and IsaCoSy theory
+exploration systems. To assess the scalability of their algorithms, we sampled
+theories of various sizes: from theories containing only a single definition, up
+to theories containing 20 definitions. These are shown in figure FIXME.
+
+To provide a more robust comparison of these two systems, we also applied a
+paired difference test: measuring, for each sampled theory, the difference in
+time, precision and recall between the two systems.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+Our benchmark suite provides a unifying goal for the diverse approaches of
+theory exploration, whilst avoiding some of the philosophical complications of
+the field. Whilst the current implementation is quite limited, we welcome
+additions from other researchers, to more closely align the benchmark with their
+goals, and the strenghts and weaknesses of their systems.
+
+``Solving'' this benchmark suite would not solve the problem of theory exploration in general,
+so more ambitious goals must be set in the future; but we have found that there is still a
+long way to go until that problem arises.
 
 \begin{acknowledgements}
-We are grateful for Jianguo Zhang
+  We are grateful to Jianguo Zhang for help with our statistical analysis.
+
+  EPSRC
 \end{acknowledgements}
 
 \bibliographystyle{plain}
