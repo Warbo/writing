@@ -2,7 +2,7 @@ with import <nixpkgs> {};
 with builtins;
 
 stdenv.mkDerivation {
-  inherit (import ./supporting-materials) support latex;
+  inherit (import ./supporting-materials) /*support*/ latex;
 
   name        = "benchmark-article.pdf";
   src         = ./.;
@@ -19,7 +19,7 @@ stdenv.mkDerivation {
   buildPhase =
     let cmd = "pdflatex -interaction=nonstopmode -halt-on-error --shell-escape article";
      in ''
-          cp -r "$support" ./support
+          #cp -r "$support" ./support
           ln -s ${../Bibtex.bib} ./Bibtex.bib
           unzip "$latex"
           find .
