@@ -43,7 +43,9 @@ grestore
 % \usepackage{mathptmx}      % use Times fonts if available on your TeX system
 %
 % insert here the call for the packages your document requires
-%\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
 % etc.
 
 \usepackage{attrib}
@@ -56,8 +58,8 @@ grestore
 % \newcommand{}{}
 %
 % Insert the name of "your journal" with
-% \journalname{myjournal}
-%
+\journalname{Journal of Automated Reasoning}
+
 \begin{document}
 
 \title{Quantitative Benchmarking for Automatically Generated Conjectures%\thanks{Grants or other notes
@@ -111,10 +113,10 @@ grestore
   We propose a benchmark suite for evaluating the efficiency and effectiveness
   of automated tools for \emph{theory exploration} or
   \emph{conjecture formation} in higher-order, inductive theories; a domain
-  especially suitable for programming language libraries. By providing standard
-  tools and metrics, we hope to encourage innovation and comparison between the
-  disparate approaches currently being pursued, and spur improvements similar to
-  those seen in the competitive field of automated theorem proving.
+  especially suited for analysing software. By providing standard tools and
+  metrics, we hope to encourage innovation and comparison between the disparate
+  approaches currently being pursued, and spur improvements similar to those
+  seen in the competitive field of automated theorem proving.
 %\keywords{First keyword \and Second keyword \and More}
 % \PACS{PACS code1 \and PACS code2 \and more}
 % \subclass{MSC code1 \and MSC code2 \and more}
@@ -125,21 +127,23 @@ grestore
 
 % Lay out the field of TE: motivation, systems, evaluation, problems...
 
-Automated \emph{theory exploration} (ATE), also known as
+\emph{Automated theory exploration} (ATE), also known as
 \emph{conjecture generation/formation}, is the open-ended problem of producing
 conjectures about a given logical theory which are somehow ``interesting''.
 
-This has applications wherever we find use for formal statements: for example in
-proof assistants and their libraries, in mathematics education and research, and
-(especially for our purposes) in the specification, verification, optimisation
-and testing of software.
+This has applications wherever we find use for formal statements: in proof
+assistants and their libraries, in mathematics education and research, and
+(of special concern for the authors) in the specification, verification,
+optimisation and testing of software.
 
-Existing attempts at tackling this problem are difficult to compare and study,
-due partially to the variety of approaches taken, but also because of the
-inherent ambiguity of the task and the different goals emphasised by the authors
-and their evaluation methods.
+Existing attempts at tackling this problem have been found difficult to compare
+and study, due partially to the variety of approaches taken, but also because of
+the inherent ambiguity of the task and the different goals emphasised by their
+authors and evaluation methods.
 
-Our contributions include:
+We attempt to solve this discrepancy, at least for the foreseeable future, by
+defining a standard, unambiguous benchmarking approach with which to compare
+ATE systems. Our contributions include:
 
 \begin{itemize}
 \item A general methodology for benchmarking ATE systems.
@@ -147,16 +151,17 @@ Our contributions include:
   benchmarks as a ground-truth.
 \item A specific instantiation of this methodology, using the Tons of Inductive
   Problems benchmark as a corpus.
-\item Automated tooling to produce and analyse this benchmark, translating to
-  Haskell and Isabelle code for the QuickSpec and IsaCoSy systems, respectively.
+\item Automated tooling to produce this benchmark and analyse its output.
+\item Application of this methodology to the QuickSpec and IsaCoSy ATE systems,
+  and a discussion of the results.
 \end{itemize}
 
 Section \ref{sec:background} describes the ATE problem in more detail, along
 with existing approaches and their evaluation methodologies. We explain our
-proposal for a more general benchmark in section \ref{section:proposal} and
-section \ref{application} shows the results when applied to existing ATE tools.
-Analysis of these results is given in section \ref{section:discussion} and
-concluding remarks in \ref{section:conclusion}.
+proposal for a more general benchmark in section \ref{sec:proposal} and
+section \ref{sec:application} shows the results when applied to existing ATE tools.
+Analysis of these results is given in section \ref{sec:discussion} and
+concluding remarks in \ref{sec:conclusion}.
 
 %- Existing approaches are difficult to compare
 % - They want different things
@@ -167,57 +172,91 @@ concluding remarks in \ref{section:conclusion}.
 % We can just jump straight in to automated conjecture generation
 
 \section{Background}
-\label{section:background}
+\label{sec:background}
 
 \begin{figure}
   \label{figure:list_theory}
   \begin{equation*}
-    Nil : \forall (a : Type). List a
-    Cons : \forall (a : Type). \forall (x : a). \forall (xs : List a). List a
-
-    Z : Nat
-    S : \forall (p : Nat). Nat
-
-    head(Cons(x, xs)) = x
-    tail(Cons(x, xs)) = xs
-    append(xs, Nil) = xs
-    append(Cons(x, xs), ys) = Cons x (append xs ys)
-    reverse(Nil) = Nil
-    reverse(Cons(x, xs)) = append(reverse(xs), Cons(x, Nil))
-    length(Nil) = Z
-    length(Cons(x, xs)) = S (length(xs))
-    map(f, Nil) = Nil
-    map(f, Cons(x, xs)) = Cons(f(x), map(f, xs))
-    foldl(f, x, Nil) = x
-    foldl(f, x, Cons(y, ys)) = foldl(f, f(x, y), xs)
-    foldr(f, Nil, y) = y
-    foldr(f, Cons(x, xs), y) = f(x, foldr(f, xs, y))
+    \begin{split}
+      \text{Nil} : \forall (a : Type). \text{List} a \\
+      \text{Cons} : \forall (a : Type). \forall (x : a). \forall (xs : \text{List} a). \text{List} a \\
+      \text{head}(\text{Cons}(x, xs)) &= x \\
+      \text{tail}(\text{Cons}(x, xs)) &= xs \\
+      \text{append}(xs, \text{Nil}) &= xs \\
+      \text{append}(\text{Cons}(x, xs), ys) &= \text{Cons}(x, \text{append}(xs, ys)) \\
+      \text{reverse}(\text{Nil}) &= \text{Nil} \\
+      \text{reverse}(\text{Cons}(x, xs)) &= \text{append}(\text{reverse}(xs), \text{Cons}(x, \text{Nil})) \\
+      \text{length}(\text{Nil}) &= Z \\
+      \text{length}(\text{Cons}(x, xs)) &= S (\text{length}(xs)) \\
+      \text{map}(f, \text{Nil}) &= \text{Nil} \\
+      \text{map}(f, \text{Cons}(x, xs)) &= \text{Cons}(f(x), \text{map}(f, xs)) \\
+      \text{foldl}(f, x, \text{Nil}) &= x \\
+      \text{foldl}(f, x, \text{Cons}(y, ys)) &= \text{foldl}(f, f(x, y), xs) \\
+      \text{foldr}(f, \text{Nil}, y) &= y \\
+      \text{foldr}(f, \text{Cons}(x, xs), y) &= f(x, \text{foldr}(f, xs, y))
+    \end{split}
   \end{equation*}
-  \caption{A simple theory defining $Nat$ and $List$ types and some associated
-    list operations, taken from \cite{Johansson.Dixon.Bundy:conjecture-generation}}
+  \caption{A simple theory defining a $\text{List}$ type and some associated
+    operations. $Z$ and $S$ are from a Peano encoding of the natural numbers.
+    Taken from \cite{Johansson.Dixon.Bundy:conjecture-generation}}
 \end{figure}
 
 If we have a logical theory, for example the theory of lists shown in figure
-\ref{figure:list_theory} Many automated systems and algorithms have been developed to generate
-conjectures, but it is difficult to judge or compare their performance in a
-quantitative way. We consider three distinct aspects to evaluate:
+\ref{figure:list_theory}, we may want to find theorems which describe its
+behaviour. For example, if this is a software library then we may want to verify
+that certain (un)desirable properties do (not) hold; we may also want to
+\emph{optimise} programs using this library, rewriting expressions into a form
+which requires less time, memory, network usage, etc. To avoid altering the
+program's result, it is important to prove particular rewrite rules correct. For
+example, consider the following theorem:
+
+\begin{equation} \label{eq:mapreduce}
+  \forall f. \forall xs. \forall ys. \text{map}(f, \text{append}(xs, ys)) = \text{append}(\text{map}(f, xs), \text{map}(f, ys))
+\end{equation}
+
+This justifies a rewrite rule for splitting a single $\text{map}$ call into
+multiple independent calls dealing with different sections of the list. This is
+useful for the ``map/reduce'' programming paradigm, as each call can be
+evaluated by a separate machine in parallel.
+
+Discovering such theorems from an arbitrary theory requires two steps:
 
 \begin{itemize}
-\item Each conjecture, to judge how ``interesting'' it is.
+\item \emph{Exploring} the theory, to find patterns which we pose as
+  conjectures.
+\item \emph{Proving} that those conjectures are theorems.
+\end{itemize}
+
+Lots of research has been devoted to the second step, resulting in the field of
+Automated Theorem Proving (ATP) and spinoff applications (e.g. Prolog). Less
+attention has been paid to the first step, that of Automated Theory Exploration.
+
+Those ATE systems which do exist are difficult to evaluate and compare in a
+quantitative way. There are three aspects to consider:
+
+\begin{itemize}
+\item The quality of each conjecture, to judge how ``interesting'' it is.
 \item The \emph{set} of conjectures produced, to assess things like consistency
   and redundancy.
 \item Performance of the system, to find the balance struck between output
   quality and time taken.
 \end{itemize}
 
-There are many aspects to consider when judging the quality of
-a conjecture: how likely it is to be true, how difficult it is to prove, its
-implications, and so on.
+In particular, we must choose how to measure what is ``interesting'', and since
+there is no objective answer we may find that the evaluation methods used by
+each system provide results which cannot be directly compared. It is also
+important to consider the goals of the system's designers, since that will
+affect for which measures it performs well.
 
-One way to make these subjective, ambiguous properties more concrete is to
-choose a well-studied theory, with a set of existing theorems that are deemed to
-be useful or important in some way, and treat these as a \emph{ground truth}
-against which we can compare conjectures generated from the same theory.
+There are many aspects to consider when judging the quality of a conjecture: how
+likely it is to be true, how difficult it is to prove, its implications, and so
+on.
+
+One method which is used to make these subjective, ambiguous properties more
+concrete is to choose a well-studied theory, with a set of existing theorems that
+are deemed to be useful or important in some way, and treat these as a
+\emph{ground truth} against which we can compare conjectures generated from the
+same theory.
 
 A common choice of ground truth is the standard library of a theorem prover,
 such as Isabelle/HOL; the library authors have gone to the effort of stating,
@@ -227,51 +266,89 @@ good indication that they are useful or important.
 One problem with this approach is the small size of these libraries. For
 example, the benchmark based on Isabelle/HOL's theory of natural numbers given
 in~\cite{Johansson.Dixon.Bundy:conjecture-generation} contains
-only 4 definitions and 12 theorems. Whilst such benchmarks allow
-comparison between different approaches, their narrow scope doesn't provide much
-indication of performance in different, especially \emph{novel}, domains.
+only 4 definitions and 12 theorems. Whilst such benchmarks allow objective
+comparisons between different approaches, their narrow scope doesn't provide
+much indication of performance in different, especially \emph{novel}, domains.
 
 \section{Our Proposal}
-\label{section:proposal}
+\label{sec:proposal}
 
 We propose that the extensive test suites which are already used to benchmark
-automated theorem provers can be repurposed to create benchmarks for conjecture
-generation systems. We provide a benchmark suite, automatically derived from the
-Tons of Inductive Problems (TIP) benchmark suite, as well as software to convert
-other benchmarks written in the same TIP format (an extension of the SMT-LIB
-format \cite{BarFT-SMTLIB}).
+automated \emph{theorem provers} can be repurposed as ground truths in the
+theory \emph{exploration} setting. To do this we can take an ATP problem (for
+example proving equation \ref{eq:mapreduce} from the definitions in figure
+\ref{figure:list_theory}) and split apart the definitions (types and functions)
+from the theorem statement itself.
 
-%ALGORITHM:
+The former constitute a theory, suitable for exploration by an ATE system; the
+latter act as a ground truth, telling us which theorems about that theory were
+``interesting'' enough to write down in a benchmark.
 
-%Concatenate all definitions from all files together.
-%For each definition, prefix its name with the filename it came from and update
-%all references.
-%Normalise all local variable names.
-%Remove any identical definitions, leaving the first one in place and updating
-%any references to the removed definitions to use this one.
-%Repeat, until no further removals are possible.
+We focus on the Tons of Inductive Problems (TIP) theorem proving
+benchmark~\cite{claessen2015tip}, since it has several desirable properties:
+
+\begin{itemize}
+\item Each problem provides separate definitions and a theorem statement; hence
+  it's not difficult to tease them apart for our purposes.
+\item Higher-order functions and inductively defined types are provided, which
+  corresponds to our desired domain.
+\item All together, TIP provides 219 distinct function definitions and 343
+  theorem statements, which is enough to fully exercise current ATE systems.
+\item Benchmark problems include examples from the theorem proving literature
+  as well as common program verification tasks, ensuring the resulting corpus is
+  relevant to researchers and practitioners.
+\item TIP's maintainers provide a set of tools, including translators from TIP's
+  native format (based on SMT-Lib~\cite{BarFT-SMTLIB}) to Haskell and Isabelle
+  (which are used by ATE systems).
+\end{itemize}
+
+From TIP, we automatically derive our Theory Exploration Benchmark (TEB), and
+provide tools to benchmark ATE systems and compare their results. Our
+methodology is as follows:
+
+\begin{itemize}
+\item Collect together all definitions found in TIP into one large theory,
+  removing $\alpha$-equivalent duplicates.
+\item For each type, provide extra functions which act as constructors and
+  destructors. For example, the $\text{List}$ type would have extra constructor
+  functions $\text{constructor-Nil}$ and $\text{constructor-Cons}$, and
+  destructor functions $\text{destructor-head}$ and $\text{destructor-tail}$.
+  This allows us to ignore constructors and destructors, and concentrate solely
+  on functions.
+\item Collect together all theorem statements found in TIP. Update any
+  references to removed definitions, and replace references to constructors with
+  the associated constructor function from above.
+\item \emph{Sample} a sub-set of functions from the large theory uniformly, such
+  that we choose all of the names referenced by at least one of the theorems
+  (for example, theorem \ref{eq:mapreduce} references the names
+  $\text{map}$ and $\text{append}$).
+\item Provide this sub-set as an input to the ATE system, timing how long it
+  takes to complete.
+\item Perform precision/recall analysis on the resulting conjectures, against
+  the ground truth of TIP theorems which only reference names in this sample.
+\end{itemize}
 
 \section{Application}
-\label{section:application}
+\label{sec:application}
 
 % evaluation
 
 We have applied our benchmarking methodology to the QuickSpec and IsaCoSy theory
 exploration systems. To assess the scalability of their algorithms, we sampled
 theories of various sizes: from theories containing only a single definition, up
-to theories containing 20 definitions. These are shown in figure FIXME.
+to theories containing 20 definitions.
 
 To provide a more robust comparison of these two systems, we also applied a
 paired difference test: measuring, for each sampled theory, the difference in
 time, precision and recall between the two systems.
 
 \section{Discussion}
-\label{section:application}
+\label{sec:application}
 
 % (e.g. philosophical bits),
 
 \section{Conclusion}
-\label{section:conclusion}
+\label{sec:conclusion}
 
 % future work, etc.
 
