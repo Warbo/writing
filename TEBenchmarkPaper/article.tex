@@ -136,6 +136,38 @@ chemistry paper for example)
 % We can just jump straight in to automated conjecture generation
 
 % Maybe lay out argument in bullet points; flesh out sentences later
+Automated \emph{theory exploration} (ATE), also known as
+\emph{conjecture generation/formation}, is the open-ended problem of producing
+conjectures about a given logical theory which are somehow ``interesting''.
+
+This has applications wherever we find use for formal statements: for example in
+proof assistants and their libraries, in mathematics education and research, and
+(especially for our purposes) in the specification, verification, optimisation
+and testing of software.
+
+Existing attempts at tackling this problem are difficult to compare and study,
+due partially to the variety of approaches taken, but also because of the
+inherent ambiguity of the task and the different goals emphasised by the authors
+and their evaluation methods.
+
+Our contributions include:
+
+\begin{itemize}
+\item A general methodology for benchmarking ATE systems.
+\item Resolving the issue of ``interestingness'' through the use theorem-proving
+  benchmarks as a ground-truth.
+\item A specific instantiation of this methodology, using the Tons of Inductive
+  Problems benchmark as a corpus.
+\item Automated tooling to produce and analyse this benchmark, translating to
+  Haskell and Isabelle code for the QuickSpec and IsaCoSy systems, respectively.
+\end{itemize}
+
+Section \ref{sec:background} describes the ATE problem in more detail, along
+with existing approaches and their evaluation methodologies. We explain our
+proposal for a more general benchmark in section \ref{section:proposal} and
+section \ref{application} shows the results when applied to existing ATE tools.
+Analysis of these results is given in section \ref{section:discussion} and
+concluding remarks in \ref{section:conclusion}.
 
 % Lay out the field of TE: motivation, systems, evaluation, problems...
 % Compare to
