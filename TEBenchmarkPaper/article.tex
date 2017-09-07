@@ -90,29 +90,22 @@ grestore
 
 
 \maketitle
-IGNORE ISABELLE THEORIES FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-IGNORE CLUSTERING FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%IGNORE ISABELLE THEORIES FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%IGNORE CLUSTERING FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-intro (motivation, high-level background, eval is a problem),
-background,
-our proposal,
-application (evaluation),
-discussion (e.g. philosophical bits),
-future work, conclusions, etc.
+%COMPARE COLTON ET AL.
 
-COMPARE COLTON ET AL.
+% Evaluation of conjectures, sets of conjectures, systems
+% what constitutes a good/desired output (in each author's terms)? This combines
+% their evaluation with their (system-specific) assumptions (e.g. IsaCoSy doesn't
+% generate redundant terms: non-redundancy is clearly a goal, but it's not measured
+% in eval since it's assumed based on system's construction)
 
-Evaluation of conjectures, sets of conjectures, systems
-what constitutes a good/desired output (in each author's terms)? This combines
-their evaluation with their (system-specific) assumptions (e.g. IsaCoSy doesn't
-generate redundant terms: non-redundancy is clearly a goal, but it's not measured
-in eval since it's assumed based on system's construction)
+% Look carefully at each system's (paper's) eval section
+% Make a table like tabl 1 of Colton et al
 
-Look carefully at each system's (paper's) eval section
-Make a table like tabl 1 of Colton et al
-
-Make it clear that methodology is the point (it's not just a detail, like in a
-chemistry paper for example)
+% Make it clear that methodology is the point (it's not just a detail, like in a
+% chemistry paper for example)
 
 \begin{abstract}
   We propose a benchmark suite for evaluating the efficiency and effectiveness
@@ -130,12 +123,8 @@ chemistry paper for example)
 \section{Introduction}
 \label{intro}
 
-% TODO: Preaching to the choir;
-% Jumping around a bit, rephrase
-% Look at phd symposium 2017, moa's conjecture synthesis paper, etc.
-% We can just jump straight in to automated conjecture generation
+% Lay out the field of TE: motivation, systems, evaluation, problems...
 
-% Maybe lay out argument in bullet points; flesh out sentences later
 Automated \emph{theory exploration} (ATE), also known as
 \emph{conjecture generation/formation}, is the open-ended problem of producing
 conjectures about a given logical theory which are somehow ``interesting''.
@@ -169,34 +158,59 @@ section \ref{application} shows the results when applied to existing ATE tools.
 Analysis of these results is given in section \ref{section:discussion} and
 concluding remarks in \ref{section:conclusion}.
 
-% Lay out the field of TE: motivation, systems, evaluation, problems...
-% Compare to
+%- Existing approaches are difficult to compare
+% - They want different things
+% - They're evaluated differently
+% - They're evaluated ``locally'' (as white boxen)
 
-The field of mathematics has been transformed by the introduction of computers:
-calculations are now routinely automated, allowing humans to focus their efforts
-on higher-level, more creative activities like proving theorems; \emph{automated
-theorem proving} (ATP) seeks to automate this process too, and was one of the
-first tasks studied in the field of artificial intelligence
-\cite{newell1956logic,sutcliffe2001evaluating}. Despite this effort, ATP
-methods are not widely used by traditional mathematicians, although they have
-seen use in applied areas such as hardware and software verification
-\cite{Moore:2003}.
+% Look at phd symposium 2017, moa's conjecture synthesis paper, etc.
+% We can just jump straight in to automated conjecture generation
 
-% FIXME: Be more specific about our contributions
+\section{Background}
+\label{section:background}
 
-Even if ATP became widespread, the automation of theorem proving would still
-leave an important aspect of mathematics inaccessible to computers: conjecturing
-those theorems (and the definitions they involve) in the first place. Automated
-methods for posing good conjectures have obvious applications for those who must
-invent a constant stream of novel questions, e.g. for examinations or research.
-A larger impact may be found in areas such as computer programming, security and
-verification, where the benefits of formal methods are hindered by the
-difficulty of their application; tools to aid this process, e.g. by proposing
-test cases, can reduce this cost.
+\begin{figure}
+  \label{figure:list_theory}
+  \begin{equation*}
+    Nil : \forall (a : Type). List a
+    Cons : \forall (a : Type). \forall (x : a). \forall (xs : List a). List a
 
-Many automated systems and algorithms have been developed to generate
+    Z : Nat
+    S : \forall (p : Nat). Nat
+
+    head(Cons(x, xs)) = x
+    tail(Cons(x, xs)) = xs
+    append(xs, Nil) = xs
+    append(Cons(x, xs), ys) = Cons x (append xs ys)
+    reverse(Nil) = Nil
+    reverse(Cons(x, xs)) = append(reverse(xs), Cons(x, Nil))
+    length(Nil) = Z
+    length(Cons(x, xs)) = S (length(xs))
+    map(f, Nil) = Nil
+    map(f, Cons(x, xs)) = Cons(f(x), map(f, xs))
+    foldl(f, x, Nil) = x
+    foldl(f, x, Cons(y, ys)) = foldl(f, f(x, y), xs)
+    foldr(f, Nil, y) = y
+    foldr(f, Cons(x, xs), y) = f(x, foldr(f, xs, y))
+  \end{equation*}
+  \caption{A simple theory defining $Nat$ and $List$ types and some associated
+    list operations, taken from \cite{Johansson.Dixon.Bundy:conjecture-generation}}
+\end{figure}
+
+If we have a logical theory, for example the theory of lists shown in figure
+\ref{figure:list_theory} Many automated systems and algorithms have been developed to generate
 conjectures, but it is difficult to judge or compare their performance in a
-quantitative way. There are many aspects to consider when judging the quality of
+quantitative way. We consider three distinct aspects to evaluate:
+
+\begin{itemize}
+\item Each conjecture, to judge how ``interesting'' it is.
+\item The \emph{set} of conjectures produced, to assess things like consistency
+  and redundancy.
+\item Performance of the system, to find the balance struck between output
+  quality and time taken.
+\end{itemize}
+
+There are many aspects to consider when judging the quality of
 a conjecture: how likely it is to be true, how difficult it is to prove, its
 implications, and so on.
 
@@ -211,10 +225,14 @@ proving and including these theorems in every copy of their software, which is a
 good indication that they are useful or important.
 
 One problem with this approach is the small size of these libraries. For
-example, a benchmark based on Isabelle/HOL's theory of natural numbers contains
+example, the benchmark based on Isabelle/HOL's theory of natural numbers given
+in~\cite{Johansson.Dixon.Bundy:conjecture-generation} contains
 only 4 definitions and 12 theorems. Whilst such benchmarks allow
 comparison between different approaches, their narrow scope doesn't provide much
 indication of performance in different, especially \emph{novel}, domains.
+
+\section{Our Proposal}
+\label{section:proposal}
 
 We propose that the extensive test suites which are already used to benchmark
 automated theorem provers can be repurposed to create benchmarks for conjecture
@@ -223,26 +241,20 @@ Tons of Inductive Problems (TIP) benchmark suite, as well as software to convert
 other benchmarks written in the same TIP format (an extension of the SMT-LIB
 format \cite{BarFT-SMTLIB}).
 
-\section{Existing Evaluations}
-\label{sec:previous}
+%ALGORITHM:
 
-Theory exploration tools such as
-IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}, QuickSpec and
-IsaScheme have been evaluated using the standard library of the Isabelle theorem
-prover as their ground truth.
+%Concatenate all definitions from all files together.
+%For each definition, prefix its name with the filename it came from and update
+%all references.
+%Normalise all local variable names.
+%Remove any identical definitions, leaving the first one in place and updating
+%any references to the removed definitions to use this one.
+%Repeat, until no further removals are possible.
 
-ALGORITHM:
+\section{Application}
+\label{section:application}
 
-Concatenate all definitions from all files together.
-For each definition, prefix its name with the filename it came from and update
-all references.
-Normalise all local variable names.
-Remove any identical definitions, leaving the first one in place and updating
-any references to the removed definitions to use this one.
-Repeat, until no further removals are possible.
-
-\section{Evaluation}
-\label{sec:evaluation}
+% evaluation
 
 We have applied our benchmarking methodology to the QuickSpec and IsaCoSy theory
 exploration systems. To assess the scalability of their algorithms, we sampled
@@ -253,8 +265,15 @@ To provide a more robust comparison of these two systems, we also applied a
 paired difference test: measuring, for each sampled theory, the difference in
 time, precision and recall between the two systems.
 
+\section{Discussion}
+\label{section:application}
+
+% (e.g. philosophical bits),
+
 \section{Conclusion}
-\label{sec:conclusion}
+\label{section:conclusion}
+
+% future work, etc.
 
 Our benchmark suite provides a unifying goal for the diverse approaches of
 theory exploration, whilst avoiding some of the philosophical complications of
