@@ -1,17 +1,23 @@
-{ gnugrep, haskellPackages, pandoc, panhandle, panpipe, stdenv }:
+{ haskellPackages, lib, pandoc, panhandle, panpipe, runCommand }:
 
-stdenv.mkDerivation {
-  name        = "theory-exploration-notes";
-  src         = ./.;
-  buildInputs = [
-
-    # Document rendering tools
-    pandoc
-    haskellPackages.pandoc-citeproc
-    panpipe
-    panhandle
-
-    # Misc shell tools
-    gnugrep
-  ];
-}
+with builtins;
+with lib;
+with rec {
+  notes  = filter (hasSuffix ".md") (attrNames (readDir ./.));
+  nameOf = removeSuffix ".md";
+  pdfOf  = file: (nameOf file) + ".pdf";
+  render = file: runCommand  "theory-exploration-notes-${pdfOf file}"
+    {
+      src         = ./. + "/${file}";
+      buildInputs = [
+        pandoc
+        haskellPackages.pandoc-citeproc
+        panpipe
+        panhandle
+      ];
+    }
+    ''
+      pandoc --filter panpipe --filter panhandle -o "$out" "$src"
+    '';
+};
+listToAttrs (map (file: { name = nameOf file; value = render file; }) notes)
