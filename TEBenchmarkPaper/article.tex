@@ -45,7 +45,10 @@ grestore
 % insert here the call for the packages your document requires
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{array}
+\usepackage{hhline}
 \usepackage{mathtools}
+\usepackage{multirow}
 % etc.
 
 \usepackage{attrib}
@@ -173,8 +176,8 @@ concluding remarks in \ref{sec:conclusion}.
 \section{Background}
 \label{sec:background}
 
-\subsection{Theory Exploration}
-\label{sec:te}
+\subsection{Motivation}
+\label{sec:motivation}
 
 % more detail about evaluation, interestingness, etc. Reference Simon/Alan
 % interestingness, e.g. examples from textbooks, etc.
@@ -182,19 +185,18 @@ concluding remarks in \ref{sec:conclusion}.
 % split into sub-sections, e.g. motivation, existing approaches, etc.
 
 \begin{figure}
-  \label{figure:list_theory}
   \begin{equation*}
     \begin{split}
-      \text{Nil} : \forall (a : Type). \text{List} a \\
-      \text{Cons} : \forall (a : Type). \forall (x : a). \forall (xs : \text{List} a). \text{List} a \\
+      \forall a. \text{Nil} &: \text{List} \  a \\
+      \forall a. \text{Cons} &: a \rightarrow \text{List} \  a \rightarrow \text{List} \ a \\
       \text{head}(\text{Cons}(x, xs)) &= x \\
       \text{tail}(\text{Cons}(x, xs)) &= xs \\
       \text{append}(xs, \text{Nil}) &= xs \\
       \text{append}(\text{Cons}(x, xs), ys) &= \text{Cons}(x, \text{append}(xs, ys)) \\
       \text{reverse}(\text{Nil}) &= \text{Nil} \\
       \text{reverse}(\text{Cons}(x, xs)) &= \text{append}(\text{reverse}(xs), \text{Cons}(x, \text{Nil})) \\
-      \text{length}(\text{Nil}) &= Z \\
-      \text{length}(\text{Cons}(x, xs)) &= S (\text{length}(xs)) \\
+      \text{length}(\text{Nil}) &= \text{Z} \\
+      \text{length}(\text{Cons}(x, xs)) &= \text{S} (\text{length}(xs)) \\
       \text{map}(f, \text{Nil}) &= \text{Nil} \\
       \text{map}(f, \text{Cons}(x, xs)) &= \text{Cons}(f(x), \text{map}(f, xs)) \\
       \text{foldl}(f, x, \text{Nil}) &= x \\
@@ -204,18 +206,19 @@ concluding remarks in \ref{sec:conclusion}.
     \end{split}
   \end{equation*}
   \caption{A simple theory defining a $\text{List}$ type and some associated
-    operations. $Z$ and $S$ are from a Peano encoding of the natural numbers.
+    operations. $\text{Z}$ and $\text{S}$ are from a Peano encoding of the natural numbers.
     Taken from \cite{Johansson.Dixon.Bundy:conjecture-generation}}
+  \label{figure:list_theory}
 \end{figure}
 
 If we have a logical theory, for example the theory of lists shown in figure
 \ref{figure:list_theory}, we may want to find theorems which describe its
-behaviour. For example, if this is a software library then we may want to verify
-that certain (un)desirable properties do (not) hold; we may also want to
-\emph{optimise} programs using this library, rewriting expressions into a form
-which requires less time, memory, network usage, etc. To avoid altering the
-program's result, it is important to prove particular rewrite rules correct. For
-example, consider the following theorem:
+behaviour. For a software library we may want to verify that certain
+(un)desirable properties do (not) hold; we may also want to \emph{optimise}
+programs using this library, rewriting expressions into a form which requires
+less time, memory, network usage, etc. To avoid altering the program's result,
+it is important to prove particular rewrite rules correct. Consider the
+following theorem:
 
 \begin{equation} \label{eq:mapreduce}
   \forall f. \forall xs. \forall ys. \text{map}(f, \text{append}(xs, ys)) = \text{append}(\text{map}(f, xs), \text{map}(f, ys))
@@ -226,70 +229,127 @@ multiple independent calls dealing with different sections of the list. This is
 useful for the ``map/reduce'' programming paradigm, as each call can be
 evaluated by a separate machine in parallel.
 
-Discovering such theorems from an arbitrary theory requires two steps:
+\subsection{Theory Exploration}
+\label{sec:te}
+
+Discovering theorems from an arbitrary theory requires two steps:
 
 \begin{itemize}
-\item \emph{Exploring} the theory, to find patterns which we pose as
+\item \emph{Exploring} the theory, to find patterns suitable for posing as
   conjectures.
 \item \emph{Proving} that those conjectures are theorems.
 \end{itemize}
 
 Lots of research has been devoted to the second step, resulting in the field of
-Automated Theorem Proving (ATP) and spinoff applications (e.g. Prolog). Less
-attention has been paid to the first step, that of Automated Theory Exploration.
+Automated Theorem Proving (ATP) and its spinoff applications. Less attention has
+been paid to the first step, that of Automated Theory Exploration (ATE).
 
-Those ATE systems which do exist are difficult to evaluate and compare in a
-quantitative way. There are three aspects to consider:
+A major challenge in ATE is the requirement for conjectures to be
+``interesting'', since this is an imprecise term with many different
+interpretations, which is reflected in the variety of disparate approaches taken
+so far.
+
+A survey of these systems and their notions of ``interestingness'' is given by
+Colton et al~\cite{colton2000notion}, for both conjectures and \emph{concepts}
+(the contents of a theory, which for ATE we consider to be provided as input,
+rather than part of the generating process). We summarise those aspects relevant
+to conjecture formation in table \ref{table:colton}, along with later systems
+we have studied.
+
+\begin{table}
+  \begin{center}
+    \begin{tabular}{ |l|l|c|c|c|c|c|c| }
+      \hline
+      \multirow{2}{*}{\textbf{Program}}                 &
+      \multirow{2}{*}{\textbf{Conjecture Types}}        &
+      \multicolumn{6}{c}{\textbf{Interestingness Measures}} \\
+      \hhline{~~------}
+         & & \textbf{E} & \textbf{N} & \textbf{S} & \textbf{A} & \textbf{C} & \textbf{U} \\
+
+      \hline
+      AM          & if-and-only-if, implies, non-exists & X & X & X & X & X & X \\ \hline
+      GT          & if-and-only-if, implies, non-exists & X & X & X & X & X & X \\ \hline
+      Graffiti    & inequalities                        & X & X & X &   & X & X \\ \hline
+      Bagai et al & non-exists                          &   & X &   & X & X &   \\ \hline
+      HR          & if-and-only-if, implies, non-exists & X & X & X & X & X & X \\ \hline
+      QuickSpec   & equalities                          & X & X &   &   & X &   \\ \hline
+      IsaCoSy     & equalities                          &   & X &   &   & X &   \\ \hline
+      IsaScheme   & equalities                          &   &   &   &   & X &   \\ \hline
+    \end{tabular}
+  \end{center}
+  \caption{Classification of ATE systems from \cite{colton2000notion}, extended
+    to those compared in \cite{claessen2013automating} (QuickSpec is the
+    conjecture generation component of HipSpec). The interestingness measures
+    are \textbf{E}mpirical plausibility, \textbf{N}ovelty,
+    \textbf{S}urprisingness, \textbf{A}pplicability, \textbf{C}omprehensibility
+    (low complexity) and \textbf{U}tility.}
+  \label{table:colton}
+\end{table}
+
+One aspect mentioned in the survey is that ``interestingness'' is not just a
+measure of output quality, but can also impact the core design of a system. For
+example, the use of constraint solving in IsaCoSy is to prevent forming
+conjectures which are simple substitutions of previous ones; this is because the
+designers consider such conjectures to be uninteresting. This further
+complicates comparison of systems based on standalone evaluations, since
+assumptions about such behaviour may be implicit in the interpretation (e.g. an
+analysis of IsaCoSy conjectures does not need to consider substitutions), and
+each methodology will be using different assumptions.
+
+\subsection{Existing Evaluations}
+\label{sec:existing}
+
+The variety of existing ATE systems, their different domains, and their varying
+interpretations of what is interesting makes it difficult to directly compare
+their performance.
+
+Whilst all offer insights into the ATE problem, we will limit ourselves to those
+operating in higher-order logic and inductive theories, since this domain is the
+most relevant for our interest in analysing software. The relevant systems in
+this domain are QuickSpec, operating on functions in the Haskell programming
+language; and IsaCoSy and IsaScheme, which operate in the Isabelle proof
+assistant.
+
+There are three aspects to consider when we evaluate an ATE system:
 
 \begin{itemize}
-\item The quality of each conjecture, to judge how ``interesting'' it is.
+\item The quality of each conjecture, which is the ``interestingness'' discussed
+  above.
 \item The \emph{set} of conjectures produced, to assess things like consistency
   and redundancy.
 \item Performance of the system, to find the balance struck between output
   quality and time taken.
 \end{itemize}
 
-In particular, we must choose how to measure what is ``interesting'', and since
-there is no objective answer we may find that the evaluation methods used by
-each system provide results which cannot be directly compared. It is also
-important to consider the goals of the system's designers, since that will
-affect for which measures it performs well.
-
-There are many aspects to consider when judging the quality of a conjecture: how
-likely it is to be true, how difficult it is to prove, its implications, and so
-on.
-
-One method which is used to make these subjective, ambiguous properties more
-concrete is to choose a well-studied theory, with a set of existing theorems that
-are deemed to be useful or important in some way, and treat these as a
-\emph{ground truth} against which we can compare conjectures generated from the
-same theory.
+Existing evaluation of these three systems have assessed the interestingness of
+their output by operating in well-studied theories, and taking a set of existing
+theorems as a \emph{ground truth} to compare against.
 
 A common choice of ground truth is the standard library of a theorem prover,
 such as Isabelle/HOL; the library authors have gone to the effort of stating,
 proving and including these theorems in every copy of their software, which is a
 good indication that they are useful or important.
 
-One problem with this approach is the small size of these libraries. For
-example, the benchmark based on Isabelle/HOL's theory of natural numbers given
-in~\cite{Johansson.Dixon.Bundy:conjecture-generation} contains
-only 4 definitions and 12 theorems. Whilst such benchmarks allow objective
-comparisons between different approaches, their narrow scope doesn't provide
-much indication of performance in different, especially \emph{novel}, domains.
+One problem with this choice is the small size of these libraries. For example,
+the benchmark based on Isabelle/HOL's theory of natural numbers given
+in~\cite{Johansson.Dixon.Bundy:conjecture-generation} contains only 4
+definitions and a ground truth of 12 theorems. Whilst such benchmarks allow
+objective comparisons between different approaches, their narrow scope doesn't
+provide much indication of performance in different, especially \emph{novel}, domains.
 
-\section{Our Proposal} % FIXME Better title; e.g. The TEB benchmark
+\section{Theory Exploration Benchmark}
 \label{sec:proposal}
 
-We propose that the extensive test suites which are already used to benchmark
-automated \emph{theorem provers} can be repurposed as ground truths in the
-theory \emph{exploration} setting. To do this we can take an ATP problem (for
-example proving equation \ref{eq:mapreduce} from the definitions in figure
-\ref{figure:list_theory}) and split apart the definitions (types and functions)
-from the theorem statement itself.
+We propose a larger, more ambitious method for evaluating ATE systems, which we
+call the Theory Exploration Benchmark (TEB). We take a similar approach to prior
+evaluations, but our ground truth comes from the extensive test suites which are
+already used to benchmark automated \emph{theorem provers}; which we repurpose
+for use in the theory \emph{exploration} setting.
 
-The former constitute a theory, suitable for exploration by an ATE system; the
-latter act as a ground truth, telling us which theorems about that theory were
-``interesting'' enough to write down in a benchmark.
+To do this we can take a set of ATP tasks, for example proving the equation
+\ref{eq:mapreduce} from the theory in figure \ref{figure:list_theory}, and we
+split apart the definitions (to form a theory) from the theorem statements (to
+form our ground truth).
 
 We focus on the Tons of Inductive Problems (TIP) theorem proving
 benchmark~\cite{claessen2015tip}, since it has several desirable properties:
