@@ -90,7 +90,6 @@ grestore
 \date{Received: date / Accepted: date}
 % The correct dates will be entered by the editor
 
-
 \maketitle
 %IGNORE ISABELLE THEORIES FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 %IGNORE CLUSTERING FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -173,6 +172,14 @@ concluding remarks in \ref{sec:conclusion}.
 
 \section{Background}
 \label{sec:background}
+
+\subsection{Theory Exploration}
+\label{sec:te}
+
+% more detail about evaluation, interestingness, etc. Reference Simon/Alan
+% interestingness, e.g. examples from textbooks, etc.
+
+% split into sub-sections, e.g. motivation, existing approaches, etc.
 
 \begin{figure}
   \label{figure:list_theory}
@@ -270,7 +277,7 @@ only 4 definitions and 12 theorems. Whilst such benchmarks allow objective
 comparisons between different approaches, their narrow scope doesn't provide
 much indication of performance in different, especially \emph{novel}, domains.
 
-\section{Our Proposal}
+\section{Our Proposal} % FIXME Better title; e.g. The TEB benchmark
 \label{sec:proposal}
 
 We propose that the extensive test suites which are already used to benchmark
@@ -306,6 +313,7 @@ From TIP, we automatically derive our Theory Exploration Benchmark (TEB), and
 provide tools to benchmark ATE systems and compare their results. Our
 methodology is as follows:
 
+% Better presentation, flowchart?
 \begin{itemize}
 \item Collect together all definitions found in TIP into one large theory,
   removing $\alpha$-equivalent duplicates.
@@ -343,9 +351,9 @@ paired difference test: measuring, for each sampled theory, the difference in
 time, precision and recall between the two systems.
 
 \section{Discussion}
-\label{sec:application}
+\label{sec:discussion}
 
-% (e.g. philosophical bits),
+% philosophical bits
 
 \section{Conclusion}
 \label{sec:conclusion}
