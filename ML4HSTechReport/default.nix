@@ -1,52 +1,53 @@
-{ fetchurl, latestGit, stdenv, texlive, bibtex ? ../Bibtex.bib }:
+with {
+  inherit (import <nixpkgs> {}) fetchurl latestGit stdenv texlive;
 
-let haskell-te = null;#latestGit { url = http://chriswarbo.net/git/haskell-te.git; };
- in stdenv.mkDerivation {
-      inherit bibtex;
-      name = "ml4hs-tech-report";
-      src  = ./.;
+  bibtex     = ../Bibtex.bib;
+  haskell-te = null;#latestGit { url = http://chriswarbo.net/git/haskell-te.git; };
+};
 
-      styles = map fetchurl [
-        { url    = "http://cristal.inria.fr/~remy/latex/mathpartir.sty";
-          sha256 = "0r6l1x7339b6ni8mq0pyqmj9ivwzxqhaas5rjw4xhr558jn648n1"; }
-        { url    = "http://www.ccs.neu.edu/course/csg264/latex/mmm.sty";
-          sha256 = "0qwhx1zf55dffiqg4np9xb34gzw571n8xkcvf0915ffp8qq20ki4"; }
-        { url = "http://anorien.csc.warwick.ac.uk/mirrors/CTAN/graphics/psfig/psfig.sty";
-          sha256 = "043pw8p7wbwjaiaf6gsnx2r36q7q2b6ardl3srx8nm8wdkqk5ap7"; }
-      ];
+stdenv.mkDerivation {
+  inherit bibtex;
+  name = "ml4hs-tech-report";
+  src  = ./.;
 
-      cmd = "pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report";
+  styles = [
+    ../TransferReport/mmm.sty
+    ../TransferReport/psfig.sty
+    ../TransferReport/mathpartir.sty
+  ];
 
-      buildInputs = [ (texlive.combine {
-                        inherit (texlive) collection-latexrecommended
-                                          algorithmicx algorithms paralist
-                                          listings csquotes etoolbox epsf
-                                          tikz-qtree titlesec;
-                      }) ];
+  cmd = "pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report";
 
-      buildCommand = ''
-        source $stdenv/setup
+  buildInputs = [ (texlive.combine {
+                    inherit (texlive) collection-latexrecommended
+                                      algorithmicx algorithms paralist
+                                      listings csquotes etoolbox epsf
+                                      tikz-qtree titlesec;
+                  }) ];
 
-        cp -r "$src" ./src
-        chmod +w -R ./src
-        cd ./src
+  buildCommand = ''
+    source $stdenv/setup
 
-        for S in $styles
-        do
-          NAME=$(basename "$S" | sed -e 's/.*-//g')
-          cp "$S" ./"$NAME"
-        done
+    cp -r "$src" ./src
+    chmod +w -R ./src
+    cd ./src
 
-        cp "$bibtex" ./Bibtex.bib
+    for S in $styles
+    do
+      NAME=$(basename "$S" | sed -e 's/.*-//g')
+      cp "$S" ./"$NAME"
+    done
 
-        $cmd
+    cp "$bibtex" ./Bibtex.bib
 
-        echo "RUNNING bibtex"
-        bibtex report
+    $cmd
 
-        $cmd
-        $cmd
+    echo "RUNNING bibtex"
+    bibtex report
 
-        cp report.pdf "$out"
-      '';
-    }
+    $cmd
+    $cmd
+
+    cp report.pdf "$out"
+  '';
+}
