@@ -1,15 +1,21 @@
 with rec {
   inherit (import ../resources) bibtex nixpkgs styles;
-  inherit (nixpkgs.repo1609.configless) runCommand;
+  inherit (nixpkgs.repo1609.configless) jq runCommand texlive;
 };
 runCommand "transfer-report.pdf"
   {
     inherit bibtex;
     buildInputs = [
-      (texlive.combine { inherit (texlive) collection-latexrecommended; })
+      jq
+      (texlive.combine {
+        inherit (texlive)
+          collection-latexrecommended scheme-small tikzinclude tikz-qtree
+          algorithmicx algorithm2e algorithms frankenstein csquotes helvetic
+          paralist chktex enumitem listings preprint epsf titlesec cm-super;
+        })
     ];
     src    = ./.;
-    styles = [ styles."mathpartir.sty" styles."mmm.sty" styles."psfig.sty" ];
+    styles = builtins.toJSON styles;
     cmd    = ''
       pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
     '';
@@ -17,10 +23,12 @@ runCommand "transfer-report.pdf"
   ''
     set -e
     echo "Putting resources in place" 1>&2
-    ln -s "$bibtex" ./bibtex.bib
-    for S in $styles
+    cp -sr "$src"/*  ./
+    ln -s  "$bibtex" ./bibtex.bib
+    echo "$styles" | jq -rc 'keys | .[]' | while read -r S
     do
-      cp -s "$S" ./
+      F=$(echo "$styles" | jq -r -c --arg s "$S" '.[$s]')
+      ln -s "$F" "./$S"
     done
 
     echo "Rendering" 1>&2
