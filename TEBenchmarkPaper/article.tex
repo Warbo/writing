@@ -138,10 +138,10 @@ assistants and their libraries, in mathematics education and research, and
 (of special concern for the authors) in the specification, verification,
 optimisation and testing of software.
 
-Existing attempts at tackling this problem have been found difficult to compare
-and study, due partially to the variety of approaches taken, but also because of
-the inherent ambiguity of the task and the different goals emphasised by their
-authors and evaluation methods.
+Existing attempts at tackling this problem are difficult to compare, due
+partially to the variety of approaches taken, but also because of the inherent
+ambiguity of the task and the different goals emphasised by their designers and
+their choice of evaluation method.
 
 We attempt to solve this discrepancy, at least for the foreseeable future, by
 defining a standard, unambiguous benchmarking approach with which to compare
@@ -149,12 +149,12 @@ ATE systems. Our contributions include:
 
 \begin{itemize}
 \item A general methodology for benchmarking ATE systems.
-\item Resolving the issue of ``interestingness'' through the use theorem-proving
-  benchmarks as a ground-truth.
+\item Resolving the issue of ``interestingness'' through the use of
+  theorem-proving benchmarks as a ground-truth.
 \item A specific instantiation of this methodology, using the Tons of Inductive
   Problems benchmark as a corpus.
-\item Automated tooling to produce this benchmark and analyse its output.
-\item Application of this methodology to the QuickSpec and IsaCoSy ATE systems,
+\item Automated tooling to perform this benchmarking.
+\item Application of our methodology to the QuickSpec and IsaCoSy ATE systems,
   and a discussion of the results.
 \end{itemize}
 
@@ -211,28 +211,35 @@ concluding remarks in \ref{sec:conclusion}.
   \label{figure:list_theory}
 \end{figure}
 
-If we have a logical theory, for example the theory of lists shown in figure
+Given a logical theory, like the theory of lists shown in figure
 \ref{figure:list_theory}, we may want to find theorems which describe its
-behaviour. For a software library we may want to verify that certain
-(un)desirable properties do (not) hold; we may also want to \emph{optimise}
+behaviour. This could be for mathematical curiosity, or due to the theory's
+importance in some domain. In particular, for theories which capture the
+semantics of some software library, we may want to verify that certain
+(un)desirable properties do (not) hold; we might also want to \emph{optimise}
 programs using this library, rewriting expressions into a form which requires
-less time, memory, network usage, etc. To avoid altering the program's result,
-it is important to prove particular rewrite rules correct. Consider the
-following theorem:
+less time, memory, network usage, etc. To avoid altering a program's result,
+such rewrites should come with theorems proving their correctness, such as the
+following theorem for our theory of lists:
 
 \begin{equation} \label{eq:mapreduce}
   \forall f. \forall xs. \forall ys. \text{map}(f, \text{append}(xs, ys)) = \text{append}(\text{map}(f, xs), \text{map}(f, ys))
 \end{equation}
 
 This justifies a rewrite rule for splitting a single $\text{map}$ call into
-multiple independent calls dealing with different sections of the list. This is
-useful for the ``map/reduce'' programming paradigm, as each call can be
-evaluated by a separate machine in parallel.
+multiple independent calls dealing with different sections of a list. Such rules
+are useful optimisations since each call can be evaluated in parallel, leading
+to the ``map/reduce'' programming paradigm.
+
+All of these example use cases require the ability to discover theorems about
+some particular theory. This is a hard problem in general, but presents
+opportunities for automation due to the precise, symbolic nature of the domain.
 
 \subsection{Theory Exploration}
 \label{sec:te}
 
-Discovering theorems from an arbitrary theory requires two steps:
+The task of discovering theorems in an arbitrary theory can be broken down into
+two steps:
 
 \begin{itemize}
 \item \emph{Exploring} the theory, to find patterns suitable for posing as
@@ -240,21 +247,22 @@ Discovering theorems from an arbitrary theory requires two steps:
 \item \emph{Proving} that those conjectures are theorems.
 \end{itemize}
 
-Lots of research has been devoted to the second step, resulting in the field of
-Automated Theorem Proving (ATP) and its spinoff applications. Less attention has
-been paid to the first step, that of Automated Theory Exploration (ATE).
+This second step is studied extensively in the field of Automated Theorem
+Proving (ATP). Less attention has been paid to the first step, that of
+Automated Theory Exploration (ATE).
 
-A major challenge in ATE is the requirement for conjectures to be
-``interesting'', since this is an imprecise term with many different
-interpretations, which is reflected in the variety of disparate approaches taken
-so far.
+A major challenge in ATE is choosing how to narrow down the set of generated
+conjectures to those deemed ``interesting'', since this is an imprecise term
+with many different interpretations. For example, all existing approaches agree
+that simple tautologies are ``uninteresting'', but differ when it comes to more
+complex statements.
 
-A survey of these systems and their notions of ``interestingness'' is given by
-Colton et al~\cite{colton2000notion}, for both conjectures and \emph{concepts}
-(the contents of a theory, which for ATE we consider to be provided as input,
-rather than part of the generating process). We summarise those aspects relevant
-to conjecture formation in table \ref{table:colton}, along with later systems
-we have studied.
+A survey of ATE systems and their notions of ``interestingness'' is given by
+Colton et al~\cite{colton2000notion}. Their survey also includes \emph{concept
+  formation}, which corresponds to the automatic creation of theories, although
+We ignore this as a separate concern: the ATE task assumes that a theory is
+provided. We summarise those aspects relevant to conjecture formation in table
+\ref{table:colton}, and extend the comparison with three more recent systems.
 
 \begin{table}
   \begin{center}
@@ -286,29 +294,25 @@ we have studied.
   \label{table:colton}
 \end{table}
 
-One aspect mentioned in the survey is that ``interestingness'' is not just a
-measure of output quality, but can also impact the core design of a system. For
-example, the use of constraint solving in IsaCoSy is to prevent forming
-conjectures which are simple substitutions of previous ones; this is because the
-designers consider such conjectures to be uninteresting. This further
-complicates comparison of systems based on standalone evaluations, since
-assumptions about such behaviour may be implicit in the interpretation (e.g. an
-analysis of IsaCoSy conjectures does not need to consider substitutions), and
-each methodology will be using different assumptions.
-
 \subsection{Existing Evaluations}
 \label{sec:existing}
 
-The variety of existing ATE systems, their different domains, and their varying
-interpretations of what is interesting makes it difficult to directly compare
-their performance.
+The criteria for ``interestingness'' in table \ref{table:colton} not only allow
+the results of ATE systems to be evaluated, but they also affect the choice of
+algorithm used by those systems in the first place. This coupling between
+implementation detail and assessment method makes it difficult to compare
+existing approaches, since the assumptions made by each evaluation methodology
+may lead to incompatible results. For example, the design of IsaCoSy treats
+simple substitutions of existing conjectures as uninteresting; yet this
+criterion is absent from its evaluation, since the algorithm uses a constraint
+solver to entirely avoid such results.
 
-Whilst all offer insights into the ATE problem, we will limit ourselves to those
-operating in higher-order logic and inductive theories, since this domain is the
-most relevant for our interest in analysing software. The relevant systems in
-this domain are QuickSpec, operating on functions in the Haskell programming
-language; and IsaCoSy and IsaScheme, which operate in the Isabelle proof
-assistant.
+If we limit ourselves to exploring higher-order theories with inductive types
+(a domain closely matching our interest in analysing software), we do find a
+direct comparison of three systems~\cite{claessen2013automating}: QuickSpec (the
+conjecture-generating component of HipSpec), IsaCoSy and IsaScheme. This is a
+\emph{precision/recall} analysis, providing the same theories to each system and
+comparing the set of generated conjectures against a \emph{ground truth}.
 
 There are three aspects to consider when we evaluate an ATE system:
 
