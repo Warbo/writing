@@ -1,31 +1,25 @@
-with {
-  inherit (import <nixpkgs> {}) fetchurl latestGit stdenv texlive;
-
-  bibtex     = ../Bibtex.bib;
-  haskell-te = null;#latestGit { url = http://chriswarbo.net/git/haskell-te.git; };
+with rec {
+  inherit (import ../resources) bibtex nixpkgs styles;
+  inherit (nixpkgs.repo1609.configless) fetchurl runCommand texlive;
 };
 
-stdenv.mkDerivation {
-  inherit bibtex;
-  name = "ml4hs-tech-report";
-  src  = ./.;
+runCommand "ml4hs-tech-report"
+  {
+    inherit bibtex;
+    src    = ./.;
+    styles = [ styles."mmm.sty" styles."psfig.sty" styles."mathpartir.sty" ];
+    cmd    = ''
+      pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
+    '';
 
-  styles = [
-    ../TransferReport/mmm.sty
-    ../TransferReport/psfig.sty
-    ../TransferReport/mathpartir.sty
-  ];
-
-  cmd = "pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report";
-
-  buildInputs = [ (texlive.combine {
-                    inherit (texlive) collection-latexrecommended
-                                      algorithmicx algorithms paralist
-                                      listings csquotes etoolbox epsf
-                                      tikz-qtree titlesec;
-                  }) ];
-
-  buildCommand = ''
+    buildInputs = [ (texlive.combine {
+                      inherit (texlive) collection-latexrecommended
+                                        algorithmicx algorithms paralist
+                                        listings csquotes etoolbox epsf
+                                        tikz-qtree titlesec;
+                    }) ];
+  }
+  ''
     source $stdenv/setup
 
     cp -r "$src" ./src
@@ -49,5 +43,4 @@ stdenv.mkDerivation {
     $cmd
 
     cp report.pdf "$out"
-  '';
-}
+  ''

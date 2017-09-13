@@ -1,5 +1,5 @@
-with import <nixpkgs> {};
-
+with { inherit (import ../resources) nixpkgs; };
+with nixpkgs.repo1703."2cc683b";
 runCommand "render"
   {
     buildInputs    = [ goat pandoc panpipe panhandle ];

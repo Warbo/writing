@@ -1,7 +1,9 @@
-with import <nixpkgs> {};
+with { inherit (import ../resources) nixpkgs; };
+with nixpkgs.repo1703.configless;
 
 runCommand "CICM-2017-report"
   {
+    source      = ./report.md;
     buildInputs = [
       pandoc
       (texlive.combine {
@@ -10,7 +12,6 @@ runCommand "CICM-2017-report"
           algorithms frankenstein csquotes helvetic paralist chktex enumitem;
       })
     ];
-    source      = ./report.md;
   }
   ''
     mkdir "$out"

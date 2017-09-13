@@ -1,6 +1,6 @@
 with builtins;
 with rec {
-  inherit (import <nixpkgs> {})
+  inherit ((import ../resources).nixpkgs.repo1609.ffa6543)
     haskellPackages lib pandoc panhandle panpipe runCommand texlive withNix;
 };
 with lib;
