@@ -1,7 +1,9 @@
-with import <nixpkgs> {};
-with (callPackage ../support.nix {});
+with rec {
+  inherit (import ../../resources)        bibtex nixpkgs;
+  inherit (nixpkgs.repo1609."2cc683b")    callPackage runCommand;
+  inherit (callPackage ../support.nix {}) tex;
+};
 
-{ bibtex ? ../../Bibtex.bib }:
 runCommand "phd-symposium-2017-abstract.pdf"
   {
     inherit bibtex;

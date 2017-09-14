@@ -1,19 +1,21 @@
-with import <nixpkgs> {};
-with (callPackage ../support.nix {});
+with rec {
+  inherit (import ../../resources)        bibtex nixpkgs;
+  inherit (nixpkgs.repo1609."2cc683b")
+    callPackage ditaa ghostscript glibcLocales imagemagick jq runCommand;
+  inherit (callPackage ../support.nix {}) renderers tex;
+};
 
-{ bibtex ? ../../Bibtex.bib }:
 runCommand "phd-symposium-2017-slides.html"
   {
     inherit bibtex;
-    buildInputs = [ ditaa ghostscript imagemagick jq ] ++ renderers;
+    buildInputs    = [ ditaa ghostscript imagemagick jq ] ++ renderers;
 
     # Required for Haskell and Perl to not barf at unicode
     LANG           = "en_US.UTF-8";
     LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive";
 
-    slides   = ./slides.md;
-
-    TABLE_IMAGE = ./table.png;
+    slides         = ./slides.md;
+    TABLE_IMAGE    = ./table.png;
   }
   ''
     export HOME="$PWD"
