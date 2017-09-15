@@ -37,6 +37,7 @@ with rec {
                                           }) {
     "ffa6543" = "08hi2j38sy89sk5aildja453yyichm2jna8rxk4ad44h0m2wy47n";
     "2cc683b" = "1xm2jvia4n002jrk055c3csy8qvyjw9h0vilxzss0rb8ik23rn9g";
+    "de1ceec" = "0km3jb3g80v3s6ja8v7nyk6jm1kd5j68yn68kyfdw800hx2qnz6c";
   };
 
   # Particular versions of nixpkgs
