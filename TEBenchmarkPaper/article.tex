@@ -59,15 +59,45 @@ grestore
 
 % please place your own definitions here and don't use \def but
 % \newcommand{}{}
-%
+
+% For example theory of lists
+\newcommand{\function}{\rightarrow}
+\newcommand{\Zero}{\text{Z}}
+\newcommand{\Succ}{\text{S}}
+\newcommand{\List}{\text{List}}
+\newcommand{\ListA}{\text{List} \  a}
+\newcommand{\Nil}{\text{Nil}}
+\newcommand{\Cons}{\text{Cons}}
+\newcommand{\Head}{\text{head}}
+\newcommand{\Tail}{\text{tail}}
+\newcommand{\Append}{\text{append}}
+\newcommand{\Reverse}{\text{reverse}}
+\newcommand{\Length}{\text{length}}
+\newcommand{\Map}{\text{map}}
+\newcommand{\Foldl}{\text{foldl}}
+\newcommand{\Foldr}{\text{foldr}}
+
+% For interestingness table
+\newcommand{\iE}{\textbf{E}}
+\newcommand{\iN}{\textbf{N}}
+\newcommand{\iS}{\textbf{S}}
+\newcommand{\iA}{\textbf{A}}
+\newcommand{\iC}{\textbf{C}}
+\newcommand{\iU}{\textbf{U}}
+\newcommand{\tIFF}{if-and-only-if}
+\newcommand{\tNE}{non-exists}
+\newcommand{\tIMP}{implies}
+\newcommand{\tRow}[1]{#1 \\ \hline}
+
 % Insert the name of "your journal" with
 \journalname{Journal of Automated Reasoning}
 
 \begin{document}
 
-\title{Quantitative Benchmarking for Automatically Generated Conjectures%\thanks{Grants or other notes
-%about the article that should go on the front page should be
-%placed here. General acknowledgments should be placed at the end of the article.}
+\title{Quantitative Benchmarking for Automatically Generated Conjectures%\thanks
+% {Grants or other notes about the article that should go on the front page
+% should be placed here. General acknowledgments should be placed at the end of
+% the article.}
 }
 % \subtitle{Do you have a subtitle?\\ If so, write it here}
 
@@ -94,19 +124,8 @@ grestore
 % The correct dates will be entered by the editor
 
 \maketitle
-%IGNORE ISABELLE THEORIES FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-%IGNORE CLUSTERING FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-%COMPARE COLTON ET AL.
-
-% Evaluation of conjectures, sets of conjectures, systems
-% what constitutes a good/desired output (in each author's terms)? This combines
-% their evaluation with their (system-specific) assumptions (e.g. IsaCoSy doesn't
-% generate redundant terms: non-redundancy is clearly a goal, but it's not measured
-% in eval since it's assumed based on system's construction)
 
 % Look carefully at each system's (paper's) eval section
-% Make a table like tabl 1 of Colton et al
 
 % Make it clear that methodology is the point (it's not just a detail, like in a
 % chemistry paper for example)
@@ -161,8 +180,8 @@ ATE systems. Our contributions include:
 Section \ref{sec:background} describes the ATE problem in more detail, along
 with existing approaches and their evaluation methodologies. We explain our
 proposal for a more general benchmark in section \ref{sec:proposal} and
-section \ref{sec:application} shows the results when applied to existing ATE tools.
-Analysis of these results is given in section \ref{sec:discussion} and
+section \ref{sec:application} shows the results when applied to existing ATE
+tools. Analysis of these results is given in section \ref{sec:discussion} and
 concluding remarks in \ref{sec:conclusion}.
 
 %- Existing approaches are difficult to compare
@@ -182,32 +201,31 @@ concluding remarks in \ref{sec:conclusion}.
 % more detail about evaluation, interestingness, etc. Reference Simon/Alan
 % interestingness, e.g. examples from textbooks, etc.
 
-% split into sub-sections, e.g. motivation, existing approaches, etc.
-
 \begin{figure}
   \begin{equation*}
     \begin{split}
-      \forall a. \text{Nil} &: \text{List} \  a \\
-      \forall a. \text{Cons} &: a \rightarrow \text{List} \  a \rightarrow \text{List} \ a \\
-      \text{head}(\text{Cons}(x, xs)) &= x \\
-      \text{tail}(\text{Cons}(x, xs)) &= xs \\
-      \text{append}(xs, \text{Nil}) &= xs \\
-      \text{append}(\text{Cons}(x, xs), ys) &= \text{Cons}(x, \text{append}(xs, ys)) \\
-      \text{reverse}(\text{Nil}) &= \text{Nil} \\
-      \text{reverse}(\text{Cons}(x, xs)) &= \text{append}(\text{reverse}(xs), \text{Cons}(x, \text{Nil})) \\
-      \text{length}(\text{Nil}) &= \text{Z} \\
-      \text{length}(\text{Cons}(x, xs)) &= \text{S} (\text{length}(xs)) \\
-      \text{map}(f, \text{Nil}) &= \text{Nil} \\
-      \text{map}(f, \text{Cons}(x, xs)) &= \text{Cons}(f(x), \text{map}(f, xs)) \\
-      \text{foldl}(f, x, \text{Nil}) &= x \\
-      \text{foldl}(f, x, \text{Cons}(y, ys)) &= \text{foldl}(f, f(x, y), xs) \\
-      \text{foldr}(f, \text{Nil}, y) &= y \\
-      \text{foldr}(f, \text{Cons}(x, xs), y) &= f(x, \text{foldr}(f, xs, y))
+      \forall a. \Nil            &: \ListA                                  \\
+      \forall a. \Cons           &: a \rightarrow \ListA \rightarrow \ListA \\
+      \Head(\Cons(x, xs))        &= x                                       \\
+      \Tail(\Cons(x, xs))        &= xs                                      \\
+      \Append(\Nil,         ys)  &= ys                                      \\
+      \Append(\Cons(x, xs), ys)  &= \Cons(x, \Append(xs, ys))               \\
+      \Reverse(\Nil)             &= \Nil                                    \\
+      \Reverse(\Cons(x, xs))     &= \Append(\Reverse(xs), \Cons(x, \Nil))   \\
+      \Length(\Nil)              &= \Zero                                   \\
+      \Length(\Cons(x, xs))      &= \Succ (\Length(xs))                     \\
+      \Map(f, \Nil)              &= \Nil                                    \\
+      \Map(f, \Cons(x, xs))      &= \Cons(f(x), \Map(f, xs))                \\
+      \Foldl(f, x, \Nil)         &= x                                       \\
+      \Foldl(f, x, \Cons(y, ys)) &= \Foldl(f, f(x, y), xs)                  \\
+      \Foldr(f, \Nil,         y) &= y                                       \\
+      \Foldr(f, \Cons(x, xs), y) &= f(x, \Foldr(f, xs, y))
     \end{split}
   \end{equation*}
-  \caption{A simple theory defining a $\text{List}$ type and some associated
-    operations. $\text{Z}$ and $\text{S}$ are from a Peano encoding of the natural numbers.
-    Taken from \cite{Johansson.Dixon.Bundy:conjecture-generation}}
+  \caption{A simple theory defining a $\List$ type and some associated
+    operations. $\Zero$ and $\Succ$ are from a Peano encoding of the
+    natural numbers. Taken from
+    \cite{Johansson.Dixon.Bundy:conjecture-generation}}
   \label{figure:list_theory}
 \end{figure}
 
@@ -223,10 +241,11 @@ such rewrites should come with theorems proving their correctness, such as the
 following theorem for our theory of lists:
 
 \begin{equation} \label{eq:mapreduce}
-  \forall f. \forall xs. \forall ys. \text{map}(f, \text{append}(xs, ys)) = \text{append}(\text{map}(f, xs), \text{map}(f, ys))
+  \forall f. \forall xs. \forall ys.
+    \Map(f, \Append(xs, ys)) = \Append(\Map(f, xs), \Map(f, ys))
 \end{equation}
 
-This justifies a rewrite rule for splitting a single $\text{map}$ call into
+This justifies a rewrite rule for splitting a single $\Map$ call into
 multiple independent calls dealing with different sections of a list. Such rules
 are useful optimisations since each call can be evaluated in parallel, leading
 to the ``map/reduce'' programming paradigm.
@@ -238,74 +257,115 @@ opportunities for automation due to the precise, symbolic nature of the domain.
 \subsection{Theory Exploration}
 \label{sec:te}
 
-The task of discovering theorems in an arbitrary theory can be broken down into
-two steps:
+The task of discovering theorems in an arbitrary theory can be described as the
+interplay of several processes:
+
+% Is it clear?
 
 \begin{itemize}
+\item \emph{Forming} or refining the theory, to add new definitions and
+  concepts.
 \item \emph{Exploring} the theory, to find patterns suitable for posing as
   conjectures.
 \item \emph{Proving} that those conjectures are theorems.
 \end{itemize}
 
-This second step is studied extensively in the field of Automated Theorem
-Proving (ATP). Less attention has been paid to the first step, that of
-Automated Theory Exploration (ATE).
+The latter is studied extensively in the field of Automated Theorem Proving
+(ATP). Less attention has been paid to automating the first two, those of
+\emph{automated theory formation} and \emph{automated theory exploration} (ATE).
 
-A major challenge in ATE is choosing how to narrow down the set of generated
-conjectures to those deemed ``interesting'', since this is an imprecise term
-with many different interpretations. For example, all existing approaches agree
-that simple tautologies are ``uninteresting'', but differ when it comes to more
-complex statements.
+We focus on ATE, where a major challenge is choosing how to narrow down the set
+of generated conjectures to those deemed ``interesting'', since this is an
+imprecise term with many different interpretations. For example, all existing
+approaches agree that simple tautologies are ``uninteresting'', but differ when
+it comes to more complex statements.
 
-A survey of ATE systems and their notions of ``interestingness'' is given by
-Colton et al~\cite{colton2000notion}. Their survey also includes \emph{concept
-  formation}, which corresponds to the automatic creation of theories, although
-We ignore this as a separate concern: the ATE task assumes that a theory is
-provided. We summarise those aspects relevant to conjecture formation in table
-\ref{table:colton}, and extend the comparison with three more recent systems.
+A survey of systems for theory formation and exploration, and their notions of
+``interestingness'' (for concepts and conjectures), is given by Colton et
+al~\cite{colton2000notion}. Six notions of ``interestingness'' are identified in
+these systems, their use by each is summarised in table \ref{table:colton},
+along with (our interpretation of) their use in three more recent ATE systems.
+These notions, as applied to ATE, are:
+
+\textbf{Empirical plausibility}, which checks whether a property holds across
+some specific examples. This is especially useful for avoiding  false
+conjectures, without resorting to a full proof search.
+
+\textbf{Novelty} is whether a conjecture, or one isomorphic or more general, has
+already been seen.
+
+\textbf{Surprisingness} of a conjecture is whether or not it is ``obvious'', for
+example if it is an instance of a tautology.
+
+\textbf{Applicability} depends on the number of models in which a conjecture
+holds. The system of Bagai et al conjectures the \emph{non-existence} of
+objects, and hence favours statements with \emph{zero} applicability. Other
+systems treat applicability as a positive aspect: the more applicable the
+statement, the more interesting it is.
+
+\textbf{Comprehensibility} is the \emph{complexity} of a statement. Simpler
+statements are considered more interesting, and many of the search algorithms
+explore simpler/smaller statements before complex/larger ones, to more
+efficiently find those which are interesting.
+
+\textbf{Utility} is the relevance or usefulness of a conjecture to the user's
+particular task. For example, if we want to find optimising rewrite rules such
+as equation \ref{eq:mapreduce}, then utility would include whether or not a
+conjecture justifies a rewrite rule, the difference in resource usage of the
+expressions involved, and how common those expressions are in real usage.
 
 \begin{table}
-  \begin{center}
-    \begin{tabular}{ |l|l|c|c|c|c|c|c| }
-      \hline
-      \multirow{2}{*}{\textbf{Program}}                 &
-      \multirow{2}{*}{\textbf{Conjecture Types}}        &
-      \multicolumn{6}{c}{\textbf{Interestingness Measures}} \\
-      \hhline{~~------}
-         & & \textbf{E} & \textbf{N} & \textbf{S} & \textbf{A} & \textbf{C} & \textbf{U} \\
-
-      \hline
-      AM          & if-and-only-if, implies, non-exists & X & X & X & X & X & X \\ \hline
-      GT          & if-and-only-if, implies, non-exists & X & X & X & X & X & X \\ \hline
-      Graffiti    & inequalities                        & X & X & X &   & X & X \\ \hline
-      Bagai et al & non-exists                          &   & X &   & X & X &   \\ \hline
-      HR          & if-and-only-if, implies, non-exists & X & X & X & X & X & X \\ \hline
-      QuickSpec   & equalities                          & X & X &   &   & X &   \\ \hline
-      IsaCoSy     & equalities                          &   & X &   &   & X &   \\ \hline
-      IsaScheme   & equalities                          &   &   &   &   & X &   \\ \hline
-    \end{tabular}
-  \end{center}
+  \centering
+  \begin{tabular}{ |l|l|c|c|c|c|c|c| }
+    \hline
+    \multirow{2}{*}{\textbf{Program}}                     &
+    \multirow{2}{*}{\textbf{Conjecture Types}}            &
+    \multicolumn{6}{c}{\textbf{Interestingness Measures}} \\ \hhline{~~------}
+    \tRow{            &                    & \iE & \iN & \iS & \iA & \iC & \iU}
+    \tRow{AM          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
+    \tRow{GT          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
+    \tRow{Graffiti    & inequalities       &   X &   X &   X &     &   X &   X}
+    \tRow{Bagai et al & \tNE               &     &   X &     &   X &   X &    }
+    \tRow{HR          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
+    \tRow{QuickSpec   & equalities         &   X &   X &     &     &   X &    }
+    \tRow{IsaCoSy     & equalities         &     &   X &     &     &   X &    }
+    \tRow{IsaScheme   & equalities         &     &     &     &     &   X &    }
+  \end{tabular}
   \caption{Classification of ATE systems from \cite{colton2000notion}, extended
     to those compared in \cite{claessen2013automating} (QuickSpec is the
     conjecture generation component of HipSpec). The interestingness measures
-    are \textbf{E}mpirical plausibility, \textbf{N}ovelty,
-    \textbf{S}urprisingness, \textbf{A}pplicability, \textbf{C}omprehensibility
-    (low complexity) and \textbf{U}tility.}
+    are \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
+    \iA{}pplicability, \iC{}omprehensibility (low complexity) and \iU{}tility.}
   \label{table:colton}
 \end{table}
+
+These criteria, especially empirical plausibility and comprehensibility, are not
+only used for analysing results after the fact, but instead may form a core part
+of an algorithm's design decisions. For example, the designers of IsaCoSy
+consider simple substitutions of existing conjectures (i.e. those with low
+novelty) to be uninteresting, and hence their system includes a constraint
+solving component which avoids generating such statements entirely.
+
+With such ambiguous and varied goals, approaches and assessment criteria it is
+difficult to compare ATE systems in a quantitative way, and hence to form some
+measure of ``progress'' for the field.
 
 \subsection{Existing Evaluations}
 \label{sec:existing}
 
-The criteria for ``interestingness'' in table \ref{table:colton} not only allow
-the results of ATE systems to be evaluated, but they also affect the choice of
-algorithm used by those systems in the first place. This coupling between
-implementation detail and assessment method makes it difficult to compare
-existing approaches, since the assumptions made by each evaluation methodology
-may lead to incompatible results. For example, the design of IsaCoSy treats
-simple substitutions of existing conjectures as uninteresting; yet this
-criterion is absent from its evaluation, since the algorithm uses a constraint
-solver to entirely avoid such results.
+There are three aspects to consider when we evaluate an ATE system:
+
+\begin{itemize}
+\item The quality of each conjecture, which is the ``interestingness'' discussed
+  above.
+\item The \emph{set} of conjectures produced, to assess things like novelty, as
+  well as consistency of the results.
+\item Performance of the system, to find the balance struck between output
+  quality and time taken.
+\end{itemize}
+
+% TODO: Should "generality" be one? Or is that just an implicit "don't cheat"
+% assumption?
 
 If we limit ourselves to exploring higher-order theories with inductive types
 (a domain closely matching our interest in analysing software), we do find a
@@ -314,20 +374,9 @@ conjecture-generating component of HipSpec), IsaCoSy and IsaScheme. This is a
 \emph{precision/recall} analysis, providing the same theories to each system and
 comparing the set of generated conjectures against a \emph{ground truth}.
 
-There are three aspects to consider when we evaluate an ATE system:
-
-\begin{itemize}
-\item The quality of each conjecture, which is the ``interestingness'' discussed
-  above.
-\item The \emph{set} of conjectures produced, to assess things like consistency
-  and redundancy.
-\item Performance of the system, to find the balance struck between output
-  quality and time taken.
-\end{itemize}
-
-Existing evaluation of these three systems have assessed the interestingness of
-their output by operating in well-studied theories, and taking a set of existing
-theorems as a \emph{ground truth} to compare against.
+% TODO: precision/recall is evaluating the set of conjectures. It assumes that
+% interestingness == membership in the ground truth, and ignores efficiency
+% completely
 
 A common choice of ground truth is the standard library of a theorem prover,
 such as Isabelle/HOL; the library authors have gone to the effort of stating,
@@ -339,7 +388,8 @@ the benchmark based on Isabelle/HOL's theory of natural numbers given
 in~\cite{Johansson.Dixon.Bundy:conjecture-generation} contains only 4
 definitions and a ground truth of 12 theorems. Whilst such benchmarks allow
 objective comparisons between different approaches, their narrow scope doesn't
-provide much indication of performance in different, especially \emph{novel}, domains.
+provide much indication of performance in different, especially \emph{novel},
+domains.
 
 \section{Theory Exploration Benchmark}
 \label{sec:proposal}
@@ -382,7 +432,7 @@ methodology is as follows:
 \item Collect together all definitions found in TIP into one large theory,
   removing $\alpha$-equivalent duplicates.
 \item For each type, provide extra functions which act as constructors and
-  destructors. For example, the $\text{List}$ type would have extra constructor
+  destructors. For example, the $\List$ type would have extra constructor
   functions $\text{constructor-Nil}$ and $\text{constructor-Cons}$, and
   destructor functions $\text{destructor-head}$ and $\text{destructor-tail}$.
   This allows us to ignore constructors and destructors, and concentrate solely
@@ -393,7 +443,7 @@ methodology is as follows:
 \item \emph{Sample} a sub-set of functions from the large theory uniformly, such
   that we choose all of the names referenced by at least one of the theorems
   (for example, theorem \ref{eq:mapreduce} references the names
-  $\text{map}$ and $\text{append}$).
+  $\Map$ and $\Append$).
 \item Provide this sub-set as an input to the ATE system, timing how long it
   takes to complete.
 \item Perform precision/recall analysis on the resulting conjectures, against
@@ -430,9 +480,9 @@ the field. Whilst the current implementation is quite limited, we welcome
 additions from other researchers, to more closely align the benchmark with their
 goals, and the strenghts and weaknesses of their systems.
 
-``Solving'' this benchmark suite would not solve the problem of theory exploration in general,
-so more ambitious goals must be set in the future; but we have found that there is still a
-long way to go until that problem arises.
+``Solving'' this benchmark suite would not solve the problem of theory
+exploration in general, so more ambitious goals must be set in the future; but
+we have found that there is still a long way to go until that problem arises.
 
 \begin{acknowledgements}
   We are grateful to Jianguo Zhang for help with our statistical analysis.
