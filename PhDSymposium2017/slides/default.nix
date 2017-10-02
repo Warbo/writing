@@ -1,6 +1,6 @@
 with rec {
   inherit (import ../../resources)        bibtex nixpkgs;
-  inherit (nixpkgs.repo1609."2cc683b")
+  inherit (nixpkgs.repo1609."00ef7f9")
     callPackage ditaa ghostscript glibcLocales imagemagick jq runCommand;
   inherit (callPackage ../support.nix {}) renderers tex;
 };

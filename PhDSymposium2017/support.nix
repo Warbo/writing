@@ -1,14 +1,11 @@
 # Supporting materials shared by abstract/ and slides/
-{ callPackage, haskellPackages, jq, latestGit, lib, racket, runCommand,
-  writeScript }:
+{ callPackage, jq, latestGit, lib, pandocPkgs, racket, runCommand, writeScript }:
 with builtins;
 with lib;
 rec {
   tex = callPackage ./tex.nix {};
 
-  renderers = [ tex ] ++
-    (with haskellPackages;
-     [ pandoc panpipe panhandle pandoc-citeproc ]);
+  renderers = [ pandocPkgs tex ];
 
   haskell-te =
     with rec {
