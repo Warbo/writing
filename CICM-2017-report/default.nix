@@ -1,20 +1,29 @@
 with { inherit (import ../resources) nixpkgs; };
-with nixpkgs.repo1703.configless;
+with nixpkgs.repo1703."00ef7f9";
 
-runCommand "CICM-2017-report"
-  {
-    source      = ./report.md;
-    buildInputs = [
-      pandoc
-      (texlive.combine {
-        inherit (texlive)
-          scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e
-          algorithms frankenstein csquotes helvetic paralist chktex enumitem;
-      })
-    ];
-  }
-  ''
-    mkdir "$out"
-    pandoc --latex-engine=xelatex -o "$out/report.pdf"  "$source"
-    pandoc --standalone           -o "$out/report.html" "$source"
-  ''
+{
+  pdf = runCommand "CICM-2017-report.pdf"
+    {
+      source      = ./report.md;
+      buildInputs = [
+        pandocPkgs
+        (texlive.combine {
+          inherit (texlive)
+            scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e
+            algorithms frankenstein csquotes helvetic paralist chktex enumitem;
+        })
+      ];
+    }
+    ''
+      pandoc --latex-engine=xelatex -o "$out"  "$source"
+    '';
+
+  html = runCommand "CICM-2017-report.html"
+    {
+      source      = ./report.md;
+      buildInputs = [ pandocPkgs ];
+    }
+    ''
+      pandoc --standalone -o "$out" "$source"
+    '';
+}
