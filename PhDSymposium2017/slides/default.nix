@@ -15,11 +15,11 @@ runCommand "phd-symposium-2017-slides.html"
     LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive";
 
     slides         = ./slides.md;
+    RUNTIMES       = ./runtimes.svg;
     TABLE_IMAGE    = ./table.png;
   }
   ''
     export HOME="$PWD"
-    cp "${./table.png}" ./
     pandoc -t slidy --standalone --self-contained --filter pandoc-citeproc \
                     --filter panpipe --filter panhandle \
                     --bibliography="$bibtex" \

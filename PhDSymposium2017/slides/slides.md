@@ -188,10 +188,10 @@ We have applied our benchmarking methodology to QuickSpec
 
 ```{.unwrap pipe="sh"}
 # | pandoc -f html -t json
-jq -sR '[{"unMeta":{}},[{"t":"RawBlock","c":["html",.]}]]' < /home/chris/Writing/PhDSymposium2017/abstract/runtimes.svg
+jq -sR '[{"unMeta":{}},[{"t":"RawBlock","c":["html",.]}]]' < "$RUNTIMES"
 #printf '[{"unMeta":{}},[{"RawBlock":{"Format":"html"}}
 #echo "<html><body>"
-#cat /home/chris/Writing/PhDSymposium2017/slides/runtimes.svg
+#cat "$RUNTIMES"
 #echo "</body></html>"
 #printf '<img src="/home/chris/Writing/PhDSymposium2017/slides/runtimes.svg" />'
 #printf '<img src="data:image/svg;base64,'
