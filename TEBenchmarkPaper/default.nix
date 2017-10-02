@@ -1,35 +1,42 @@
-with import <nixpkgs> {};
-with builtins;
+with rec {
+  inherit (import ../resources) bibtex nixpkgs;
+  inherit (nixpkgs.repo1609."00ef7f9") mkBin runCommand texlive unzip;
+  inherit (import ./supporting-materials) latex;
+};
 
-stdenv.mkDerivation {
-  inherit (import ./supporting-materials) /*support*/ latex;
+runCommand "benchmark-article.pdf"
+  {
+    inherit bibtex latex;
+    src         = ./.;
+    buildInputs = [
+      unzip
 
-  name        = "benchmark-article.pdf";
-  src         = ./.;
-  buildInputs = [
-    bash
-    gnumake
-    unzip
-    (texlive.combine {
-      inherit (texlive)
-        scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms
-        frankenstein csquotes multirow;
-    })
-  ];
-  buildPhase =
-    let cmd = "pdflatex -interaction=nonstopmode -halt-on-error --shell-escape article";
-     in ''
-          #cp -r "$support" ./support
-          ln -s ${../Bibtex.bib} ./Bibtex.bib
-          unzip "$latex"
-          find .
-          ${cmd}
-          bibtex article
-          ${cmd}
-          ${cmd}
+      (texlive.combine {
+        inherit (texlive)
+          scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms
+          frankenstein csquotes multirow;
+      })
+
+      (mkBin {
+        name   = "render";
+        script = ''
+          #!/usr/bin/env bash
+          exec pdflatex -interaction=nonstopmode \
+                        -halt-on-error \
+                        --shell-escape article
         '';
+      })
+    ];
+  }
+  ''
+    cp -r "$src"/*  ./
+    ln -s "$bibtex" ./Bibtex.bib
+    unzip "$latex"
 
-  installPhase = ''
-    cp article.pdf "$out"
-  '';
-}
+    render
+    bibtex article
+    render
+    render
+
+    mv article.pdf "$out"
+  ''
