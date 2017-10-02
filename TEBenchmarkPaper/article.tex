@@ -49,6 +49,9 @@ grestore
 \usepackage{hhline}
 \usepackage{mathtools}
 \usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{arrows, calc, decorations.pathreplacing, positioning,
+  shapes.geometric}
 % etc.
 
 \usepackage{attrib}
@@ -355,31 +358,52 @@ measure of ``progress'' for the field.
 
 There are three aspects to consider when we evaluate an ATE system:
 
-\begin{itemize}
+\begin{enumerate}
 \item The quality of each conjecture, which is the ``interestingness'' discussed
   above.
-\item The \emph{set} of conjectures produced, to assess things like novelty, as
-  well as consistency of the results.
+\item The quality of the \emph{set} of conjectures produced, used for relative
+  interestingness criteria like novelty, as well as to assess consistency.
 \item Performance of the system, to find the balance struck between output
   quality and time taken.
-\end{itemize}
+\end{enumerate}
 
 % TODO: Should "generality" be one? Or is that just an implicit "don't cheat"
 % assumption?
 
 If we limit ourselves to exploring higher-order theories with inductive types
 (a domain closely matching our interest in analysing software), we do find a
-direct comparison of three systems~\cite{claessen2013automating}: QuickSpec (the
-conjecture-generating component of HipSpec), IsaCoSy and IsaScheme. This is a
-\emph{precision/recall} analysis, providing the same theories to each system and
-comparing the set of generated conjectures against a \emph{ground truth}.
+direct comparison of three systems~\cite{claessen2013automating}: HipSpec,
+IsaCoSy and IsaScheme. QuickSpec, shown in table \ref{table:colton}, is the
+conjecture-generating component of HipSpec (which sends those conjectures into
+automated theorem provers).
 
-% TODO: precision/recall is evaluating the set of conjectures. It assumes that
-% interestingness == membership in the ground truth, and ignores efficiency
-% completely
+This comparison uses \emph{precision/recall analysis}: a particular set of
+definitions is chosen, such as those in figure \ref{figure:list_theory}, and a
+\emph{ground truth} is chosen as the 'ideal' set of conjectures which we would
+like an ATE system to produce from these definitions.
 
-A common choice of ground truth is the standard library of a theorem prover,
-such as Isabelle/HOL; the library authors have gone to the effort of stating,
+Each system is run, and their output compared to the ground truth. To score
+100\% on precision and recall, an ATE system must output all of the conjectures
+which appear in the ground truth, and nothing else:
+
+\begin{itemize}
+\item \emph{Precision} is the proportion of a system's output which appears in
+  the ground truth. This penalises systems which output large numbers of
+  conjectures in the hope that some turn out to be ``good''.
+\item \emph{Recall} is the proportion of the ground truth which appears in the
+  system's output. This penalises systems which overly restrict their output to
+  avoid generating ``bad'' conjectures.
+\end{itemize}
+
+Precision and recall fulfil our second requirement, by directly measuring the
+quality of the \emph{set} of conjectures. Their ``interestingness'' criterion is
+indirect: asking only whether or not a conjecture appears in the ground truth.
+A satisfactory solution to our first requirement hence requires careful choice
+of the ground truth set.
+
+This particular analysis takes its ground truths from the standard library of
+the Isabelle theorem prover, with one involving the natural numbers, and the
+other involving the list functions from figure \ref{figure:list_theory}. The library authors have gone to the effort of stating,
 proving and including these theorems in every copy of their software, which is a
 good indication that they are useful or important.
 
@@ -394,38 +418,253 @@ domains.
 \section{Theory Exploration Benchmark}
 \label{sec:proposal}
 
-We propose a larger, more ambitious method for evaluating ATE systems, which we
-call the Theory Exploration Benchmark (TEB). We take a similar approach to prior
-evaluations, but our ground truth comes from the extensive test suites which are
-already used to benchmark automated \emph{theorem provers}; which we repurpose
-for use in the theory \emph{exploration} setting.
+Our main contribution is a benchmarking methodology, shown in figure
+\ref{figure:flow_chart}, which generates both a large definition/ground-truth
+corpus (an order of magnitude larger than previous work) and a scalable,
+statistical approach to evaluating ATE systems using this corpus. We follow a
+precision/recall approach similar to the work described above, with the main
+difference being the source of definitions and ground truths: we take existing
+problem sets designed for automated \emph{theorem proving}, and adapt their
+content for use in the \emph{theory exploration} setting.
 
-To do this we can take a set of ATP tasks, for example proving the equation
-\ref{eq:mapreduce} from the theory in figure \ref{figure:list_theory}, and we
-split apart the definitions (to form a theory) from the theorem statements (to
-form our ground truth).
+\subsection{Preparation}
 
-We focus on the Tons of Inductive Problems (TIP) theorem proving
-benchmark~\cite{claessen2015tip}, since it has several desirable properties:
+Automated theorem proving is an active area of research, with large problem sets
+and regular competitions to prove as much as possible, as fast as possible.
+These problem sets are an opportunity for theory exploration, as their
+definitions and theorems can be used as a corpus, in the same way that Isabelle
+libraries have been used in the past.
+
+Some problem sets are more amenable for this purpose than others. The most
+suitable are those which meet the following criteria:
 
 \begin{itemize}
-\item Each problem provides separate definitions and a theorem statement; hence
-  it's not difficult to tease them apart for our purposes.
-\item Higher-order functions and inductively defined types are provided, which
-  corresponds to our desired domain.
-\item All together, TIP provides 219 distinct function definitions and 343
-  theorem statements, which is enough to fully exercise current ATE systems.
-\item Benchmark problems include examples from the theorem proving literature
-  as well as common program verification tasks, ensuring the resulting corpus is
-  relevant to researchers and practitioners.
-\item TIP's maintainers provide a set of tools, including translators from TIP's
-  native format (based on SMT-Lib~\cite{BarFT-SMTLIB}) to Haskell and Isabelle
-  (which are used by ATE systems).
+\item For each problem, there should be a clear separation between the theorem
+  to be proved and the definitions involved, such that the two can be easily and
+  meaningfully separated. This rules out problem sets like SMTLIB, where many
+  problems \emph{declare} a function, but leave its behaviour \emph{implicit} in
+  the logical structure of the theorem statement.
+\item Definitions should be \emph{strongly typed}, such that they can be
+  translated into the native language of each ATE system (in this work, those
+  languages are Haskell and Isabelle).
+\item The problem set should be relevant to the desired domain. In our case, we
+  desire higher-order functions and inductively defined types, which rules out
+  first-order languages/logics.
+\item Since it will act as our ground truth, the problem set should ideally
+  contain \emph{every} ``interesting'' conjecture involving its included
+  definitions. Realistically, we should aim for each definition to appear in
+  \emph{many} theorem statements; rather than each problem having unique
+  definitions.
+\item The problem set should be as large as possible, for robustness of the
+  resulting statistics.
 \end{itemize}
 
-From TIP, we automatically derive our Theory Exploration Benchmark (TEB), and
-provide tools to benchmark ATE systems and compare their results. Our
-methodology is as follows:
+Once a theorem proving problem set has been chosen, we must separate the
+definitions referenced by the theorems from the theorem statements themselves.
+The former will be used as input to the ATE systems under evaluation, whilst the
+latter form a ground truth corpus against which to compare the ATE output.
+
+It is important to ensure that there are no duplicate definitions: theory
+exploration does not depend on the names of functions, so neither should our
+analysis. For example, consider a problem set which includes a commutativity
+theorem for a \texttt{plus} function, and an associativity theorem for an
+\texttt{add} function, where the definitions of \texttt{plus} and \texttt{add}
+are $\alpha$-equivalent. We would expect an ATE system to conjecture
+commutativity and associativity for \emph{both} functions, or for \emph{neither}
+function, since they're equivalent. Yet a na\"ive precision/recall analysis
+would treat commutativity of \texttt{add} and associativity of \texttt{plus} as
+\emph{uninteresting}, since they don't appear in the ground truth.
+
+For this reason, duplicates should be removed (e.g. leaving those which appear
+first alphabetically), and any references in the theorem statements updated to
+use the remaining definition. In the above example, the \texttt{plus} function
+would be removed, and the commutativity theorem updated to reference
+\texttt{add} instead.
+
+\subsection{Sampling}
+
+We could, in theory, send these de-duplicated definitions straight into an ATE
+system, and use the updated theorem statements as the ground truth for analysis.
+However, this would cause two problems:
+
+\begin{itemize}
+\item The result would be a single data point, which makes it difficult to
+  infer performance \emph{in general}.
+\item It is impractical to run any existing ATE system on ``large'' inputs,
+  containing more than around 10 definitions.
+\end{itemize}
+
+To solve both of these problems we instead \emph{sample} a subset of
+definitions. Given a sample size, we choose a subset of that many definitions,
+and use that as our ATE input. We generate a corresponding ground truth by
+selecting those theorems from the corpus which only contain references to
+definitions that appear in our sample.
+
+Unfortunately, uniform sampling of definitions gives rise to a lottery, where
+for a large corpus and a fixed sample size, it becomes highly unlikely that a
+sample will contain the particular definitions required by a theorem. This would
+cause most samples to have an empty ground truth, and hence $0$ precision and
+undefined recall \emph{independent} of what the ATE system produces. This is
+clearly undesirable as an evaluation method.
+
+Instead, we only choose samples which admit at least one of the corpus theorems.
+We could do this using rejection sampling, but it is more efficient to sample
+the \emph{theorem statements}, weighted in proportion to the number of
+definitions they reference. Once a theorem is chosen, we use the referenced
+definitions as our sample, padding uniformly up to the required size (we ignore
+theorems which reference more definitions than our sample size).
+
+We form the ground truth as above: selecting all applicable theorems from the
+corpus, which is now guaranteed to be non-empty.
+
+\subsection{Evaluation}
+
+Given a sample of definitions and a corresponding ground truth, the actual
+execution of the ATE system proceeds as in prior work. We must translate the
+definitions into the required input format, which depends on the particular
+tool being studied, then we time the execution, with a cutoff after e.g. 1 hour.
+
+In our experiments we have found that memory usage also plays an important role,
+but rather than introducing an extra dimension we can account for this by simply
+allowing the system
+
+\begin{figure}
+  \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm,
+                           minimum height=1cm,text centered, draw=black]
+
+  \tikzstyle{io} = [trapezium, trapezium left angle=70,
+                    trapezium right angle=110, minimum width=1cm,
+                    minimum height=1cm, text centered, draw=black]
+
+  \tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm,
+                         text centered, draw=black]
+  \tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm,
+                          text centered, draw=black]
+
+  \tikzstyle{arrow} = [thick,->,>=stealth]
+
+  % Avoids too much padding in io shapes
+  \tikzset{trapezium stretches=true}
+
+  \centering
+  \begin{tikzpicture}[node distance=1cm]
+
+    % Preparation section
+
+    \node (in)  [io]{Theorem Proving Benchmark (TIP)};
+    \node (sep) [process,       below=1cm of in         ]{Separate definitions from theorems};
+    \node (def) [process, below  left=1.5cm and -1cm of sep]{Remove duplicate definitions};
+    \node (ref) [process, below right=1.5cm and -1cm of sep]{Update references};
+
+    \node (thy)  [startstop, below=1cm of def]{Full Theory};
+    \node (thm)  [startstop, below=1cm of ref]{Theorem Corpus};
+
+    \draw [arrow] (in)  -- (sep);
+    \draw [arrow] (def) -- (ref);
+    \draw [arrow] (def) -- (thy);
+    \draw [arrow] (ref) -- (thm);
+
+    % Arrows with labels
+    \path[->]
+        (sep) edge [arrow, sloped, above] node {definitions} (def)
+        (sep) edge [arrow, sloped, above] node {theorems}    (ref);
+
+    % Sampling section
+
+    \node (choose) [process, below=of thm   ]{Sample a theorem};
+    \node (deps)   [process, below=of choose]{List referenced definitions};
+
+    % Create dummy coordinate below deps, then use its y coordinate for pad
+    \coordinate [below=of deps] (padDummy);
+    \path let \p{dummy} = (padDummy),
+              \p{in}    = (in)
+              in coordinate (padPos) at (\x{in}, \y{dummy});
+    \node (pad)  [process, at=(padPos)]{Sample definitions to pad list};
+
+    \node (find) [process,   below right=1.5cm and -1cm of pad]{List all applicable theorems};
+    \node (sthy) [startstop, below  left=1.5cm and -1cm of pad]{Sampled Theory};
+
+    \node (sthm)  [startstop, below=of find]{Ground Truth};
+
+
+    % Calculate position of (size) using let, then define as normal
+    \path let \p{pad}    = (pad),
+              \p{choose} = (choose)
+           in coordinate (sizePos) at (\x{pad},\y{choose});
+    \node (size) [io, at=(sizePos)] {Sample size};
+
+    % Evaluation section
+    \path let \p{pad}  = (pad),
+              \p{sthm} = (sthm)
+           in coordinate (runPos) at (\x{pad}, \y{sthm});
+    \node (run) [process, below=of runPos]{Run ATE system};
+    \node (pr)  [process, below=of run]{Analysis};
+
+    \node (prec) [startstop, below=of pr  ]{Precision};
+    \node (time) [startstop,  left=of prec]{Time taken};
+    \node (rec)  [startstop, right=of prec]{Recall};
+
+    \draw [arrow] (thy)    |- (pad);
+    \draw [arrow] (thm)    -- (choose);
+    \draw [arrow] (choose) -- (deps);
+    \draw [arrow] (deps)   |- (pad);
+    \draw [arrow] (size)   -- (choose);
+    \draw [arrow] (size)   -- (pad);
+    \draw [arrow] (pad)    -- (find);
+    \draw [arrow] (pad)    -- (sthy);
+    \draw [arrow] (find)   -- (sthm);
+    \draw [arrow] (sthy)   |- (run);
+    \draw [arrow] (run)    -- (pr);
+    \draw [arrow] (sthm)   |- (pr);
+    \draw [arrow] (pr)     -- (prec);
+    \draw [arrow] (pr)     -- (rec);
+    \draw [arrow] (pr)     -- (time);
+
+
+    % Awkward arrow
+    \draw [arrow] (thm) -| ([shift={(7mm,-7mm)}]thm.east) |- (find);
+
+    % Braces
+
+    % Preparation
+    \draw
+      let \p{thm} = (thm.east),
+          \p{in}  = (in.north),
+          \p{rec} = (rec.south east)
+       in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
+       (\x{rec}, \y{in}) -- (\x{rec}, \y{thm})
+         node [black, midway, right, xshift=0.3cm] {Preparation};
+
+    % Sampling
+    \draw
+      let \p{thm} = (thm.east),
+          \p{gt}  = (sthm.east),
+          \p{rec} = (rec.south east)
+       in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
+       (\x{rec}, \y{thm}) -- (\x{rec}, \y{gt})
+         node [black, midway, right, xshift=0.3cm] {Sampling};
+
+    % Evaluation
+    \draw
+      let \p{sthm} = (sthm.east),
+          \p{rec}  = (rec.south east)
+       in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
+       (\x{rec}, \y{sthm}) -- (\x{rec}, \y{rec})
+         node [black, midway, right, xshift=0.3cm] {Evaluation};
+  \end{tikzpicture}
+  \caption[]{High-level view of our benchmarking methodology, showing
+    \begin{tikzpicture}
+      \node [rectangle, text centered, draw=black]{processes};
+    \end{tikzpicture},
+    \begin{tikzpicture}
+      \node [rectangle, rounded corners, text centered, draw=black]{data};
+    \end{tikzpicture} and
+    \begin{tikzpicture}
+      \node [trapezium, trapezium left angle=70, trapezium right angle=110,
+             text centered, draw=black]{inputs};
+  \end{tikzpicture}}
+  \label{figure:flow_chart}
+\end{figure}
 
 % Better presentation, flowchart?
 \begin{itemize}
@@ -453,6 +692,26 @@ methodology is as follows:
 \section{Application}
 \label{sec:application}
 
+We call the Theory Exploration Benchmark (TEB).
+
+To do this we can take a set of ATP tasks, for example proving the equation
+\ref{eq:mapreduce} from the theory in figure \ref{figure:list_theory}, and we
+split apart the definitions (to form a theory) from the theorem statements (to
+form our ground truth).
+
+We focus on the Tons of Inductive Problems (TIP) theorem proving
+benchmark~\cite{claessen2015tip}, since it has several desirable properties:
+
+
+All together, TIP provides 219 distinct function definitions and 343
+  theorem statements, which is enough to fully exercise current ATE systems.
+Benchmark problems include examples from the theorem proving literature
+  as well as common program verification tasks, ensuring the resulting corpus is
+  relevant to researchers and practitioners.
+TIP's maintainers provide a set of tools, including translators from TIP's
+  native format (based on SMT-Lib~\cite{BarFT-SMTLIB}) to Haskell and Isabelle
+  (which are used by ATE systems).
+
 % evaluation
 
 We have applied our benchmarking methodology to the QuickSpec and IsaCoSy theory
@@ -467,7 +726,16 @@ time, precision and recall between the two systems.
 \section{Discussion}
 \label{sec:discussion}
 
+
+We are assuming that the ATE system acts in ``batch mode'' (accepting
+definitions, producing conjectures, then halting), rather than running
+continuously or interactively. This holds for all of the systems we have
+analysed
+
 % philosophical bits
+
+% We're assuming there is general agreement on what is "good maths", when
+% actually this isn't at all clear-cut
 
 \section{Conclusion}
 \label{sec:conclusion}
