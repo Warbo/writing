@@ -31,12 +31,14 @@ runCommand "transfer-report.pdf"
       ln -s "$F" "./$S"
     done
 
+    echo "Removing existing file" 1>&2
+    rm report.pdf
+
     echo "Rendering" 1>&2
     $cmd
-    echo "RUNNING bibtex" 1>&2
     bibtex report
     $cmd
     $cmd
 
-    [[ -e report.pdf ]] && cp report.pdf "$out"
+    cp report.pdf "$out"
   ''
