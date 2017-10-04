@@ -500,10 +500,10 @@ and use that as our ATE input. We generate a corresponding ground truth by
 selecting those theorems from the corpus which only contain references to
 definitions that appear in our sample.
 
-Unfortunately, uniform sampling of definitions gives rise to a lottery, where
-for a large corpus and a fixed sample size, it becomes highly unlikely that a
-sample will contain the particular definitions required by a theorem. This would
-cause most samples to have an empty ground truth, and hence $0$ precision and
+Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
+large corpus and a fixed sample size, it becomes highly unlikely that a sample
+will contain the particular definitions required by a theorem. This would cause
+most samples to have an empty ground truth, and hence $0$ precision and
 undefined recall \emph{independent} of what the ATE system produces. This is
 clearly undesirable as an evaluation method.
 
@@ -511,22 +511,61 @@ Instead, we only choose samples which admit at least one of the corpus theorems.
 We could do this using rejection sampling, but it is more efficient to sample
 the \emph{theorem statements}, weighted in proportion to the number of
 definitions they reference. Once a theorem is chosen, we use the referenced
-definitions as our sample, padding uniformly up to the required size (we ignore
-theorems which reference more definitions than our sample size).
+definitions as our sample, padded up to the required size by uniformly sampling
+from the remaining definitions (we ignore theorems which reference more
+definitions than our sample size).
 
-We form the ground truth as above: selecting all applicable theorems from the
-corpus, which is now guaranteed to be non-empty.
+We form the ground truth as above: selecting all applicable theorems
+from the corpus, which is now guaranteed to be non-empty.
 
 \subsection{Evaluation}
 
 Given a sample of definitions and a corresponding ground truth, the actual
 execution of the ATE system proceeds as in prior work. We must translate the
-definitions into the required input format, which depends on the particular
-tool being studied, then we time the execution, with a cutoff after e.g. 1 hour.
+chosen definitions into the particular input format of the tool under study,
+then we time the execution, with a timeout after e.g. 1 hour.
 
-In our experiments we have found that memory usage also plays an important role,
-but rather than introducing an extra dimension we can account for this by simply
-allowing the system
+In our experiments we have found that memory usage is also important, but rather
+than complicating our analysis with an extra dimension, we instead set a limit
+(as large as practical) and terminate program runs which cross it.~\footnote{We
+  could treat the hardware's RAM capacity as our limit, allow the operating
+  system to swap any overflow to disk, and wait for the inevitable slowdown to
+  trigger the timeout. This requires no work to implement, but wastes a lot of
+  time waiting for runs which could otherwise be terminated early.}
+
+This approach process produces a single runtime, precision and recall value for
+each sample. We propose two methods for analysing this data: \emph{summarising}
+the performance of an ATE system, or \emph{comparing} the performance of
+\emph{two} ATE systems.
+
+\subsection{Summarising}
+
+ - Giving each run a different sample is important for getting independent
+   values which test the generality of the system. This is preferable to e.g.
+   timing each sample multiple times.
+
+ - What sorts of aggregate data to report: median vs mean, variance, quartiles,
+   etc.
+
+\subsection{Comparison}
+
+To encourage competition in the field, it is important to compare the relative
+performance of different ATE systems on the same task. Since the aggregate
+statistics in the above summaries do not include details of specific runs, any
+comparison based on them would have very low statistical power.
+
+To produce more salient results, we should compare the data points directly, for
+example with a \emph{paired difference test}: for each individual sample, we
+find the \emph{difference} between the two systems' data \emph{for that sample}.
+We then aggregate these differences, to determine whether one system performs
+significantly better or worse than the other.
+
+ - Good because: handles the variance of results well
+ - Good because: approximates a normal distribution, making meaningful statistics easier
+ - Good because: conservative in the face of timeouts
+
+ - Question: do we use relative difference, e.g. [ 1.0:1.2, 1.0:1.5, ...], or do
+   we use absolute differences, e.g. [100s:120s, 1s:1.5s, ...]?
 
 \begin{figure}
   \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm,
@@ -711,6 +750,11 @@ Benchmark problems include examples from the theorem proving literature
 TIP's maintainers provide a set of tools, including translators from TIP's
   native format (based on SMT-Lib~\cite{BarFT-SMTLIB}) to Haskell and Isabelle
   (which are used by ATE systems).
+
+To aid reproducibility, we use a cryptographic hash as our source of randomness:
+the $n$th sample of size $s$ uses the SHA256 hash of $n$, $s$ and the definition
+corpus; the latter prevents tailoring the corpus to influence the choices,
+although ATE systems could .
 
 % evaluation
 
