@@ -431,10 +431,10 @@ content for use in the \emph{theory exploration} setting.
 \label{section:prep}
 
 Automated theorem proving is an active area of research, with large problem sets
-and regular competitions to prove as much as possible, as fast as possible.
-These problem sets are an opportunity for theory exploration, as their
-definitions and theorems can be used as a corpus, in the same way that Isabelle
-libraries have been used in the past.
+and regular competitions to prove as much as possible, as fast as
+possible\cite{pelletier2002development}. These problem sets are an opportunity
+for theory exploration, as their definitions and theorems can be used as a
+corpus, in the same way that Isabelle libraries have been used in the past.
 
 Some problem sets are more amenable for this purpose than others. The most
 suitable are those which have the following properties:
@@ -442,20 +442,21 @@ suitable are those which have the following properties:
 \begin{itemize}
 \item For each problem, there should be a clear distinction between the theorem
   to be proved and the definitions involved, such that the two can be easily and
-  meaningfully separated. This rules out problem sets like SMTLIB, where many
-  problems \emph{declare} a function, but leave its behaviour \emph{implicit} in
-  the logical structure of the theorem statement.
+  meaningfully separated. This rules out problem sets like those of
+  SMT-COMP~\cite{barrett2005smt}, where many problems involve uninterpreted
+  functions, whose behaviour is \emph{implicit} in the logical structure of the
+  theorem statement but not separately \emph{defined}.
 \item Definitions should be \emph{strongly typed}, such that they can be
   translated into the native language of each ATE system (in this work, those
   languages are Haskell and Isabelle).
 \item The problem set should be relevant to the desired domain. In our case, we
   desire higher-order functions and inductively defined types, which rules out
-  first-order languages/logics.
+  first-order languages/logics (such as TPTP~\cite{sutcliffe2009tptp}).
 \item Since it will act as our ground truth, the problem set should ideally
   contain every ``interesting'' conjecture involving its included
   definitions. Realistically, we should aim for each definition to appear in
   \emph{many} theorem statements; rather than each problem having unique
-definitions.
+  definitions.
 \item The problem set should be as large as possible, for robustness of the
   resulting statistics.
 \end{itemize}
@@ -594,8 +595,8 @@ two systems' data \emph{for that sample}. We then aggregate these
 better or worse than the other.
 
 This neatly avoids the variance inherent in the summary statistics, and (with
-enough samples) even approaches a normal distribution. Paired difference tests
-are also robust to the censoring caused by timeouts: upper-bounding the run time
+enough samples) approaches a normal distribution. Paired difference tests are
+also robust to the censoring caused by timeouts: upper-bounding the run time
 gives an upper bound to the (observable) differences, biasing our inference
 towards the null hypothesis (indistinguishable performance) rather than
 unfounded conclusions.
