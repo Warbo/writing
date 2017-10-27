@@ -428,6 +428,7 @@ problem sets designed for automated \emph{theorem proving}, and adapt their
 content for use in the \emph{theory exploration} setting.
 
 \subsection{Preparation}
+\label{section:prep}
 
 Automated theorem proving is an active area of research, with large problem sets
 and regular competitions to prove as much as possible, as fast as possible.
@@ -436,10 +437,10 @@ definitions and theorems can be used as a corpus, in the same way that Isabelle
 libraries have been used in the past.
 
 Some problem sets are more amenable for this purpose than others. The most
-suitable are those which meet the following criteria:
+suitable are those which have the following properties:
 
 \begin{itemize}
-\item For each problem, there should be a clear separation between the theorem
+\item For each problem, there should be a clear distinction between the theorem
   to be proved and the definitions involved, such that the two can be easily and
   meaningfully separated. This rules out problem sets like SMTLIB, where many
   problems \emph{declare} a function, but leave its behaviour \emph{implicit} in
@@ -451,18 +452,18 @@ suitable are those which meet the following criteria:
   desire higher-order functions and inductively defined types, which rules out
   first-order languages/logics.
 \item Since it will act as our ground truth, the problem set should ideally
-  contain \emph{every} ``interesting'' conjecture involving its included
+  contain every ``interesting'' conjecture involving its included
   definitions. Realistically, we should aim for each definition to appear in
   \emph{many} theorem statements; rather than each problem having unique
-  definitions.
+definitions.
 \item The problem set should be as large as possible, for robustness of the
   resulting statistics.
 \end{itemize}
 
-Once a theorem proving problem set has been chosen, we must separate the
-definitions referenced by the theorems from the theorem statements themselves.
-The former will be used as input to the ATE systems under evaluation, whilst the
-latter form a ground truth corpus against which to compare the ATE output.
+Once such a problem set has been chosen, we must separate the definitions
+referenced by the theorems from the theorem statements themselves. The former
+will be used as input to the ATE systems under evaluation, whilst the latter
+form a ground truth corpus against which to compare the ATE output.
 
 It is important to ensure that there are no duplicate definitions: theory
 exploration does not depend on the names of functions, so neither should our
@@ -515,8 +516,9 @@ definitions as our sample, padded up to the required size by uniformly sampling
 from the remaining definitions (we ignore theorems which reference more
 definitions than our sample size).
 
-We form the ground truth as above: selecting all applicable theorems
-from the corpus, which is now guaranteed to be non-empty.
+When we form the ground truth for such samples, we're guaranteed to find at
+least one applicable theorem from the corpus (the one we chose as our starting
+point).
 
 \subsection{Evaluation}
 
@@ -525,47 +527,78 @@ execution of the ATE system proceeds as in prior work. We must translate the
 chosen definitions into the particular input format of the tool under study,
 then we time the execution, with a timeout after e.g. 1 hour.
 
-In our experiments we have found that memory usage is also important, but rather
-than complicating our analysis with an extra dimension, we instead set a limit
-(as large as practical) and terminate program runs which cross it.~\footnote{We
-  could treat the hardware's RAM capacity as our limit, allow the operating
-  system to swap any overflow to disk, and wait for the inevitable slowdown to
-  trigger the timeout. This requires no work to implement, but wastes a lot of
-  time waiting for runs which could otherwise be terminated early.}
+In our experiments we have found that memory usage is also an important part of
+a system's performance, but rather than complicating our analysis with an extra
+dimension, we instead set a limit (as large as practical) and terminate program
+runs which cross it.~\footnote{We could treat the hardware's RAM capacity as our
+  limit, allow the operating system to swap any overflow to disk, and wait for
+  the inevitable slowdown to trigger the timeout. This requires no work to
+  implement, but wastes a lot of time waiting for runs which could otherwise be
+  terminated early.} This is in line with the expected usage of these systems:
+either there is enough memory, or there isn't; implementations shouldn't be
+penalised for making use of available resources.
 
-This approach process produces a single runtime, precision and recall value for
-each sample. We propose two methods for analysing this data: \emph{summarising}
+This approach produces a single runtime, precision and recall value for each
+sample. We propose two methods for analysing this data: \emph{summarising}
 the performance of an ATE system, or \emph{comparing} the performance of
 \emph{two} ATE systems.
 
 \subsection{Summarising}
 
- - Giving each run a different sample is important for getting independent
-   values which test the generality of the system. This is preferable to e.g.
-   timing each sample multiple times.
+Each sample is only explored once, so that we cover as many independent samples
+as possible to better estimate how a system's performance generalises to unseen
+inputs. To combine these data into an aggregate summary depends on what we are
+interested in measuring.
 
- - What sorts of aggregate data to report: median vs mean, variance, quartiles,
-   etc.
+One general question we might ask is how a system's performance scales with
+respect to the input size (the number of definitions in the theory). This is
+straightforward to measure by varying the sample size, but we need some way to
+combine the results from samples of the same size.
+
+The precision and recall for multiple samples $S$ can be combined in two ways:
+finding their mean value (the \emph{average of the ratios}) or by summing the
+output and ground-truth counts \emph{before} taking their ratios (the
+\emph{ratio of the averages}). The former estimates the precision and recall we
+can expect from any \emph{particular} run, which is of direct relevance to users
+of these tools. The latter estimates the proportion of discoveries that a tool
+can expect to find out of 'all possible', i.e. assigning higher weight to
+performance in theories which have more conjectures available to be discovered;
+whilst this is of theoretical interest, it is a more difficult claim to support
+empirically, so we leave its investigation to future work.
+
+We summarise the runtimes by choosing their median, as it is more robust against
+long-running outliers, and hence represents performance for a ``typical''
+theory.
+
+Another advantage to our statistical approach is that we can compute the
+\emph{variance} of our data, which is unknown in the one-off evaluations which
+have been performed previously. In particular, we might be concerned that such
+previous evaluations used ``popular'' theories, like those involving natural
+numbers, which may be unrepresentative of typical usage: any number theorist
+knows how amenable natural numbers are to conjecture and exploration, and we
+should not expect a typical user's theory (e.g. a software library) to be
+similarly rich.
 
 \subsection{Comparison}
 
 To encourage competition in the field, it is important to compare the relative
 performance of different ATE systems on the same task. Since the aggregate
 statistics in the above summaries do not include details of specific runs, any
-comparison based on them would have very low statistical power.
+comparison based on them would have very low statistical power, and therefore it
+is appropriate to use an alternative approach when comparing.
 
-To produce more salient results, we should compare the data points directly, for
-example with a \emph{paired difference test}: for each individual sample, we
-find the \emph{difference} between the two systems' data \emph{for that sample}.
-We then aggregate these differences, to determine whether one system performs
-significantly better or worse than the other.
+We propose comparing the data points directly, using a \emph{paired difference
+  test}: for each individual sample, we find the \emph{difference} between the
+two systems' data \emph{for that sample}. We then aggregate these
+\emph{differences}, to determine whether one system performs significantly
+better or worse than the other.
 
- - Good because: handles the variance of results well
- - Good because: approximates a normal distribution, making meaningful statistics easier
- - Good because: conservative in the face of timeouts
-
- - Question: do we use relative difference, e.g. [ 1.0:1.2, 1.0:1.5, ...], or do
-   we use absolute differences, e.g. [100s:120s, 1s:1.5s, ...]?
+This neatly avoids the variance inherent in the summary statistics, and (with
+enough samples) even approaches a normal distribution. Paired difference tests
+are also robust to the censoring caused by timeouts: upper-bounding the run time
+gives an upper bound to the (observable) differences, biasing our inference
+towards the null hypothesis (indistinguishable performance) rather than
+unfounded conclusions.
 
 \begin{figure}
   \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm,
@@ -705,6 +738,9 @@ significantly better or worse than the other.
   \label{figure:flow_chart}
 \end{figure}
 
+\section{Application}
+\label{sec:application}
+
 % Better presentation, flowchart?
 \begin{itemize}
 \item Collect together all definitions found in TIP into one large theory,
@@ -728,10 +764,46 @@ significantly better or worse than the other.
   the ground truth of TIP theorems which only reference names in this sample.
 \end{itemize}
 
-\section{Application}
-\label{sec:application}
 
-We call the Theory Exploration Benchmark (TEB).
+We have applied our benchmarking methodology to the Tons of Inductive Problems
+(TIP) problem set for automated theorem provers. TIP satisfies the desiderata of
+section\ref{section:prep} since each problem has standalone type and function
+definitions, making their separation trivial. The problem set includes known
+examples from the software verification and inductive theorem proving
+literature, including higher-order functions, common datatypes, etc., ensuring
+that benchmark results are relevant to those fields. It also includes tools to
+convert the problems into a variety of languages, including Haskell and
+Isabelle.
+
+TIP version 0.2 contains FIXME theorem statements, each of which is accompanied
+by definitions of the types and functions it uses (other than those for integers
+and booleans, which are ``built in''). There are FIXME function definitions, of
+which most are duplicates. We remove $\alpha$-equivalent definitions in the
+following way:
+
+\begin{enumerate}
+\item We prefix all type and function names with the filename in which we found
+  the definition, so that e.g. the theorem statement from
+  \texttt{tip2015/int\_add\_assoc.smt2} references the \texttt{plus} function from
+  that file, rather than e.g. the \texttt{plus} function from
+  \texttt{isaplanner/prop\_07.smt2}.
+\item For each definition, all local variables (including function arguments,
+  constructor parameters, pattern-matching variables and \texttt{let} bindings)
+  are replaced by standard names \texttt{local-1}, \texttt{local-2}, etc. in a
+  well-defined order.
+\item An $O(n^2)$ comparison of each definition to every other definition is
+  performed, to find any which are syntactically-identical modulo the names
+  being defined (but \emph{not} the names being referenced, i.e. ). For those which are,
+  we record which names are equivalent, replace all references to these names
+  with whichever is smallest lexicographically, and remove
+\end{enumerate}
+
+Altogether TIP problem
+by QuickSpec and IsaCoSy theory
+exploration systems. To assess the scalability of their algorithms, we sampled
+theories of various sizes: from theories containing only a single definition, up
+to theories containing 20 definitions.
+ We call the Theory Exploration Benchmark (TEB).
 
 To do this we can take a set of ATP tasks, for example proving the equation
 \ref{eq:mapreduce} from the theory in figure \ref{figure:list_theory}, and we
@@ -755,13 +827,6 @@ To aid reproducibility, we use a cryptographic hash as our source of randomness:
 the $n$th sample of size $s$ uses the SHA256 hash of $n$, $s$ and the definition
 corpus; the latter prevents tailoring the corpus to influence the choices,
 although ATE systems could .
-
-% evaluation
-
-We have applied our benchmarking methodology to the QuickSpec and IsaCoSy theory
-exploration systems. To assess the scalability of their algorithms, we sampled
-theories of various sizes: from theories containing only a single definition, up
-to theories containing 20 definitions.
 
 To provide a more robust comparison of these two systems, we also applied a
 paired difference test: measuring, for each sampled theory, the difference in
