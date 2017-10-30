@@ -1,12 +1,13 @@
 with rec {
   inherit (import ../resources) bibtex nixpkgs;
   inherit (nixpkgs.repo1609."00ef7f9") mkBin runCommand texlive unzip;
-  inherit (import ./supporting-materials) latex;
+  support = (import ./supporting-materials { inherit nixpkgs; });
 };
 
 runCommand "benchmark-article.pdf"
   {
-    inherit bibtex latex;
+    inherit bibtex;
+    inherit (support) graphs latex;
     src         = ./.;
     buildInputs = [
       unzip
@@ -31,6 +32,7 @@ runCommand "benchmark-article.pdf"
   ''
     cp -r "$src"/*  ./
     ln -s "$bibtex" ./Bibtex.bib
+    ln -s "$graphs" ./graphs
     unzip "$latex"
 
     render
