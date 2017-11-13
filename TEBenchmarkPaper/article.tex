@@ -558,14 +558,10 @@ combine the results from samples of the same size.
 
 The precision and recall for multiple samples $S$ can be combined in two ways:
 finding their mean value (the \emph{average of the ratios}) or by summing the
-output and ground-truth counts \emph{before} taking their ratios (the
-\emph{ratio of the averages}). The former estimates the precision and recall we
-can expect from any \emph{particular} run, which is of direct relevance to users
-of these tools. The latter estimates the proportion of discoveries that a tool
-can expect to find out of 'all possible', i.e. assigning higher weight to
-performance in theories which have more conjectures available to be discovered;
-whilst this is of theoretical interest, it is a more difficult claim to support
-empirically, so we leave its investigation to future work.
+numerators and denominators (the \emph{ratio of the averages}). The former gives
+the expected precision and recall for a run, which is of direct relevance to
+users of these tools, and is hence our preferred measure. The latter assigns more weight to theories which generate more
+conjectures, but that is not justification there is no reason to consider these theories ``better'',
 
 We summarise the runtimes by choosing their median, as it is more robust against
 long-running outliers, and hence represents performance for a ``typical''
@@ -742,33 +738,122 @@ unfounded conclusions.
 \section{Application}
 \label{sec:application}
 
-\begin{figure}
-  \includegraphics[width=8cm]{graphs/times}
-\end{figure}
+We have applied our methodology to evaluating QuickSpec, %TODO:cite
+a library for conjecturing equations about functions in the Haskell programming
+language. We use the Tons of Inductive Problems (TIP) theorem proving benchmark
+to generate our corpus.
 
-% Better presentation, flowchart?
+\subsection{QuickSpec}
+
+We use QuickSpec version 0.9.6 to demonstrate our benchmarking methodology. This
+is a library for the Haskell programming language, which is given a
+\emph{signature} containing Haskell functions and (universally quantified) typed
+variables, and outputs conjectured equations involving these terms.
+
+The QuickSpec algorithm first enumerates all well-typed expressions, up to a
+certain depth (3 by default), involving the given terms. Expressions of the same
+type are assumed to be equivalent, and grouped into equivalence classes. A
+testing process then tries to disprove this assumption by instantiating each
+variable with a randomly chosen value (using the QuickCheck testing library),
+evaluating the expressions and comparing the results. The equivalence classes
+are split to separate any expressions which are observed to be different, and
+the process repeats with new random values.
+
+After 500 rounds of testing, any expressions still sharing the same equivalence
+class are conjectured to be equal. Finally, a congruence closure algorithm is
+applied to these equations, to find a minimal set.
+
+In order to thoroughly benchmark QuickSpec, we need to automate some of the
+decisions which are normally left up to the user:
+
 \begin{itemize}
-\item Collect together all definitions found in TIP into one large theory,
-  removing $\alpha$-equivalent duplicates.
-\item For each type, provide extra functions which act as constructors and
-  destructors. For example, the $\List$ type would have extra constructor
-  functions $\text{constructor-Nil}$ and $\text{constructor-Cons}$, and
-  destructor functions $\text{destructor-head}$ and $\text{destructor-tail}$.
-  This allows us to ignore constructors and destructors, and concentrate solely
-  on functions.
-\item Collect together all theorem statements found in TIP. Update any
-  references to removed definitions, and replace references to constructors with
-  the associated constructor function from above.
-\item \emph{Sample} a sub-set of functions from the large theory uniformly, such
-  that we choose all of the names referenced by at least one of the theorems
-  (for example, theorem \ref{eq:mapreduce} references the names
-  $\Map$ and $\Append$).
-\item Provide this sub-set as an input to the ATE system, timing how long it
-  takes to complete.
-\item Perform precision/recall analysis on the resulting conjectures, against
-  the ground truth of TIP theorems which only reference names in this sample.
+\item We must decide what variables to include. We add three for each type that
+  appears as a function argument, except for types which have no QuickCheck data
+  generator.
+\item We must \emph{monomorphise} all types. For example, functions like
+  \texttt{cons} are \emph{polymorphic}: they build lists of any element type.
+  We need to pick a specific type in order to generate random values, so we
+  resolve this, arbitrarily, by picking
+  \emph{Integer}.~\footnote{We pick \texttt{Integer} for variables of kind
+    \texttt{*}, and \texttt{[]} (Haskell's list type constructor) for those of
+    kind \texttt{* -> *}. If these wouldn't satisfy some constraint, we pick a
+    suitable type non-deterministically from the module scope, or skip these
+    variables completely if none is found.}
+\item Haskell functions only take one argument, as as in the $\lambda$-calculus,
+  so functions of multiple arguments must be simulated by currying.
+  Unfortunately QuickSpec cannot compare functions for equality, so we must give
+  each function in our signature an explicit arity. Arities from zero to five
+  are supported, so we avoid partial application by picking the highest that is
+  type-correct.
 \end{itemize}
 
+To find out which functions to include in a signature, we use a plugin for the
+GHC compiler which tells us all of the functions defined in a package. We
+include all of those which type-check when passed to QuickSpec.
+
+\subsection{TIP}
+
+We use TIP version 0.2 which contains 343 problems, each stating a single
+theorem and together defining a total of 618 datatypes and 1498 functions. Most
+of these are duplicates, since each problem (re-)defines all of the datatypes
+and functions it involves. We prefix the names of all definitions with the
+filename it came from, and collect them into one big set.
+
+Datatypes can have several ``constructors'' and ``destructors''. For example the
+natural numbers can be defined as follows:
+
+\begin{verbatim}
+(declare-datatypes () ((Nat (Z) (S (p Nat)))))
+\end{verbatim}
+
+This defines the type \texttt{Nat}, along with the constructors \texttt{Z} (for
+zero) and \texttt{S} (the successor function), and destructor \texttt{p} (the
+predecessor function).
+
+Since our GHC plugin only lists function definitions, we add separate function
+definitions for each constructor and destructor (these are just
+$\eta$-expansions).
+
+TIP has ``native'' support for booleans and integers, allowing functions like
+\texttt{+} to be used without an accompanying definition. Without a definition
+these functions will not be included in the QuickSpec exploration, so we replace
+all occurrences with custom definitions.
+
+This gives us 3598 definitions in total, with 269 remaining after
+$\alpha$-equivalent duplicates are removed.
+
+TIP includes a tool to translate its definitions into Haskell code, including
+suitable comparison functions and random data generators. We translated all 269
+definitions into a single Haskell package, compiled it with GHC and extracted
+the function definitions with our plugin. Each benchmark run imported this
+entire package, but the signature given to QuickSpec only included functions
+chosen for the current sample.
+
+\subsection{Results}
+
+\begin{figure}
+  \includegraphics[width=8cm]{graphs/time}
+  \includegraphics[width=8cm]{graphs/precRec}
+  \caption{}
+  \label{figure:quickspec_results}
+\end{figure}
+
+We applied our sampling methodology to the 269 TIP definitions for sample sizes
+between 1 and 20, above which point QuickSpec becomes very slow. We chose 30
+samples for each size, but the smaller sizes included repetitions due to the
+requirement for samples to admit at least one theorem. The results are shown in
+figure~\ref{figure:quickspec_results}.
+
+Precision and recall were calculated by normalising each equation generated by
+QuickSpec: all variables are identified numerically, in ascending order from
+left to right; equations were also sorted such that the expression on the
+left-hand-side is lexicographically smaller than that on the right.
+
+Theorem statements from TIP were first updated to reference only the 269
+distinct names we explored, and references to constructors and destructors were
+updated to use the $\eta$-expanded versions instead. Equations were normalised
+in the same way as above (non-equations were kept unchanged), and elements of
+these two sets were deemed to match if they were syntactically identical.
 
 We have applied our benchmarking methodology to the Tons of Inductive Problems
 (TIP) problem set for automated theorem provers. TIP satisfies the desiderata of
@@ -803,8 +888,7 @@ following way:
   with whichever is smallest lexicographically, and remove
 \end{enumerate}
 
-Altogether TIP problem
-by QuickSpec and IsaCoSy theory
+Altogether TIP problem by QuickSpec and IsaCoSy theory
 exploration systems. To assess the scalability of their algorithms, we sampled
 theories of various sizes: from theories containing only a single definition, up
 to theories containing 20 definitions.
@@ -817,7 +901,6 @@ form our ground truth).
 
 We focus on the Tons of Inductive Problems (TIP) theorem proving
 benchmark~\cite{claessen2015tip}, since it has several desirable properties:
-
 
 All together, TIP provides 219 distinct function definitions and 343
   theorem statements, which is enough to fully exercise current ATE systems.
@@ -839,7 +922,6 @@ time, precision and recall between the two systems.
 
 \section{Discussion}
 \label{sec:discussion}
-
 
 We are assuming that the ATE system acts in ``batch mode'' (accepting
 definitions, producing conjectures, then halting), rather than running
