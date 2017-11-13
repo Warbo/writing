@@ -1,24 +1,28 @@
-{ fail, fetchgit, gnuplot, jq, miller, mkBin, runCommand, wrap }:
+{ fail, fetchgit, gnuplot, jq, miller, mkBin, runCommand, wrap, writeScript }:
 
 with builtins;
 with rec {
-  repo = trace "FIXME: Use repo not path" /home/chris/Programming/haskell-te;
+  repo = fetchgit {
+    url    = http://chriswarbo.net/git/haskell-te.git;
+    rev    = "6855a50";
+    sha256 = "0zgq3g3y23sjy0vi0dc263bavj795aj3kbydi2qchfcrv3dr6i4n";
+  };
 
-  data = runCommand "data.json"
+  data = runCommand "data.json.gz"
     {
       inherit repo;
       buildInputs = [ jq ];
-      pth = trace "FIXME: Pick real commit" ".asv/results/nixos/9c7d0eaa-nix-py-dirnull.json";
+      gzipped = "benchmarks/results/desktop/7a4cc07a-nix-py-dirnull.json.gz";
     }
     ''
       set -e
-      jq '.' < "$repo/$pth" > "$out"
+      cp "$repo/$gzipped" "$out"
     '';
 
   mean = mkBin {
-    name = "mean";
-    paths = [ miller ];
-    script = trace "Ratio of averages or average of ratios?" ''
+    name   = "mean";
+    paths  = [ miller ];
+    script = ''
       #!/usr/bin/env bash
       set -e
       mlr --ocsv --headerless-csv-output stats1 -f 1 -a mean
@@ -26,8 +30,8 @@ with rec {
   };
 
   median = mkBin {
-    name = "median";
-    paths = [ miller ];
+    name   = "median";
+    paths  = [ miller ];
     script = ''
       #!/usr/bin/env bash
       set -e
@@ -51,34 +55,89 @@ with rec {
     '';
   };
 
+  precRecPlot = wrap {
+    name   = "precRecPlot";
+    paths  = [ fail gnuplot miller ];
+    vars   = {
+      script = writeScript "precRec.gnuplot" ''
+        set terminal pngcairo size 350,262 enhanced font 'Verdana,10'
+        prec=system("echo $PREC")
+        rec=system("echo $REC")
+        plot prec title "Precision", \
+             rec  title "Recall"
+      '';
+    };
+    script = ''
+      #!/usr/bin/env bash
+      set -e
+      [[ -n "$1" ]] || fail "No precision arg"
+      [[ -e "$1" ]] || fail "No such file '$1'"
+      [[ -n "$2" ]] || fail "No recall arg"
+      [[ -e "$2" ]] || fail "No such file '$2'"
+
+      PREC="$1" REC="$2" gnuplot < "$script"
+    '';
+  };
+
+  quickspecGraphs = runCommand "quickspecGraphs"
+    {
+      inherit precRecPlot quickspecData timePlot;
+      buildInputs = [ mean median miller ];
+    }
+    ''
+      for FIELD in time prec rec
+      do
+        for S in "$quickspecData/$FIELD"/*
+        do
+          SIZE=$(basename "$S")
+          if [[ "x$FIELD" = "xtime" ]]
+          then
+            VAL=$(median < "$S")
+          else
+            VAL=$(mean   < "$S")
+          fi
+          echo -e "$SIZE\t$VAL" >> "$FIELD.dat"
+        done
+      done
+
+      mkdir "$out"
+      "$timePlot"    time.dat         > "$out/time.png"
+      "$precRecPlot" prec.dat rec.dat > "$out/precRec.png"
+    '';
+
   quickspecData = runCommand "quickspecData"
     {
-      inherit data timePlot;
-      buildInputs = [ jq mean median miller ];
+      buildInputs = [ jq ];
+      zipped      = data;
     }
     ''
       #!/usr/bin/env bash
       set -e
       PRE='.results | ."quickspectip.track_data" | .result | .[0]'
-      jq -r "$PRE | keys | .[]" < "$data" | while read -r SIZE
+      gunzip < "$zipped" > ./data
+
+      mkdir -p "$out/time"
+      mkdir -p "$out/prec"
+      mkdir -p "$out/rec"
+
+      jq -r "$PRE | keys | .[]" < ./data | while read -r SIZE
       do
+        echo "Extracting data for size $SIZE" 1>&2
         PRE2="$PRE | .[\"$SIZE\"] | .reps"
-        T=$(jq -r "$PRE2 | .[] | .time" < "$data" | median)
-        echo -e "$SIZE\t$T" >> times.dat
+        jq -r "$PRE2 | .[] | .time" < ./data > "$out/time/$SIZE"
 
-        P=$(jq -r "$PRE2 | .[] | .precision | if . == null then 0 else if . == [] then 0 else . end end" < "$data" | mean)
-        echo "PRECISION: $P" 1>&2
-        echo -e "$SIZE\t$P" >> precision.dat
+        jq -r "$PRE2 | .[] | .precision |
+               if . == null
+                  then 0
+                  else if . == []
+                          then 0
+                          else .
+                       end
+               end" < ./data > "$out/prec/$SIZE"
 
-        R=$(jq -r "$PRE2 | .[] | .recall | if . == null then 0 else . end" < "$data" | mean)
-        echo "RECALL: $R" 1>&2
-        echo -e "$SIZE\t$R" >> recall.dat
+        jq -r "$PRE2 | .[] | .recall |
+               if . == null then 0 else . end" < ./data > "$out/rec/$SIZE"
       done
-
-      mkdir "$out"
-      "$timePlot" times.dat > "$out/times.png"
-      "$timePlot" precision.dat > "$out/precision.png"
-      "$timePlot" recall.dat > "$out/recall.png"
     '';
 };
-quickspecData
+quickspecGraphs
