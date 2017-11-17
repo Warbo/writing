@@ -41,16 +41,26 @@ rec {
   timePlot = wrap {
     name   = "timePlot";
     paths  = [ fail gnuplot miller ];
+    vars   = {
+      script = writeScript "time.gnuplot" ''
+        set terminal pngcairo size 350,262 enhanced font 'Verdana,10'
+        plot "time.dat" title "Runtime"
+      '';
+    };
     script = ''
       #!/usr/bin/env bash
       set -e
-      [[ -n "$1" ]] || fail "No arg given"
-      [[ -e "$1" ]] || fail "No such file '$1'"
+      [[ -n "$TIMES" ]] || fail "No times arg given"
+      [[ -e "$TIMES" ]] || fail "Can't find times '$TIMES'"
 
-      #echo "set terminal epslatex size 8.89cm,6.65cm color colortext
-      #      set output 'times.tex'
-      echo "set terminal pngcairo size 350,262 enhanced font 'Verdana,10'
-            plot '$1'" | gnuplot
+      for S in "$TIMES"/*
+      do
+        SIZE=$(basename "$S")
+         VAL=$(median < "$S")
+        echo -e "$SIZE\t$VAL" >> time.dat
+      done
+
+      gnuplot < "$script"
     '';
   };
 
@@ -62,19 +72,34 @@ rec {
         set terminal pngcairo size 350,262 enhanced font 'Verdana,10'
         prec=system("echo $PREC")
         rec=system("echo $REC")
-        plot prec title "Precision", \
-             rec  title "Recall"
+        plot "prec.tsv" title "Precision", \
+             "rec.tsv"  title "Recall"
       '';
     };
     script = ''
       #!/usr/bin/env bash
       set -e
-      [[ -n "$1" ]] || fail "No precision arg"
-      [[ -e "$1" ]] || fail "No such file '$1'"
-      [[ -n "$2" ]] || fail "No recall arg"
-      [[ -e "$2" ]] || fail "No such file '$2'"
+      [[ -n "$PREC" ]] || fail "No precision arg"
+      [[ -e "$PREC" ]] || fail "Can't find precisions '$PREC'"
+      [[ -n "$REC"  ]] || fail "No recall arg"
+      [[ -e "$REC"  ]] || fail "Can't find recalls '$REC'"
 
-      PREC="$1" REC="$2" gnuplot < "$script"
+      for S in "$PREC"/*
+      do
+        SIZE=$(basename "$S")
+         VAL=$(mean   < "$S")
+
+        echo -e "$SIZE\t$VAL" >> prec.tsv
+      done
+
+      for S in "$REC"/*
+      do
+        SIZE=$(basename "$S")
+         VAL=$(mean < "$S")
+        echo -e "$SIZE\t$VAL" >> rec.tsv
+      done
+
+      gnuplot < "$script"
     '';
   };
 
@@ -82,26 +107,15 @@ rec {
     {
       inherit precRecPlot quickspecData timePlot;
       buildInputs = [ mean median miller ];
+      PREC  = "${quickspecData}/prec";
+      REC   = "${quickspecData}/rec";
+      TIMES = "${quickspecData}/time";
     }
     ''
-      for FIELD in time prec rec
-      do
-        for S in "$quickspecData/$FIELD"/*
-        do
-          SIZE=$(basename "$S")
-          if [[ "x$FIELD" = "xtime" ]]
-          then
-            VAL=$(median < "$S")
-          else
-            VAL=$(mean   < "$S")
-          fi
-          echo -e "$SIZE\t$VAL" >> "$FIELD.dat"
-        done
-      done
 
       mkdir "$out"
-      "$timePlot"    time.dat         > "$out/time.png"
-      "$precRecPlot" prec.dat rec.dat > "$out/precRec.png"
+      "$timePlot"    > "$out/time.png"
+      "$precRecPlot" > "$out/precRec.png"
     '';
 
   quickspecData = runCommand "quickspecData"
