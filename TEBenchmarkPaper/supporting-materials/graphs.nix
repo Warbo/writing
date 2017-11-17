@@ -2,18 +2,16 @@
   writeScript }:
 
 with builtins;
-  repo = fetchgit {
-    url    = http://chriswarbo.net/git/haskell-te.git;
-    rev    = "6855a50";
-    sha256 = "0zgq3g3y23sjy0vi0dc263bavj795aj3kbydi2qchfcrv3dr6i4n";
-  };
-
 rec {
   data = runCommand "data.json.gz"
     {
-      inherit repo;
+      repo = fetchgit {
+        url    = http://chriswarbo.net/git/haskell-te.git;
+        rev    = "334d529";
+        sha256 = "109g8hkpggjjlw7ksd7l157jknp4wkg9lbjlyiqqvqzah2kl65jf";
+      };
       buildInputs = [ jq ];
-      gzipped = "benchmarks/results/desktop/7a4cc07a-nix-py-dirnull.json.gz";
+      gzipped = "benchmarks/results/desktop/ce9c9478-nix-py-dirnull.json.gz";
     }
     ''
       set -e
