@@ -2,13 +2,13 @@
   writeScript }:
 
 with builtins;
-with rec {
   repo = fetchgit {
     url    = http://chriswarbo.net/git/haskell-te.git;
     rev    = "6855a50";
     sha256 = "0zgq3g3y23sjy0vi0dc263bavj795aj3kbydi2qchfcrv3dr6i4n";
   };
 
+rec {
   data = runCommand "data.json.gz"
     {
       inherit repo;
@@ -174,5 +174,4 @@ with rec {
       set -e
       "$script" 1>&2
     '';
-};
-quickspecGraphs
+}
