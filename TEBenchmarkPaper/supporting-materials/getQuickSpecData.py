@@ -76,76 +76,112 @@ agg = {
 # Make a note of which equations are discoverable from each sample
 knownEqs = {}
 
+def makeHashable(x):
+    '''Convert lists and dictionaries into tuples, recursively, so we can turn
+    them into sets for comparison.'''
+    if type(x) == type([]):
+        return reduce(lambda rest, elem: rest + (makeHashable(elem),),
+                      x,
+                      ())
+    if type(x) == type({}):
+        return reduce(lambda rest, key: rest + ((makeHashable(key),
+                                                 makeHashable(x[key])),),
+                      x,
+                      ())
+    # Assume everything non-list or dictionary is hashable
+    return x
+
+def sanityCheck(size, rawSample, got):
+    assert len(rawSample) == size, repr({
+        'error'     : 'Wrong number of names sampled',
+        'rep'       : rep,
+        'rawSample' : rawSample,
+        'size'      : size
+    })
+
+    sample = frozenset(rawSample)
+    assert len(sample) == len(rawSample), repr({
+        'error'     : 'Duplicate names sampled',
+        'rep'       : rep,
+        'rawSample' : rawSample,
+        'sample'    : sample,
+        'size'      : size
+    })
+
+    if got is not None:
+        for known in knownEqs:
+            if knownEqs[known] is not None:
+                if sample.issubset(known):
+                    assert got.issubset(knownEqs[known]), repr({
+                        'error' : 'Not subset',
+                        'size'  : size,
+                        'got'   : got,
+                        'prev'  : knownEqs[known],
+                    })
+                if sample.issuperset(known):
+                    assert got.issuperset(knownEqs[known]), repr({
+                        'error' : 'Not superset',
+                        'size'  : size,
+                        'got'   : got,
+                        'prev'  : knownEqs[known],
+                    })
+
 for size in sorted(map(int, data.keys())):
-  msg('Extracting data for size {0}\n'.format(size))
-  sdata = data[str(size)]['reps']
-  for rep in sorted(map(int, sdata.keys())):
-    rdata = sdata[str(rep)]
+    msg('Extracting data for size {0}\n'.format(size))
+    sdata = data[str(size)]['reps']
+    for rep in sorted(map(int, sdata.keys())):
+        rdata = sdata[str(rep)]
 
-    sample = frozenset(rdata['sample'])
-    assert len(sample) == size, repr({
-      'error' : 'Wrong number of names sampled',
-      'rep'    : rep,
-      'sample' : rdata['sample'],
-      'size'   : size
-    })
-    assert len(sample) == len(rdata['sample']), repr({
-      'error'  : 'Duplicate names sampled',
-      'rep'    : rep,
-      'sample' : rdata,
-      'size'   : size
-    })
+        sample = frozenset(rdata['sample'])
 
-    got = frozenset(rdata['found'][0]) if rdata['success'] else None
-    for known in knownEqs:
-      if sample.issubset(known) and got and known[knownEqs]:
-        assert got.issubset(knownEqs[known]), repr({
-          'error' : 'Subset not found',
-          'size'  : size,
-        })
-    if sample in knownEqs:
-      prev = knownEqs[sample]
-      assert prev == got, repr({
-        'error'  : 'Differing outputs for duplicate samples',
-        'prev'   : prev,
-        'rep'    : rep,
-        'sample' : got,
-        'size'   : size
-      })
+        got = frozenset(makeHashable(rdata['found'][0])) \
+              if rdata['success'] else None
 
-      msg('Size {0} rep {1} is a dupe, skipping\n'.format(
-        size, rep))
-    else:
-      knownEqs[sample] = got
+        sanityCheck(size, rdata['sample'], got)
 
-      found  = len(got)             if rdata['success'] else 0
-      wanted = len(rdata['wanted']) if rdata['success'] else 0
+        if sample in knownEqs:
+            prev = knownEqs[sample]
+            assert prev == got, repr({
+                'error'  : 'Differing outputs for duplicate samples',
+                'prev'   : prev,
+                'rep'    : rep,
+                'sample' : got,
+                'size'   : size
+            })
 
-      # Get the time if available, otherwise treat as a timeout
-      # We use min since killing might take some time
-      t = min(rdata['time'], rdata['timeout'])
-      assert num(t), 'Non-numeric time %r' % type(t)
+            msg('Size {0} rep {1} is a dupe, skipping\n'.format(
+                size, rep))
+        else:
+            knownEqs[sample] = got
 
-      # Assume precision is 0 if not found
-      p = rdata['precision'] if 'precision' in rdata else 0
-      p = p or 0
-      assert num(p), 'Non-numeric prec %r' % type(p)
+            found  = len(got)             if rdata['success'] else 0
+            wanted = len(rdata['wanted']) if rdata['success'] else 0
 
-      # Assume recall is 0 if not found
-      r = rdata['recall'] if 'recall' in rdata else 0
-      r = r or 0
-      assert num(r), 'Non-numeric rec %r' % type(r)
+            # Get the time if available, otherwise treat as a timeout
+            # We use min since killing might take some time
+            t = min(rdata['time'], rdata['timeout'])
+            assert num(t), 'Non-numeric time %r' % type(t)
 
-      # Store in "wide format". We +1 the hues and use 0 for failure
-      agg['found'    ].append(found)
-      agg['precision'].append(p)
-      agg['precHue'  ].append(wanted + 1 if rdata['success'] else 0)
-      agg['recall'   ].append(r)
-      agg['recHue'   ].append(wanted + 1 if rdata['success'] else 0)
-      agg['size'     ].append(size)
-      agg['time'     ].append(t)
-      agg['timeHue'  ].append(found  + 1 if rdata['success'] else 0)
-      agg['wanted'   ].append(wanted)
+            # Assume precision is 0 if not found
+            p = rdata['precision'] if 'precision' in rdata else 0
+            p = p or 0
+            assert num(p), 'Non-numeric prec %r' % type(p)
+
+            # Assume recall is 0 if not found
+            r = rdata['recall'] if 'recall' in rdata else 0
+            r = r or 0
+            assert num(r), 'Non-numeric rec %r' % type(r)
+
+            # Store in "wide format". We +1 the hues and use 0 for failure
+            agg['found'    ].append(found)
+            agg['precision'].append(p)
+            agg['precHue'  ].append(wanted + 1 if rdata['success'] else 0)
+            agg['recall'   ].append(r)
+            agg['recHue'   ].append(wanted + 1 if rdata['success'] else 0)
+            agg['size'     ].append(size)
+            agg['time'     ].append(t)
+            agg['timeHue'  ].append(found  + 1 if rdata['success'] else 0)
+            agg['wanted'   ].append(wanted)
 
 from matplotlib.colors import ListedColormap
 foundMax  = max(agg['found'])
