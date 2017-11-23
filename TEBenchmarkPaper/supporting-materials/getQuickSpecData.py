@@ -217,7 +217,9 @@ del(makeColours)
 
 msg('Drawing plots')
 
-def newPlot(name):
+def newFigure(name):
+    '''Set up matplotlib/seaborn for a new figure. The name is used to look up
+    dimensions from the environment. The figure's dimensions are returned.'''
     widthFrac     = float(os.getenv(name + 'WidthFraction'))
     heightFrac    = float(os.getenv(name + 'HeightFraction'))
     width, height = figSize(widthFrac, heightFrac)
@@ -228,13 +230,20 @@ def newPlot(name):
 
     return (width, height)
 
-def drawPoints(y=None, colours=None, hue=None, xLabel=None, yLabel=None,
-               size=2, ax=None):
+def drawPoints(y=None, colours=None, hue=None, yLabel=None, ax=None):
+    '''Draw a scatter plot of agg[y][n] against agg['size'][n], for each point
+    n. Points will be spread out horizontally to avoid overlaps, and the colour
+    of each will be colours['palette'][agg[hue][n]].
+
+    The the x-axis will be labelled with "Sample size", the y-axis with yLabel.
+
+    The resulting plot (axes) are returned. To draw on existing axes, pass them
+    in as ax.'''
     # Alternatively, we could use stripplot with jitter
     newAx = sns.swarmplot(data      = agg,
                           x         = 'size',
                           y         = y,
-                          size      = size,  # Marker size
+                          size      = 2,  # Marker size
                           edgecolor = 'k',
                           linewidth = 0.3,
                           palette   = colours['palette'],
@@ -245,12 +254,31 @@ def drawPoints(y=None, colours=None, hue=None, xLabel=None, yLabel=None,
     newAx.set_ylabel(yLabel)
     return newAx
 
+def drawColourBar(ax=None, cax=None, colours=None, label=None, fig=None):
+    '''Add a colour bar below ax or on cax.'''
+    if cax is None:
+        cax, kw = mpl.colorbar.make_axes_gridspec(
+                       ax,
+                       orientation = 'horizontal',  # Keeps plot full width
+                       pad         = 0.18)          # 0.15 would cover x-label
+    else:
+        kw = {}
+
+    cbar = mpl.colorbar.ColorbarBase(
+               cax,
+               cmap = colours['cmap'],
+               norm = colours['norm'],
+               **kw)
+
+    cbar.set_label(label)
+
 def savePlot(name):
-    plt.tight_layout()
+    '''Write our the current figure as LaTeX.'''
+    #plt.tight_layout()
     plt.savefig(name + '.pgf', bbox_inches='tight', pad_inches=0.0)
 
 def plotTime():
-    newPlot('time')
+    newFigure('time')
 
     plt.ylim(0, 180)
 
@@ -266,25 +294,14 @@ def plotTime():
         y       = 'time',
         yLabel  = 'Runtime (seconds)')
 
-    # Add colorbar to show conjecture count
-    cbax, kw = mpl.colorbar.make_axes_gridspec(
-                   ax,
-                   orientation = 'horizontal',  # Keeps plot full width
-                   pad         = 0.18)          # 0.15 would cover x-label
-    cbar     = mpl.colorbar.ColorbarBase(
-                   cbax,
-                   cmap = foundColours['cmap'],
-                   norm = foundColours['norm'],
-                   **kw)
-    cbar.set_label('Conjectures found')
-
+    drawColourBar(ax = ax, colours = foundColours, label = 'Conjectures found')
     savePlot('time')
 
 def plotPrecRec():
-    width, height = newPlot('precRec')
+    width, height = newFigure('precRec')
 
     # Width/height need resetting after calling subplots
-    fig, (precAx, recAx) = plt.subplots(nrows=2)
+    fig, (precAx, recAx) = plt.subplots(nrows = 2)
     fig.set_figwidth(width)
     fig.set_figheight(height)
 
@@ -304,6 +321,15 @@ def plotPrecRec():
         y       = 'recall',
         yLabel  = 'Recall')
 
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+    drawColourBar(
+        cax     = make_axes_locatable(recAx).append_axes(
+                      'bottom',
+                      size = '5%',
+                      pad  = 0.05),
+        colours = wantedColours,
+        label   = 'Ground truth theorems')
     savePlot('prec')
 
 plotTime()
