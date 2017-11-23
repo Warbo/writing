@@ -1,5 +1,5 @@
-{ fail, fetchgit, gnuplot, jq, miller, mkBin, python, runCommand, wrap,
-  writeScript }:
+{ fail, fetchgit, gnuplot, jq, miller, mkBin, perl, python, render, runCommand,
+  tetex, tex, wrap, writeScript }:
 
 with builtins;
 rec {
@@ -103,22 +103,8 @@ rec {
     '';
   };
 
-  quickspecGraphs = runCommand "quickspecGraphs"
-    {
-      inherit precRecPlot quickspecData timePlot;
-      buildInputs = [ mean median miller ];
-      PREC  = "${quickspecData}/prec";
-      REC   = "${quickspecData}/rec";
-      TIMES = "${quickspecData}/time";
-    }
-    ''
 
-      mkdir "$out"
-      "$timePlot"    > "$out/time.png"
-      "$precRecPlot" > "$out/precRec.png"
-    '';
-
-  quickspecData = runCommand "quickspecData"
+  graphs = runCommand "quickspecGraphs"
     {
       script = wrap {
         name   = "getQuickSpecData.py";
