@@ -223,24 +223,33 @@ rec {
               sample = frozenset(rdata['sample'])
               assert len(sample) == size, repr({
                 'error' : 'Wrong number of names sampled',
-                'rdata' : rdata,
-                'size'  : size
+                'rep'    : rep,
+                'sample' : rdata['sample'],
+                'size'   : size
               })
               assert len(sample) == len(rdata['sample']), repr({
-                'error' : 'Duplicate names sampled',
-                'rdata' : rdata,
-                'size'  : size
+                'error'  : 'Duplicate names sampled',
+                'rep'    : rep,
+                'sample' : rdata,
+                'size'   : size
               })
 
-              got = sorted(rdata['found'][0]) if rdata['success'] else None
+              got = frozenset(rdata['found'][0]) if rdata['success'] else None
+              for known in knownEqs:
+                if sample.issubset(known) and got and known[knownEqs]:
+                  assert got.issubset(knownEqs[known]), repr({
+                    'error' : 'Didn't find subset',
+                    'size'  : size,
+                  })
               if sample in knownEqs:
-                prev = knownEqs['sample']
+                prev = knownEqs[sample]
                 assert prev == got, repr({
-                  'error'    : 'Differing outputs for duplicate samples',
-                  'knownEqs' : knownEqs,
-                  'rdata'    : rdata,
-                  'size'     : size
-                }))
+                  'error'  : 'Differing outputs for duplicate samples',
+                  'prev'   : prev,
+                  'rep'    : rep,
+                  'sample' : got,
+                  'size'   : size
+                })
 
                 msg('Size {0} rep {1} is a dupe, skipping\n'.format(
                   size, rep))
