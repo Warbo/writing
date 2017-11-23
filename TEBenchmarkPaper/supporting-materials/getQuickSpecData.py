@@ -1,97 +1,34 @@
 #!/usr/bin/env python
-import sys
-msg = sys.stderr.write
-
-msg('Reading in the page width we calculated from TeX\n')
+from json import dumps
 import os
-with open(os.getenv('textWidth'), 'r') as textWidthFile:
-    textWidthPt = float(textWidthFile.read())
+import sys
+msg = lambda x: sys.stderr.write(x + '\n')
 
-# Must be done before importing matplotlob.pyplot
-# Taken from http://bkanuka.com/articles/native-latex-plots
-msg('Setting matplotlib latex output\n')
-import matplotlib as mpl
-import numpy      as np
+msg('Reading input')
 
-def figSize(widthFraction, height=None):
-    ptToInch    = 1.0 / 72.27
-    textWidthIn = textWidthPt * ptToInch
-    goldMean    = (np.sqrt(5.0)-1.0) / 2.0
-    calcWidth   = widthFraction * textWidthIn
-    calcHeight  = textWidthIn * ((goldMean * widthFraction) \
-                                 if height is None else height)
-    return (calcWidth, calcHeight)
+def readInput():
+    from gzip import open
+    from json import load
+    with open(os.getenv('zipped'), 'r') as zipped:
+        return load(zipped)['results']['quickspectip.track_data']['result'][0]
 
-mpl.rcParams.update({
-    'pgf.texsystem' : 'pdflatex',
-    'text.usetex'   : True,  # Use LaTeX to write all text
+data = readInput()
+del(readInput)
 
-    # '[]' causes fonts to be inherited from document
-    'font.family'     : 'serif',
-    'font.serif'      : [],
-    'font.sans-serif' : [],
-    'font.monospace'  : [],
-
-    # LaTeX default is 10pt font.
-    'axes.labelsize'  : 10,
-    'text.fontsize'   : 10,
-    'legend.fontsize' : 8,
-    'xtick.labelsize' : 8,
-    'ytick.labelsize' : 8,
-
-    'figure.figsize'  : figSize(0.9),  # Set a default
-
-    # plots will be generated using this preamble. Use UTF-8.
-    'pgf.preamble': [
-        r'\usepackage[utf8x]{inputenc}',
-        r'\usepackage[T1]{fontenc}',
-    ]
-})
-
-import matplotlib.pyplot as plt
-import seaborn           as sns
-
-msg('Gathering input\n')
-get = lambda x, *path: x if path == () else get(x[path[0]], *path[1:])
-num = lambda x: type(x) in [type(42), type(42.0)]
-
-import gzip
-import json
-with gzip.open(os.getenv('zipped'), 'r') as zipped:
-    data = get(json.load(zipped),
-               'results', 'quickspectip.track_data', 'result', 0)
-
-agg = {
-    'found'     : [],
-    'precHue'   : [],
-    'precision' : [],
-    'recall'    : [],
-    'recHue'    : [],
-    'size'      : [],
-    'time'      : [],
-    'timeHue'   : [],
-    'wanted'    : []
-}
-
-# Make a note of which equations are discoverable from each sample
-knownEqs = {}
+msg('Aggregating data')
 
 def makeHashable(x):
-    '''Convert lists and dictionaries into tuples, recursively, so we can turn
-    them into sets for comparison.'''
-    if type(x) == type([]):
-        return reduce(lambda rest, elem: rest + (makeHashable(elem),),
-                      x,
-                      ())
-    if type(x) == type({}):
-        return reduce(lambda rest, key: rest + ((makeHashable(key),
-                                                 makeHashable(x[key])),),
-                      x,
-                      ())
-    # Assume everything non-list or dictionary is hashable
-    return x
+        '''Convert lists and dictionaries into tuples, recursively, so we can
+        turn them into sets for comparison.'''
+        xType    = type(x)
+        reducers = {
+            type([]) : lambda rest, elem: rest +  (makeHashable(elem),),
+            type({}) : lambda rest, key:  rest + ((makeHashable(key),
+                                                   makeHashable(x[key])),)
+        }
+        return reduce(reducers[xType], x, ()) if xType in reducers else x
 
-def sanityCheck(size, rawSample, got):
+def sanityCheck(size, rep, rawSample, got, knownEqs):
     assert len(rawSample) == size, repr({
         'error'     : 'Wrong number of names sampled',
         'rep'       : rep,
@@ -101,57 +38,80 @@ def sanityCheck(size, rawSample, got):
 
     sample = frozenset(rawSample)
     assert len(sample) == len(rawSample), repr({
-        'error'     : 'Duplicate names sampled',
+        'error'     : 'Sampled names contain duplicates',
         'rep'       : rep,
         'rawSample' : rawSample,
         'sample'    : sample,
         'size'      : size
     })
 
-    if got is not None:
-        for known in knownEqs:
-            if knownEqs[known] is not None:
-                if sample.issubset(known):
-                    assert got.issubset(knownEqs[known]), repr({
-                        'error' : 'Not subset',
-                        'size'  : size,
-                        'got'   : got,
-                        'prev'  : knownEqs[known],
-                    })
-                if sample.issuperset(known):
-                    assert got.issuperset(knownEqs[known]), repr({
-                        'error' : 'Not superset',
-                        'size'  : size,
-                        'got'   : got,
-                        'prev'  : knownEqs[known],
-                    })
-
-for size in sorted(map(int, data.keys())):
-    msg('Extracting data for size {0}\n'.format(size))
-    sdata = data[str(size)]['reps']
-    for rep in sorted(map(int, sdata.keys())):
-        rdata = sdata[str(rep)]
-
-        sample = frozenset(rdata['sample'])
-
-        got = frozenset(makeHashable(rdata['found'][0])) \
-              if rdata['success'] else None
-
-        sanityCheck(size, rdata['sample'], got)
-
-        if sample in knownEqs:
-            prev = knownEqs[sample]
-            assert prev == got, repr({
-                'error'  : 'Differing outputs for duplicate samples',
-                'prev'   : prev,
+    if sample in knownEqs:
+        if knownEqs[sample] != got:
+            msg(dumps({
+                'error'  : 'Differing outputs for the same sample',
+                'prev'   : list(knownEqs[sample]),
                 'rep'    : rep,
-                'sample' : got,
+                'sample' : list(got),
                 'size'   : size
-            })
+            }))
 
-            msg('Size {0} rep {1} is a dupe, skipping\n'.format(
-                size, rep))
-        else:
+        if got is not None:
+            for known in knownEqs:
+                if knownEqs[known] is not None:
+                    if sample.issubset(known):
+                        if not got.issubset(knownEqs[known]):
+                            msg(dumps({
+                                'error'  : 'More names should give more output',
+                                'got'    : list(got),
+                                'known'  : list(known),
+                                'prev'   : list(knownEqs[known]),
+                                'sample' : list(sample),
+                                'size'   : size
+                            }))
+                    if sample.issuperset(known):
+                        if not got.issuperset(knownEqs[known]):
+                            msg(dumps({
+                                'error'  : 'More names should give more output',
+                                'got'    : list(got),
+                                'known'  : list(known),
+                                'prev'   : list(knownEqs[known]),
+                                'sample' : list(sample),
+                                'size'   : size
+                            }))
+
+def aggregateData(data):
+    num = lambda x: type(x) in [type(42), type(42.0)]
+
+    agg = {
+        'found'     : [],
+        'precHue'   : [],
+        'precision' : [],
+        'recall'    : [],
+        'recHue'    : [],
+        'size'      : [],
+        'time'      : [],
+        'timeHue'   : [],
+        'wanted'    : []
+    }
+
+    # Make a note of which equations are discoverable from each sample
+    knownEqs = {}
+
+    for size in sorted(map(int, data.keys())):
+        msg('Extracting data for size ' + str(size))
+        sdata = data[str(size)]['reps']
+        for rep in sorted(map(int, sdata.keys())):
+            rdata  = sdata[str(rep)]
+            sample = frozenset(rdata['sample'])
+            got    = frozenset(makeHashable(rdata['found'][0])) \
+                     if rdata['success'] else None
+
+            sanityCheck(size, rep, rdata['sample'], got, knownEqs)
+
+            if sample in knownEqs:
+                msg('Skipping dupe rep {0} of size {1}'.format(rep, size))
+                continue
+
             knownEqs[sample] = got
 
             found  = len(got)             if rdata['success'] else 0
@@ -183,27 +143,115 @@ for size in sorted(map(int, data.keys())):
             agg['timeHue'  ].append(found  + 1 if rdata['success'] else 0)
             agg['wanted'   ].append(wanted)
 
-from matplotlib.colors import ListedColormap
-foundMax  = max(agg['found'])
-foundMap  = sns.color_palette('viridis', foundMax + 1).as_hex()
-foundMap2 = dict(enumerate(['#ff0000'] + foundMap))
-lfoundMap = ListedColormap(foundMap)
-foundNorm = mpl.colors.Normalize(vmin=0, vmax=foundMax)
-msg('Highest conjecture count is {0}\n'.format(foundMax))
+    return agg
 
-wantedMax  = max(agg['wanted'])
-wantedMap  = sns.color_palette('viridis', wantedMax + 1).as_hex()
-wantedMap2 = dict(enumerate(['#ff0000'] + wantedMap))
-lwantedMap = ListedColormap(wantedMap)
-wantedNorm = mpl.colors.Normalize(vmin=0, vmax=wantedMax)
-msg('Highest ground truth count is {0}\n'.format(wantedMax))
+agg = aggregateData(data)
+del(data)
+del(makeHashable)
+del(sanityCheck)
+del(aggregateData)
 
-def plotTime():
-    timeWidthFraction  = float(os.getenv('timeWidthFraction'))
-    timeHeightFraction = float(os.getenv('timeHeightFraction'))
-    plt.figure(figsize=figSize(timeWidthFraction, timeHeightFraction))
+msg('Setting up plots')
+
+import matplotlib as mpl
+import numpy      as np
+
+def figSize(widthFraction, height=None):
+    with open(os.getenv('textWidth'), 'r') as textWidthFile:
+        textWidthPt = float(textWidthFile.read())
+    ptToInch    = 1.0 / 72.27
+    textWidthIn = textWidthPt * ptToInch
+    goldMean    = (np.sqrt(5.0)-1.0) / 2.0
+    calcWidth   = widthFraction * textWidthIn
+    calcHeight  = textWidthIn * ((goldMean * widthFraction) \
+                                 if height is None else height)
+    return (calcWidth, calcHeight)
+
+# Must be done before importing matplotlob.pyplot
+# Taken from http://bkanuka.com/articles/native-latex-plots
+mpl.rcParams.update({
+    'pgf.texsystem' : 'pdflatex',
+    'text.usetex'   : True,  # Use LaTeX to write all text
+
+    # '[]' causes fonts to be inherited from document
+    'font.family'     : 'serif',
+    'font.serif'      : [],
+    'font.sans-serif' : [],
+    'font.monospace'  : [],
+
+    # LaTeX default is 10pt font.
+    'axes.labelsize'  : 10,
+    'text.fontsize'   : 10,
+    'legend.fontsize' : 8,
+    'xtick.labelsize' : 8,
+    'ytick.labelsize' : 8,
+
+    'figure.figsize'  : figSize(0.9),  # Set a default
+
+    # plots will be generated using this preamble. Use UTF-8.
+    'pgf.preamble': [
+        r'\usepackage[utf8x]{inputenc}',
+        r'\usepackage[T1]{fontenc}',
+    ]
+})
+
+msg('Setting colour scales')
+
+import matplotlib.pyplot as plt
+import seaborn           as sns
+
+def makeColours(key):
+    from matplotlib.colors import ListedColormap
+    maxVal    = max(agg[key])
+    colourMap = sns.color_palette('viridis', maxVal + 1).as_hex()
+    msg('Highest {0} count is {1}'.format(key, maxVal))
+    return {
+        'cmap'    : ListedColormap(colourMap),
+        'norm'    : mpl.colors.Normalize(vmin=0, vmax=maxVal),
+        'palette' : dict(enumerate(['#ff0000'] + colourMap))
+    }
+
+foundColours, wantedColours = map(makeColours, ['found', 'wanted'])
+
+del(makeColours)
+
+msg('Drawing plots')
+
+def newPlot(name):
+    widthFrac     = float(os.getenv(name + 'WidthFraction'))
+    heightFrac    = float(os.getenv(name + 'HeightFraction'))
+    width, height = figSize(widthFrac, heightFrac)
+    plt.figure(figsize=(width, height))
+
     sns.set_style('whitegrid')
     sns.set_context('paper')
+
+    return (width, height)
+
+def drawPoints(y=None, colours=None, hue=None, xLabel=None, yLabel=None,
+               size=2, ax=None):
+    # Alternatively, we could use stripplot with jitter
+    newAx = sns.swarmplot(data      = agg,
+                          x         = 'size',
+                          y         = y,
+                          size      = size,  # Marker size
+                          edgecolor = 'k',
+                          linewidth = 0.3,
+                          palette   = colours['palette'],
+                          hue       = hue,
+                          ax        = ax)
+    newAx.legend_.remove()
+    newAx.set_xlabel('Sample size')
+    newAx.set_ylabel(yLabel)
+    return newAx
+
+def savePlot(name):
+    plt.tight_layout()
+    plt.savefig(name + '.pgf', bbox_inches='tight', pad_inches=0.0)
+
+def plotTime():
+    newPlot('time')
+
     plt.ylim(0, 180)
 
     sns.boxplot(data      = agg,
@@ -211,20 +259,12 @@ def plotTime():
                 y         = 'time',
                 color     = '0.95',
                 fliersize = 0)
-    # Alternatively, we could use stripplot with jitter
-    ax = sns.swarmplot(data      = agg,
-                       x         = 'size',
-                       y         = 'time',
-                       size      = 2,  # Marker size
-                       edgecolor = 'k',
-                       linewidth = 0.3,
-                       palette   = foundMap2,
-                       hue       = 'timeHue')
 
-    # Paraphenalia
-    ax.legend_.remove()
-    ax.set_xlabel('Sample size')
-    ax.set_ylabel('Runtime (seconds)')
+    ax = drawPoints(
+        colours = foundColours,
+        hue     = 'timeHue',
+        y       = 'time',
+        yLabel  = 'Runtime (seconds)')
 
     # Add colorbar to show conjecture count
     cbax, kw = mpl.colorbar.make_axes_gridspec(
@@ -233,60 +273,38 @@ def plotTime():
                    pad         = 0.18)          # 0.15 would cover x-label
     cbar     = mpl.colorbar.ColorbarBase(
                    cbax,
-                   cmap = lfoundMap,
-                   norm = foundNorm,
+                   cmap = foundColours['cmap'],
+                   norm = foundColours['norm'],
                    **kw)
     cbar.set_label('Conjectures found')
 
-    plt.tight_layout()
-    plt.savefig('time.pgf', bbox_inches='tight', pad_inches=0.0)
+    savePlot('time')
 
 def plotPrecRec():
-    precRecWidthFraction  = float(os.getenv('precRecWidthFraction'))
-    precRecHeightFraction = float(os.getenv('precRecHeightFraction'))
-    width, height = figSize(precRecWidthFraction, precRecHeightFraction)
+    width, height = newPlot('precRec')
 
-    # Make a new figure, but width/height need to be set after subplots
-    plt.figure()
-    sns.set_style('whitegrid')
-    sns.set_context('paper')
-
+    # Width/height need resetting after calling subplots
     fig, (precAx, recAx) = plt.subplots(nrows=2)
     fig.set_figwidth(width)
     fig.set_figheight(height)
 
     map(lambda ax: ax.set_ylim(0, 1), [precAx, recAx])
 
-    # Alternatively, we could use stripplot with jitter
-    precAx = sns.swarmplot(
-                 data    = agg,
-                 x       = 'size',
-                 y       = 'precision',
-                 hue     = 'precHue',
-                 size    = 2,  # Marker size
-                 palette = wantedMap2,
-                 ax      = precAx)
+    precAx = drawPoints(
+        ax      = precAx,
+        colours = wantedColours,
+        hue     = 'precHue',
+        y       = 'precision',
+        yLabel  = 'Precision')
 
-    recAx = sns.swarmplot(
-                data    = agg,
-                x       = 'size',
-                y       = 'recall',
-                hue     = 'recHue',
-                size    = 2,  # Marker size
-                palette = wantedMap2,
-                ax      = recAx)
+    recAx = drawPoints(
+        ax      = recAx,
+        colours = wantedColours,
+        hue     = 'recHue',
+        y       = 'recall',
+        yLabel  = 'Recall')
 
-    # Paraphenalia
-    precAx.legend_.remove()
-    precAx.set_xlabel('Sample size')
-    precAx.set_ylabel('Precision')
-
-    recAx.legend_.remove()
-    recAx.set_xlabel('Sample size')
-    recAx.set_ylabel('Recall')
-
-    plt.tight_layout()
-    plt.savefig('prec.pgf', bbox_inches='tight', pad_inches=0.0)
+    savePlot('prec')
 
 plotTime()
 plotPrecRec()
