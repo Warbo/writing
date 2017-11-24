@@ -118,11 +118,12 @@ rec {
   graphs = runCommand "quickspecGraphs"
     {
       script = wrap {
-        name   = "getQuickSpecData.py";
-        paths  = [ (python.withPackages (p: [
+        name  = "mkQuickSpecGraphs.py";
+        file  = ./mkQuickSpecGraphs.py;
+        paths = [ (python.withPackages (p: [
                      p.matplotlib p.numpy p.seaborn
                    ])) tex tetex-hack ];
-        vars   = graphDims // {
+        vars  = graphDims // {
           textWidth = runCommand "textWidth"
             { output = render { final = false; }; }
             ''
@@ -134,7 +135,6 @@ rec {
           '';
           zipped = data;
         };
-        file = ./getQuickSpecData.py;
       };
     }
     ''
