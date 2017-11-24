@@ -254,15 +254,14 @@ def drawPoints(y=None, colours=None, hue=None, yLabel=None, ax=None):
     newAx.set_ylabel(yLabel)
     return newAx
 
-def drawColourBar(ax=None, cax=None, colours=None, label=None, fig=None):
+def drawColourBar(ax=None, cax=None, colours=None, kw={}, label=None):
     '''Add a colour bar below ax or on cax.'''
     if cax is None:
-        cax, kw = mpl.colorbar.make_axes_gridspec(
+        cax, kw2 = mpl.colorbar.make_axes_gridspec(
                        ax,
                        orientation = 'horizontal',  # Keeps plot full width
                        pad         = 0.18)          # 0.15 would cover x-label
-    else:
-        kw = {}
+        kw = dict(kw.items() + kw2.items())
 
     cbar = mpl.colorbar.ColorbarBase(
                cax,
@@ -274,7 +273,7 @@ def drawColourBar(ax=None, cax=None, colours=None, label=None, fig=None):
 
     # Prevent problems with PDF output
     # See http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.colorbar
-    cbar.solids.set_edgecolor("face")
+    cbar.solids.set_edgecolor('face')
 
 def savePlot(name):
     '''Write our the current figure as LaTeX.'''
@@ -321,16 +320,11 @@ def plotPrecRec():
 
     map(lambda ax: ax.set_ylim(0, 1), [precAx, recAx])
 
-    cbar = mpl.colorbar.ColorbarBase(
-               plt.subplot(gs[2]),
-               cmap=wantedColours['cmap'],
-               norm=wantedColours['norm'],
-               orientation='horizontal')
-    cbar.set_label('Ground truth theorems')
-
-    # Prevent problems with PDF output
-    # See http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.colorbar
-    cbar.solids.set_edgecolor("face")
+    drawColourBar(
+        cax     = plt.subplot(gs[2]),
+        colours = wantedColours,
+        kw      = {'orientation': 'horizontal'},
+        label   = 'Ground truth theorems')
 
     savePlot('prec')
 
