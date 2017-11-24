@@ -223,12 +223,12 @@ def newFigure(name):
     widthFrac     = float(os.getenv(name + 'WidthFraction'))
     heightFrac    = float(os.getenv(name + 'HeightFraction'))
     width, height = figSize(widthFrac, heightFrac)
-    plt.figure(figsize=(width, height))
+    fig           = plt.figure(figsize=(width, height))
 
     sns.set_style('whitegrid')
     sns.set_context('paper')
 
-    return (width, height)
+    return fig
 
 def drawPoints(y=None, colours=None, hue=None, yLabel=None, ax=None):
     '''Draw a scatter plot of agg[y][n] against agg['size'][n], for each point
@@ -272,9 +272,13 @@ def drawColourBar(ax=None, cax=None, colours=None, label=None, fig=None):
 
     cbar.set_label(label)
 
+    # Prevent problems with PDF output
+    # See http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.colorbar
+    cbar.solids.set_edgecolor("face")
+
 def savePlot(name):
     '''Write our the current figure as LaTeX.'''
-    #plt.tight_layout()
+    plt.tight_layout()
     plt.savefig(name + '.pgf', bbox_inches='tight', pad_inches=0.0)
 
 def plotTime():
@@ -298,38 +302,36 @@ def plotTime():
     savePlot('time')
 
 def plotPrecRec():
-    width, height = newFigure('precRec')
-
-    # Width/height need resetting after calling subplots
-    fig, (precAx, recAx) = plt.subplots(nrows = 2)
-    fig.set_figwidth(width)
-    fig.set_figheight(height)
-
-    map(lambda ax: ax.set_ylim(0, 1), [precAx, recAx])
+    newFigure('precRec')
+    gs     = mpl.gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
 
     precAx = drawPoints(
-        ax      = precAx,
+        ax      = plt.subplot(gs[0]),
         colours = wantedColours,
         hue     = 'precHue',
         y       = 'precision',
         yLabel  = 'Precision')
 
     recAx = drawPoints(
-        ax      = recAx,
+        ax      = plt.subplot(gs[1]),
         colours = wantedColours,
         hue     = 'recHue',
         y       = 'recall',
         yLabel  = 'Recall')
 
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    map(lambda ax: ax.set_ylim(0, 1), [precAx, recAx])
 
-    drawColourBar(
-        cax     = make_axes_locatable(recAx).append_axes(
-                      'bottom',
-                      size = '5%',
-                      pad  = 0.05),
-        colours = wantedColours,
-        label   = 'Ground truth theorems')
+    cbar = mpl.colorbar.ColorbarBase(
+               plt.subplot(gs[2]),
+               cmap=wantedColours['cmap'],
+               norm=wantedColours['norm'],
+               orientation='horizontal')
+    cbar.set_label('Ground truth theorems')
+
+    # Prevent problems with PDF output
+    # See http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.colorbar
+    cbar.solids.set_edgecolor("face")
+
     savePlot('prec')
 
 plotTime()
