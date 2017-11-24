@@ -112,7 +112,7 @@ rec {
     timeWidthFraction     = "1.0";
     timeHeightFraction    = "0.6";
     precRecWidthFraction  = "1.0";
-    precRecHeightFraction = "0.6";
+    precRecHeightFraction = "0.8";
   };
 
   graphs = runCommand "quickspecGraphs"
