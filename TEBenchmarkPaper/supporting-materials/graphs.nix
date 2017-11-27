@@ -1,15 +1,17 @@
-{ fail, fetchgit, gnuplot, jq, miller, mkBin, perl, python, render, runCommand,
-  tetex, tex, wrap, writeScript }:
+{ fail, fetchgit, gnuplot, jq, miller, mkBin, perl, python, render,
+  runCommand, teBenchmark, tetex, tex, wrap, writeScript }:
 
 with builtins;
 rec {
+  repo = fetchgit {
+    url    = http://chriswarbo.net/git/haskell-te.git;
+    rev    = "334d529";
+    sha256 = "109g8hkpggjjlw7ksd7l157jknp4wkg9lbjlyiqqvqzah2kl65jf";
+  };
+
   data = runCommand "data.json.gz"
     {
-      repo = fetchgit {
-        url    = http://chriswarbo.net/git/haskell-te.git;
-        rev    = "334d529";
-        sha256 = "109g8hkpggjjlw7ksd7l157jknp4wkg9lbjlyiqqvqzah2kl65jf";
-      };
+      inherit repo;
       buildInputs = [ jq ];
       gzipped = "benchmarks/results/desktop/ce9c9478-nix-py-dirnull.json.gz";
     }
@@ -17,6 +19,8 @@ rec {
       set -e
       cp "$repo/$gzipped" "$out"
     '';
+
+  teTools = (import "${repo}/nix-support" {}).tipBenchmarks.tools;
 
   tetex-hack = runCommand "tetex-hack"
     {
@@ -120,10 +124,16 @@ rec {
       script = wrap {
         name  = "mkQuickSpecGraphs.py";
         file  = ./mkQuickSpecGraphs.py;
-        paths = [ (python.withPackages (p: [
-                     p.matplotlib p.numpy p.seaborn
-                   ])) tex tetex-hack ];
+        paths = [
+          (python.withPackages (p: [ p.matplotlib p.numpy p.seaborn ]))
+
+          tetex-hack
+          tex
+        ];
         vars  = graphDims // {
+          conjectures_for_sample = trace
+            "FIXME: HaskellTE should do analysis even for failures"
+            "${teTools}/bin/conjectures_for_sample";
           textWidth = runCommand "textWidth"
             { output = render { final = false; }; }
             ''

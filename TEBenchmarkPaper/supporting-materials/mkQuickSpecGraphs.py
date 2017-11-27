@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from json import dumps
+from json import loads, dumps
 import os
 import sys
 msg = lambda x: sys.stderr.write(x + '\n')
@@ -80,9 +80,11 @@ def sanityCheck(size, rep, rawSample, got, knownEqs):
                             }))
 
 def aggregateData(data):
+    import subprocess
     num = lambda x: type(x) in [type(42), type(42.0)]
 
     agg = {
+        'correct'   : [],
         'found'     : [],
         'precHue'   : [],
         'precision' : [],
@@ -114,8 +116,30 @@ def aggregateData(data):
 
             knownEqs[sample] = got
 
-            found  = len(got)             if rdata['success'] else 0
-            wanted = len(rdata['wanted']) if rdata['success'] else 0
+            if rdata['success']:
+                found   = len(got)
+                correct = len([x for x in rdata['wanted'] if x['found']])
+                wanted  = len(rdata['wanted'])
+            else:
+                found   = 0
+                correct = 0
+
+                # FIXME: HaskellTE should perform analysis even for failures
+                proc = subprocess.Popen(
+                    [os.getenv('conjectures_for_sample')],
+                    stdin  = subprocess.PIPE,
+                    stdout = subprocess.PIPE,
+                    env    = {'SAMPLED_NAMES' : '\n'.join(list(sample))})
+                (out, err) = proc.communicate('[]')
+                outData    = loads(out)
+                wanted = len(outData['wanted'])
+                del(proc, out, err)
+
+            assert wanted > 0, repr({
+                'error'  : 'Sampling should guarantee a wanted conjecture',
+                'sample' : sample,
+                'wanted' : wanted
+            })
 
             # Get the time if available, otherwise treat as a timeout
             # We use min since killing might take some time
@@ -133,6 +157,7 @@ def aggregateData(data):
             assert num(r), 'Non-numeric rec %r' % type(r)
 
             # Store in "wide format". We +1 the hues and use 0 for failure
+            agg['correct'  ].append(correct)
             agg['found'    ].append(found)
             agg['precision'].append(p)
             agg['precHue'  ].append(wanted + 1 if rdata['success'] else 0)
@@ -300,6 +325,73 @@ def plotTime():
     drawColourBar(ax = ax, colours = foundColours, label = 'Conjectures found')
     savePlot('time')
 
+def aggProp(sizes=None, agg=None, key=None, total=None):
+    '''    We assume the output conjectures from each run are drawn from a binomial
+    distribution, e.g. an urn of good and bad conjectures, where the quality
+    of the algorithm determines the ratio of good to bad.
+
+    This models each run's precision and recall as a binomial distribution. To
+    aggregate these per size we take their means, and propagate the variance.
+    The mean of the aggregate is simply the mean of the individual means, i.e.
+
+        aggregateMean = sum(map(mean, runs)) / len(runs)
+
+    The variance of the aggregate is the sum of the variances, divided by the
+    square of the number of runs, i.e.
+
+        aggregateVar = sum(map(var, runs)) / square(len(runs))
+
+    This assumes each run is independent.'''
+
+    import math
+
+    sizeIndices = lambda s: [i for i, x in enumerate(agg['size']) if x == s]
+    runsOfSize  = lambda s: [agg[key][i] for i in sizeIndices(s)]
+
+    # Per-run functions
+
+    def pointVar(successes=None, n=None):
+        '''Variance of samples drawn from a binomial distribution, with 'n'
+        samples drawn, of which 'successes' count as "successful".'''
+        s = float(successes)
+        t = float(n)
+        p = s / t
+        q = 1.0 - p
+        return (p * q) / t
+
+    def varOfRun(i):
+        '''Variance of the ith run.'''
+        n = agg[total][i]
+        if n == 0:
+            return 1.0  # Maximum variance, since we can't narrow it down
+        return pointVar(successes = agg['correct'][i], n = n)
+
+    # Per-size functions
+    stdDev      = lambda xs: math.sqrt(variance(xs))
+    aggMean     = lambda xs: float(sum(xs)) / float(len(xs))
+
+    def aggVars(ixs):
+        '''Takes indices ixs and a variance-getting function f. Combines the
+        variance of each mean-value to find the variance of the mean-of-means.
+        A mean is a sum and a division: the variance of a sum is the sum of the
+        variances, and the variance after division by X is the variance divided
+        by X^2.'''
+        n  = float(len(ixs))
+        vs = map(varOfRun, ixs)
+        return float(sum(vs)) / (n * n)
+
+    means   = [aggMean(runsOfSize(size))  for size in sizes]
+    runVars = [aggVars(sizeIndices(size)) for size in sizes]
+
+    # Standard deviation is square root of variance
+    stdDevs = map(math.sqrt, runVars)
+
+    # Mean values +/- standard deviations
+    low  = [max(0, means[i] - stdDevs[i]) for i, _ in enumerate(means)]
+    high = [min(1, means[i] + stdDevs[i]) for i, _ in enumerate(means)]
+
+    return means, low, high
+
 def plotPrecRec():
     newFigure('precRec')
     gs     = mpl.gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
@@ -319,6 +411,27 @@ def plotPrecRec():
         yLabel  = 'Recall')
 
     map(lambda ax: ax.set_ylim(0, 1), [precAx, recAx])
+
+    # This *should* be range(1, max), but we might as well avoid assumptions
+    sizes = sorted(list(set(agg['size'])))
+
+    # Sizes start at 1, but matplotlib seems to put the first point at index 0
+    # (even though they're labelled from 1) so we need to decrement each.
+    xs = map(lambda x: x - 1, sizes)
+
+    precMeans, precLows, precHighs = aggProp(sizes, agg, 'precision', 'found' )
+    recMeans,   recLows,  recHighs = aggProp(sizes, agg, 'recall',    'wanted')
+
+    precAx.plot(xs, precMeans)
+    recAx.plot( map(lambda x: x - 1, sizes),  recMeans)
+
+    precAx.fill_between(map(lambda x: x - 1, sizes), precLows, precHighs,
+        alpha     = 0.5,
+        facecolor = '#999999')
+
+    recAx.fill_between(map(lambda x: x - 1, sizes), recLows, recHighs,
+        alpha     = 0.5,
+        facecolor = '#999999')
 
     drawColourBar(
         cax     = plt.subplot(gs[2]),
