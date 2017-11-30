@@ -24,7 +24,7 @@ rec {
   # Render a "dummy" version of the paper which has all of the same styling, but
   # just spits out the text width to stdout. We can use this to generate figures
   # of the correct size, without having to scale things up or down.
-  textWidth = runCommand "textWidth" { output = render { final = false; }; } ''
+  textWidth = runCommand "textWidth" { output = render { graphs = null; }; } ''
     set -e
     set -o pipefail
     grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < "$output" |
@@ -32,14 +32,13 @@ rec {
     tr -d 'pt ' > "$out"
   '';
 
-  paper = render { final = true; };
+  paper = render { inherit (graphs) graphs; };
 
-  render = { final ? true }:
+  render = { graphs }:
     runCommand "benchmark-article.pdf"
       {
-        inherit bibtex latex;
-        final       = if final then "true" else "false";
-        graphs      = if final then graphs.graphs else "";
+        inherit bibtex graphs latex;
+        final       = if graphs == null then "false" else "true";
         WIDTH       = ''\typeout{WIDTH \the\textwidth WIDTH}'';
         src         = ./..;
         buildInputs = [
