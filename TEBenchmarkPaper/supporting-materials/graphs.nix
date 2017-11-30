@@ -1,5 +1,5 @@
-{ fail, fetchgit, gnuplot, jq, miller, mkBin, perl, python, render,
-  runCommand, teBenchmark, tetex, tex, wrap, writeScript }:
+{ fail, fetchgit, gnuplot, jq, miller, mkBin, perl, python, runCommand,
+  teBenchmark, tetex, tex, textWidth, wrap, writeScript }:
 
 with builtins;
 rec {
@@ -131,18 +131,10 @@ rec {
           tex
         ];
         vars  = graphDims // {
+          inherit textWidth;
           conjectures_for_sample = trace
             "FIXME: HaskellTE should do analysis even for failures"
             "${teTools}/bin/conjectures_for_sample";
-          textWidth = runCommand "textWidth"
-            { output = render { final = false; }; }
-            ''
-              set -e
-              set -o pipefail
-              grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < "$output" |
-                sed -e 's/WIDTH//g'                          |
-                tr -d 'pt ' > "$out"
-          '';
           zipped = data;
         };
       };

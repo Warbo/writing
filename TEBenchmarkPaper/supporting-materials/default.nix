@@ -7,7 +7,7 @@
 with builtins;
 with nixpkgs.repo1609."00ef7f9";
 rec {
-  graphs = callPackage ./graphs.nix { inherit render teBenchmark tex; };
+  graphs = callPackage ./graphs.nix { inherit teBenchmark tex textWidth; };
 
   # Journal of Automated Reasoning LaTeX files, from
   # http://www.springer.com/cda/content/document/cda_downloaddocument/?SGWID=0-0-45-468198-0
@@ -20,6 +20,17 @@ rec {
     scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms
     frankenstein csquotes multirow type1cm;
   });
+
+  # Render a "dummy" version of the paper which has all of the same styling, but
+  # just spits out the text width to stdout. We can use this to generate figures
+  # of the correct size, without having to scale things up or down.
+  textWidth = runCommand "textWidth" { output = render { final = false; }; } ''
+    set -e
+    set -o pipefail
+    grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < "$output" |
+    sed -e 's/WIDTH//g'                          |
+    tr -d 'pt ' > "$out"
+  '';
 
   render = { final ? true }:
     runCommand "benchmark-article.pdf"

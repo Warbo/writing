@@ -1,0 +1,57 @@
+From: Chris Warburton
+Date: Thu, 30 Nov 2017 10:55:10 +0000
+State: new
+Subject: Don't rebuild TEBenchmark data/graphs when latex changes
+Message-Id: <cfb346a8a3044c17-0-artemis@nixos>
+
+It's annoying to wait for these things to build. The most obvious thing
+we should avoid is using things like './.' as dependencies in Nix, since
+this will trigger a rebuild if any content changes (even things like
+.git).
+
+Slightly trickier is how to handle page width. We're currently rendering
+figures in terms of the resulting document's page width, but this causes
+a data dependency on the article.tex file.
+
+By default, Nix will propagate changed hashes through its MerkleDAGs to
+cause everything to get rebuilt, e.g.
+
+  A -depends on-> B -depends on-> C
+
+If we change C (say, article.tex), that causes a rebuild of B. Fair
+enough. Yet, if B ends up being identical (say, a width of Xpt), then we
+*still* rebuild A. This is annoying.
+
+To work around this, we can use 'import' in Nix: if we write the result
+of B to a .nix file (e.g. by wrapping the result in double quotes), we
+can import it and break this data dependency: Nix will spot that A has
+changed and rebuild B, but identical values of B will not affect A's
+hash, so no rebuilding will take place.
+
+So, at what step should we do an import? We *could* do this with the
+page width, but the problem is that using 'import' will cause building
+to happen at eval time. To get the page width we run the latex, Bibtex,
+etc. commands, which in turn rely on texLive, which is a pretty massive
+build. We don't want to do this during evaluation if we can at all avoid
+it.
+
+A better approach might be to import a butchered article.tex file. We
+get the width by replacing the entire 'document' body of our article.tex
+file with a "print text width" command. This ensures that all of the
+styling imposed by the header is still applied, but we don't end up in a
+recursive pickle (e.g. trying to render figures which haven't been
+generated yet).
+
+If we pull this butchered file out into its own derivation, it will
+depend on the article.tex file, but produce identical output as long as
+the header declarations don't change. If they do change, then we want it
+to rebuild, since the width might change. Great.
+
+Still, how do we represent such a file in a way we can import? It seems
+like a bad idea to keep it on disk, since turning it into a Nix value
+will require a file path, and that will change as the article.tex
+content changes.
+
+Instead, we should probably just store the (butchered) file content as a
+Nix string, put that in a .nix file, import it, and write it to a file
+for use in the width-getting derivation.
