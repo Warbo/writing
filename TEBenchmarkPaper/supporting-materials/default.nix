@@ -24,17 +24,49 @@ rec {
   # Render a "dummy" version of the paper which has all of the same styling, but
   # just spits out the text width to stdout. We can use this to generate figures
   # of the correct size, without having to scale things up or down.
-  textWidth = runCommand "textWidth" { output = render { graphs = null; }; } ''
-    set -e
-    set -o pipefail
-    grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < "$output" |
-    sed -e 's/WIDTH//g'                          |
-    tr -d 'pt ' > "$out"
-  '';
+  textWidth = runCommand "textWidth"
+    {
+      output = render {
+        graphs = null;
+        script = ''
+          echo 'Getting text width' 1>&2
+          touch ./graphDims.tex
+          chmod +w ./article.tex
+          PREAMBLE=$(grep -B 1000 '\\begin{document}' < ./article.tex)
 
-  paper = render { inherit (graphs) graphs; };
+          echo "$PREAMBLE"      >  ./article.tex
+          echo "$WIDTH"         >> ./article.tex
+          echo '\end{document}' >> ./article.tex
+          cat ./article.tex 1>&2
 
-  render = { graphs }:
+          echo 'Rendering for width' 1>&2
+          render | tee "$out"
+        '';
+      };
+    }
+    ''
+      set -e
+      set -o pipefail
+      grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < "$output" |
+      sed -e 's/WIDTH//g'                          |
+      tr -d 'pt ' > "$out"
+    '';
+
+  paper = render {
+    inherit (graphs) graphs;
+    script = ''
+      ln -s "$bibtex"    ./Bibtex.bib
+      [[ -z "$graphs" ]] || cp -s "$graphs"/*  ./.
+
+      render
+      bibtex article
+      render
+      render
+      mv article.pdf "$out"
+    '';
+  };
+
+  render = { graphs, script }:
     runCommand "benchmark-article.pdf"
       {
         inherit bibtex graphs latex;
@@ -56,33 +88,8 @@ rec {
         ];
       }
       ''
-        cp -r "$src"/*     ./
+        cp -r "$src"/* ./
         unzip "$latex"
-
-        if "$final"
-        then
-          # Actual rendering
-          ln -s "$bibtex"    ./Bibtex.bib
-          [[ -z "$graphs" ]] || cp -s "$graphs"/*  ./.
-
-          render
-          bibtex article
-          render
-          render
-          mv article.pdf "$out"
-        else
-          echo 'Getting text width' 1>&2
-          touch ./graphDims.tex
-          chmod +w ./article.tex
-          PREAMBLE=$(grep -B 1000 '\\begin{document}' < ./article.tex)
-
-          echo "$PREAMBLE"      >  ./article.tex
-          echo "$WIDTH"         >> ./article.tex
-          echo '\end{document}' >> ./article.tex
-          cat ./article.tex 1>&2
-
-          echo 'Rendering for width' 1>&2
-          render | tee "$out"
-        fi
+        ${script}
       '';
 }
