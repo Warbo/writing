@@ -32,6 +32,8 @@ rec {
     tr -d 'pt ' > "$out"
   '';
 
+  paper = render { final = true; };
+
   render = { final ? true }:
     runCommand "benchmark-article.pdf"
       {

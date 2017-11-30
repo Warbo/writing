@@ -5,5 +5,5 @@ with {
   };
 };
 if onlyPdf
-   then support.render {}
+   then support.paper
    else support
