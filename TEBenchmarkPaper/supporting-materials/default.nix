@@ -70,7 +70,6 @@ rec {
     runCommand "benchmark-article.pdf"
       {
         inherit bibtex graphs latex;
-        final       = if graphs == null then "false" else "true";
         WIDTH       = ''\typeout{WIDTH \the\textwidth WIDTH}'';
         src         = ./..;
         buildInputs = [
