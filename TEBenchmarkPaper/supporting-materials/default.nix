@@ -7,6 +7,8 @@
 with builtins;
 with nixpkgs.repo1609."00ef7f9";
 rec {
+  article = ../article.tex;
+
   graphs = callPackage ./graphs.nix { inherit teBenchmark tex textWidth; };
 
   # Journal of Automated Reasoning LaTeX files, from
@@ -24,35 +26,37 @@ rec {
   # Render a "dummy" version of the paper which has all of the same styling, but
   # just spits out the text width to stdout. We can use this to generate figures
   # of the correct size, without having to scale things up or down.
-  textWidth = runCommand "textWidth"
-    {
-      output = render {
-        graphs = null;
-        script = ''
-          echo 'Getting text width' 1>&2
-          chmod +w ./article.tex
-          PREAMBLE=$(grep -B 1000 '\\begin{document}' < ./article.tex)
+  textWidth = render {
+    article = writeScript "article-width.tex" (import (runCommand "widthTex.nix"
+      {
+        inherit article;
+        buildInputs = [ jq ];
+        WIDTH       = ''\typeout{WIDTH \the\textwidth WIDTH}'';
+      }
+      ''
+        PREAMBLE=$(grep -B 1000 '\\begin{document}' < "$article")
 
-          echo "$PREAMBLE"      >  ./article.tex
-          echo "$WIDTH"         >> ./article.tex
-          echo '\end{document}' >> ./article.tex
-          cat ./article.tex 1>&2
+        echo "$PREAMBLE"      >  ./article.tex
+        echo "$WIDTH"         >> ./article.tex
+        echo '\end{document}' >> ./article.tex
 
-          echo 'Rendering for width' 1>&2
-          render | tee "$out"
-        '';
-      };
-    }
-    ''
-      set -e
+        jq -Rs '.' < ./article.tex > "$out"
+      ''));
+    graphs  = null;
+    name    = "test-width";
+    script  = ''
       set -o pipefail
-      grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < "$output" |
-      sed -e 's/WIDTH//g'                          |
+      render | tee ./output
+      grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < ./output |
+      sed -e 's/WIDTH//g'                           |
       tr -d 'pt ' > "$out"
     '';
+  };
 
   paper = render {
+    inherit article;
     inherit (graphs) graphs;
+    name   = "benchmark-article.pdf";
     script = ''
       ln -s "$bibtex"   ./Bibtex.bib
       cp -s "$graphs"/* ./.
@@ -65,12 +69,10 @@ rec {
     '';
   };
 
-  render = { graphs, script }:
-    runCommand "benchmark-article.pdf"
+  render = { article, graphs, name, script }:
+    runCommand name
       {
-        inherit bibtex graphs latex;
-        WIDTH       = ''\typeout{WIDTH \the\textwidth WIDTH}'';
-        src         = ./..;
+        inherit article bibtex graphs latex;
         buildInputs = [
           tex
           unzip
@@ -86,8 +88,9 @@ rec {
         ];
       }
       ''
-        cp -r "$src"/* ./
+        set -e
         unzip "$latex"
+        cp "$article" ./article.tex
         ${script}
       '';
 }
