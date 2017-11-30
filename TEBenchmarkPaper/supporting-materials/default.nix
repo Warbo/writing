@@ -30,7 +30,6 @@ rec {
         graphs = null;
         script = ''
           echo 'Getting text width' 1>&2
-          touch ./graphDims.tex
           chmod +w ./article.tex
           PREAMBLE=$(grep -B 1000 '\\begin{document}' < ./article.tex)
 
@@ -55,8 +54,8 @@ rec {
   paper = render {
     inherit (graphs) graphs;
     script = ''
-      ln -s "$bibtex"    ./Bibtex.bib
-      [[ -z "$graphs" ]] || cp -s "$graphs"/*  ./.
+      ln -s "$bibtex"   ./Bibtex.bib
+      cp -s "$graphs"/* ./.
 
       render
       bibtex article
