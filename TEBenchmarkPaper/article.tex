@@ -225,15 +225,14 @@ concluding remarks in \ref{sec:conclusion}.
       \Map(f, \Nil)              &= \Nil                                    \\
       \Map(f, \Cons(x, xs))      &= \Cons(f(x), \Map(f, xs))                \\
       \Foldl(f, x, \Nil)         &= x                                       \\
-      \Foldl(f, x, \Cons(y, ys)) &= \Foldl(f, f(x, y), xs)                  \\
+      \Foldl(f, x, \Cons(y, ys)) &= \Foldl(f, f(x, y), ys)                  \\
       \Foldr(f, \Nil,         y) &= y                                       \\
       \Foldr(f, \Cons(x, xs), y) &= f(x, \Foldr(f, xs, y))
     \end{split}
   \end{equation*}
   \caption{A simple theory defining a $\List$ type and some associated
-    operations. $\Zero$ and $\Succ$ are from a Peano encoding of the
-    natural numbers. Taken from
-    \cite{Johansson.Dixon.Bundy:conjecture-generation}}
+    operations, taken from~\cite{Johansson.Dixon.Bundy:conjecture-generation}.
+    $\Zero$ and $\Succ$ are from a Peano encoding of the natural numbers.}
   \label{figure:list_theory}
 \end{figure}
 
