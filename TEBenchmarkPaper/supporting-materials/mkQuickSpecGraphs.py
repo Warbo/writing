@@ -394,25 +394,6 @@ def aggProp(sizes=None, agg=None, key=None, total=None):
     return means, low, high
 
 def plotPrecRec():
-    newFigure('precRec')
-    gs     = mpl.gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
-
-    precAx = drawPoints(
-        ax      = plt.subplot(gs[0]),
-        colours = wantedColours,
-        hue     = 'precHue',
-        y       = 'precision',
-        yLabel  = 'Precision')
-
-    recAx = drawPoints(
-        ax      = plt.subplot(gs[1]),
-        colours = wantedColours,
-        hue     = 'recHue',
-        y       = 'recall',
-        yLabel  = 'Recall')
-
-    map(lambda ax: ax.set_ylim(0, 1), [precAx, recAx])
-
     # This *should* be range(1, max), but we might as well avoid assumptions
     sizes = sorted(list(set(agg['size'])))
 
@@ -423,16 +404,35 @@ def plotPrecRec():
     precMeans, precLows, precHighs = aggProp(sizes, agg, 'precision', 'found' )
     recMeans,   recLows,  recHighs = aggProp(sizes, agg, 'recall',    'wanted')
 
+    newFigure('precRec')
+    gs            = mpl.gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
+    precAx, recAx = (plt.subplot(gs[0]), plt.subplot(gs[1]))
+
+    map(lambda args: args['ax'].fill_between(xs, args['lows'], args['highs'],
+                                             #alpha     = 0.5,
+                                             facecolor = '#CCCCCC',
+                                             edgecolor = 'face'),
+        [{'ax': precAx, 'lows': precLows, 'highs': precHighs},
+         {'ax': recAx, 'lows':  recLows, 'highs':  recHighs}])
+
+    drawPoints(
+        ax      = precAx,
+        colours = wantedColours,
+        hue     = 'precHue',
+        y       = 'precision',
+        yLabel  = 'Precision')
+
+    drawPoints(
+        ax      = recAx,
+        colours = wantedColours,
+        hue     = 'recHue',
+        y       = 'recall',
+        yLabel  = 'Recall')
+
+    map(lambda ax: ax.set_ylim(0, 1), [precAx, recAx])
+
     precAx.plot(xs, precMeans)
     recAx.plot( map(lambda x: x - 1, sizes),  recMeans)
-
-    precAx.fill_between(map(lambda x: x - 1, sizes), precLows, precHighs,
-        alpha     = 0.5,
-        facecolor = '#999999')
-
-    recAx.fill_between(map(lambda x: x - 1, sizes), recLows, recHighs,
-        alpha     = 0.5,
-        facecolor = '#999999')
 
     drawColourBar(
         cax     = plt.subplot(gs[2]),
