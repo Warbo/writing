@@ -1,5 +1,5 @@
-{ fail, fetchgit, gnuplot, jq, miller, mkBin, perl, python, runCommand,
-  teBenchmark, tetex, tex, textWidth, wrap, writeScript }:
+{ fail, fetchgit, jq, mkBin, perl, python, runCommand, teBenchmark, tetex, tex,
+  textWidth, wrap, writeScript }:
 
 with builtins;
 rec {
@@ -53,65 +53,9 @@ rec {
       ln -s "$newDvipng/bin/dvipng" "$out/bin/dvipng"
     '';
 
-  mean = mkBin {
-    name   = "mean";
-    paths  = [ miller ];
-    script = ''
-      #!/usr/bin/env bash
-      set -e
-      mlr --ocsv --headerless-csv-output stats1 -f 1 -a mean
-    '';
-  };
-
-  median = mkBin {
-    name   = "median";
-    paths  = [ miller ];
-    script = ''
-      #!/usr/bin/env bash
-      set -e
-      mlr --ocsv --headerless-csv-output stats1 -f 1 -a p50
-    '';
-  };
-
-  precRecPlot = wrap {
-    name   = "precRecPlot";
-    paths  = [ fail gnuplot miller ];
-    vars   = {
-      script = writeScript "precRec.gnuplot" ''
-        set terminal pngcairo size 350,262 enhanced font 'Verdana,10'
-        prec=system("echo $PREC")
-        rec=system("echo $REC")
-        plot "prec.tsv" title "Precision", \
-             "rec.tsv"  title "Recall"
-      '';
-    };
-    script = ''
-      #!/usr/bin/env bash
-      set -e
-      [[ -n "$PREC" ]] || fail "No precision arg"
-      [[ -e "$PREC" ]] || fail "Can't find precisions '$PREC'"
-      [[ -n "$REC"  ]] || fail "No recall arg"
-      [[ -e "$REC"  ]] || fail "Can't find recalls '$REC'"
-
-      for S in "$PREC"/*
-      do
-        SIZE=$(basename "$S")
-         VAL=$(mean   < "$S")
-
-        echo -e "$SIZE\t$VAL" >> prec.tsv
-      done
-
-      for S in "$REC"/*
-      do
-        SIZE=$(basename "$S")
-         VAL=$(mean < "$S")
-        echo -e "$SIZE\t$VAL" >> rec.tsv
-      done
-
-      gnuplot < "$script"
-    '';
-  };
-
+  # The dimensions of each graph, in units of textWidth; i.e. a width of 1.0
+  # takes up the whole text width, whilst a height of 1.0 takes up a vertical
+  # space equal to the page width.
   graphDims = {
     timeWidthFraction     = "1.0";
     timeHeightFraction    = "0.6";
@@ -122,7 +66,7 @@ rec {
   graphs = runCommand "quickspecGraphs"
     {
       script = wrap {
-        name  = "mkQuickSpecGraphs.py";
+        name  =  "mkQuickSpecGraphs.py";
         file  = ./mkQuickSpecGraphs.py;
         paths = [
           (python.withPackages (p: [ p.matplotlib p.numpy p.seaborn ]))
