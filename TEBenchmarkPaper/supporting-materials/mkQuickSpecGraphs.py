@@ -160,9 +160,9 @@ def aggregateData(data):
             agg['correct'  ].append(correct)
             agg['found'    ].append(found)
             agg['precision'].append(p)
-            agg['precHue'  ].append(wanted + 1 if rdata['success'] else 0)
+            agg['precHue'  ].append(wanted)
             agg['recall'   ].append(r)
-            agg['recHue'   ].append(wanted + 1 if rdata['success'] else 0)
+            agg['recHue'   ].append(wanted)
             agg['size'     ].append(size)
             agg['time'     ].append(t)
             agg['timeHue'  ].append(found  + 1 if rdata['success'] else 0)
@@ -233,7 +233,8 @@ def makeColours(key):
     return {
         'cmap'    : ListedColormap(colourMap),
         'norm'    : mpl.colors.Normalize(vmin=0, vmax=maxVal),
-        'palette' : dict(enumerate(['#ff0000'] + colourMap))
+        'palette' : dict(enumerate(['#ff0000'] + colourMap if key == 'found' \
+                                                           else colourMap))
     }
 
 foundColours, wantedColours = map(makeColours, ['found', 'wanted'])
