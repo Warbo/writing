@@ -1,0 +1,9 @@
+From: Chris Warburton
+Date: Fri, 01 Dec 2017 12:08:25 +0000
+State: new
+Subject: At what point is it impractical?
+Message-Id: <d5a53db226c6c6fc-0-artemis@nixos>
+
+We say it's impractical to go above 10, but we go above 20.
+
+Maybe we should just say 100 to be on the safe side?

@@ -1,0 +1,10 @@
+From: Chris Warburton
+Date: Fri, 01 Dec 2017 11:55:46 +0000
+State: new
+Subject: Fix table entries for new systems
+Message-Id: <f66554e225a5e731-0-artemis@nixos>
+
+Mostly guesswork, make sure they're accurate.
+
+Put some justification in the LaTeX comments, so we can refer back to it
+if asked.
