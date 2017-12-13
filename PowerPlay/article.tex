@@ -1,0 +1,31 @@
+Automation, Learning and Interestingness in Pure Mathematics
+
+Humans have been practicing and researching mathematics, in one form or another,
+for thousands of years. The invention of electronic computers has made it
+routine to automate \emph{calculations}, but the autoamtion of more ``creative''
+aspects of mathematics, such as theorem proving, conjecture generation and
+concept formation, is still mostly limited to academic research rather than
+being a routine task for computers.
+
+We propose to address this by automating the \emph{discovery} and
+\emph{learning} of mathematical concepts. We adapt the approach of Schmidhuber
+et al., which has previously been used with artificial neural networks to learn
+classifiers, and adapt it to a theorem proving setting.
+
+%% System description
+
+The PowerPlay architecture is based around inventing and solving problems. The
+encoding and interpretation of these problems depends on the implementation, so
+for now we leave it abstract by declaring it as a type:
+
+%% FIXME: Problem is a type
+
+We also keep solutions abstract, but we parameterise them by the particular
+problem they're meant to solve:
+
+%% FIXME: Solution is a function
+
+Given the above, a problem solver is a function from problems to their
+solutions, with an option type to represent failure:
+
+%% FIXME: Solver
