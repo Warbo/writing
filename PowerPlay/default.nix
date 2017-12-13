@@ -17,10 +17,10 @@ with {
                  --shell-escape "$1"
       }
 
-      go
+      go     "$1"
       bibtex "$1"
-      go
-      go
+      go     "$1"
+      go     "$1"
     '';
   };
 };
@@ -32,7 +32,8 @@ runCommand "powerplay.pdf"
   }
   ''
     set -e
-    cp "$src" ./article.tex
+    cp "$src"    ./article.tex
     cp "$bibtex" ./Bibtex.bib
     render article
-  '';
+    cp "article.pdf" "$out"
+  ''
