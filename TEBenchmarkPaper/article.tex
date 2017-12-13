@@ -90,6 +90,7 @@ grestore
 \newcommand{\tIFF}{if-and-only-if}
 \newcommand{\tNE}{non-exists}
 \newcommand{\tIMP}{implies}
+\newcommand{\tEQ}{equations}
 \newcommand{\tRow}[1]{#1 \\ \hline}
 
 % Insert the name of "your journal" with
@@ -327,9 +328,10 @@ expressions are in real usage.
     \tRow{Graffiti    & inequalities       &   X &   X &   X &     &   X &   X}
     \tRow{Bagai et al & \tNE               &     &   X &     &   X &   X &    }
     \tRow{HR          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
-    \tRow{QuickSpec   & equalities         &   X &   X &     &     &   X &    }
-    \tRow{IsaCoSy     & equalities         &     &   X &     &     &   X &    }
-    \tRow{IsaScheme   & equalities         &     &     &     &     &   X &    }
+    \tRow{QuickSpec   & \tEQ               &   X &   X &     &     &   X &    }
+    \tRow{Speculate   & conditional \tEQ   &   X &   X &     &     &   X &    }
+    \tRow{IsaCoSy     & \tEQ               &   X &   X &     &     &   X &   X}
+    \tRow{IsaScheme   & \tEQ               &   X &   X &     &     &   X &    }
   \end{tabular}
   \caption{Classification of ATE systems from \cite{colton2000notion}, extended
     to those compared in \cite{claessen2013automating} (QuickSpec is the
@@ -338,6 +340,35 @@ expressions are in real usage.
     \iA{}pplicability, \iC{}omprehensibility (low complexity) and \iU{}tility.}
   \label{table:colton}
 \end{table}
+
+% JUSTIFICATIONS
+%
+% IsaCoSy uses counter-example checking; this ensures empirical plausibility
+% IsaCoSy uses constraints to avoid special-cases; this ensures novelty
+% IsaCoSy uses utility, since there are some hard-coded patterns which are
+% looked for
+%
+% Speculate uses a form of unification to ensure novelty, making sure one
+% equation is not a special-case of another
+% Speculate uses LeanCheck to enumerate values, looking for counterexamples
+% Speculate uses testing, to ensure Empirical Plausibility
+%
+% QuickSpec uses QuickCheck to ensure empirical plausibility
+% QuickSpec uses a congruence closure algorithm to ensure novelty
+%
+% IsaScheme uses utility, since it determines the "quality" of a definition
+% based on how many theorems it appears in?
+% IsaScheme uses novelty, using an equational rewrite system (Knuth-Bendix
+% completion) to remove redundancies
+% IsaScheme uses utility, since it focuses on the terms and definitions of a
+% user's theory. However, don't all of them?
+% IsaScheme uses counterexample checking for empirical plausibility.
+
+% APPLICABILITY: ensure a conjecture holds in many models (or exactly zero, in
+% the case of Bagai et al). Does the testing-based approach of QuickSpec and
+% Speculate ensure that there's a model? After all, these are concrete values
+% rather than e.g. implications of some abstract specification.
+
 
 We summarise the criteria in Table 1 and state which were used in key
 ATF/ATE systems, where Colton identified usage in AM, GT, Graffiti and

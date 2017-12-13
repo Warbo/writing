@@ -1,0 +1,10 @@
+From: Chris Warburton
+Date: Wed, 13 Dec 2017 17:22:38 +0000
+State: new
+Subject: Justify table
+Message-Id: <f0bb2a6f6b46d43d-0-artemis@nixos>
+
+Go back over the table entries to check the new systems.
+
+Add some justification for our box-ticking for each new system, e.g. why
+comprehensibility would apply, etc.
