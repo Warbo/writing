@@ -18,7 +18,7 @@ with rec {
   stable-nixpkgs-src = unstable-nixpkgs.fetchFromGitHub {
     owner  = "NixOS";
     repo   = "nixpkgs";
-    rev    = "16.09";
+    rev    = "f22817d";
     sha256 = "1cx5cfsp4iiwq8921c15chn1mhjgzydvhdcmrvjmqzinxyz71bzh";
   };
   stable-nixpkgs = nixpkgs-without-config stable-nixpkgs-src;
