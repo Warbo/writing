@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 01 Dec 2017 11:54:20 +0000
-State: new
+State: resolved
 Subject: Copypasta error in "Automated Theory Formation" section
 Message-Id: <f81339e2ff8d417c-0-artemis@nixos>
+resolution: fixed
 
 The section begins "Automated theory formation, the focus of this
 paper, ..." which isn't true in this case.

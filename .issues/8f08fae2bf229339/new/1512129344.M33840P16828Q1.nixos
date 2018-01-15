@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Fri, 01 Dec 2017 11:55:25 +0000
-State: new
+State: resolved
 Subject: Add Speculate to table
 Message-Id: <8f08fae2bf229339-0-artemis@nixos>
+resolution: fixed
 
 Might as well

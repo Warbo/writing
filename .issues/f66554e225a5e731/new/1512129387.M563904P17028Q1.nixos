@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 01 Dec 2017 11:55:46 +0000
-State: new
+State: resolved
 Subject: Fix table entries for new systems
 Message-Id: <f66554e225a5e731-0-artemis@nixos>
+resolution: fixed
 
 Mostly guesswork, make sure they're accurate.
 
