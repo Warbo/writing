@@ -91,6 +91,8 @@ grestore
 \newcommand{\tNE}{non-exists}
 \newcommand{\tIMP}{implies}
 \newcommand{\tEQ}{equations}
+\newcommand{\tINE}{inequalities}
+\newcommand{\tCON}{conditional}
 \newcommand{\tRow}[1]{#1 \\ \hline}
 
 % Insert the name of "your journal" with
@@ -299,7 +301,7 @@ general, has already been seen.
 {\bf Applicability} depends on the number of models in which a
 conjecture holds. The system of Bagai et al conjectures the
 non-existence of objects, and hence favours statements with zero
-applicability. Other systems treat ap- plicability as a positive
+applicability. Other systems treat applicability as a positive
 aspect: the more applicable the statement, the more interesting it is.
 
 {\bf Comprehensibility} is the complexity of a statement. Simpler
@@ -325,13 +327,13 @@ expressions are in real usage.
     \tRow{            &                    & \iE & \iN & \iS & \iA & \iC & \iU}
     \tRow{AM          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
     \tRow{GT          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
-    \tRow{Graffiti    & inequalities       &   X &   X &   X &     &   X &   X}
+    \tRow{Graffiti    & \tINE              &   X &   X &   X &     &   X &   X}
     \tRow{Bagai et al & \tNE               &     &   X &     &   X &   X &    }
     \tRow{HR          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
-    \tRow{QuickSpec   & \tEQ               &   X &   X &     &     &   X &    }
-    \tRow{Speculate   & conditional \tEQ   &   X &   X &     &   A &   X &    }
-    \tRow{IsaCoSy     & \tEQ               &   X &   X &     &     &   X &   X}
-    \tRow{IsaScheme   & \tEQ               &   X &   X &     &     &   X &   X}
+    \tRow{QuickSpec   & \tEQ               &   X &   X &     &   X &   X &    }
+    \tRow{Speculate   & \tCON \tEQ / \tINE &   X &   X &     &   X &   X &    }
+    \tRow{IsaCoSy     & \tEQ               &   X &   X &     &   X &   X &   X}
+    \tRow{IsaScheme   & \tEQ               &   X &   X &     &   X &   X &   X}
   \end{tabular}
   \caption{Classification of ATE systems from \cite{colton2000notion}, extended
     to those compared in \cite{claessen2013automating} (QuickSpec is the
@@ -374,15 +376,19 @@ We summarise the criteria in Table 1 and state which were used in key
 ATF/ATE systems. The entries for AM, GT, Graffiti, Bagai et al. and HR are based
 on this survey (the latter is Colton's own system). We extend this analysis to
 some more recent systems in the remaining rows (based on our understanding of
-their function): QuickSpec, Speculate, IsaCoSy and IsaScheme.
+their function): QuickSpec, Speculate~\cite{braquehais2017speculate}, IsaCoSy
+and IsaScheme.
 
-All four of these systems use counterexample checking and a small-to-large
-search order, favouring empirical plausibile and comprehensibile output. IsaCoSy
-ensures novelty using a constraint system, such that no generated expression can
-be simplified using a previously-found equation. The other systems use post-hoc
-filters based on unification and rewriting (based on the Knuth-Bendix completion
-algorithm) to discard expressions or equations which are special-cases of some
-other, more general result.
+All four of these systems use testing to check for counterexamples, which
+ensures results are empirically plausible and applicable (conditions are
+satisfiable, types are inhabited, etc.). They also use a small-to-large search
+order, ensuring more easily-comprehensibile conjectures are explored first.
+
+IsaCoSy ensures novelty using a constraint system, such that no generated
+expression can be simplified using a previously-found equation. The other
+systems use post-hoc filters based on unification and rewriting rules
+(derived via the Knuth-Bendix completion algorithm) to discard expressions or
+equations which are special-cases of some other, more general result.
 
 IsaCoSy is able to look for commonly desirable patterns, such as commutativity
 and associativity, which increases the utility of its output, whilst IsaScheme
