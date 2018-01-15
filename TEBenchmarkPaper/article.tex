@@ -711,9 +711,10 @@ of the ground truth set.
 
 This particular analysis takes its ground truths from the standard library of
 the Isabelle theorem prover, with one involving the natural numbers, and the
-other involving the list functions from figure \ref{figure:list_theory}. The library authors have gone to the effort of stating,
-proving and including these theorems in every copy of their software, which is a
-good indication that they are useful or important.
+other involving the list functions from figure \ref{figure:list_theory}. The
+library authors have gone to the effort of stating, proving and including these
+theorems in every copy of their software, which is a good indication that they
+are useful or important.
 
 One problem with this choice is the small size of these libraries. For example,
 the benchmark based on Isabelle/HOL's theory of natural numbers given
@@ -755,8 +756,8 @@ suitable are those which have the following properties:
   functions, whose behaviour is \emph{implicit} in the logical structure of the
   theorem statement but not separately \emph{defined}.
 \item Definitions should be \emph{strongly typed}, such that they can be
-  translated into the native language of each ATE system (in this work, those
-  languages are Haskell and Isabelle).
+  translated into the native language of each ATE system (in this work, that
+  includes Haskell\iffalse FIXME and Isabelle\fi).
 \item The problem set should be relevant to the desired domain. In our case, we
   desire higher-order functions and inductively defined types, which rules out
   first-order languages/logics (such as TPTP~\cite{sutcliffe2009tptp}).
