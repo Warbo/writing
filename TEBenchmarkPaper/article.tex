@@ -1263,21 +1263,51 @@ allows us to side-step the philosophical quagmire of ``interestingness'' to
 produce concrete, measurable values; it is also a core weakness, as there are
 compelling reasons to refute it.
 
-We do not claim that the use of such corpora exactly captures all interesting
-conjectures of their definitions, or that those definitions exactly represent
-all theories we may wish to explore. Rather, we consider our approach to offer a
-pareto-optimal balance between theoretical rigour and experimental practicality,
-at least in the short term.
+Fundamentally, any mathematical reasoning system must decide on, and formalise,
+what counts as ``the good'' in mathematics.  Obvious metrics such as ``true'' or
+``provable'' include trivial tautologies, while at the same time failing to
+capture the ``almost true'', which can be a valuable trigger for theory change,
+as demonstrated by Lakatos in his case studies of mathematical development
+\cite{lakatos}. ``Beautiful'' is another -- albeit vague -- commonly proposed
+metric. Methods for finding out what that means have come from neuro-scientists,
+such as the study by Zeki et al in which they test whether mathematicians'
+experiences of abstract beauty correlates with the same brain activity as
+experiences of sensory beauty \cite{zeki}; computer scientists, such as Colton's
+metrics above which are proposed based largely on a computer scientist's
+``intuition'' and argumentation about why a metric would be important (and
+previous use of such metrics, and - in one isolated case (surprisingingness) -
+on a single quote from a mathematician\footnote{Similarly, classification of a
+MATHsAiD result as either interesting or uninteresting \cite{roy} was made by
+the main system developer: in both cases the main developer had a background in
+mathematics.}; and mathematicians themselves, such as Gowers' suggestion that we
+can identify features which are commonly associated with good proofs
+\cite{gowers}. All of these approaches rest upon the assumption that it makes
+sense to speak of ``the good'' in mathematics. This assumption is supported by
+concepts such as Erdos's ``The Book'' -- a theoretical construct of a book which
+contains the most elegant proof of every theorem (brought to life in
+\cite{Martin Aigner and Günter M. Ziegler Proofs from THE BOOK}). However,
+empirical studies by psychologists such as Inglis call into question such
+assumptions: work by Inglis and colleagues has shown that there is not a single
+standard of validity among contemporary mathematicians %FIXME https://dspace.lboro.ac.uk/dspace-jspui/handle/2134/12150
+nor beauty. %FIXME needs citation
 
-If ATE matures to the point of providing \emph{truly novel} insights, even in
-well-studied domains, our assumption breaks down because such results cannot (by
-definition) appear in any existing corpus.
+We do not claim that our use of corpora as a ground truth exactly captures all
+interesting conjectures of their definitions, or that those definitions exactly
+represent all theories we may wish to explore. Rather, we consider our approach
+to offer a pareto-optimal balance between theoretical rigour and experimental
+practicality, at least in the short term. Futhermore, since research is already
+on-going in these areas, we hope to at least improve on existing evaluation
+practices and offer a common ground for future research.
 
-A fundamental limitation of our benchmarking approach is that it only applies to
-systems which act in ``batch mode'', i.e. those which choose to halt after
-emitting some output. Whilst all of the systems we have encountered are of this
-form, an analogous benchmark may be desirable for systems which instead run
-continuously or interactively (perhaps akin to McCarthy's
+Notably, if ATE matures to the point of providing \emph{truly novel} insights,
+even in well-studied domains, then the assumptions we rely on break down because
+such results cannot (by definition) appear in any existing corpus.
+
+Another practical limitation limitation of our benchmarking approach is that it
+only applies to systems which act in ``batch mode'', i.e. those which choose to
+halt after emitting some output. Whilst all of the systems we have encountered
+are of this form, an analogous benchmark may be desirable for systems which
+instead run continuously or interactively (perhaps akin to McCarthy's
 ``advice taker''~\cite{McCarthy_Programs59}).
 
 % philosophical bits
