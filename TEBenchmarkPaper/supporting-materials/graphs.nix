@@ -5,8 +5,8 @@ with builtins;
 rec {
   repo = fetchgit {
     url    = http://chriswarbo.net/git/haskell-te.git;
-    rev    = "334d529";
-    sha256 = "109g8hkpggjjlw7ksd7l157jknp4wkg9lbjlyiqqvqzah2kl65jf";
+    rev    = "7dd5eb6";
+    sha256 = "106afmnc15m6cswc0mrh09hx6c8gvp3d350vbqh934r7hxaa6983";
   };
 
   data = runCommand "data.json.gz"
