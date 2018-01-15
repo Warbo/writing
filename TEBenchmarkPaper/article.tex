@@ -329,9 +329,9 @@ expressions are in real usage.
     \tRow{Bagai et al & \tNE               &     &   X &     &   X &   X &    }
     \tRow{HR          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
     \tRow{QuickSpec   & \tEQ               &   X &   X &     &     &   X &    }
-    \tRow{Speculate   & conditional \tEQ   &   X &   X &     &     &   X &    }
+    \tRow{Speculate   & conditional \tEQ   &   X &   X &     &   A &   X &    }
     \tRow{IsaCoSy     & \tEQ               &   X &   X &     &     &   X &   X}
-    \tRow{IsaScheme   & \tEQ               &   X &   X &     &     &   X &    }
+    \tRow{IsaScheme   & \tEQ               &   X &   X &     &     &   X &   X}
   \end{tabular}
   \caption{Classification of ATE systems from \cite{colton2000notion}, extended
     to those compared in \cite{claessen2013automating} (QuickSpec is the
@@ -364,27 +364,45 @@ expressions are in real usage.
 % user's theory. However, don't all of them?
 % IsaScheme uses counterexample checking for empirical plausibility.
 
+% ONLY APPLIES TO PRECONDITIONS
 % APPLICABILITY: ensure a conjecture holds in many models (or exactly zero, in
 % the case of Bagai et al). Does the testing-based approach of QuickSpec and
 % Speculate ensure that there's a model? After all, these are concrete values
 % rather than e.g. implications of some abstract specification.
 
-
 We summarise the criteria in Table 1 and state which were used in key
-ATF/ATE systems, where Colton identified usage in AM, GT, Graffiti and
-Bagai et al, and his own ATF system HR, and we identify usage in three
-more recent ATE systems QuickSpec, IsaCoSy and IsaScheme. These
-criteria, especially empirical plausibility and comprehensibility, are
-not only used for analysing results after the fact, but instead may
-form a core part of an algorithm's design decisions. For example, the
-designers of IsaCoSy consider simple substitutions of existing
-conjectures (i.e. those with low novelty) to be uninteresting, and
-hence their system includes a constraint solving component which
-avoids generating such statements entirely.
+ATF/ATE systems. The entries for AM, GT, Graffiti, Bagai et al. and HR are based
+on this survey (the latter is Colton's own system). We extend this analysis to
+some more recent systems in the remaining rows (based on our understanding of
+their function): QuickSpec, Speculate, IsaCoSy and IsaScheme.
 
-With such ambiguous and varied goals, approaches and assessment
-criteria it is difficult to compare ATE systems in a quantitative way,
-and hence to form some measure of ``progress'' for the field.
+All four of these systems use counterexample checking and a small-to-large
+search order, favouring empirical plausibile and comprehensibile output. IsaCoSy
+ensures novelty using a constraint system, such that no generated expression can
+be simplified using a previously-found equation. The other systems use post-hoc
+filters based on unification and rewriting (based on the Knuth-Bendix completion
+algorithm) to discard expressions or equations which are special-cases of some
+other, more general result.
+
+IsaCoSy is able to look for commonly desirable patterns, such as commutativity
+and associativity, which increases the utility of its output, whilst IsaScheme
+is completely based around such pattern-instantiation.
+
+This diversity of approaches makes it difficult to compare the existing
+evaluations of these systems directly. In particular, evaluation methods created
+for one system might not make sense for another, due to assumptions made about
+the algorithms' operation. For example, the novelty filters used by QuickSpec
+and Speculate are applied to the whole output set, guaranteeing that no
+special-cases will appear; yet we cannot assume this in the case of IsaCoSy,
+since its constraint solver allows special cases if they're found \emph{before}
+the general case (it does not go back and discard previous results).
+
+With such ambiguous and varied goals, approaches and assessment criteria it is
+difficult to compare ATE systems in a quantitative way, and hence to form some
+measure of ``progress'' for the field. Our proposed benchmarking methodology
+attempts to remedy this by setting a clear target, hopefully in line with the
+myriad goals of existing researchers, whilst being generally applicable to
+systems of this type.
 
 \section{Theory Exploration versus Theory
   Formation}\label{exploration-versus-formation}
