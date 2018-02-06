@@ -9,6 +9,10 @@ function msg {
     echo -e "$*" 1>&2
 }
 
+function haveCommand {
+    command -v "$1" 1> /dev/null 2> /dev/null
+}
+
 msg "Sanity checking..."
 ERR=0
 
@@ -25,17 +29,32 @@ function cleanUp {
 
 trap cleanUp EXIT
 
-msg "Checking Bibtex.bib with bibtool"
-bibtool -d < Bibtex.bib > /dev/null 2> "$DIR/bibtool.stderr"
-if < "$DIR/bibtool.stderr" grep -v 'non-space characters ignored' |
-                           grep '^.' 1>&2
+if haveCommand bibtool
+then
+    msg "Checking Bibtex.bib with bibtool"
+    bibtool -d < Bibtex.bib > /dev/null 2> "$DIR/bibtool.stderr"
+else
+    msg "Couldn't find bibtool command"
+    echo "" > "$DIR/bibtool.stderr"
+    ERR=1
+fi
+
+if grep -v 'non-space characters ignored' < "$DIR/bibtool.stderr" |
+   grep '^.' 1>&2
 then
     msg "bibtool spotted problems (other than 'ignored chars', AKA comments)"
     ERR=1
 fi
 
-msg "Checking Bibtex.bib with bibclean"
-bibclean < Bibtex.bib > /dev/null 2> "$DIR/bibclean.stderr" || true
+if haveCommand bibclean
+then
+    msg "Checking Bibtex.bib with bibclean"
+    bibclean < Bibtex.bib > /dev/null 2> "$DIR/bibclean.stderr" || true
+else
+    msg "Couldn't find bibclean command"
+    echo "" > "$DIR/bibclean.stderr"
+    ERR=1
+fi
 
 # NOTE: bibclean spots a lot of problems, so we filter out common annoyances.
 # It's a good idea, if you currently have the time, to remove some of these
@@ -48,7 +67,7 @@ for PAT in 'Invalid checksum for ISBN' \
            'pages ='                   \
            '?? "stdin", line 1: Expected comma after last field'
 do
-    grep -v "$PAT" < "$DIR/bibclean.stderr" > "$DIR/bibclean.stderr2"
+    grep -v "$PAT" < "$DIR/bibclean.stderr" > "$DIR/bibclean.stderr2" || true
     mv "$DIR/bibclean.stderr2" "$DIR/bibclean.stderr"
 done
 
