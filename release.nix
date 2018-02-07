@@ -1,5 +1,6 @@
 {
   AI4FM             = import ./AI4FM;
+  Bucketing         = import ./Bucketing;
   CICM-2017-report  = import ./CICM-2017-report;
   JianguoMeeting    = import ./JianguoMeeting;
   ML4HSTechReport   = import ./ML4HSTechReport;
