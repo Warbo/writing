@@ -18,8 +18,8 @@ runCommand "bucketing.pdf"
     ];
   }
   ''
-    cp "$src"      ./src
-    chmod -r +w    ./src
+    cp -r "$src"   ./src
+    chmod -R +w    ./src
     cp "$bibtex"   ./src/Bibtex.bib
 
     for STYLE in $styles
