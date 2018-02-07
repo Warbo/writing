@@ -1,0 +1,17 @@
+From: Chris Warburton
+Date: Tue, 06 Feb 2018 18:19:23 +0000
+State: new
+Subject: Add LaTeX checking to check.sh
+Message-Id: <c63eb9e1e7c1a803-0-artemis@nixos>
+
+There are some nice suggestions on:
+
+https://tex.stackexchange.com/questions/163/is-there-a-program-equivalent-to-lint-for-latex
+
+These include:
+
+  https://github.com/nspring/style-check
+
+  http://baruch.ev-en.org/proj/chktex/
+
+  http://www.ctan.org/tex-archive/support/lacheck/
