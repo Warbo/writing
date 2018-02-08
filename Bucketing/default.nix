@@ -5,22 +5,24 @@ with nixpkgs.repo1703."00ef7f9";
 runCommand "bucketing.pdf"
   {
     inherit bibtex;
-    cmd         = ''pdflatex -interaction=nonstopmode \
-                             -halt-on-error --shell-escape report'';
-    src         = ./.;
-    styles      = attrValues styles;
+    cmd = ''
+      pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
+    '';
     buildInputs = [
       bash
       gnumake
       (texlive.combine {
-        inherit (texlive) scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms;
+        inherit (texlive) scheme-small tikzinclude tikz-qtree algorithmicx
+          algorithm2e algorithms;
       })
     ];
+    src    = ./.;
+    styles = attrValues styles;
   }
   ''
     cp -r "$src"   ./src
     chmod -R +w    ./src
-    cp "$bibtex"   ./src/Bibtex.bib
+    cp "$bibtex"   ./Bibtex.bib
 
     for STYLE in $styles
     do
