@@ -43,7 +43,9 @@ with rec {
   };
 
   # Particular versions of nixpkgs
-  nixpkgs-repos = { inherit (stable-configured) repo1603 repo1609 repo1703; };
+  nixpkgs-repos = {
+    inherit (stable-configured) repo1603 repo1609 repo1703 repo1709;
+  };
 
   # All combinations of nixpkgs and nix-config versions
   nixpkgs =
