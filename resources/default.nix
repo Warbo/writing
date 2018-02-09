@@ -25,7 +25,7 @@ with rec {
 
   # A stable package set which includes some overrides, for when we need them
   stable-configured = nixpkgs-with-config stable-nixpkgs-src
-                                          nix-configs."2cc683b";
+                                          nix-configs."809056c";
 
   inherit (stable-nixpkgs.lib) mapAttrs;
 
@@ -39,6 +39,7 @@ with rec {
     "2cc683b" = "1xm2jvia4n002jrk055c3csy8qvyjw9h0vilxzss0rb8ik23rn9g";
     "de1ceec" = "0km3jb3g80v3s6ja8v7nyk6jm1kd5j68yn68kyfdw800hx2qnz6c";
     "00ef7f9" = "1b7g4r144hwqa2a13cnfwmwxfkjd884pk4lqralxiqwbb0vr0nsw";
+    "809056c" = "0gh6knckddy6l250qxp7v8nvwzfy24pasf8xl9gmpslx11s1ilpd";
   };
 
   # Particular versions of nixpkgs
