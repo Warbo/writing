@@ -1128,26 +1128,33 @@ datatypes and functions it involves. To avoid ambiguity we prefix the names of
 all definitions with the filename it came from, and collect them into one big set.
 
 TIP datatypes can have several ``constructors'' and ``destructors''. For example
-the natural numbers can be defined as follows:
+the type of lists from figure~\ref{figure:list_theory} can be defined in TIP as
+follows:
 
 \begin{verbatim}
-(declare-datatypes () ((Nat (Z) (S (p Nat)))))
+(declare-datatypes (a) ((List (Nil) (Cons (head a) (tail (List a))))))
 \end{verbatim}
 
-This defines the type \texttt{Nat}, along with the constructors \texttt{Z} (for
-zero) and \texttt{S} (the successor function), and destructor \texttt{p} (the
-predecessor function).
-
-Since our GHC plugin doesn't list constructors or destructors, we add separate
-function definitions for each (these are just $\eta$-expansions).
+This defines a type \texttt{List} parameterised by a type variable \texttt{a}
+(the type of the list's elements), with constructors \texttt{Nil} and
+\texttt{Cons}, and destructors \texttt{head} and \texttt{tail}. Target languages
+(e.g. Haskell and Isabelle) handle constructors and destructors differently, so
+we avoid exploring them directly. Rather, we $\eta$-expand each constructor and
+destructor to create new function definitions, and rewrite the TIP theorems to
+reference these expanded forms instead.
 
 TIP has ``native'' support for booleans and integers, allowing functions like
-\texttt{+} to be used without an accompanying definition. Without a definition
-these functions will not be included in the QuickSpec exploration, so we replace
-all occurrences with custom definitions.
+\texttt{+} to be used without an accompanying definition. To ensure consistency
+in the translations, we replace all occurrences of these ``native'' expressions
+with standard definitions using the same \texttt{declare-datatypes} and
+\texttt{define-fun} mechanisms as the problem set.
 
-This gives us 3598 definitions in total, with 269 remaining after
-$\alpha$-equivalent duplicates are removed.
+This gives us a total of 3598 definitions, including those from the problem set
+and our automatically-generated additions. Removing $\alpha$-equivalent
+duplicates leaves 269 definitions, and we chose to only sample from those 182
+which occur in at least one theorem statement (this removes ambiguity about
+which \emph{definitions}, including our generated ones, are ``interesting'' and
+which are just ``implementation details'').
 
 TIP includes a tool to translate its definitions into Haskell code, including
 suitable comparison functions and random data generators. We translated all 269
