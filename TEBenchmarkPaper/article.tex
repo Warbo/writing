@@ -143,12 +143,12 @@ grestore
 
 \begin{abstract}
   We propose a benchmark suite for evaluating the efficiency and effectiveness
-  of automated tools for \emph{theory exploration} or
-  \emph{conjecture formation} in higher-order, inductive theories; a domain
-  especially suited for analysing software. By providing standard tools and
-  metrics, we hope to encourage innovation and comparison between the disparate
-  approaches currently being pursued, and spur improvements similar to those
-  seen in the competitive field of automated theorem proving.
+  of \emph{conjecture formation} by automated tools for \emph{mathematical
+    theory exploration} in higher-order, inductive theories; a domain especially
+  suited for analysing software. By providing standard tools and metrics, we
+  hope to encourage innovation and comparison between the disparate approaches
+  currently being pursued, and spur improvements similar to those seen in the
+  competitive field of automated theorem proving.
 %\keywords{First keyword \and Second keyword \and More}
 % \PACS{PACS code1 \and PACS code2 \and more}
 % \subclass{MSC code1 \and MSC code2 \and more}
@@ -159,14 +159,13 @@ grestore
 
 % Lay out the field of TE: motivation, systems, evaluation, problems...
 
-\emph{Mathematical theory exploration} (MTE), also known as
-\emph{conjecture generation/formation}, is the open-ended problem of producing
-conjectures about a given logical theory which are somehow ``interesting''.
+\emph{Conjecture generation/formation}, a sub-field of \emph{mathematical theory
+  exploration} (MTE), is the open-ended problem of producing conjectures about a
+given logical theory which are somehow ``interesting''.
 
 This has applications wherever we find use for formal statements: in proof
-assistants and their libraries, in mathematics education and research, and
-(of special concern for the authors) in the specification, verification,
-optimisation and testing of software.
+assistants and their libraries, in mathematics education and research, and in
+the specification, verification, optimisation and testing of software.
 
 Existing attempts at tackling this problem are difficult to compare, due
 partially to the variety of approaches taken, but also because of the inherent
@@ -175,25 +174,25 @@ their choice of evaluation method.
 
 We attempt to solve this discrepancy, at least for the foreseeable future, by
 defining a standard, unambiguous benchmarking approach with which to compare
-ATE systems. Our contributions include:
+the conjecture generation of MTE systems. Our contributions include:
 
 \begin{itemize}
-\item A general methodology for benchmarking ATE systems.
+\item A general methodology for benchmarking conjecture generation.
 \item Resolving the issue of ``interestingness'' through the use of
   theorem-proving benchmarks as a ground-truth.
 \item A specific instantiation of this methodology, using the Tons of Inductive
   Problems benchmark as a corpus.
 \item Automated tooling to perform this benchmarking.
-\item Application of our methodology to the QuickSpec ATE system, and a
+\item Application of our methodology to the QuickSpec MTE system, and a
   discussion of the results.
 \end{itemize}
 
-Section \ref{sec:background} describes the ATE problem in more detail, along
-with existing approaches and their evaluation methodologies. We explain our
-proposal for a more general benchmark in section \ref{sec:proposal} and
-section \ref{sec:application} shows the results when applied to existing ATE
-tools. Analysis of these results is given in section \ref{sec:discussion} and
-concluding remarks in \ref{sec:conclusion}.
+Section \ref{sec:background} describes MTE and the conjecture generation problem
+in more detail, along with existing approaches and their evaluation
+methodologies. We explain our proposal for a more general benchmark in section
+\ref{sec:proposal} and section \ref{sec:application} shows the results when
+applied to existing MTE tools. Analysis of these results is given in section
+\ref{sec:discussion} and concluding remarks in \ref{sec:conclusion}.
 
 %- Existing approaches are difficult to compare
 % - They want different things
@@ -274,19 +273,18 @@ conjectures; and (iii) proving that those conjectures are theorems.
 The latter is studied extensively in the field of Automated Theorem
 Proving (ATP). Far less attention has been paid to automating the
 first two tasks, which both Automated Theory Formation (ATF) and
-Automated Theory Exploration (ATE) address.  We discuss the
-relationship between ATF and ATE in historical context in
+Mathematical Theory Exploration (MTE) address.  We discuss the relationship
+between ATF and ATE in historical context in
 $\S$\ref{exploration-versus-formation}.
 
-A major challenge for both ATF and ATE is choosing how to narrow down
-the set of generated conjectures to those deemed ``interesting'',
-since this is an imprecise term with many different
-interpretations. For example, all existing approaches agree that
-simple tautologies are ``uninteresting'', but differ when it comes to
-more complex statements.  Colton {\em et al.}  give a survey of
+A major challenge for both ATF and MTE is choosing how to narrow down
+the set of generated conjectures to those deemed ``interesting'', since this is
+an imprecise term with many different interpretations. For example, all existing
+approaches agree that simple tautologies are ``uninteresting'', but differ when
+it comes to more complex statements.  Colton {\em et al.} give a survey of
 systems for theory formation and exploration, and their notions of
-``interestingness'' for concepts and conjectures, identifying six
-notions in total~\cite{colton2000notion}. These notions, as applied to ATE, are:
+``interestingness'' for concepts and conjectures, identifying six notions in
+total~\cite{colton2000notion}. These notions, as applied to conjectures, are:
 
 {\bf Empirical plausibility}, which checks whether a property holds
 across some specific examples. This is especially useful for avoiding
@@ -335,7 +333,7 @@ expressions are in real usage.
     \tRow{IsaCoSy     & \tEQ               &   X &   X &     &   X &   X &   X}
     \tRow{IsaScheme   & \tEQ               &   X &   X &     &   X &   X &   X}
   \end{tabular}
-  \caption{Classification of ATE systems from \cite{colton2000notion}, extended
+  \caption{Classification of MTE systems from \cite{colton2000notion}, extended
     to those compared in \cite{claessen2013automating} (QuickSpec is the
     conjecture generation component of HipSpec). The interestingness measures
     are \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
@@ -373,7 +371,7 @@ expressions are in real usage.
 % rather than e.g. implications of some abstract specification.
 
 We summarise the criteria in Table 1 and state which were used in key
-ATF/ATE systems. The entries for AM, GT, Graffiti, Bagai et al. and HR are based
+ATF/MTE systems. The entries for AM, GT, Graffiti, Bagai et al. and HR are based
 on this survey (the latter is Colton's own system). We extend this analysis to
 some more recent systems in the remaining rows (based on our understanding of
 their function): QuickSpec, Speculate~\cite{braquehais2017speculate}, IsaCoSy
@@ -404,7 +402,7 @@ since its constraint solver allows special cases if they're found \emph{before}
 the general case (it does not go back and discard previous results).
 
 With such ambiguous and varied goals, approaches and assessment criteria it is
-difficult to compare ATE systems in a quantitative way, and hence to form some
+difficult to compare MTE systems in a quantitative way, and hence to form some
 measure of ``progress'' for the field. Our proposed benchmarking methodology
 attempts to remedy this by setting a clear target, hopefully in line with the
 myriad goals of existing researchers, whilst being generally applicable to
@@ -452,9 +450,8 @@ with other aspects of mathematics, including the construction of conjectures,
 (counter-)examples and theorems. These tasks, along with the formation of new
 definitions and concepts, are varyingly known as
 ``Automated Theory Formation''~\cite{lenat:77,colton:book},
-``Automated Mathematical Theory Exploration'',
 ``Mathematical Theory Exploration''~\cite{buchberger:06} (also sometimes
-prefaced with ``Computer-Aided'' or ``Algorithm-Supported''),
+prefaced with ``Computer-Aided'', ``Automated'' or ``Algorithm-Supported''),
 ``Automated Mathematical Discovery''~\cite{epstein:91,colton:interestingness,esarm2008},
 ``Concept Formation in Discovery Systems''~\cite{haase}, and
 ``Automated Theorem Discovery''~\cite{roy}. Such a plethora of terminology can
@@ -677,7 +674,7 @@ aspects.
 \subsection{Existing Evaluations}
 \label{sec:existing}
 
-There are three aspects to consider when we evaluate an ATE system:
+There are three aspects to consider when we evaluate an MTE system:
 
 \begin{enumerate}
 \item The quality of each conjecture, which is the ``interestingness'' discussed
@@ -701,10 +698,10 @@ automated theorem provers).
 This comparison uses \emph{precision/recall analysis}: a particular set of
 definitions is chosen, such as those in figure \ref{figure:list_theory}, and a
 \emph{ground truth} is chosen as the 'ideal' set of conjectures which we would
-like an ATE system to produce from these definitions.
+like an MTE system to produce from these definitions.
 
 Each system is run, and their output compared to the ground truth. To score
-100\% on precision and recall, an ATE system must output all of the conjectures
+100\% on precision and recall, an MTE system must output all of the conjectures
 which appear in the ground truth, and nothing else:
 
 \begin{itemize}
@@ -743,7 +740,7 @@ domains.
 Our main contribution is a benchmarking methodology, shown in figure
 \ref{figure:flow_chart}, which generates both a large definition/ground-truth
 corpus (an order of magnitude larger than previous work) and a scalable,
-statistical approach to evaluating ATE systems using this corpus. We follow a
+statistical approach to evaluating MTE systems using this corpus. We follow a
 precision/recall approach similar to the work described above, with the main
 difference being the source of definitions and ground truths: we take existing
 problem sets designed for automated \emph{theorem proving}, and adapt their
@@ -769,7 +766,7 @@ suitable are those which have the following properties:
   functions, whose behaviour is \emph{implicit} in the logical structure of the
   theorem statement but not separately \emph{defined}.
 \item Definitions should be \emph{strongly typed}, such that they can be
-  translated into the native language of each ATE system (in this work, that
+  translated into the native language of each MTE system (in this work, that
   includes Haskell\iffalse FIXME and Isabelle\fi).
 \item The problem set should be relevant to the desired domain. In our case, we
   desire higher-order functions and inductively defined types, which rules out
@@ -785,15 +782,15 @@ suitable are those which have the following properties:
 
 Once such a problem set has been chosen, we must separate the definitions
 referenced by the theorems from the theorem statements themselves. The former
-will be used as input to the ATE systems under evaluation, whilst the latter
-form a ground truth corpus against which to compare the ATE output.
+will be used as input to the MTE systems under evaluation, whilst the latter
+form a ground truth corpus against which to compare the MTE output.
 
 It is important to ensure that there are no duplicate definitions: theory
 exploration does not depend on the names of functions, so neither should our
 analysis. For example, consider a problem set which includes a commutativity
 theorem for a \texttt{plus} function, and an associativity theorem for an
 \texttt{add} function, where the definitions of \texttt{plus} and \texttt{add}
-are $\alpha$-equivalent. We would expect an ATE system to conjecture
+are $\alpha$-equivalent. We would expect an MTE system to conjecture
 commutativity and associativity for \emph{both} functions, or for \emph{neither}
 function, since they're equivalent. Yet a na\"ive precision/recall analysis
 would treat commutativity of \texttt{add} and associativity of \texttt{plus} as
@@ -807,20 +804,20 @@ would be removed, and the commutativity theorem updated to reference
 
 \subsection{Sampling}
 
-We could, in theory, send these de-duplicated definitions straight into an ATE
+We could, in theory, send these de-duplicated definitions straight into an MTE
 system, and use the updated theorem statements as the ground truth for analysis.
 However, this would cause two problems:
 
 \begin{itemize}
 \item The result would be a single data point, which makes it difficult to
   infer performance \emph{in general}.
-\item It is impractical to run any existing ATE system on ``large'' inputs,
+\item It is impractical to run any existing MTE system on ``large'' inputs,
   containing more than around 10 definitions.
 \end{itemize}
 
 To solve both of these problems we instead \emph{sample} a subset of
 definitions. Given a sample size, we choose a subset of that many definitions,
-and use that as our ATE input. We generate a corresponding ground truth by
+and use that as our MTE input. We generate a corresponding ground truth by
 selecting those theorems from the corpus which only contain references to
 definitions that appear in our sample.
 
@@ -828,7 +825,7 @@ Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
 large corpus and a fixed sample size, it becomes highly unlikely that a sample
 will contain the particular definitions required by a theorem. This would cause
 most samples to have an empty ground truth, and hence $0$ precision and
-undefined recall \emph{independent} of what the ATE system produces. This is
+undefined recall \emph{independent} of what the MTE system produces. This is
 clearly undesirable as an evaluation method.
 
 Instead, we only choose samples which admit at least one of the corpus theorems.
@@ -846,7 +843,7 @@ point).
 \subsection{Evaluation}
 
 Given a sample of definitions and a corresponding ground truth, the actual
-execution of the ATE system proceeds as in prior work. We must translate the
+execution of the MTE system proceeds as in prior work. We must translate the
 chosen definitions into the particular input format of the tool under study,
 then we time the execution, with a timeout after e.g. 1 hour.
 
@@ -863,8 +860,8 @@ penalised for making use of available resources.
 
 This approach produces a single runtime, precision and recall value for each
 sample. We propose two methods for analysing this data: \emph{summarising}
-the performance of an ATE system, or \emph{comparing} the performance of
-\emph{two} ATE systems.
+the performance of an MTE system, or \emph{comparing} the performance of
+\emph{two} MTE systems.
 
 \subsection{Summarising}
 
@@ -901,7 +898,7 @@ unrepresentative of typical usage: we should not expect a typical user's theory
 \subsection{Comparison}
 
 To encourage competition in the field, it is important to compare the relative
-performance of different ATE systems on the same task. Since the aggregate
+performance of different MTE systems on the same task. Since the aggregate
 statistics in the above summaries do not include details of specific runs, any
 comparison based on them would have very low statistical power, and therefore it
 is appropriate to use an alternative approach when comparing.
@@ -988,7 +985,7 @@ unfounded conclusions.
     \path let \p{pad}  = (pad),
               \p{sthm} = (sthm)
            in coordinate (runPos) at (\x{pad}, \y{sthm});
-    \node (run) [process, below=of runPos]{Run ATE system};
+    \node (run) [process, below=of runPos]{Run MTE system};
     \node (pr)  [process, below=of run]{Analysis};
 
     \node (prec) [startstop, below=of pr  ]{Precision};
@@ -1244,18 +1241,18 @@ and those with anonymous functions) as well as equations which are removed as
 % benchmark~\cite{claessen2015tip}, since it has several desirable properties:
 
 % All together, TIP provides 219 distinct function definitions and 343
-%   theorem statements, which is enough to fully exercise current ATE systems.
+%   theorem statements, which is enough to fully exercise current MTE systems.
 % Benchmark problems include examples from the theorem proving literature
 %   as well as common program verification tasks, ensuring the resulting corpus is
 %   relevant to researchers and practitioners.
 % TIP's maintainers provide a set of tools, including translators from TIP's
 %   native format (based on SMT-Lib~\cite{BarFT-SMTLIB}) to Haskell and Isabelle
-%   (which are used by ATE systems).
+%   (which are used by MTE systems).
 
 % To aid reproducibility, we use a cryptographic hash as our source of randomness:
 % the $n$th sample of size $s$ uses the SHA256 hash of $n$, $s$ and the definition
 % corpus; the latter prevents tailoring the corpus to influence the choices,
-% although ATE systems could .
+% although MTE systems could .
 
 % To provide a more robust comparison of these two systems, we also applied a
 % paired difference test: measuring, for each sampled theory, the difference in
@@ -1265,7 +1262,7 @@ and those with anonymous functions) as well as equations which are removed as
 \label{sec:discussion}
 
 The key to our benchmarking methodology is the simplifying assumption that
-theorem proving problem sets are a good proxy for desirable ATE output. This
+theorem proving problem sets are a good proxy for desirable MTE output. This
 allows us to side-step the philosophical quagmire of ``interestingness'' to
 produce concrete, measurable values; it is also a core weakness, as there are
 compelling reasons to refute it.
@@ -1306,7 +1303,7 @@ practicality, at least in the short term. Futhermore, since research is already
 on-going in these areas, we hope to at least improve on existing evaluation
 practices and offer a common ground for future research.
 
-Notably, if ATE matures to the point of providing \emph{truly novel} insights,
+Notably, if MTE matures to the point of providing \emph{truly novel} insights,
 even in well-studied domains, then the assumptions we rely on break down because
 such results cannot (by definition) appear in any existing corpus.
 
