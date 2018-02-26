@@ -336,10 +336,11 @@ expressions are in real usage.
     \tRow{IsaCoSy   & \tEQ               &   X &   X &     &   X &   X &   X}
     \tRow{IsaScheme & \tEQ               &   X &   X &     &   X &   X &   X}
   \end{tabular}
-  \caption{Classification of MTE systems from \cite{colton2000notion}, extended
-    to those compared in \cite{claessen2013automating} (QuickSpec is the
-    conjecture generation component of HipSpec). The interestingness measures
-    are \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
+  \caption{Classification of MTE systems from~\cite{colton2000notion}, extended
+    to include those from~\cite{claessen2013automating} (QuickSpec is the
+    conjecture generation component of HipSpec) and the similar Speculate
+    system~\cite{braquehais2017speculate}. The interestingness measures are
+    \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
     \iA{}pplicability, \iC{}omprehensibility (low complexity) and \iU{}tility.}
   \label{table:colton}
 \end{table}
@@ -377,8 +378,10 @@ We summarise the criteria in Table 1 and state which were used in key
 ATF/MTE systems. The entries for AM, GT, Graffiti, \Bagai{} and HR are based
 on this survey (the latter is Colton's own system). We extend this analysis to
 some more recent systems in the remaining rows (based on our understanding of
-their function): QuickSpec, Speculate~\cite{braquehais2017speculate}, IsaCoSy
-and IsaScheme.
+their function): QuickSpec~\cite{QuickSpec},
+Speculate~\cite{braquehais2017speculate},
+IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}
+and IsaScheme~\cite{MontanoRivas2011}.
 
 The latter systems all use testing to check for counterexamples, which ensures
 results are empirically plausible and applicable (conditions are satisfiable,
@@ -424,22 +427,22 @@ such as in Automated Theory Formation systems.
 ...``in his subsequent design for an Analytical Engine Mr. Babbage has
 shown that material machinery is capable, in theory at least, of
 rivalling the labours of the most practised mathematicians in all
-branches of their science.'' \cite[p. 498]{jevons}
+branches of their science.''~\cite[p. 498]{jevons}
 \end{quote}
 
 The first automated mathematical system, the mechanical calculator
 (known as the Pascaline), was an adding machine that could perform
 additions and subtractions directly and multiplication and divisions
 by repetitions, and was conceived by Pascal in 1642 while reorganising
-tax revenues \cite{d'ocagne}. Subsequent early systems include
+tax revenues~\cite{d'ocagne}. Subsequent early systems include
 M\"uller's universal calculating machine in 1784, which he built for
 the purpose of calculating and printing numerical tables: he invented
 this when he had to check and recalculate some tables relating to the
-volumes of trees \cite[p. 65]{lindgren}. Thirty seven years later,
+volumes of trees~\cite[p. 65]{lindgren}. Thirty seven years later,
 Babbage invented his famous difference engine: an automatic,
 mechanical calculator designed to tabulate polynomial functions. This
 was inspired by a flawed table of logarithms and the idea that
-machines would be quicker and more reliable \cite{bowden}. It is
+machines would be quicker and more reliable~\cite{bowden}. It is
 interesting to note background and motivation: while Pascal and
 Babbage were mathematicians, with an interest in engineering, M\"uller
 was an engineer with an interest in mathematical knowledge. All three
@@ -480,21 +483,20 @@ symbolic reasoning.
 
 % 1. history of terminology
 Automated theory formation derives its terminology from psychology in which the
-term ``concept formation'' is used (see, for example, \cite{bruner:67}) to
+term ``concept formation'' is used (see, for example,~\cite{bruner:67}) to
 describe the search for features which differentiate exemplars from
 non-exemplars of various categories. Lenat used this term in his 1977 paper:
-{\em Automated Theory Formation in Mathematics} \cite{lenat:77}.
+{\em Automated Theory Formation in Mathematics}~\cite{lenat:77}.
 
 % 4. example systems - AM, HR, ...
-When Lenat built the AM system \cite{lenat:77}, there were systems
+When Lenat built the AM system~\cite{lenat:77}, there were systems
 which could define new concepts for investigation, such as those
-described in \cite{winston}, and systems which could discover
-relationships among known concepts, such as Meta-Dendral
-\cite{buchanan:75}. No system could perform both of these tasks: Lenat
-saw this as the next step. AM was designed to both construct new
-concepts and conjecture relationships between them; fully automating
-the cycle of discovery in mathematics. Lenat describes this as
-follows:
+described in~\cite{winston}, and systems which could discover
+relationships among known concepts, such as Meta-Dendral~\cite{buchanan:75}. No
+system could perform both of these tasks: Lenat saw this as the next step. AM
+was designed to both construct new concepts and conjecture relationships between
+them; fully automating the cycle of discovery in mathematics. Lenat describes
+this as follows:
 
 \begin{quote}
 ``What we are describing is a computer program which
@@ -503,7 +505,7 @@ regularities in the data about them, and conjectures
 relationships between them. This new information is used
 by the program to evaluate the newly-defined concepts,
 concentrate upon the most interesting ones, and iterate the
-entire process.'' \cite[p. 834]{lenat:77}
+entire process.''~\cite[p. 834]{lenat:77}
 \end{quote}
 
 AM was a rule-based system which used a frame-like scheme to represent
@@ -529,19 +531,18 @@ seeming success of the AM system, it is one of the most criticised
 pieces of AI research. In their case study in methodology, Ritchie and
 Hanna analysed Lenat's written work on AM and found that there was a
 large discrepancy between his theoretical claims and the implemented
-program \cite{partridge}. For instance, Lenat made claims about how AM
+program~\cite{partridge}. For instance, Lenat made claims about how AM
 invented natural numbers from sets, whereas it used one heuristic
 which was specifically written in order to make this connection (and
 not used in any other context). Another problem was that the processes
 were sometimes under-explained. For an argument of why many of the
-claims made by Lenat about AM were false, see chapter 13 of
-\cite{colton:book}.
+claims made by Lenat about AM were false, see chapter 13 of~\cite{colton:book}.
 
 \subsection{Mathematical Theory Exploration}
 
 The phrase Mathematical Theory Exploration (MTE) is a recent term
 which seems to have originated with Buchberger and colleagues (see,
-for example, \cite{buchberger}). His motivation is to support
+for example,~\cite{buchberger}). His motivation is to support
 mathematicians during their exploration of mathematical theories. This
 support is intended to be for the straightforward reasoning, which he
 argues, covers most mathematical thought, rather than the ingenious
@@ -559,20 +560,20 @@ user); and Structured Mathematical Knowledge Bases (tools are provided
 for building and using large mathematical knowledge
 libraries). Buchberger has evaluated the potential of this strategy by
 illustrating the automated synthesis of his own Gr\"obner bases
-algorithm \cite{buchberger:04}.
+algorithm~\cite{buchberger:04}.
 
-Recent systems developed in this area include MATHsAiD \cite{roy},
-IsaScheme \cite{MontanoRivas2011} and IsaCosy \cite{johansson}. The
-goal of the MATHsAiD (Mechanically Ascertaining Theorems from
-Hypotheses, Axioms and Definitions) project is to build a tool which
-takes in a set of axioms, concept definitions and a logic and applies
-its inference rules to reason from the axioms to theorems. The
-motivation is to produce a tool which will help mathematicians to
-explore the consequences of a set of axioms or a particular concept
-definition. One of the main challenges of the project has been to
-automatically evaluate interestingness: to distinguish important
-theorems from results which, although they follow from a set of
-axioms, are of little mathematical interest.
+Recent systems developed in this area include MATHsAiD~\cite{roy},
+IsaScheme~\cite{MontanoRivas2011} and
+IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}. The goal of the
+MATHsAiD (Mechanically Ascertaining Theorems from Hypotheses, Axioms and
+Definitions) project is to build a tool which takes in a set of axioms, concept
+definitions and a logic and applies its inference rules to reason from the
+axioms to theorems. The motivation is to produce a tool which will help
+mathematicians to explore the consequences of a set of axioms or a particular
+concept definition. One of the main challenges of the project has been to
+automatically evaluate interestingness: to distinguish important theorems from
+results which, although they follow from a set of axioms, are of little
+mathematical interest.
 
 %IsaScheme
 Monta{\~n}o-Rivas \etal{} have implemented a scheme-based approach to MTE in their
@@ -603,11 +604,10 @@ suc(x) * y &=y + (x*y).
 \end{align*}
 The new multiplication function $f$ can itself be used to instantiate
 variables in the same scheme, resulting in the invention of the
-exponentiation concept (these examples are taken from
-\cite{MontanoRivas2011}).
+exponentiation concept (these examples are taken from~\cite{MontanoRivas2011}).
 
-%IsaCosy
-The IsaCosy system (Isabelle Conjecture Synthesis) is a program for
+%IsaCoSy
+The IsaCoSy system (Isabelle Conjecture Synthesis) is a program for
 inductive theory formation, which synthesises conjectures from the
 available constants and free variables. Only terms which do not
 contain subterms that can be rewritten by a set of rewrite rules can
@@ -659,16 +659,16 @@ abstract mathematical objects exist independently of us and are {\em
   explored} or investigated) in mathematics.\footnote{There is a vast
   literature on the Platonic and the constructivist view of
   mathematics: we shall not venture down this path here (interested
-  readers are referred to \cite{hersh:97,shapiro}). Instead, for now,
+  readers are referred to~\cite{hersh:97,shapiro}). Instead, for now,
   we make the pragmatic assumption that while there may well be
   different cognitive processes involved in invention than those
   involved in discovery, the fields of ATF and MTE are not currently
   concerned with this level of detail and so the philosophical
   distinction is not relevant for our purposes.} As can be seen above,
 some of these historical differences are disappearing, and current
-systems such as MATHsAiD \cite{roy}, IsaScheme \cite{MontanoRivas2011}
-and IsaCosy \cite{johansson} are bridging the methodological gap
-between ATF and MTE. This is particularly true in terms of
+systems such as MATHsAiD~\cite{roy}, IsaScheme~\cite{MontanoRivas2011}
+and IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation} are bridging the
+methodological gap between ATF and MTE. This is particularly true in terms of
 fully-automatic/user-interactive and the domain-specific/general
 aspects.
 
@@ -690,11 +690,10 @@ There are three aspects to consider when we evaluate an MTE system:
 % assumption?
 
 If we limit ourselves to exploring higher-order theories with inductive types
-(a domain closely matching our interest in analysing software), we do find a
-direct comparison of three systems~\cite{claessen2013automating}: HipSpec,
-IsaCoSy and IsaScheme. QuickSpec, shown in table \ref{table:colton}, is the
-conjecture-generating component of HipSpec (which sends those conjectures into
-automated theorem provers).
+(a domain useful for analysing software), we do find a direct comparison of
+three systems~\cite{claessen2013automating}: HipSpec, IsaCoSy and IsaScheme.
+QuickSpec, shown in table \ref{table:colton}, is the conjecture-generating
+component of HipSpec.
 
 This comparison uses \emph{precision/recall analysis}: a particular set of
 definitions is chosen, such as those in figure \ref{figure:list_theory}, and a
@@ -752,7 +751,7 @@ content for use in the \emph{theory exploration} setting.
 
 Automated theorem proving is an active area of research, with large problem sets
 and regular competitions to prove as much as possible, as fast as
-possible\cite{pelletier2002development}. These problem sets are an opportunity
+possible~\cite{pelletier2002development}. These problem sets are an opportunity
 for theory exploration, as their definitions and theorems can be used as a
 corpus, in the same way that Isabelle libraries have been used in the past.
 
