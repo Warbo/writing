@@ -63,6 +63,9 @@ grestore
 % please place your own definitions here and don't use \def but
 % \newcommand{}{}
 
+\newcommand{\etal}{{\em et al.}}
+\newcommand{\Bagai}{Bagai \etal{}}
+
 % For example theory of lists
 \newcommand{\function}{\rightarrow}
 \newcommand{\Zero}{\text{Z}}
@@ -281,9 +284,9 @@ A major challenge for both ATF and MTE is choosing how to narrow down
 the set of generated conjectures to those deemed ``interesting'', since this is
 an imprecise term with many different interpretations. For example, all existing
 approaches agree that simple tautologies are ``uninteresting'', but differ when
-it comes to more complex statements.  Colton {\em et al.} give a survey of
-systems for theory formation and exploration, and their notions of
-``interestingness'' for concepts and conjectures, identifying six notions in
+it comes to more complex statements.  Colton \etal{} give a survey of systems for
+theory formation and exploration, and their notions of ``interestingness'' for
+concepts and conjectures, identifying six notions in
 total~\cite{colton2000notion}. These notions, as applied to conjectures, are:
 
 {\bf Empirical plausibility}, which checks whether a property holds
@@ -297,10 +300,10 @@ general, has already been seen.
 ``obvious'', for example if it is an instance of a tautology.
 
 {\bf Applicability} depends on the number of models in which a
-conjecture holds. The system of Bagai et al conjectures the
-non-existence of objects, and hence favours statements with zero
-applicability. Other systems treat applicability as a positive
-aspect: the more applicable the statement, the more interesting it is.
+conjecture holds. The system of \Bagai{} conjectures the non-existence of
+objects, and hence favours statements with zero applicability. Other systems
+treat applicability as a positive aspect: the more applicable the statement, the
+more interesting it is.
 
 {\bf Comprehensibility} depends on the complexity of a statement. Simpler
 statements are considered more interesting, hence many of the systems explore
@@ -322,16 +325,16 @@ expressions are in real usage.
     \multirow{2}{*}{\textbf{Program}}                     &
     \multirow{2}{*}{\textbf{Conjecture Types}}            &
     \multicolumn{6}{c}{\textbf{Interestingness Measures}} \\ \hhline{~~------}
-    \tRow{            &                    & \iE & \iN & \iS & \iA & \iC & \iU}
-    \tRow{AM          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
-    \tRow{GT          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
-    \tRow{Graffiti    & \tINE              &   X &   X &   X &     &   X &   X}
-    \tRow{Bagai et al & \tNE               &     &   X &     &   X &   X &    }
-    \tRow{HR          & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
-    \tRow{QuickSpec   & \tEQ               &   X &   X &     &   X &   X &    }
-    \tRow{Speculate   & \tCON \tEQ / \tINE &   X &   X &     &   X &   X &    }
-    \tRow{IsaCoSy     & \tEQ               &   X &   X &     &   X &   X &   X}
-    \tRow{IsaScheme   & \tEQ               &   X &   X &     &   X &   X &   X}
+    \tRow{          &                    & \iE & \iN & \iS & \iA & \iC & \iU}
+    \tRow{AM        & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
+    \tRow{GT        & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
+    \tRow{Graffiti  & \tINE              &   X &   X &   X &     &   X &   X}
+    \tRow{\Bagai{}  & \tNE               &     &   X &     &   X &   X &    }
+    \tRow{HR        & \tIFF, \tIMP, \tNE &   X &   X &   X &   X &   X &   X}
+    \tRow{QuickSpec & \tEQ               &   X &   X &     &   X &   X &    }
+    \tRow{Speculate & \tCON \tEQ / \tINE &   X &   X &     &   X &   X &    }
+    \tRow{IsaCoSy   & \tEQ               &   X &   X &     &   X &   X &   X}
+    \tRow{IsaScheme & \tEQ               &   X &   X &     &   X &   X &   X}
   \end{tabular}
   \caption{Classification of MTE systems from \cite{colton2000notion}, extended
     to those compared in \cite{claessen2013automating} (QuickSpec is the
@@ -371,7 +374,7 @@ expressions are in real usage.
 % rather than e.g. implications of some abstract specification.
 
 We summarise the criteria in Table 1 and state which were used in key
-ATF/MTE systems. The entries for AM, GT, Graffiti, Bagai et al. and HR are based
+ATF/MTE systems. The entries for AM, GT, Graffiti, \Bagai{} and HR are based
 on this survey (the latter is Colton's own system). We extend this analysis to
 some more recent systems in the remaining rows (based on our understanding of
 their function): QuickSpec, Speculate~\cite{braquehais2017speculate}, IsaCoSy
@@ -572,15 +575,13 @@ theorems from results which, although they follow from a set of
 axioms, are of little mathematical interest.
 
 %IsaScheme
-Monta{\~n}o-Rivas {\em et al.} have implemented a scheme-based
-approach to MTE in their IsaScheme system
-\cite{MontanoRivas2011}. Schemes are higher-order formulae which can
-be used to generate new concepts and conjectures; variables within the
-scheme are instantiated automatically and this drives the invention
-process.  For instance, in the theory of natural numbers, given the
-concepts of successor ($suc$), addition ($+$) and zero ($0$),
-IsaScheme can use the following scheme to invent the concept of
-multiplication:
+Monta{\~n}o-Rivas \etal{} have implemented a scheme-based approach to MTE in their
+IsaScheme system~\cite{MontanoRivas2011}. Schemes are higher-order formulae
+which can be used to generate new concepts and conjectures; variables within the
+scheme are instantiated automatically and this drives the invention process.
+For instance, in the theory of natural numbers, given the concepts of successor
+($suc$), addition ($+$) and zero ($0$), IsaScheme can use the following scheme
+to invent the concept of multiplication:
 
 \[
 \text{def-scheme}(g,h,i,j) \equiv\\
@@ -1278,28 +1279,28 @@ Fundamentally, any mathematical reasoning system must decide on, and formalise,
 what counts as ``the good'' in mathematics.  Obvious metrics such as ``true'' or
 ``provable'' include trivial tautologies, while at the same time failing to
 capture the ``almost true'', which can be a valuable trigger for theory change,
-as demonstrated by Lakatos in his case studies of mathematical development
-\cite{lakatos}. ``Beautiful'' is another -- albeit vague -- commonly proposed
-metric. Methods for finding out what that means have come from neuro-scientists,
-such as the study by Zeki et al in which they test whether mathematicians'
-experiences of abstract beauty correlates with the same brain activity as
-experiences of sensory beauty \cite{zeki}; computer scientists, such as Colton's
-metrics above which are proposed based largely on a computer scientist's
-``intuition'' and argumentation about why a metric would be important (and
-previous use of such metrics, and - in one isolated case (surprisingingness) -
-on a single quote from a mathematician\footnote{Similarly, classification of a
-MATHsAiD result as either interesting or uninteresting \cite{roy} was made by
-the main system developer: in both cases the main developer had a background in
-mathematics.}; and mathematicians themselves, such as Gowers' suggestion that we
-can identify features which are commonly associated with good proofs
-\cite{gowers}. All of these approaches rest upon the assumption that it makes
-sense to speak of ``the good'' in mathematics. This assumption is supported by
-concepts such as Erdos's ``The Book'' -- a theoretical construct of a book which
-contains the most elegant proof of every theorem (brought to life in
-\cite{aigner2010proofs}). However,
-empirical studies by psychologists such as Inglis call into question such
-assumptions: work by Inglis and colleagues has shown that there is not a single
-standard of validity among contemporary mathematicians %FIXME https://dspace.lboro.ac.uk/dspace-jspui/handle/2134/12150
+as demonstrated by Lakatos in his case studies of mathematical
+development~\cite{lakatos}. ``Beautiful'' is another -- albeit vague -- commonly
+proposed metric. Methods for finding out what that means have come from
+neuro-scientists, such as the study by Zeki \etal{} in which they test whether
+mathematicians' experiences of abstract beauty correlates with the same brain
+activity as experiences of sensory beauty~\cite{zeki}; computer scientists, such
+as Colton's metrics above which are proposed based largely on a computer
+scientist's ``intuition'' and argumentation about why a metric would be
+important (and previous use of such metrics, and - in one isolated case
+(surprisingingness) - on a single quote from a mathematician\footnote{Similarly,
+  classification of a MATHsAiD result as either interesting or
+  uninteresting~\cite{roy} was made by the main system developer: in both cases
+  the main developer had a background in mathematics.}; and mathematicians
+themselves, such as Gowers' suggestion that we can identify features which are
+commonly associated with good proofs~\cite{gowers}. All of these approaches rest
+upon the assumption that it makes sense to speak of ``the good'' in mathematics.
+This assumption is supported by concepts such as Erdos's ``The Book'' -- a
+theoretical construct of a book which contains the most elegant proof of every
+theorem (brought to life in~\cite{aigner2010proofs}). However, empirical studies
+by psychologists such as Inglis call into question such assumptions: work by
+Inglis and colleagues has shown that there is not a single standard of validity
+among contemporary mathematicians %FIXME https://dspace.lboro.ac.uk/dspace-jspui/handle/2134/12150
 nor beauty. %FIXME needs citation
 
 We do not claim that our use of corpora as a ground truth exactly captures all
