@@ -254,10 +254,10 @@ following theorem for our theory of lists:
     \Map(f, \Append(xs, ys)) = \Append(\Map(f, xs), \Map(f, ys))
 \end{equation}
 
-This justifies a rewrite rule for splitting a single $\Map$ call into multiple
-independent calls dealing with different sections of a list. Such rules are
-useful optimisations since each call can be evaluated in parallel, leading to
-the ``map/reduce'' programming paradigm.
+Equation \ref{eq:mapreduce} justifies a rewrite rule for splitting a single
+$\Map$ call into multiple independent calls dealing with different sections of a
+list. Such rules are useful optimisations since each call can be evaluated in
+parallel, leading to the ``map/reduce'' programming paradigm.
 
 All of these example use cases require the ability to discover theorems about
 some particular theory. This is a hard problem in general, but presents
@@ -302,10 +302,10 @@ non-existence of objects, and hence favours statements with zero
 applicability. Other systems treat applicability as a positive
 aspect: the more applicable the statement, the more interesting it is.
 
-{\bf Comprehensibility} is the complexity of a statement. Simpler
-statements are considered more interesting, and many of the search
-algorithms explore simpler/smaller statements before complex/larger
-ones, to more efficiently find those which are interesting.
+{\bf Comprehensibility} depends on the complexity of a statement. Simpler
+statements are considered more interesting, hence many of the systems explore
+simpler/smaller statements before complex/larger ones, to more efficiently find
+those which are interesting.
 
 {\bf Utility} is the relevance or usefulness of a conjecture to the
 user's particular task. For example, if we want to find optimising
@@ -377,16 +377,16 @@ some more recent systems in the remaining rows (based on our understanding of
 their function): QuickSpec, Speculate~\cite{braquehais2017speculate}, IsaCoSy
 and IsaScheme.
 
-All four of these systems use testing to check for counterexamples, which
-ensures results are empirically plausible and applicable (conditions are
-satisfiable, types are inhabited, etc.). They also use a small-to-large search
-order, ensuring more easily-comprehensibile conjectures are explored first.
+The latter systems all use testing to check for counterexamples, which ensures
+results are empirically plausible and applicable (conditions are satisfiable,
+types are inhabited, etc.). They also use a small-to-large search order,
+ensuring more easily-comprehensibile conjectures are explored first.
 
 IsaCoSy ensures novelty using a constraint system, such that no generated
 expression can be simplified using a previously-found equation. The other
-systems use post-hoc filters based on unification and rewriting rules
-(derived via the Knuth-Bendix completion algorithm) to discard expressions or
-equations which are special-cases of some other, more general result.
+systems use post-hoc filters based on unification and term rewriting to discard
+expressions or equations which are special-cases of some other, more general
+result.
 
 IsaCoSy is able to look for commonly desirable patterns, such as commutativity
 and associativity, which increases the utility of its output, whilst IsaScheme
@@ -447,8 +447,8 @@ Differences in background and motivation continue to be relevant
 today. While the majority of work in automating mathematics has been
 in symbolic manipulation and theorem proving, we are concerned here
 with other aspects of mathematics, including the construction of conjectures,
-(counter-)examples and theorems. These tasks, along with the formation of new
-definitions and concepts, are varyingly known as
+(counter\nobreakdash-)examples and theorems. These tasks, along with the
+formation of new definitions and concepts, are varyingly known as
 ``Automated Theory Formation''~\cite{lenat:77,colton:book},
 ``Mathematical Theory Exploration''~\cite{buchberger:06} (also sometimes
 prefaced with ``Computer-Aided'', ``Automated'' or ``Algorithm-Supported''),
@@ -1123,9 +1123,9 @@ and Isabelle.
 
 We use TIP version 0.2 which contains 343 problems, each stating a single
 theorem and together defining a total of 618 datatypes and 1498 functions. Most
-of these are duplicates, since each problem (re-)defines all of the datatypes
-and functions it involves. To avoid ambiguity we prefix the names of all
-definitions with the filename it came from, and collect them into one big set.
+of these are duplicates, since each problem (re\nobreakdash-)defines all of the
+datatypes and functions it involves. To avoid ambiguity we prefix the names of
+all definitions with the filename it came from, and collect them into one big set.
 
 TIP datatypes can have several ``constructors'' and ``destructors''. For example
 the natural numbers can be defined as follows:
