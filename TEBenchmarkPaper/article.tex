@@ -790,22 +790,23 @@ referenced by the theorems from the theorem statements themselves. The former
 will be used as input to the MTE systems under evaluation, whilst the latter
 form a ground truth corpus against which to compare the MTE output.
 
-It is important to ensure that there are no duplicate definitions: theory
-exploration does not depend on the names of functions, so neither should our
-analysis. For example, consider a problem set which includes a commutativity
-theorem for a \texttt{plus} function, and an associativity theorem for an
-\texttt{add} function, where the definitions of \texttt{plus} and \texttt{add}
-are $\alpha$-equivalent. We would expect an MTE system to conjecture
-commutativity and associativity for \emph{both} functions, or for \emph{neither}
-function, since they're equivalent. Yet a na\"ive precision/recall analysis
-would treat commutativity of \texttt{add} and associativity of \texttt{plus} as
-\emph{uninteresting}, since they don't appear in the ground truth.
+It is important to ensure that there are no duplicate definitions: we are only
+concerned with the \emph{logical} content of the input, not the more arbitrary
+aspects like the names of functions. For example, consider a problem set which
+includes a commutativity theorem for a \texttt{plus} function, and an
+associativity theorem for an \texttt{add} function, where the definitions of
+\texttt{plus} and \texttt{add} are $\alpha$-equivalent. We would expect an MTE
+system to conjecture commutativity and associativity for \emph{both} functions,
+or for \emph{neither} function, since they're logically equivalent. Yet a
+na\"ive precision/recall analysis would treat commutativity of \texttt{add} and
+associativity of \texttt{plus} as \emph{uninteresting}, since they don't appear
+in the ground truth.
 
-For this reason, duplicates should be removed (e.g. leaving those which appear
-first alphabetically), and any references in the theorem statements updated to
-use the remaining definition. In the above example, the \texttt{plus} function
-would be removed, and the commutativity theorem updated to reference
-\texttt{add} instead.
+For this reason, duplicates should be removed, and any references in the theorem
+statements updated to use the remaining definition (e.g. chosen based on
+lexicographic order). In the above example, the \texttt{plus} function would be
+removed, and the commutativity theorem updated to reference \texttt{add}
+instead.
 
 \subsection{Sampling}
 
@@ -817,21 +818,22 @@ However, this would cause two problems:
 \item The result would be a single data point, which makes it difficult to
   infer performance \emph{in general}.
 \item It is impractical to run any existing MTE system on ``large'' inputs,
-  containing more than around 10 definitions.
+  containing more than a few dozen definitions.
 \end{itemize}
 
 To solve both of these problems we instead \emph{sample} a subset of
 definitions. Given a sample size, we choose a subset of that many definitions,
-and use that as our MTE input. We generate a corresponding ground truth by
-selecting those theorems from the corpus which only contain references to
-definitions that appear in our sample.
+and provide those definitions as our MTE input. We generate a corresponding
+ground truth by selecting those theorems from the corpus which only contain
+references to the sampled definitions.
 
 Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
-large corpus and a fixed sample size, it becomes highly unlikely that a sample
-will contain the particular definitions required by a theorem. This would cause
-most samples to have an empty ground truth, and hence $0$ precision and
-undefined recall \emph{independent} of what the MTE system produces. This is
-clearly undesirable as an evaluation method.
+given sample size, increasing the size of the corpus (which, as detailed above,
+is advantageous) makes it less likely that a chosen sample will contain all of
+the definitions required by a theorem. The majority of such samples would hence
+have an empty ground truth, and thus $0$ precision and undefined recall
+\emph{independent} of what the MTE system produces! This is clearly undesirable
+as an evaluation method.
 
 Instead, we only choose samples which admit at least one of the corpus theorems.
 We could do this using rejection sampling, but it is more efficient to sample
@@ -843,14 +845,14 @@ definitions than our sample size).
 
 When we form the ground truth for such samples, we're guaranteed to find at
 least one applicable theorem from the corpus (the one we chose as our starting
-point).
+point), and hence have a meaningful precision and recall.
 
 \subsection{Evaluation}
 
 Given a sample of definitions and a corresponding ground truth, the actual
 execution of the MTE system proceeds as in prior work. We must translate the
 chosen definitions into the particular input format of the tool under study,
-then we time the execution, with a timeout after e.g. 1 hour.
+then we time the execution, with a timeout after e.g. 5 minutes.
 
 In our experiments we have found that memory usage is also an important part of
 a system's performance, but rather than complicating our analysis with an extra
@@ -889,9 +891,9 @@ more weight to theories which generate more conjectures, but we avoid this since
 there is no \emph{a priori} justification for considering such theories as
 ``better''.
 
-We summarise the runtimes by choosing their median, as it is more robust against
-long-running outliers, and hence represents performance for a ``typical''
-theory.
+We summarise the runtimes by choosing their median, as this is more robust
+against long-running outliers, and hence represents performance for a
+``typical'' theory.
 
 Another advantage to our statistical approach is that we can compute the
 \emph{spread} of our data, which is unknown in the previous one-off
@@ -1174,12 +1176,11 @@ chosen for the current sample.
   \centering
   \input{time.pgf}
   \caption{Running times of QuickSpec on theories sampled from TIP. Each point
-    is an individual run, with 30 per size except for 1 (14) and 2 (29). Colour
-    indicates the total number of conjectures produced by each run, with failing
-    processes shown in red. Some points are shifted horizontally to prevent
-    overlaps. Standard box plots are included, although many are obscured due to
-    quartiles near zero or timeout. Whiskers show points at 1.5 $\times$ the
-    inter-quartile range.}
+    is an individual run, with 30 per size except for 2 (29). Colour indicates
+    the total number of conjectures produced by each run, with failing processes
+    shown in red. Some points are shifted horizontally to prevent overlaps.
+    Standard box plots are included, with whiskers showing points at
+    1.5~$\times$~the inter-quartile range.}
   \label{figure:quickspec_runtimes}
 \end{figure}
 
@@ -1193,24 +1194,22 @@ chosen for the current sample.
   \label{figure:quickspec_precRec}
 \end{figure}
 
-We applied our sampling methodology to the 269 TIP definitions for sample sizes
-between 1 and 20. We chose 30 samples for each size, but due to the requirement
-for samples to admit at least one theorem, only 14 unique samples were obtained
-for size 1 and 29 for size 2. A timeout of 3 minutes was imposed, since
-preliminary experiments showed that most runs either finish before this time, or
-still do not finish after an hour. The running times are shown in
+We applied our sampling methodology to the 182 definitions which appear in TIP
+theorems, for even sample sizes up to 20. We chose 30 samples for each size, but
+due to the requirement for samples to admit at least one theorem, only 29 unique
+samples were obtained for size 2. A timeout of 5 minutes was imposed, since
+preliminary experiments showed that most QuickSpec runs either finish before
+this time, or still do not finish after an hour. The running times are shown in
 figure~\ref{figure:quickspec_runtimes}.
 
 The only errors we encountered were timeouts (shown in red), and these occurred
-for all sample sizes. Whilst the median runtimes are mostly in the range of a
-few seconds, the variance shows two distinct regions: sizes below 10 are mostly
-finished within 30 seconds, whilst sizes 10 and above have large variance; the
-whole upper quartile of size 13 timed out. There is also an unexpected downwards
-trend towards size 20, and a slight but consistent reduction in minimum runtimes
-from sizes 15 to 20 which is likely an artefact of our testing setup.
+for all sample sizes. The running times cluster, with many close to zero and
+many exceeding the timeout, but with few in between. There is a clear trend
+towards longer times and more timeouts as the sample size increases, such that
+most samples of size 20 timed out.
 
 Most runs finished quickly and generated few conjectures, with the most being
-131 conjectures from a sample of size 20.
+116 conjectures from a sample of size 16.
 
 Equations generated by QuickSpec and those from the ground truth were normalised
 by numbering their variables and putting the left- and right-hand-sides in
@@ -1228,10 +1227,10 @@ fits the data.
 There is a clear negative trend in precision as the sample size increases,
 indicating that a more aggressive post-processing filter may be useful as we
 explore larger theories. Some small samples reached full precision, but nothing
-above size 10 exceeded 50\%.
+above size 6 exceeded 50\%.
 
-Recall shows a slight downward trend but is mostly flat, averaging between 10\%
-and 40\%. This is expected, since adding more definitions to a QuickSpec
+Recall shows a slight downward trend but is mostly flat, averaging between 20\%
+and 50\%. This is expected, since adding more definitions to a QuickSpec
 signature will never reduce the conjectures it will find. Those conjectures
 which QuickSpec failed to find include terms which QuickSpec cannot synthesise
 (such as conditional equations, inequalities, terms larger than the search depth

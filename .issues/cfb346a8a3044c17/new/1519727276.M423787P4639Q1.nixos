@@ -1,0 +1,9 @@
+From: Chris Warburton
+Date: Tue, 27 Feb 2018 10:27:17 +0000
+Subject: Re: Don't rebuild TEBenchmark data/graphs when latex changes
+Message-Id: <cfb346a8a3044c17-f30f309c49cb98b7-artemis@nixos>
+References: <cfb346a8a3044c17-0-artemis@nixos>
+In-Reply-To: <cfb346a8a3044c17-0-artemis@nixos>
+
+We now only rebuild if the header is changed (e.g. imports, etc). The
+rebuild is quicker now, since we're not recreating samples.

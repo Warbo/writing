@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Thu, 30 Nov 2017 10:55:10 +0000
-State: new
+State: resolved
 Subject: Don't rebuild TEBenchmark data/graphs when latex changes
 Message-Id: <cfb346a8a3044c17-0-artemis@nixos>
+resolution: fixed
 
 It's annoying to wait for these things to build. The most obvious thing
 we should avoid is using things like './.' as dependencies in Nix, since
