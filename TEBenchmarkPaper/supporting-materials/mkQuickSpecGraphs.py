@@ -7,10 +7,8 @@ msg = lambda x: sys.stderr.write(x + '\n')
 msg('Reading input')
 
 def readInput():
-    from gzip import open
     from json import load
-    with open(os.getenv('zipped'), 'r') as zipped:
-        return load(zipped)['results']['quickspectip.track_data']['result'][0]
+    return load(sys.stdin)['results']['quickspectip.track_data']['result'][0]
 
 data = readInput()
 del(readInput)
@@ -116,24 +114,9 @@ def aggregateData(data):
 
             knownEqs[sample] = got
 
-            if rdata['success']:
-                found   = len(got)
-                correct = len([x for x in rdata['wanted'] if x['found']])
-                wanted  = len(rdata['wanted'])
-            else:
-                found   = 0
-                correct = 0
-
-                # FIXME: HaskellTE should perform analysis even for failures
-                proc = subprocess.Popen(
-                    [os.getenv('conjectures_for_sample')],
-                    stdin  = subprocess.PIPE,
-                    stdout = subprocess.PIPE,
-                    env    = {'SAMPLED_NAMES' : '\n'.join(list(sample))})
-                (out, err) = proc.communicate('[]')
-                outData    = loads(out)
-                wanted = len(outData['wanted'])
-                del(proc, out, err)
+            found   = 0 if got is None else len(got)
+            correct = len([x for x in rdata['wanted'] if x['found']])
+            wanted  = len(rdata['wanted'])
 
             assert wanted > 0, repr({
                 'error'  : 'Sampling should guarantee a wanted conjecture',
@@ -309,7 +292,7 @@ def savePlot(name):
 def plotTime():
     newFigure('time')
 
-    plt.ylim(0, 180)
+    plt.ylim(0, 300)
 
     sns.boxplot(data      = agg,
                 x         = 'size',
