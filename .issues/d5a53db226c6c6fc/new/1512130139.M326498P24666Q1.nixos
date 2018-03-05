@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 01 Dec 2017 12:08:25 +0000
-State: new
+State: resolved
 Subject: At what point is it impractical?
 Message-Id: <d5a53db226c6c6fc-0-artemis@nixos>
+resolution: fixed
 
 We say it's impractical to go above 10, but we go above 20.
 

@@ -511,34 +511,9 @@ def aggProp(sizes=None, agg=None, key=None, total=None):
             'sample stddev'     : sStddev
         }
 
-    def averageOfRatios(size):
-        '''Assume that each run is a binomial experiment with the same p
-        parameter but differing n parameters. We calculate the mean and variance
-        for each run, then combine them together. This relies on the fact that
-        the sum of binomials with the same p parameter is also a binomial, hence
-        finding the mean by summing the individual means and dividing by the
-        number of runs will maintain our binomial assumption. The total variance
-        is just the sum of the individual variances, scaled due to the
-        division.
-
-        NOTE: This is mostly for comparison purposes.'''
-
-        # If a run has no total, then its mean and variance are undefined. We
-        # skip these runs.
-        indices = filter(lambda i: agg[total][i] not in [None, 0],
-                         sizeIndices(size))
-
-        means  = map(lambda i: noneToZero(agg[key][i]), indices)
-        mean   = float(sum(means)) / float(len(means))
-
-        counts    = map(lambda i: noneToZero(agg[total][i]), indices)
-        variances = [(p * (1.0 - p)) / n for p, n in zip(means, counts)]
-        variance  = sum(variances) / (float(len(means))**2)
-        return {'mean': mean, 'variance': variance}
-
     # Calculate values for graph
 
-    analysis = ratioOfAverages  # Switch this to use a different analysis
+    analysis = ratioOfAverages
 
     unzip = lambda xs: zip(*xs)
 

@@ -1,0 +1,25 @@
+From: Chris Warburton
+Date: Mon, 05 Mar 2018 14:59:58 +0000
+Subject: Re: Take a look at error bars of recall
+Message-Id: <bf831543e595aea9-e523daab965402ef-artemis@nixos>
+References: <bf831543e595aea9-0-artemis@nixos>
+In-Reply-To: <bf831543e595aea9-0-artemis@nixos>
+
+I think I've figured out the gut feeling I had: there are *two* standard
+deviations we might use! The "analytic" standard deviation depends only
+on the mean value (i.e. the 'p * (1 - p)' formulae). This seemed
+unsatisfying since it doesn't take into account the spread of our data.
+
+Turns out that it's *also* perfectly legitimate to use the usual formula
+(square root of average squared deviation from the mean) to get the
+*sample* standard deviation. Presumably it took me so long to find that
+this is the case precisely because it doesn't depend on the model
+(binomial, bernoulli, normal, whatever), so there's nothing special
+about using it for our binomial/bernoulli case.
+
+Many thanks to this stack exchange answer:
+
+https://stats.stackexchange.com/questions/112827/analytic-or-sample-standard-deviation-with-binomial-data
+
+I've plugged the sample standard deviation into the graphs and it has a
+much more convincing shape (i.e. it has a non-negligible width!)
