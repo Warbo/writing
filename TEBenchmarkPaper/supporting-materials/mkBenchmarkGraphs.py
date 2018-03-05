@@ -4,16 +4,35 @@ import os
 import sys
 msg = lambda x: sys.stderr.write(x + '\n')
 
+def readVar(var):
+    val = os.getenv(var)
+    assert val is not None, 'No {} env var given'.format(var)
+    return val
+
+sources = {
+    'isacosy'   : readVar(  'ISACOSY_DATA'),
+    'quickspec' : readVar('QUICKSPEC_DATA')
+}
+del(readVar)
+
 msg('Reading input')
 
-def readInput():
-    from json import load
-    return load(sys.stdin)['results']['quickspectip.track_data']['result'][0]
+from json import load
 
-data = readInput()
+def readInput(source, path):
+    with open(sources[source], 'r') as f:
+        return load(f)['results'][path]['result'][0]
+
+data = {
+    'isacosy'   : readInput('isacosy'  ,   'benchmarks.track_data'),
+    'quickspec' : readInput('quickspec', 'quickspectip.track_data')
+}
 del(readInput)
 
-msg('Aggregating data')
+msg('Normalising data')
+
+# Extract timeout from one of the QuickSpec runs, since IsaCoSy didn't store it
+timeout = data['quickspec'].values()[0]['reps'].values()[0]['timeout']
 
 def makeHashable(x):
         '''Convert lists and dictionaries into tuples, recursively, so we can
@@ -26,58 +45,184 @@ def makeHashable(x):
         }
         return reduce(reducers[xType], x, ()) if xType in reducers else x
 
-def sanityCheck(size, rep, rawSample, got, knownEqs):
-    assert len(rawSample) == size, repr({
-        'error'     : 'Wrong number of names sampled',
-        'rep'       : rep,
-        'rawSample' : rawSample,
-        'size'      : size
-    })
+def normalise(data):
+    for size in data:
+        # Unwrap useless 'reps' wrapper
+        if 'reps' in data[size]:
+            data[size] = data[size]['reps']
 
-    sample = frozenset(rawSample)
-    assert len(sample) == len(rawSample), repr({
-        'error'     : 'Sampled names contain duplicates',
-        'rep'       : rep,
-        'rawSample' : rawSample,
-        'sample'    : sample,
-        'size'      : size
-    })
+        for rep in data[size]:
+            # Remove more unnecessary wrappers
+            for key in ['result', 'analysis']:
+                if key in data[size][rep]:
+                    data[size][rep] = dict(  data[size][rep],
+                                           **data[size][rep][key])
+                    del(data[size][rep][key])
 
-    if sample in knownEqs:
-        if knownEqs[sample] != got:
-            msg(dumps({
-                'error'  : 'Differing outputs for the same sample',
-                'prev'   : list(knownEqs[sample]),
-                'rep'    : rep,
-                'sample' : list(got),
-                'size'   : size
-            }))
+            # Include the timeout
+            if 'timeout' not in data[size][rep]:
+                data[size][rep]['timeout'] = timeout
 
-        if got is not None:
-            for known in knownEqs:
-                if knownEqs[known] is not None:
-                    if sample.issubset(known):
-                        if not got.issubset(knownEqs[known]):
-                            msg(dumps({
+            # These are inverse, so just use one
+            if 'killed' in data[size][rep] and 'success' not in data[size][rep]:
+                data[size][rep]['success'] = not data[size][rep]['killed']
+            if 'killed' in data[size][rep]:
+                del(data[size][rep]['killed'])
+
+            # We should always analyse, so this is useless
+            if 'analysed' in data[size][rep]:
+                assert data[size][rep]['analysed'], 'Run was not analysed'
+                del(data[size][rep]['analysed'])
+
+            # Remove some unneeded values, if present
+            for key in ['runner', 'analyser',  # For provenance
+                        'stdout', 'stderr',    # For debugging
+                        'size',   'rep']:      # Violate "Once and Only Once"
+                if key in data[size][rep]:
+                    del(data[size][rep][key])
+
+            # Samples should be sets
+            rawSample = data[size][rep]['sample']
+            sampleSet = frozenset(rawSample)
+            assert len(rawSample) == int(size), \
+                repr({
+                    'error'     : 'Wrong number of names sampled',
+                    'rep'       : rep,
+                    'size'      : size,
+                    'rawSample' : rawSample,
+                    'sampleSet' : sampleSet
+                })
+
+            assert len(sampleSet) == len(rawSample), \
+                repr({
+                    'error'     : 'Sampled names contain duplicates',
+                    'rep'       : rep,
+                    'size'      : size,
+                    'rawSample' : rawSample,
+                    'sampleSet' : sampleSet
+                })
+
+            data[size][rep]['sample'] = sampleSet
+
+            # Unwrap found to make comparable
+            data[size][rep]['found'] = frozenset(
+                makeHashable(data[size][rep]['found'][0]) \
+                if data[size][rep]['success'] else [])
+
+    return data
+
+data = {
+    'isacosy'   : normalise(data['isacosy'  ]),
+    'quickspec' : normalise(data['quickspec'])
+}
+
+del(makeHashable)
+del(normalise)
+
+def quickspecCheck(data):
+    foundResults = {}
+
+    for size in data:
+        for rep in data[size]:
+            rdata = data[size][rep]
+            found = rdata['found']
+
+            if len(found) > 0:
+                for known in foundResults:
+                    if len(foundResults[known]) > 0:
+                        if rdata['sample'].issubset(known):
+                            assert found.issubset(foundResults[known]), repr({
+                                'error'  : 'More names should give more output',
+                                'got'    : list(found),
+                                'known'  : list(known),
+                                'prev'   : list(foundResults[known]),
+                                'sample' : list(sample),
+                                'size'   : size
+                            })
+                        if rdata['sample'].issuperset(known):
+                            assert found.issuperset(foundResults[known]), repr({
                                 'error'  : 'More names should give more output',
                                 'got'    : list(got),
                                 'known'  : list(known),
-                                'prev'   : list(knownEqs[known]),
+                                'prev'   : list(foundResults[known]),
                                 'sample' : list(sample),
                                 'size'   : size
-                            }))
-                    if sample.issuperset(known):
-                        if not got.issuperset(knownEqs[known]):
-                            msg(dumps({
-                                'error'  : 'More names should give more output',
-                                'got'    : list(got),
-                                'known'  : list(known),
-                                'prev'   : list(knownEqs[known]),
-                                'sample' : list(sample),
-                                'size'   : size
-                            }))
+                            })
+
+def sanityCheck(data):
+    groundTruthNames = lambda raw: sorted(map(lambda x: x['file'], raw))
+
+    for system in data.keys():
+        for size in data[system]:
+            for rep in data[system][size]:
+                rdata       = data[system][size][rep]
+                sample      = rdata['sample']
+                groundTruth = groundTruthNames(rdata['wanted'])
+
+                assert len(groundTruth) >= 1, debugInfo('Empty ground truth')
+
+                assert timeout == rdata['timeout'], \
+                    'Got different timeouts {} and {}'.format(
+                        str(timeout),
+                        str(rdata['timeout']))
+
+                # Make sure every system is using the same samples/ground truth
+                for sys in data.keys():
+                    sysSample = data[sys][size][rep]['sample']
+                    assert sysSample == sample, \
+                        'Samples differ {0} {1} {2} {3}'.format(
+                            system, sys, sample, sysSample)
+
+                    sysGroundTruth = groundTruthNames(
+                        data[sys][size][rep]['wanted'])
+                    assert sysGroundTruth == groundTruth, \
+                        'Ground truths differ {0} {1} {2} {3}'.format(
+                            system, sys, groundTruth, sysGroundTruth)
+
+                # Make sure any other occurrences of this sample got the same
+                # ground truth and exploration output
+                for otherRep in data[system][size].keys():
+                    otherSample = data[system][size][otherRep]['sample']
+                    if otherSample == sample:
+                        otherGT = groundTruthNames(
+                            data[system][size][otherRep]['wanted'])
+
+                        assert groundTruth == otherGT, repr({
+                            'error'       : 'Ground truths differ',
+                            'rep'         : rep,
+                            'otherRep'    : otherRep,
+                            'sample'      : sample,
+                            'otherSample' : otherSample
+                        })
+
+                        found, oFound = [sorted(x['found']) for x in \
+                                         [rdata, data[system][size][otherRep]]]
+
+                        if len(found) > 0 and len(oFound) > 0:
+                            assert found == oFound, repr({
+                                'error'       : 'Outputs differ on same sample',
+                                'found'       : found,
+                                'other'       : oFound,
+                                'rep'         : rep,
+                                'otherRep'    : otherRep,
+                                'sample'      : list(sample),
+                                'othersample' : list(otherSample),
+                                'size'        : size,
+                                'system'      : system
+                            })
+
+sanityCheck(data)
+quickspecCheck(data['quickspec'])
+
+del(sanityCheck)
+del(quickspecCheck)
+
+msg('Aggregating data')
 
 def aggregateData(data):
+    '''Pull numbers out of the given JSON results, to build up the data series
+    needed for our graphs. Note that this needs to support JSON from QuickSpec
+    and IsaCoSy, which is slightly d'''
     import subprocess
     num = lambda x: type(x) in [type(42), type(42.0)]
 
@@ -94,39 +239,36 @@ def aggregateData(data):
         'wanted'    : []
     }
 
-    # Make a note of which equations are discoverable from each sample
-    knownEqs = {}
+    # Make a note of which samples we've seen before, so we can skip dupes
+    knownSamples = []
 
     for size in sorted(map(int, data.keys())):
         msg('Extracting data for size ' + str(size))
-        sdata = data[str(size)]['reps']
+        sdata = data[str(size)]
         for rep in sorted(map(int, sdata.keys())):
             rdata  = sdata[str(rep)]
-            sample = frozenset(rdata['sample'])
-            got    = frozenset(makeHashable(rdata['found'][0])) \
-                     if rdata['success'] else None
 
-            sanityCheck(size, rep, rdata['sample'], got, knownEqs)
+            # QuickSpec and IsaCoSy runners have annoying differences in their
+            # keys, so we glom the whole lot together
+            for key in ['result', 'analysis']:
+                if key in rdata:
+                    rdata = dict(rdata, **rdata[key])
 
-            if sample in knownEqs:
+            sample = rdata['sample']
+            got    = rdata['found']
+
+            if sample in knownSamples:
                 msg('Skipping dupe rep {0} of size {1}'.format(rep, size))
                 continue
 
-            knownEqs[sample] = got
+            knownSamples += [sample]
 
-            found   = 0 if got is None else len(got)
+            found   = len(got)
             correct = len([x for x in rdata['wanted'] if x['found']])
             wanted  = len(rdata['wanted'])
 
-            assert wanted > 0, repr({
-                'error'  : 'Sampling should guarantee a wanted conjecture',
-                'sample' : sample,
-                'wanted' : wanted
-            })
-
-            # Get the time if available, otherwise treat as a timeout
             # We use min since killing might take some time
-            t = min(rdata['time'], rdata['timeout'])
+            t = min(rdata['time'], timeout)
             assert num(t), 'Non-numeric time %r' % type(t)
 
             # Assume precision is 0 if not found
@@ -153,13 +295,17 @@ def aggregateData(data):
 
     return agg
 
-agg = aggregateData(data)
+agg = {
+    'isacosy'   : aggregateData(data['isacosy'  ]),
+    'quickspec' : aggregateData(data['quickspec'])
+}
 del(data)
-del(makeHashable)
-del(sanityCheck)
 del(aggregateData)
 
 msg('Setting up plots')
+
+##FIXME
+agg = agg['quickspec']
 
 import matplotlib as mpl
 import numpy      as np
