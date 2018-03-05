@@ -526,9 +526,9 @@ def plotPrecRec():
     # This *should* be range(1, max), but we might as well avoid assumptions
     sizes = sorted(list(set(agg['size'])))
 
-    # Sizes start at 1, but matplotlib seems to put the first point at index 0
-    # (even though they're labelled from 1) so we need to decrement each.
-    xs = map(lambda x: x - 1, sizes)
+    # matplotlib seems to count up 0, 1, 2, ... regardless of the x label, so we
+    # need to shift and scale the points
+    xs = map(lambda x: (x - min(sizes)) / (sizes[1] - sizes[0]), sizes)
 
     precMeans, precLows, precHighs = aggProp(sizes, agg, 'precision', 'found' )
     recMeans,   recLows,  recHighs = aggProp(sizes, agg, 'recall',    'wanted')
@@ -542,7 +542,7 @@ def plotPrecRec():
                                              facecolor = '#CCCCCC',
                                              edgecolor = 'face'),
         [{'ax': precAx, 'lows': precLows, 'highs': precHighs},
-         {'ax': recAx, 'lows':  recLows, 'highs':  recHighs}])
+         {'ax':  recAx, 'lows':  recLows, 'highs':  recHighs}])
 
     drawPoints(
         ax      = precAx,
@@ -558,10 +558,8 @@ def plotPrecRec():
         y       = 'recall',
         yLabel  = 'Recall')
 
-    map(lambda ax: ax.set_ylim(0, 1), [precAx, recAx])
-
-    precAx.plot(xs, precMeans)
-    recAx.plot( map(lambda x: x - 1, sizes),  recMeans)
+    [(ax.set_ylim(0, 1), ax.plot(xs, ms)) for ax, ms in [(precAx, precMeans),
+                                                         ( recAx,  recMeans)]]
 
     drawColourBar(
         cax     = plt.subplot(gs[2]),
