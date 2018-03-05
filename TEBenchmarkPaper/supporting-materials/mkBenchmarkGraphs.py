@@ -394,10 +394,24 @@ def drawPoints(agg, y=None, colours=None, hue=None, yLabel=None, ax=None,
     n. Points will be spread out horizontally to avoid overlaps, and the colour
     of each will be colours['palette'][agg[hue][n]].
 
+    If condition is given, we filter the data to only keep those where filter(n)
+    returns True, where n is the index as above.
+
     The the x-axis will be labelled with "Sample size", the y-axis with yLabel.
 
     The resulting plot (axes) are returned. To draw on existing axes, pass them
     in as ax.'''
+
+    # Filter data, if asked
+    if condition is not None:
+        keepIndices = filter(condition, [i for i, s in enumerate(agg['size'])])
+        keepers     = lambda key: [agg[key][i] for i in keepIndices]
+        agg = {
+            'size' : keepers('size'),
+            y      : keepers(y),
+            hue    : keepers(hue)
+        }
+
     # Alternatively, we could use stripplot with jitter
     newAx = sns.swarmplot(data      = agg,
                           x         = 'size',
@@ -624,21 +638,25 @@ def plotPrecRec(system, agg):
         [{'ax': precAx, 'xs': precXs, 'lows': precLows, 'highs': precHighs},
          {'ax':  recAx, 'xs':  recXs, 'lows':  recLows, 'highs':  recHighs}])
 
-    drawPoints(
-        ax      = precAx,
-        colours = wantedColours,
-        hue     = 'precHue',
-        y       = 'precision',
-        yLabel  = 'Precision')
-        agg,
+    succeeded = lambda i: agg['success'][i]
 
     drawPoints(
-        ax      = recAx,
-        colours = wantedColours,
-        hue     = 'recHue',
-        y       = 'recall',
-        yLabel  = 'Recall')
         agg,
+        ax        = precAx,
+        colours   = agg['wanted colours'],
+        hue       = 'precHue',
+        y         = 'precision',
+        yLabel    = 'Precision',
+        condition = succeeded)
+
+    drawPoints(
+        agg,
+        ax        = recAx,
+        colours   = agg['wanted colours'],
+        hue       = 'recHue',
+        y         = 'recall',
+        yLabel    = 'Recall',
+        condition = succeeded)
 
     [(ax.set_ylim(0, 1), ax.plot(xs, ms)) \
      for ax, xs, ms in [(precAx, precXs, precMeans),
