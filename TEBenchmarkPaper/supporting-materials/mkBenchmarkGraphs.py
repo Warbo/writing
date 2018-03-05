@@ -456,69 +456,98 @@ def plotTime():
     savePlot('time')
 
 def aggProp(sizes=None, agg=None, key=None, total=None):
-    '''    We assume the output conjectures from each run are drawn from a binomial
-    distribution, e.g. an urn of good and bad conjectures, where the quality
-    of the algorithm determines the ratio of good to bad.
-
-    This models each run's precision and recall as a binomial distribution. To
-    aggregate these per size we take their means, and propagate the variance.
-    The mean of the aggregate is simply the mean of the individual means, i.e.
-
-        aggregateMean = sum(map(mean, runs)) / len(runs)
-
-    The variance of the aggregate is the sum of the variances, divided by the
-    square of the number of runs, i.e.
-
-        aggregateVar = sum(map(var, runs)) / square(len(runs))
-
-    This assumes each run is independent.'''
+    '''We assume the output conjectures from each run are bernoulli trials, i.e.
+    whether it's good or bad is modelled as a (biased) coin toss, where the bias
+    depends on the "quality" of the algorithm.'''
 
     import math
 
-    sizeIndices = lambda s: [i for i, x in enumerate(agg['size']) if x == s]
-    runsOfSize  = lambda s: [agg[key][i] for i in sizeIndices(s)]
+    sizeIndices   = lambda s: [i for i, x in enumerate(agg['size']) if x == s]
+    entriesOfSize = lambda s, k: [agg[k][i] for i in sizeIndices(s)]
+    runsOfSize    = lambda s: entriesOfSize(s, key)
 
-    # Per-run functions
+    # There are many analyses we could perform. We implement a few, so we can
+    # check that the results behave as we expect.
 
-    def pointVar(successes=None, n=None):
-        '''Variance of samples drawn from a binomial distribution, with 'n'
-        samples drawn, of which 'successes' count as "successful".'''
-        s = float(successes)
-        t = float(n)
-        p = s / t
-        q = 1.0 - p
-        return (p * q) / t
+    noneToZero = lambda x: 0.0 if x is None else float(x)
 
-    def varOfRun(i):
-        '''Variance of the ith run.'''
-        n = agg[total][i]
-        if n == 0:
-            return 1.0  # Maximum variance, since we can't narrow it down
-        return pointVar(successes = agg['correct'][i], n = n)
+    def ratioOfAverages(size):
+        '''Assume that the measure of interest (precision or recall) is fixed
+        for this size, and each particular conjecture is a bernoulli trial with
+        this measure as its p parameter.
+        Under this assumption, the fact that conjectures come from different
+        runs is irrelevant, so we pool them all together into one binomial
+        experiment.'''
+        totals   = map(noneToZero, entriesOfSize(size, total))
+        corrects = map(noneToZero, entriesOfSize(size, 'correct'))
 
-    # Per-size functions
-    stdDev      = lambda xs: math.sqrt(variance(xs))
-    aggMean     = lambda xs: float(sum(xs)) / float(len(xs))
+        count   = sum(totals)
+        correct = sum(corrects)
 
-    def aggVars(ixs):
-        '''Takes indices ixs and a variance-getting function f. Combines the
-        variance of each mean-value to find the variance of the mean-of-means.
-        A mean is a sum and a division: the variance of a sum is the sum of the
-        variances, and the variance after division by X is the variance divided
-        by X^2.'''
-        n  = float(len(ixs))
-        vs = map(varOfRun, ixs)
-        return float(sum(vs)) / (n * n)
+        p       = correct / count
 
-    means   = [aggMean(runsOfSize(size))  for size in sizes]
-    runVars = [aggVars(sizeIndices(size)) for size in sizes]
+        # Analytic values, calculated from our model
+        anVar     = (p * (1.0 - p)) / count
+        anStddev  = math.sqrt(anVar)
+        anStderr  = anStddev / math.sqrt(count)
 
-    # Standard deviation is square root of variance
-    stdDevs = map(math.sqrt, runVars)
+        # Sample values, calculated from our data. Variance is the average
+        # squared difference between each run's actual correct proportion and
+        # the correct proportion we got from the model (p).
+        # Note that we filter out any runs with empty totals (i.e. we don't try
+        # to work out the precision of a run which produced no conjectures)
+        n       = float(len(filter(lambda x: x > 0, totals)))
+        sVar    = (sum([((float(correct) / tot) - p)**2 \
+                        for tot, correct in zip(totals, corrects) \
+                        if  tot > 0])) / (n - 1)
+        sStddev = math.sqrt(sVar)
 
-    # Mean values +/- standard deviations
-    low  = [max(0, means[i] - stdDevs[i]) for i, _ in enumerate(means)]
-    high = [min(1, means[i] + stdDevs[i]) for i, _ in enumerate(means)]
+        return {
+            'mean'              : p,
+            'analytic variance' : anVar,
+            'analytic stddev'   : anStddev,
+            'analytic stderr'   : anStderr,
+            'sample variance'   : sVar,
+            'sample stddev'     : sStddev
+        }
+
+    def averageOfRatios(size):
+        '''Assume that each run is a binomial experiment with the same p
+        parameter but differing n parameters. We calculate the mean and variance
+        for each run, then combine them together. This relies on the fact that
+        the sum of binomials with the same p parameter is also a binomial, hence
+        finding the mean by summing the individual means and dividing by the
+        number of runs will maintain our binomial assumption. The total variance
+        is just the sum of the individual variances, scaled due to the
+        division.
+
+        NOTE: This is mostly for comparison purposes.'''
+
+        # If a run has no total, then its mean and variance are undefined. We
+        # skip these runs.
+        indices = filter(lambda i: agg[total][i] not in [None, 0],
+                         sizeIndices(size))
+
+        means  = map(lambda i: noneToZero(agg[key][i]), indices)
+        mean   = float(sum(means)) / float(len(means))
+
+        counts    = map(lambda i: noneToZero(agg[total][i]), indices)
+        variances = [(p * (1.0 - p)) / n for p, n in zip(means, counts)]
+        variance  = sum(variances) / (float(len(means))**2)
+        return {'mean': mean, 'variance': variance}
+
+    # Calculate values for graph
+
+    analysis = ratioOfAverages  # Switch this to use a different analysis
+
+    unzip = lambda xs: zip(*xs)
+
+    means, stdDevs = unzip([(result['mean'], result['sample stddev']) \
+                            for result in map(analysis, sizes)])
+
+    # Mean values +/- standard error
+    low  = [max(0, mean - stdDev) for mean, stdDev in zip(means, stdDevs)]
+    high = [min(1, mean + stdDev) for mean, stdDev in zip(means, stdDevs)]
 
     return means, low, high
 
