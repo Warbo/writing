@@ -1126,49 +1126,80 @@ verification and inductive theorem proving literature are included, ensuring
 relevance to those fields; the format includes higher-order functions and
 inductive datatypes, which we are interested in; plus it is accompanied by
 tooling to convert this format into a variety of languages, including Haskell
-and Isabelle.
+and Isabelle which are used by existing MTE tools.
 
 We use TIP version 0.2 which contains 343 problems, each stating a single
 theorem and together defining a total of 618 datatypes and 1498 functions. Most
 of these are duplicates, since each problem (re\nobreakdash-)defines all of the
-datatypes and functions it involves. To avoid ambiguity we prefix the names of
-all definitions with the filename it came from, and collect them into one big set.
+datatypes and functions it involves.
 
-TIP datatypes can have several ``constructors'' and ``destructors''. For example
-the type of lists from figure~\ref{figure:list_theory} can be defined in TIP as
+TIP datatypes can have several ``constructors'' (introduction forms) and
+``destructors'' (elimination forms; field accessors). For example the type of
+lists from figure~\ref{figure:list_theory} can be defined in the TIP format as
 follows:
 
 \begin{verbatim}
-(declare-datatypes (a) ((List (Nil) (Cons (head a) (tail (List a))))))
+(declare-datatypes
+  (a)                       ;; Type variable (element type)
+  ((List                    ;; Type name
+     (Nil)                  ;; Constructor (nullary)
+     (Cons                  ;; Constructor (binary)
+       (head a)             ;; Field name and type
+       (tail (List a))))))  ;; Field name and type
 \end{verbatim}
 
-This defines a type \texttt{List} parameterised by a type variable \texttt{a}
-(the type of the list's elements), with constructors \texttt{Nil} and
-\texttt{Cons}, and destructors \texttt{head} and \texttt{tail}. Target languages
-(e.g. Haskell and Isabelle) handle constructors and destructors differently, so
-we avoid exploring them directly. Rather, we $\eta$-expand each constructor and
-destructor to create new function definitions, and rewrite the TIP theorems to
-reference these expanded forms instead.
+Our target languages (Haskell and Isabelle) differ in the way they handle
+constructors and destructors, which complicates comparisons. To avoid this, we
+generate a new function for each constructor (via $\eta$-expansion) and
+destructor (via pattern-matching) of the following form:
 
-TIP has ``native'' support for booleans and integers, allowing functions like
-\texttt{+} to be used without an accompanying definition. To ensure consistency
-in the translations, we replace all occurrences of these ``native'' expressions
-with standard definitions using the same \texttt{declare-datatypes} and
-\texttt{define-fun} mechanisms as the problem set.
+\begin{verbatim}
+(define-fun
+  (par (a)                   ;; Type variable
+    (constructor-Cons        ;; Function name
+      ((x a) (xs (List a)))  ;; Argument names and types
+      (List a)               ;; Return type
+      (as                    ;; Type annotation
+        (Cons x xs)          ;; Return value
+        (List a)))))         ;; Return type
 
-This gives us a total of 3598 definitions, including those from the problem set
-and our automatically-generated additions. Removing $\alpha$-equivalent
-duplicates leaves 269 definitions, and we chose to only sample from those 182
-which occur in at least one theorem statement (this removes ambiguity about
-which \emph{definitions}, including our generated ones, are ``interesting'' and
-which are just ``implementation details'').
+(define-fun
+  (par (a)                        ;; Type variable
+    (destructor-head              ;; Function name
+      ((xs (List a)))             ;; Argument name and type
+      a                           ;; Return type
+      (match xs                   ;; Pattern-match
+        (case (Cons h t) h)))))   ;; Return relevant field
+\end{verbatim}
 
-TIP includes a tool to translate its definitions into Haskell code, including
-suitable comparison functions and random data generators. We translated all 269
-definitions into a single Haskell package, compiled it with GHC and extracted
-the function definitions with our plugin. Each benchmark run imported this
-entire package, but the signature given to QuickSpec only included functions
-chosen for the current sample.
+\begin{sloppypar}
+  We rewrite the TIP theorems (our ground truth) to reference these expanded
+  forms instead of the raw constructors and destructors, and include these
+  functions in our samples in lieu of the raw expressions. Note that these
+  destructor wrappers are \emph{partial} functions (e.g.
+  \texttt{destructor-head} and \texttt{destructor-tail} are undefined for the
+  input \texttt{Nil}), which complicates their translation to proof assistants
+  like Isabelle.
+\end{sloppypar}
+
+Another complication is TIP's ``native'' support for booleans and integers,
+which allows numerals and symbols like \texttt{+} to appear without any
+accompanying definition. To ensure consistency in the translations, we replace
+all occurrences of such expressions with standard definitions written with the
+``user-level'' \texttt{declare-datatypes} and \texttt{define-fun} mechanisms.
+
+When we add all of these generated types and functions to those in TIP, we get a
+total of 3598 definitions. Removing $\alpha$-equivalent duplicates leaves 269,
+and we choose to only sample from those 182 which occur in at least one theorem
+statement (this removes ambiguity about which \emph{definitions} count as
+``interesting'' and which are just ``implementation details'' for other
+definitions).
+
+TIP includes a tool to translate its definitions into Haskell and Isabelle,
+including suitable comparison functions and random data generators. We translate
+all 269 unique definitions into a single module/theory which is imported on each
+run of the MTE tools (although only those functions which appear in the current
+sample are actually explored).
 
 \subsection{Results}
 
@@ -1195,21 +1226,17 @@ chosen for the current sample.
 \end{figure}
 
 We applied our sampling methodology to the 182 definitions which appear in TIP
-theorems, for even sample sizes up to 20. We chose 30 samples for each size, but
-due to the requirement for samples to admit at least one theorem, only 29 unique
-samples were obtained for size 2. A timeout of 5 minutes was imposed, since
-preliminary experiments showed that most QuickSpec runs either finish before
-this time, or still do not finish after an hour. The running times are shown in
-figure~\ref{figure:quickspec_runtimes}.
+theorems, for even sample sizes up to 20. We chose 30 samples for each size,
+although one sample of size 2 was discarded as it was a duplicate. A timeout of
+5 minutes was imposed, since preliminary experiments showed most QuickSpec runs
+to either finish before this time, or still be running after an hour. The
+running times are shown in figure~\ref{figure:quickspec_runtimes}.
 
-The only errors we encountered were timeouts (shown in red), and these occurred
-for all sample sizes. The running times cluster, with many close to zero and
-many exceeding the timeout, but with few in between. There is a clear trend
-towards longer times and more timeouts as the sample size increases, such that
-most samples of size 20 timed out.
-
-Most runs finished quickly and generated few conjectures, with the most being
-116 conjectures from a sample of size 16.
+The only errors we encountered were timeouts (shown in red), which occurred for
+all sample sizes but are more common for larger samples (over half the runs for
+sample size 20 timed out). Runs which did not time out mostly finished within 30
+seconds, generating few or no conjectures; those taking longer generated more
+conjectures, with the most being 116 conjectures from a sample of size 16.
 
 Equations generated by QuickSpec and those from the ground truth were normalised
 by numbering their variables and putting the left- and right-hand-sides in
@@ -1218,11 +1245,9 @@ precision and recall, with the results shown in
 figure~\ref{figure:quickspec_precRec}.
 
 We use a binomial distribution to model precision and recall, as if each
-conjecture is a ball drawn from an urn of wanted/unwanted results (in the case
-of precision) or found/missed ground truths (in the case of recall). The mean of
-these distributions estimates the overall proportion of wanted or found
-conjectures, and we use the standard deviation to determine how well this mean
-fits the data.
+conjecture is drawn from a pool of wanted/unwanted results (in the case of
+precision) or found/missed ground truths (in the case of recall), with the mean
+of these distributions estimating the proportions of each pool's split.
 
 There is a clear negative trend in precision as the sample size increases,
 indicating that a more aggressive post-processing filter may be useful as we
