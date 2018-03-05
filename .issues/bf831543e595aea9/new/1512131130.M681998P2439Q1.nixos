@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Fri, 01 Dec 2017 12:25:07 +0000
-State: new
+State: resolved
 Subject: Take a look at error bars of recall
 Message-Id: <bf831543e595aea9-0-artemis@nixos>
+resolution: fixed
 
 They seem a little tight, compared to precision...
