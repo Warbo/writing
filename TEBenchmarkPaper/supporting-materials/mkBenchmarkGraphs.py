@@ -297,7 +297,7 @@ def aggregateData(data):
 
     return agg
 
-agg = {
+aggs = {
     'isacosy'   : aggregateData(data['isacosy'  ]),
     'quickspec' : aggregateData(data['quickspec'])
 }
@@ -305,9 +305,6 @@ del(data)
 del(aggregateData)
 
 msg('Setting up plots')
-
-##FIXME
-agg = agg['quickspec']
 
 import matplotlib as mpl
 import numpy      as np
@@ -356,19 +353,23 @@ msg('Setting colour scales')
 import matplotlib.pyplot as plt
 import seaborn           as sns
 
-def makeColours(key):
-    from matplotlib.colors import ListedColormap
-    maxVal    = max(agg[key])
-    colourMap = sns.color_palette('viridis', maxVal + 1).as_hex()
-    msg('Highest {0} count is {1}'.format(key, maxVal))
-    return {
-        'cmap'    : ListedColormap(colourMap),
-        'norm'    : mpl.colors.Normalize(vmin=0, vmax=maxVal),
-        'palette' : dict(enumerate(['#ff0000'] + colourMap if key == 'found' \
-                                                           else colourMap))
-    }
+def makeColours(agg):
+    def go(key):
+        from matplotlib.colors import ListedColormap
+        maxVal    = max(agg[key])
+        colourMap = sns.color_palette('viridis', maxVal + 1).as_hex()
+        msg('Highest {0} count is {1}'.format(key, maxVal))
+        return {
+            'cmap'    : ListedColormap(colourMap),
+            'norm'    : mpl.colors.Normalize(vmin=0, vmax=maxVal),
+            'palette' : dict(enumerate(['#ff0000'] + colourMap \
+                                       if key == 'found' else colourMap))
+        }
+    return go
 
-foundColours, wantedColours = map(makeColours, ['found', 'wanted'])
+for system in aggs:
+    aggs[system]['found colours'], aggs[system]['wanted colours'] = \
+        map(makeColours(aggs[system]), ['found', 'wanted'])
 
 del(makeColours)
 
@@ -387,7 +388,8 @@ def newFigure(name):
 
     return fig
 
-def drawPoints(y=None, colours=None, hue=None, yLabel=None, ax=None):
+def drawPoints(agg, y=None, colours=None, hue=None, yLabel=None, ax=None,
+               condition=None):
     '''Draw a scatter plot of agg[y][n] against agg['size'][n], for each point
     n. Points will be spread out horizontally to avoid overlaps, and the colour
     of each will be colours['palette'][agg[hue][n]].
@@ -437,7 +439,7 @@ def savePlot(name):
     plt.tight_layout()
     plt.savefig(name + '.pgf', bbox_inches='tight', pad_inches=0.0)
 
-def plotTime():
+def plotTime(system, agg):
     newFigure('time')
 
     plt.ylim(0, 300)
@@ -449,15 +451,18 @@ def plotTime():
                 fliersize = 0)
 
     ax = drawPoints(
-        colours = foundColours,
+        agg,
+        colours = agg['found colours'],
         hue     = 'timeHue',
         y       = 'time',
         yLabel  = 'Runtime (seconds)')
 
-    drawColourBar(ax = ax, colours = foundColours, label = 'Conjectures found')
-    savePlot('time')
+    drawColourBar(ax      = ax,
+                  colours = agg['found colours'],
+                  label   = 'Conjectures found')
+    savePlot(system + 'time')
 
-def aggProp(sizes=None, agg=None, key=None, total=None):
+def aggProp(system, sizes=None, agg=None, key=None, total=None):
     '''We assume the output conjectures from each run are bernoulli trials, i.e.
     whether it's good or bad is modelled as a (biased) coin toss, where the bias
     depends on the "quality" of the algorithm.'''
@@ -480,7 +485,18 @@ def aggProp(sizes=None, agg=None, key=None, total=None):
         Under this assumption, the fact that conjectures come from different
         runs is irrelevant, so we pool them all together into one binomial
         experiment.'''
-        indices  = [i for i in sizeIndices(size) if agg['success'][i]]
+
+        # Skip runs which timed out, since we'd rather keep the measurements of
+        # running time separate to "quality"
+        indices = [i for i in sizeIndices(size) if agg['success'][i]]
+
+        # Precision may have found 0 conjectures, so we skip those points too
+        # (as we can't define a wanted/unwanted proportion for an empty set).
+        # Recall should never have 0 ground truths, since our sampling should
+        # prevent it.
+        if key == 'precision':
+            indices = [i for i in indices if agg[total][i] != 0]
+
         totals   = [agg[total    ][i] for i in indices]
         corrects = [agg['correct'][i] for i in indices]
 
@@ -489,10 +505,18 @@ def aggProp(sizes=None, agg=None, key=None, total=None):
             'key'      : key,
             'totals'   : totals,
             'corrects' : corrects,
-            'indices'  : indices
+            'indices'  : indices,
+            'system'   : system
         })
         assert 0    not in totals, debug('Got 0 total, even for success')
         assert None not in totals, debug('Got None total, even for success')
+
+        # Bail out if we have no results for this size
+        if len(totals) == 0:
+            return {
+                'bailed out' : True,
+                'size'       : size
+            }
 
         count   = float(sum(totals))
         correct = float(sum(corrects))
@@ -504,17 +528,32 @@ def aggProp(sizes=None, agg=None, key=None, total=None):
         anStddev  = math.sqrt(anVar)
         anStderr  = anStddev / math.sqrt(count)
 
-        # Sample values, calculated from our data. Variance is the average
-        # squared difference between each run's actual correct proportion and
-        # the correct proportion we got from the model (p).
-        # Note that we filter out any runs with empty totals (i.e. we don't try
-        # to work out the precision of a run which produced no conjectures)
-        n       = float(len(totals))
-        sVar    = (sum([((float(correct) / tot) - p)**2 \
-                        for tot, correct in zip(totals, corrects)])) / (n - 1)
-        sStddev = math.sqrt(sVar)
+        # Sample variability, calculated from our data.
+        if len(totals) == 1:
+            # If we only have one data point, our sample standard deviation is
+            # undefined (that point will be our mean, so the squared deviation
+            # will be zero, and n - 1 will be zero, so we get 0 / 0). In this
+            # case, we just use a value of 1, since that's the worst case.
+            msg(repr({
+                'warning': 'Only sampled 1 datapoint for this size',
+                'size'   : size,
+                'key'    : key,
+                'system' : system
+            }))
+            sVar    = 1.0
+            sStddev = 1.0
+        else:
+            # Variance is the average squared difference between each run's
+            # actual correct proportion and the correct proportion we got from
+            # the model (p).
+            denom   = float(len(totals)) - 1.0
+            sVar    = (sum([((float(correct) / tot) - p)**2 \
+                            for tot, correct in zip(totals, corrects)])) / denom
+            sStddev = math.sqrt(sVar)
 
         return {
+            'bailed out'        : False,
+            'size'              : size,
             'mean'              : p,
             'analytic variance' : anVar,
             'analytic stddev'   : anStddev,
@@ -525,40 +564,65 @@ def aggProp(sizes=None, agg=None, key=None, total=None):
 
     # Calculate values for graph
 
-    analysis = ratioOfAverages
+    means   = []
+    stdDevs = []
+    for result in map(ratioOfAverages, sizes):
+        if result['bailed out']:
+            # Report the missing data so we can mention it in the paper
+            msg(repr({
+                'warning' : 'Size had no valid statistics',
+                'size'    : result['size'],
+                'key'     : key,
+                'system'  : system
+            }))
 
-    unzip = lambda xs: zip(*xs)
-
-    means, stdDevs = unzip([(result['mean'], result['sample stddev']) \
-                            for result in map(analysis, sizes)])
+            # Pad the entries, to maintain alignment with x-axis labels
+            means   += [None]
+            stdDevs += [None]
+        else:
+            means   += [result['mean']]
+            stdDevs += [result['sample stddev']]
 
     # Mean values +/- standard error
-    low  = [max(0, mean - stdDev) for mean, stdDev in zip(means, stdDevs)]
-    high = [min(1, mean + stdDev) for mean, stdDev in zip(means, stdDevs)]
+    low  = [None if mean is None else max(0, mean - stdDev) \
+            for mean, stdDev in zip(means, stdDevs)]
+    high = [None if mean is None else min(1, mean + stdDev) \
+            for mean, stdDev in zip(means, stdDevs)]
 
     return means, low, high
 
-def plotPrecRec():
-    # This *should* be range(1, max), but we might as well avoid assumptions
+def plotPrecRec(system, agg):
     sizes = sorted(list(set(agg['size'])))
 
     # matplotlib seems to count up 0, 1, 2, ... regardless of the x label, so we
     # need to shift and scale the points
     xs = map(lambda x: (x - min(sizes)) / (sizes[1] - sizes[0]), sizes)
 
-    precMeans, precLows, precHighs = aggProp(sizes, agg, 'precision', 'found' )
-    recMeans,   recLows,  recHighs = aggProp(sizes, agg, 'recall',    'wanted')
+    precData = aggProp(system, sizes, agg, 'precision', 'found' )
+    recData  = aggProp(system, sizes, agg, 'recall',    'wanted')
+
+    # Since there might be sizes missing (when e.g. all runs die), we need to
+    # skip those data points
+    stripNones = lambda l: filter(lambda elem: elem is not None, l)
+
+    precXs = [x for x, m in zip(xs, precData[0]) if m is not None]
+    recXs  = [x for x, m in zip(xs,  recData[0]) if m is not None]
+
+    precMeans, precLows, precHighs = map(stripNones, precData)
+    recMeans,  recLows,  recHighs  = map(stripNones,  recData)
 
     newFigure('precRec')
     gs            = mpl.gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
     precAx, recAx = (plt.subplot(gs[0]), plt.subplot(gs[1]))
 
-    map(lambda args: args['ax'].fill_between(xs, args['lows'], args['highs'],
+    map(lambda args: args['ax'].fill_between(args['xs'],
+                                             args['lows'],
+                                             args['highs'],
                                              #alpha     = 0.5,
                                              facecolor = '#CCCCCC',
                                              edgecolor = 'face'),
-        [{'ax': precAx, 'lows': precLows, 'highs': precHighs},
-         {'ax':  recAx, 'lows':  recLows, 'highs':  recHighs}])
+        [{'ax': precAx, 'xs': precXs, 'lows': precLows, 'highs': precHighs},
+         {'ax':  recAx, 'xs':  recXs, 'lows':  recLows, 'highs':  recHighs}])
 
     drawPoints(
         ax      = precAx,
@@ -566,6 +630,7 @@ def plotPrecRec():
         hue     = 'precHue',
         y       = 'precision',
         yLabel  = 'Precision')
+        agg,
 
     drawPoints(
         ax      = recAx,
@@ -573,17 +638,20 @@ def plotPrecRec():
         hue     = 'recHue',
         y       = 'recall',
         yLabel  = 'Recall')
+        agg,
 
-    [(ax.set_ylim(0, 1), ax.plot(xs, ms)) for ax, ms in [(precAx, precMeans),
-                                                         ( recAx,  recMeans)]]
+    [(ax.set_ylim(0, 1), ax.plot(xs, ms)) \
+     for ax, xs, ms in [(precAx, precXs, precMeans),
+                        ( recAx,  recXs,  recMeans)]]
 
     drawColourBar(
         cax     = plt.subplot(gs[2]),
-        colours = wantedColours,
+        colours = agg['wanted colours'],
         kw      = {'orientation': 'horizontal'},
         label   = 'Ground truth theorems')
 
-    savePlot('prec')
+    savePlot(system + 'prec')
 
-plotTime()
-plotPrecRec()
+for system in aggs:
+    plotTime(   system, aggs[system])
+    plotPrecRec(system, aggs[system])
