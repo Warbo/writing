@@ -234,6 +234,7 @@ def aggregateData(data):
         'recall'    : [],
         'recHue'    : [],
         'size'      : [],
+        'success'   : [],
         'time'      : [],
         'timeHue'   : [],
         'wanted'    : []
@@ -289,6 +290,7 @@ def aggregateData(data):
             agg['recall'   ].append(r)
             agg['recHue'   ].append(wanted)
             agg['size'     ].append(size)
+            agg['success'  ].append(rdata['success'])
             agg['time'     ].append(t)
             agg['timeHue'  ].append(found  + 1 if rdata['success'] else 0)
             agg['wanted'   ].append(wanted)
@@ -478,11 +480,22 @@ def aggProp(sizes=None, agg=None, key=None, total=None):
         Under this assumption, the fact that conjectures come from different
         runs is irrelevant, so we pool them all together into one binomial
         experiment.'''
-        totals   = map(noneToZero, entriesOfSize(size, total))
-        corrects = map(noneToZero, entriesOfSize(size, 'correct'))
+        indices  = [i for i in sizeIndices(size) if agg['success'][i]]
+        totals   = [agg[total    ][i] for i in indices]
+        corrects = [agg['correct'][i] for i in indices]
 
-        count   = sum(totals)
-        correct = sum(corrects)
+        debug = lambda err: repr({
+            'error'    : err,
+            'key'      : key,
+            'totals'   : totals,
+            'corrects' : corrects,
+            'indices'  : indices
+        })
+        assert 0    not in totals, debug('Got 0 total, even for success')
+        assert None not in totals, debug('Got None total, even for success')
+
+        count   = float(sum(totals))
+        correct = float(sum(corrects))
 
         p       = correct / count
 
@@ -496,10 +509,9 @@ def aggProp(sizes=None, agg=None, key=None, total=None):
         # the correct proportion we got from the model (p).
         # Note that we filter out any runs with empty totals (i.e. we don't try
         # to work out the precision of a run which produced no conjectures)
-        n       = float(len(filter(lambda x: x > 0, totals)))
+        n       = float(len(totals))
         sVar    = (sum([((float(correct) / tot) - p)**2 \
-                        for tot, correct in zip(totals, corrects) \
-                        if  tot > 0])) / (n - 1)
+                        for tot, correct in zip(totals, corrects)])) / (n - 1)
         sStddev = math.sqrt(sVar)
 
         return {
