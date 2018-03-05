@@ -3,24 +3,31 @@
 
 with builtins;
 rec {
-  repo = fetchgit {
+  haskell-te-src = fetchgit {
     url    = http://chriswarbo.net/git/haskell-te.git;
     rev    = "be30d74";
     sha256 = "0skmiy0riry3jxkz6pk3lf38bqd3lw6gxlh4l6j41ccdm7lwlh55";
   };
 
-  data = runCommand "data.json.lz"
+  isacosyData = runCommand "isacosy-data.json.lz"
     {
-      inherit repo;
-      buildInputs = [ jq ];
-      lzipped = "benchmarks/results/desktop/b1247807-nix-py-dirnull.json.lz";
+      lzipped = "results/13dd39d1-nix-py-dirnull.json.lz";
+      repo    = fetchgit {
+        url    = http://chriswarbo.net/git/isaplanner-tip.git;
+        rev    = "bdfb420";
+        sha256 = "0xh8brwhy6h5l3rd3dr46mmfxj9nv98bznn3qa4nbijs9kybfk3g";
+      };
     }
-    ''
-      set -e
-      ln -s "$repo/$lzipped" "$out"
-    '';
+    ''ln -s "$repo/$lzipped" "$out"'';
 
-  teTools = (import "${repo}/nix-support" {}).tipBenchmarks.tools;
+  quickspecData = runCommand "quickspec-data.json.lz"
+    {
+      lzipped = "b1247807-nix-py-dirnull.json.lz";
+      repo    = haskell-te-src;
+    }
+    ''ln -s "$repo/benchmarks/results/desktop/$lzipped" "$out"'';
+
+  teTools = (import "${haskell-te-src}/nix-support" {}).tipBenchmarks.tools;
 
   tetex-hack = runCommand "tetex-hack"
     {
@@ -65,11 +72,11 @@ rec {
 
   graphs = runCommand "quickspecGraphs"
     {
-      inherit data;
+      inherit isacosyData quickspecData;
       buildInputs = [ lzip ];
       script      = wrap {
-        name  =  "mkQuickSpecGraphs.py";
-        file  = ./mkQuickSpecGraphs.py;
+        name  =  "mkBenchmarkGraphs.py";
+        file  = ./mkBenchmarkGraphs.py;
         vars  = graphDims // { inherit textWidth; };
         paths = [
           (python.withPackages (p: [ p.matplotlib p.numpy p.seaborn ]))
@@ -80,8 +87,17 @@ rec {
     }
     ''
       set -e
+
+      QUICKSPEC_DATA="$PWD/quickspec-data.json"
+      ISACOSY_DATA="$PWD/isacosydata.json"
+      export QUICKSPEC_DATA
+      export ISACOSY_DATA
+
+      lzip -d < "$quickspecData" > "$QUICKSPEC_DATA"
+      lzip -d < "$isacosyData"   > "$ISACOSY_DATA"
+
       mkdir "$out"
       cd "$out"
-      lzip -d < "$data" | "$script" 1>&2
+      "$script" 1>&2
     '';
 }

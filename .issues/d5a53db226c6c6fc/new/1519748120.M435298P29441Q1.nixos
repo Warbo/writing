@@ -1,0 +1,38 @@
+From: Chris Warburton
+Date: Tue, 27 Feb 2018 12:08:08 +0000
+Subject: Re: At what point is it impractical?
+Message-Id: <d5a53db226c6c6fc-c5e4518f5d7ca424-artemis@nixos>
+References: <d5a53db226c6c6fc-0-artemis@nixos>
+In-Reply-To: <d5a53db226c6c6fc-0-artemis@nixos>
+
+We now say "a few dozen", and the new data/graphs support this.
+
+Previously there was an upward trend from sizes 1 to 10, but from sizes
+10 to 20 the runtime seemed to mostly wobble around. This had a timeout
+of 180 seconds.
+
+We spotted some problems with the way this data was measured:
+
+ - We had been including destructors *and* destructor functions in the
+   samples. This is bad, since the destructors don't really exist in
+   Haskell (the closest equivalents would be record accessors, but
+   that's not how TIP does its translations). Hence any destructor names
+   in a sample would not be found by our signature-building scripts, so
+   they would be silently ignored, and we'd actually end up exploring a
+   smaller sample. The reason for silently ignoring unknown names is
+   because it's common to end up extracting private (non-exported)
+   function names, which would also appear to be unknown like this.
+ - Less serious, but the things we include were getting a bit arbitrary.
+   For example, all of our custom definitions, some of which are crucial
+   since they appear in theorem statements (e.g. CustomTrue), whilst
+   others are pretty dubious (e.g. custom-nat-<). I decided to limit
+   sampling to only those names (custom, TIP, constructor/destructor
+   function, whatever) which appear in at least one theorem statement.
+   This reduced the number of sampleable names from 269 to ~180, but we
+   can be certain that these are all worth exploring (since they each
+   appear in ground-truth theorems).
+
+With these changes, the new runs show a clear upward trend, with the
+median timing out for size 20, even though we used a longer timeout of
+300 seconds. Presumably this is due to all of the names contributing to
+the runtime, rather than many getting ignored.

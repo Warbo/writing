@@ -1,0 +1,41 @@
+From: Chris Warburton
+Date: Wed, 28 Feb 2018 19:38:44 +0000
+Subject: Re: Take a look at error bars of recall
+Message-Id: <bf831543e595aea9-96ebad326370b62a-artemis@nixos>
+References: <bf831543e595aea9-0-artemis@nixos>
+In-Reply-To: <bf831543e595aea9-0-artemis@nixos>
+
+The error bars on precision actually depend on how we handle undefined
+results (i.e. when no equations were generated).
+
+If we give them a variance of 1 (arbitrary?), this makes the error bars
+wider. If we skip those results, the error bars become as tight as those
+of recall.
+
+Maybe we should use 95% confidence intervals instead?
+
+We need to be mindful that our sample sizes are very small.
+
+Perhaps the equations from 'Estimating bernoulli trial probability from
+a small sample' could be used?
+
+Perhaps we should try revisiting the ratio-of-averages/average-of-ratios
+again?
+
+ - It's biased towards larger results, but isn't that taken into account
+   by the recall? Needs some thought...
+ - Are we getting cognitive dissonance from trying to simultaneously:
+  - Avoid biases, etc. based on what we know
+  - Use a simple model, which *will* be biased?
+ - Perhaps we need to think harder about our model:
+  - Do we really have a single p, the parameter of a bernoulli/binomial
+    distribution, of which each run is a sub-sample? If so, why bother
+    distinguishing the sub-sets (runs), when we can lump them all
+    together?
+  - Are we in fact after an estimate of the expected precision/recall?
+    If so, how is this different from the above?
+
+Gah!
+
+Why not try implementing some of these, to see how they behave, and get
+a better feel for the data? Take care not to p-hack, of course!
