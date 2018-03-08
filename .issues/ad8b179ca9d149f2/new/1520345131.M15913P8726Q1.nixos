@@ -1,0 +1,9 @@
+From: Chris Warburton
+Date: Tue, 06 Mar 2018 14:04:41 +0000
+State: resolved
+Subject: Check which IsaCoSy runs got interrupted
+Message-Id: <ad8b179ca9d149f2-0-artemis@nixos>
+resolution: fixed
+
+IsaCoSy can die early due to running out of memory. Check for these, by
+looking through the stderr, and ensure their 'success' isn't set.

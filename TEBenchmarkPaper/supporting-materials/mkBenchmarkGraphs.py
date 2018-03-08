@@ -69,6 +69,19 @@ def normalise(data):
             if 'killed' in data[size][rep]:
                 del(data[size][rep]['killed'])
 
+            # If IsaCoSy gets interrupted, that indicates it died from OOM
+            stderr = data[size][rep]['stderr']
+            if stderr is not None:
+                interr = 'unable to increase stack'.replace(' ', '').lower()
+                stderr = stderr.replace('\n',  ' ').replace(' ', '').lower()
+                if interr in stderr:
+                    msg(repr({
+                        'warning' : 'Exploration was interrupted',
+                        'size'    : size,
+                        'rep'     : rep
+                    }))
+                    data[size][rep]['success'] = False
+
             # We should always analyse, so this is useless
             if 'analysed' in data[size][rep]:
                 assert data[size][rep]['analysed'], 'Run was not analysed'
@@ -165,6 +178,14 @@ def sanityCheck(data):
                     'Got different timeouts {} and {}'.format(
                         str(timeout),
                         str(rdata['timeout']))
+
+                if not rdata['success']:
+                    assert rdata['found'] == frozenset([]), repr({
+                        'error'  : 'Found conjectures for failing run',
+                        'system' : system,
+                        'size'   : size,
+                        'rep'    : rep
+                    })
 
                 # Make sure every system is using the same samples/ground truth
                 for sys in data.keys():

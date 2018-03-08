@@ -1,0 +1,8 @@
+From: Chris Warburton
+Date: Tue, 06 Mar 2018 16:41:59 +0000
+Subject: Re: Check which IsaCoSy runs got interrupted
+Message-Id: <ad8b179ca9d149f2-ec630e2cc0e2977a-artemis@nixos>
+References: <ad8b179ca9d149f2-0-artemis@nixos>
+In-Reply-To: <ad8b179ca9d149f2-0-artemis@nixos>
+
+We now check stderr for 'interruption' messages and mark them as failed.

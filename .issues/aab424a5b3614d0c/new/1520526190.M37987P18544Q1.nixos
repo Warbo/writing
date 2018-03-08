@@ -1,0 +1,8 @@
+From: Chris Warburton
+Date: Thu, 08 Mar 2018 16:22:07 +0000
+State: new
+Subject: Colour bars should be limited to successful runs
+Message-Id: <aab424a5b3614d0c-0-artemis@nixos>
+
+Especially in the recall case: we're not showing failures, so we
+don't care how many ground truths they had.
