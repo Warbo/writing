@@ -823,29 +823,31 @@ However, this would cause two problems:
 
 To solve both of these problems we instead \emph{sample} a subset of
 definitions. Given a sample size, we choose a subset of that many definitions,
-and provide those definitions as our MTE input. We generate a corresponding
-ground truth by selecting those theorems from the corpus which only contain
-references to the sampled definitions.
+and provide those definitions as input to our MTE tool. We generate a
+corresponding ground truth by selecting those theorems from the corpus which
+``depend on'' (contain references to) \emph{only} the definitions in that
+sample. Transitive dependencies aren't required (e.g. a theorem which only
+references \texttt{times} does not depend on \texttt{plus}, even if
+\texttt{plus} occurs in the definition of \texttt{times}).
 
 Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
 given sample size, increasing the size of the corpus (which, as detailed above,
 is advantageous) makes it less likely that a chosen sample will contain all of
-the definitions required by a theorem. The majority of such samples would hence
-have an empty ground truth, and thus $0$ precision and undefined recall
-\emph{independent} of what the MTE system produces! This is clearly undesirable
-as an evaluation method.
+a theorem's dependencies. The majority of such samples would hence have an empty
+ground truth, and thus $0$ precision and undefined recall \emph{independent} of
+what the MTE tool produces! This is clearly undesirable as an evaluation
+method.
 
-Instead, we only choose samples which admit at least one of the corpus theorems.
-We could do this using rejection sampling, but it is more efficient to sample
-the \emph{theorem statements}, weighted in proportion to the number of
-definitions they reference. Once a theorem is chosen, we use the referenced
-definitions as our sample, padded up to the required size by uniformly sampling
-from the remaining definitions (we ignore theorems which reference more
-definitions than our sample size).
+Instead, we only allow a sample if it contains all dependencies of at least one
+theorem. We could do this using rejection sampling, but it is more efficient to
+pick a theorem, weighted in proportion to their number of dependencies (ignoring
+those with too many dependencies to fit in our sample). We use those
+dependencies as our sample, padded up to the required size with definitions
+chosen uniformly from the remainder.
 
-When we form the ground truth for such samples, we're guaranteed to find at
-least one applicable theorem from the corpus (the one we chose as our starting
-point), and hence have a meaningful precision and recall.
+The ground truth for such samples is guaranteed to contain at least one theorem
+(the one we picked), and hence the precision and recall will depend meaningfully
+on the tool's output.
 
 \subsection{Evaluation}
 
@@ -946,7 +948,7 @@ unfounded conclusions.
 
     % Preparation section
 
-    \node (in)  [io]{Theorem Proving Benchmark (TIP)};
+    \node (in)  [io]{Theorem Proving Benchmark};
     \node (sep) [process,       below=1cm of in         ]{Separate definitions from theorems};
     \node (def) [process, below  left=1.5cm and -1cm of sep]{Remove duplicate definitions};
     \node (ref) [process, below right=1.5cm and -1cm of sep]{Update references};
@@ -1064,58 +1066,41 @@ unfounded conclusions.
 \section{Application}
 \label{sec:application}
 
-We have applied our methodology to evaluating QuickSpec, %TODO:cite
-a library for conjecturing equations about functions written in the Haskell
-programming language. We use the Tons of Inductive Problems (TIP) theorem
-proving benchmark to generate our corpus.
+We have applied our benchmarking methodology to the QuickSpec and IsaCoSy MTE
+tools, using version 0.2 of the TIP (Tons of Inductive Problems) theorem proving
+benchmark as our ground truth corpus. TIP 0.2 contains 343 theorem statements,
+which depend on 182 distinct function definitions.
 
-\subsection{QuickSpec}
+To determine our benchmarking parameters we ran some initial tests on both tools
+for samples sized between 1 and 100, for an hour each. Most QuickSpec runs
+either finished within 200 seconds or not at all, and sizes above 20 mostly
+timed out. IsaCoSy mostly finished within 300 seconds on sample sizes up to 4,
+but by size 8 was mostly timing out; its few successes above this took thousands
+of seconds each, which we deemed infeasibly long.
 
-We use QuickSpec version 0.9.6 to demonstrate our benchmarking methodology. This
-is a Haskell library which takes a \emph{signature} containing Haskell functions
-and (universally quantified) typed variables, and outputs conjectured equations
-involving these terms.
+We decided to benchmark sample sizes up to 20, since neither tool seemed to
+perform well beyond this, and we followed the statistical ``rule of thumb'' of
+picking 30 samples for each size\footnote{Only 29 samples of size 2 were
+  analysed since one was a duplicate, due to the constraint that samples contain
+  at least one theorem's dependencies.}. This gave $20$ sizes $\times 30$
+samples $\times 2$ tools $= 1200$ runs. To keep the total time down to a few
+days we chose a timeout of 300 seconds, since that covered most of the
+successful QuickSpec and IsaCoSy results we saw, and longer times gave rapidly
+diminishing returns.
 
-The QuickSpec algorithm first enumerates all well-typed expressions up to a
-certain depth (3 by default), involving the given terms. Expressions of the same
-type are assumed to be equivalent, and grouped into equivalence classes. A
-testing process then tries to disprove this assumption by instantiating each
-variable with a randomly chosen value (using the QuickCheck testing library),
-evaluating the expressions and comparing the results. The equivalence classes
-are split to separate any expressions which are observed to be different, and
-the process repeats with new random values.
-
-After 500 rounds of testing, any expressions still sharing the same equivalence
-class are conjectured to be equal. Finally, a congruence closure algorithm is
-applied to these equations, to find a minimal set.
-
-In order to thoroughly benchmark QuickSpec, we need to automate some of the
-decisions which are normally left up to the user:
-
-\begin{itemize}
-\item We must decide what variables to include. We add three for each type that
-  appears as a function argument, except for types which have no QuickCheck data
-  generator.
-\item We must \emph{monomorphise} all types. For example, functions like
-  \texttt{cons} are \emph{polymorphic}: they build lists of any element type.
-  We need to pick a specific type in order to generate random values, so we
-  resolve this (arbitrarily) by picking
-  \texttt{Integer}.~\footnote{We pick \texttt{Integer} for variables of kind
-    \texttt{*}, and \texttt{[]} (Haskell's list type constructor) for those of
-    kind \texttt{* -> *}. If these violate some constraint, we pick a suitable
-    type non-deterministically from the module scope, or skip these variables
-    completely if none is found.}
-\item Haskell functions only take one argument, as as in the $\lambda$-calculus,
-  so functions of multiple arguments are simulated by currying.
-  Unfortunately QuickSpec cannot compare functions for equality, so we must give
-  each function in our signature an explicit arity. Arities from zero to five
-  are supported, so we avoid partial application by picking the highest that is
-  type-correct.
-\end{itemize}
-
-To find out which functions to include in a signature, we use a plugin for the
-GHC compiler which tells us all of the functions defined in a package. We
-include all of those which type-check when passed to QuickSpec.
+We normalised the conjectures generated by each tool, as well as the theorems
+from the ground truth, by numbering their free variables from left to right and
+using de Bruijn indices for bound variables. Since both tools can only output
+equations, we also sorted their left- and right-hand-sides into lexicographical
+order. Precision and recall were calculated by syntactically comparing the sets
+of generated conjectures to those of their ground truth. Other than equation
+symmetry, we specifically \emph{ignored} logical relationships between
+syntactically distinct statements, such as one equation being implied by
+another. The main reason is to avoid second-guessing the ground truth: the
+theorems' authors chose to state them that way, and it is not our place to
+decide whether an alternative form is ``just as good'' (for example, a more
+general statement is more widely applicable, but it might also be harder to
+understand).
 
 \subsection{TIP}
 
@@ -1174,93 +1159,194 @@ destructor (via pattern-matching) of the following form:
 
 \begin{sloppypar}
   We rewrite the TIP theorems (our ground truth) to reference these expanded
-  forms instead of the raw constructors and destructors, and include these
-  functions in our samples in lieu of the raw expressions. Note that these
-  destructor wrappers are \emph{partial} functions (e.g.
-  \texttt{destructor-head} and \texttt{destructor-tail} are undefined for the
-  input \texttt{Nil}), which complicates their translation to proof assistants
-  like Isabelle.
+  forms instead of the raw constructors and destructors, and use these functions
+  in our samples in lieu of the raw expressions. Note that these destructor
+  wrappers are \emph{partial} functions (e.g. \texttt{destructor-head} and
+  \texttt{destructor-tail} are undefined for the input \texttt{Nil}), which
+  complicates their translation to proof assistants like Isabelle.
 \end{sloppypar}
 
 Another complication is TIP's ``native'' support for booleans and integers,
 which allows numerals and symbols like \texttt{+} to appear without any
 accompanying definition. To ensure consistency in the translations, we replace
 all occurrences of such expressions with standard definitions written with the
-``user-level'' \texttt{declare-datatypes} and \texttt{define-fun} mechanisms.
+``user-level'' \texttt{declare-datatypes} and \texttt{define-fun}
+mechanisms.~\footnote{\texttt{Boolean} has \texttt{true} and \texttt{false}
+  constructors; \texttt{Natural} has \texttt{zero} and \texttt{successor};
+  \texttt{Integer} has unary \texttt{positive} and \texttt{negative}
+  constructors taking \texttt{Natural}s, and a nullary \texttt{zero} for
+  symmetery.}
 
 When we add all of these generated types and functions to those in TIP, we get a
 total of 3598 definitions. Removing $\alpha$-equivalent duplicates leaves 269,
-and we choose to only sample from those 182 which occur in at least one theorem
-statement (this removes ambiguity about which \emph{definitions} count as
-``interesting'' and which are just ``implementation details'' for other
+and we choose to only sample from those 182 functions which occur in at least
+one theorem statement (this removes ambiguity about which \emph{definitions}
+count as ``interesting'' and which are just ``implementation details'' for other
 definitions).
 
-TIP includes a tool to translate its definitions into Haskell and Isabelle,
-including suitable comparison functions and random data generators. We translate
-all 269 unique definitions into a single module/theory which is imported on each
-run of the MTE tools (although only those functions which appear in the current
-sample are actually explored).
+TIP comes with software to translate its definitions into Haskell and Isabelle
+code, including comparison functions and random data generators suitable for
+QuickSpec. We translate all 269 unique definitions into a single module/theory
+which is imported on each run of the tools, although only those functions which
+appear in the current sample are actually explored.
 
-\subsection{Results}
+\subsection{QuickSpec}
+
+We benchmarked QuickSpec version 0.9.6, which is tool written in Haskell for
+conjecturing equations involving a given set of Haskell functions and
+universally-quantified variables (a \emph{signature}).
+
+The QuickSpec algorithm first enumerates all well-typed expressions containing
+terms from the signature, up to a chosen depth (3 by default). Expressions of
+the same type are assumed to be equal, and grouped into equivalence classes. A
+testing process then tries to refute this assumption by instantiating each
+variable with a randomly chosen value (using the QuickCheck testing library),
+evaluating the expressions with those values and comparing the results. The
+equivalence classes are split up to separate any expressions which are observed
+to be different, and the process is repeated with new random values.
+
+After 500 rounds of testing, any expressions still sharing the same equivalence
+class are conjectured to be equal. Finally, a congruence closure algorithm is
+applied to these equations, to remove redundancies and special-cases.
+
+In order to thoroughly benchmark QuickSpec, we need to automate some of the
+decisions which are normally left up to the user:
+
+\begin{itemize}
+\item We must decide what variables to include. We choose to add three variables
+  for each type that appears as a function argument, except for types which have
+  no QuickCheck data generators.
+\item We must \emph{monomorphise} all types. For example, functions like
+  \texttt{constructor-Cons} are \emph{polymorphic}: they build lists of any
+  element type, but we need to pick a specific type in order to know which
+  random value generator to use. We resolve this (arbitrarily) by picking
+  \texttt{Integer}.~\footnote{We pick \texttt{Integer} for variables of kind
+    \texttt{*} (types); for kind \texttt{* -> *} (type constructors) we pick
+    \texttt{[]} (Haskell's list type constructor). If these violate some
+    type class constraint, we pick a suitable type non-deterministically from
+    those in scope during compilation; if no suitable type is found, we give up
+    and don't include the  variable.}
+\item Haskell functions are ``black boxes'', which QuickSpec can't compare
+  during its exploration process. They are also curried, always taking one
+  argument but potentially returning another function. QuickSpec lets us assign
+  an arity to each function in the signature, from 0 to 5, so we pick the
+  highest that is type-correct, since this avoids a proliferation of
+  incomparable, partially-applied functions.
+\end{itemize}
 
 \begin{figure}
   \centering
-  \input{time.pgf}
+  \input{quickspectime.pgf}
   \caption{Running times of QuickSpec on theories sampled from TIP. Each point
     is an individual run, with 30 per size except for 2 (29). Colour indicates
     the total number of conjectures produced by each run, with failing processes
-    shown in red. Some points are shifted horizontally to prevent overlaps.
-    Standard box plots are included, with whiskers showing points at
-    1.5~$\times$~the inter-quartile range.}
+    shown in red. Points are spread out horizontally to prevent overlaps.
+    Box plots show median and quartiles, with whiskers showing points at
+    1.5$\times$~inter-quartile range.}
   \label{figure:quickspec_runtimes}
 \end{figure}
 
 \begin{figure}
   \centering
-  \input{prec.pgf}
-  \caption{Precision and recall of all runs (spread horizontally to avoid
-    overlaps). Point colour shows how many conjectures were in the ground truth
-    set for each run. Lines show the mean value (average of ratios) and the
-    shaded region is standard deviation, assuming a binomial distribution.}
+  \input{quickspecprec.pgf}
+  \caption{Precision and recall of successful QuickSpec runs (spread
+    horizontally to avoid overlaps). Point colour shows how many conjectures
+    were in the ground truth set for each run. Lines show the combined
+    proportion for each sample size (ratio of averages) and the shaded region is
+    the sample standard deviation.}
   \label{figure:quickspec_precRec}
 \end{figure}
 
-We applied our sampling methodology to the 182 definitions which appear in TIP
-theorems, for even sample sizes up to 20. We chose 30 samples for each size,
-although one sample of size 2 was discarded as it was a duplicate. A timeout of
-5 minutes was imposed, since preliminary experiments showed most QuickSpec runs
-to either finish before this time, or still be running after an hour. The
-running times are shown in figure~\ref{figure:quickspec_runtimes}.
+The time taken to explore samples of different sizes is shown in
+\ref{figure:quickspec_runtimes}. Runs which timed out are shown in red, and
+these occurred for all sample sizes but are more common for larger samples (over
+half the runs for sample size 20 timed out). Runs which succeeded mostly
+finished within 30 seconds, generating few or no conjectures; those taking
+longer generated more conjectures, with the most being 116 conjectures from a
+sample of size 16.
 
-The only errors we encountered were timeouts (shown in red), which occurred for
-all sample sizes but are more common for larger samples (over half the runs for
-sample size 20 timed out). Runs which did not time out mostly finished within 30
-seconds, generating few or no conjectures; those taking longer generated more
-conjectures, with the most being 116 conjectures from a sample of size 16.
+We model precision and recall as simple Bernoulli processes: the generated
+conjectures (wanted or not) are like coin tosses whose bias is the precision;
+likewise, the ground truth theorems (found or not) are like coin tosses biased
+by the recall.
 
-Equations generated by QuickSpec and those from the ground truth were normalised
-by numbering their variables and putting the left- and right-hand-sides in
-lexicographical order. These two sets were then compared syntactically for
-precision and recall, with the results shown in
-figure~\ref{figure:quickspec_precRec}.
+QuickSpec's precision gets worse as the sample size grows. Since QuickSpec
+generates monotonically more conjectures as definitions are added to a signature
+(assuming sufficient testing), it can't be finding fewer correct conjectures at
+larger sizes. This is supported by the relative flatness of the recall results.
+Rather, the number of conjectures generated is increasing at a higher rate than
+the size of the ground truth. These extra conjectures may involve the
+``padding'' definitions in a sample which don't contribute to its ground truth,
+or may be ``uninteresting'' relationships between the dependencies of different
+ground truth theorems.
 
-We use a binomial distribution to model precision and recall, as if each
-conjecture is drawn from a pool of wanted/unwanted results (in the case of
-precision) or found/missed ground truths (in the case of recall), with the mean
-of these distributions estimating the proportions of each pool's split.
+This indicates two potential improvements to the QuickSpec algorithm (as far as
+this benchmark is concerned). The deluge of generated conjectures could be
+filtered by another post-processing step down to a more desirable sub-set.
+Alternatively, large signatures could be filtered to remove ``padding''
+definitions (those whose conjectures are unlikely to be ``interesting'') and
+divided up into multiple smaller signatures to separate those definitions whose
+relationships are ``uninteresting''. Both of these methods could improve the
+precision, although care would be needed to avoid a large reduction in recall.
+The latter option could also improve the running time, since multiple smaller
+signatures may be faster to explore than a single large one.
 
-There is a clear negative trend in precision as the sample size increases,
-indicating that a more aggressive post-processing filter may be useful as we
-explore larger theories. Some small samples reached full precision, but nothing
-above size 6 exceeded 50\%.
+QuickSpec's recall is limited by two factors: the algorithm is unable to
+synthesise some theorem statements, such as conditional equations, inequalities,
+terms larger than the search depth and those containing anonymous functions.
+The congruence closure algorithm used as a post-processor may also be removing
+``interesting'' results, for example if we found an ``uninteresting'' result
+which is more general.
 
-Recall shows a slight downward trend but is mostly flat, averaging between 20\%
-and 50\%. This is expected, since adding more definitions to a QuickSpec
-signature will never reduce the conjectures it will find. Those conjectures
-which QuickSpec failed to find include terms which QuickSpec cannot synthesise
-(such as conditional equations, inequalities, terms larger than the search depth
-and those with anonymous functions) as well as equations which are removed as
-``uninteresting'' by the final congruence closure step.
+\subsection{IsaCoSy}
+
+IsaCoSy is a tool for the Isabelle proof assistant, mostly written in Standard
+ML. We took IsaCoSy from version 2015.0.3 of the IsaPlanner project, and ran it
+with the 2015 version of Isabelle.
+
+The following issues had to be overcome for the benchmarking to be successful:
+
+\begin{itemize}
+  polyrec can't be represented
+  constructors were being included
+  proofs had to be skipped
+  partial functions needed adding to the constraints
+\end{itemize}
+
+\begin{figure}
+  \centering
+  \input{isacosytime.pgf}
+  \caption{Running times of IsaCoSY on theories sampled from TIP. Each point
+    is an individual run, with 30 per size except for 2 (29). Colour indicates
+    the total number of conjectures produced by each run, with failing processes
+    shown in red (timeouts and out of memory). Points are spread out
+    horizontally to prevent overlaps. Box plots show median and quartiles, with
+    whiskers showing points at 1.5$\times$~inter-quartile range.}
+  \label{figure:isacosy_runtimes}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \input{isacosyprec.pgf}
+  \caption{Precision and recall of all successful IsaCoSy runs (spread
+    horizontally to avoid overlaps). Lines show the combined proportion for each
+    sample size (ratio of averages) and the shaded region is the sample standard
+    deviation.}
+  \label{figure:isacosy_precRec}
+\end{figure}
+
+The most striking result is how rapidly IsaCoSy's running time increases with
+sample size: from size 8 upwards, all runs failed (most timed out, a few aborted
+early due to running out of memory).
+
+\subsection{Comparison}
+
+We compare the performance of QuickSpec and IsaCoSy using a similar protocol to
+the Speedup-Test of Touati, Worms and Briais~\cite{touati2013speedup}. We differ
+by timing a wider variety of inputs: running many samples once, rather than a
+few samples many times and taking the medians. Since each sample is run through
+both tools, we can also gain statistical power by using the \emph{paired} form
+of the Wilcoxon signed-rank test.
 
 % Altogether TIP problem by QuickSpec and IsaCoSy theory
 % exploration systems. To assess the scalability of their algorithms, we sampled
