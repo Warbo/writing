@@ -4,39 +4,34 @@ import os
 import sys
 msg = lambda x: sys.stderr.write(x + '\n')
 
-def readVar(var):
-    val = os.getenv(var)
-    assert val is not None, 'No {} env var given'.format(var)
-    return val
-
-sources = {
-    'isacosy'   : readVar(  'ISACOSY_DATA'),
-    'quickspec' : readVar('QUICKSPEC_DATA')
-}
-del(readVar)
-
 msg('Reading input')
 
 from json import load
 
-def readInput(source, path):
-    with open(sources[source], 'r') as f:
-        return load(f)['results'][path]['result'][0]
+def readInput(sys):
+    var = os.getenv(sys + 'Data')
+
+    assert var is not None, 'No {} env var given'.format(sys)
+
+    with open(var, 'r') as f:
+        return load(f)
 
 data = {
-    'isacosy'   : readInput('isacosy'  ,   'benchmarks.track_data'),
-    'quickspec' : readInput('quickspec', 'quickspectip.track_data')
+    'isacosy'   : readInput('isacosy'),
+    'quickspec' : readInput('quickspec')
 }
 del(readInput)
 
 msg('Normalising data')
 
-# Extract timeout from one of the QuickSpec runs, since IsaCoSy didn't store it
-timeout = data['quickspec'].values()[0]['reps'].values()[0]['timeout']
+# Extract timeout from one of the QuickSpec runs, since IsaCoSy may not have
+# stored it
+timeout = data['quickspec'].values()[0].values()[0]['timeout']
 
-def makeHashable(x):
-        '''Convert lists and dictionaries into tuples, recursively, so we can
-        turn them into sets for comparison.'''
+def normalise(data):
+    def makeHashable(x):
+        """Convert lists and dictionaries into tuples, recursively, so we can
+        turn them into sets for comparison."""
         xType    = type(x)
         reducers = {
             type([]) : lambda rest, elem: rest +  (makeHashable(elem),),
@@ -45,83 +40,14 @@ def makeHashable(x):
         }
         return reduce(reducers[xType], x, ()) if xType in reducers else x
 
-def normalise(data):
     for size in data:
-        # Unwrap useless 'reps' wrapper
-        if 'reps' in data[size]:
-            data[size] = data[size]['reps']
-
         for rep in data[size]:
-            # Remove more unnecessary wrappers
-            for key in ['result', 'analysis']:
-                if key in data[size][rep]:
-                    data[size][rep] = dict(  data[size][rep],
-                                           **data[size][rep][key])
-                    del(data[size][rep][key])
-
-            # Include the timeout
-            if 'timeout' not in data[size][rep]:
-                data[size][rep]['timeout'] = timeout
-
-            # These are inverse, so just use one
-            if 'killed' in data[size][rep] and 'success' not in data[size][rep]:
-                data[size][rep]['success'] = not data[size][rep]['killed']
-            if 'killed' in data[size][rep]:
-                del(data[size][rep]['killed'])
-
-            # If IsaCoSy gets interrupted, that indicates it died from OOM
-            stderr = data[size][rep]['stderr']
-            if stderr is not None:
-                interr = 'unable to increase stack'.replace(' ', '').lower()
-                stderr = stderr.replace('\n',  ' ').replace(' ', '').lower()
-                if interr in stderr:
-                    msg(repr({
-                        'warning' : 'Exploration was interrupted',
-                        'size'    : size,
-                        'rep'     : rep
-                    }))
-                    data[size][rep]['success'] = False
-
-            # We should always analyse, so this is useless
-            if 'analysed' in data[size][rep]:
-                assert data[size][rep]['analysed'], 'Run was not analysed'
-                del(data[size][rep]['analysed'])
-
-            # Remove some unneeded values, if present
-            for key in ['runner', 'analyser',  # For provenance
-                        'stdout', 'stderr',    # For debugging
-                        'size',   'rep']:      # Violate "Once and Only Once"
-                if key in data[size][rep]:
-                    del(data[size][rep][key])
-
             # Samples should be sets
-            rawSample = data[size][rep]['sample']
-            sampleSet = frozenset(rawSample)
-            assert len(rawSample) == int(size), \
-                repr({
-                    'error'     : 'Wrong number of names sampled',
-                    'rep'       : rep,
-                    'size'      : size,
-                    'rawSample' : rawSample,
-                    'sampleSet' : sampleSet
-                })
+            data[size][rep]['sample'] = frozenset(data[size][rep]['sample'])
 
-            assert len(sampleSet) == len(rawSample), \
-                repr({
-                    'error'     : 'Sampled names contain duplicates',
-                    'rep'       : rep,
-                    'size'      : size,
-                    'rawSample' : rawSample,
-                    'sampleSet' : sampleSet
-                })
-
-            data[size][rep]['sample'] = sampleSet
-
-            # Unwrap found to make comparable
+            # So should found equations
             data[size][rep]['found'] = frozenset(
-                makeHashable(data[size][rep]['found'][0]) \
-                if data[size][rep]['success'] else [])
-
+                makeHashable(data[size][rep]['found']))
     return data
 
 data = {
@@ -129,7 +55,6 @@ data = {
     'quickspec' : normalise(data['quickspec'])
 }
 
-del(makeHashable)
 del(normalise)
 
 def quickspecCheck(data):
@@ -174,10 +99,11 @@ def sanityCheck(data):
 
                 assert len(groundTruth) >= 1, debugInfo('Empty ground truth')
 
-                assert timeout == rdata['timeout'], \
-                    'Got different timeouts {} and {}'.format(
-                        str(timeout),
-                        str(rdata['timeout']))
+                if 'timeout' in rdata:
+                    assert timeout == rdata['timeout'], \
+                        'Got different timeouts {} and {}'.format(
+                            str(timeout),
+                            str(rdata['timeout']))
 
                 if not rdata['success']:
                     assert rdata['found'] == frozenset([]), repr({
@@ -242,8 +168,7 @@ msg('Aggregating data')
 
 def aggregateData(data):
     '''Pull numbers out of the given JSON results, to build up the data series
-    needed for our graphs. Note that this needs to support JSON from QuickSpec
-    and IsaCoSy, which is slightly d'''
+    needed for our graphs.'''
     import subprocess
     num = lambda x: type(x) in [type(42), type(42.0)]
 
@@ -269,13 +194,6 @@ def aggregateData(data):
         sdata = data[str(size)]
         for rep in sorted(map(int, sdata.keys())):
             rdata  = sdata[str(rep)]
-
-            # QuickSpec and IsaCoSy runners have annoying differences in their
-            # keys, so we glom the whole lot together
-            for key in ['result', 'analysis']:
-                if key in rdata:
-                    rdata = dict(rdata, **rdata[key])
-
             sample = rdata['sample']
             got    = rdata['found']
 
@@ -313,7 +231,7 @@ def aggregateData(data):
             agg['size'     ].append(size)
             agg['success'  ].append(rdata['success'])
             agg['time'     ].append(t)
-            agg['timeHue'  ].append(found  + 1 if rdata['success'] else 0)
+            agg['timeHue'  ].append(found + 1 if rdata['success'] else 0)
             agg['wanted'   ].append(wanted)
 
     return agg
@@ -322,7 +240,7 @@ aggs = {
     'isacosy'   : aggregateData(data['isacosy'  ]),
     'quickspec' : aggregateData(data['quickspec'])
 }
-del(data)
+
 del(aggregateData)
 
 msg('Setting up plots')
