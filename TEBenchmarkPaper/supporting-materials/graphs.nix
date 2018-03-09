@@ -116,7 +116,7 @@ rec {
           jq -n --slurpfile first  input.json              \
                 --slurpfile second <(lzip -d < "$repo/$F") \
                 --arg key "$key"                     \
-            '($first  | .[0] | .results | .[$key] | .result | .[0]) +
+            '($first  | .[0]) +
              ($second | .[0] | .results | .[$key] | .result | .[0])' > temp.json
           mv temp.json input.json
         else
