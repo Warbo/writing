@@ -186,9 +186,6 @@ def aggregateData(data):
         'wanted'    : []
     }
 
-    # Make a note of which samples we've seen before, so we can skip dupes
-    knownSamples = []
-
     for size in sorted(map(int, data.keys())):
         msg('Extracting data for size ' + str(size))
         sdata = data[str(size)]
@@ -196,12 +193,6 @@ def aggregateData(data):
             rdata  = sdata[str(rep)]
             sample = rdata['sample']
             got    = rdata['found']
-
-            if sample in knownSamples:
-                msg('Skipping dupe rep {0} of size {1}'.format(rep, size))
-                continue
-
-            knownSamples += [sample]
 
             found   = len(got)
             correct = len([x for x in rdata['wanted'] if x['found']])

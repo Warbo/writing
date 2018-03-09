@@ -31,7 +31,10 @@ rec {
           if 'reps' in data[size]:
             data[size] = data[size]['reps']
 
-          for rep in data[size]:
+          # Keep track of the samples we've already seen
+          seenSamples = []
+
+          for rep in sorted(data[size].keys()):
             # Remove more unnecessary wrappers
             for key in ['result', 'analysis']:
               if key in data[size][rep]:
@@ -70,30 +73,35 @@ rec {
               if key in data[size][rep]:
                 del(data[size][rep][key])
 
-            # Samples should be sets
-            rawSample = data[size][rep]['sample']
-            sampleSet = frozenset(rawSample)
-            assert len(rawSample) == int(size), \
-              repr({
-                'error'     : 'Wrong number of names sampled',
-                'rep'       : rep,
-                'size'      : size,
-                'rawSample' : rawSample,
-                'sampleSet' : sampleSet
-              })
-
-            assert len(sampleSet) == len(rawSample), \
-              repr({
-                'error'     : 'Sampled names contain duplicates',
-                'rep'       : rep,
-                'size'      : size,
-                'rawSample' : rawSample,
-                'sampleSet' : sampleSet
-              })
-
             # Unwrap found and make comparable
             data[size][rep]['found'] = data[size][rep]['found'][0] \
                                        if data[size][rep]['success'] else []
+
+            # Samples should be sets
+            rawSample = data[size][rep]['sample']
+            sampleSet = frozenset(rawSample)
+            assert len(rawSample) == int(size), repr({
+              'error'     : 'Wrong number of names sampled',
+              'rep'       : rep,
+              'size'      : size,
+              'rawSample' : rawSample,
+              'sampleSet' : sampleSet
+            })
+
+            assert len(sampleSet) == len(rawSample), repr({
+              'error'     : 'Sampled names contain duplicates',
+              'rep'       : rep,
+              'size'      : size,
+              'rawSample' : rawSample,
+              'sampleSet' : sampleSet
+            })
+
+            # Remove this result if the sample has been seen before
+            if sampleSet in seenSamples:
+              sys.stderr.write(
+                'Skipping dupe rep {} of size {}\n'.format(rep, size))
+              del(data[size][rep])
+            seenSamples += [sampleSet]
 
         print(json.dumps(data))
       '';
