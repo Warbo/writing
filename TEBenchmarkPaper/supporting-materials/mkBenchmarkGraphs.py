@@ -233,6 +233,7 @@ aggs = {
 }
 
 del(aggregateData)
+del(data)
 
 msg('Setting up plots')
 

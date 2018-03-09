@@ -1,5 +1,5 @@
 { fail, fetchgit, jq, lzip, mkBin, perl, python, R, rPackages, runCommand,
-  teBenchmark, tetex, tex, textWidth, wrap, writeScript }:
+  teBenchmark, tetex, tex, textWidth, which, wrap, writeScript }:
 
 with builtins;
 rec {
@@ -149,49 +149,87 @@ rec {
   comparisonData = runCommand "benchmark-comparison-data"
     {
       inherit isacosyData quickspecData;
-      buildInputs = [ jq lzip R ] ++ (with rPackages; [ coin ]);
+      buildInputs = [ jq lzip ];
     }
     ''
-      function quickspecRuns {
-        jq -n --slurpfile evens <(lzip -d < "$quickspecData/evens.json.lz") \
-              --slurpfile odds  <(lzip -d < "$quickspecData/odds.json.lz" ) \
-              --arg key "quickspectip.track_data"                           \
-              '($evens | .[0] | .results | .[$key] | .result | .[0]) +
-               ($odds  | .[0] | .results | .[$key] | .result | .[0])'
-      }
-
-      function isacosyRuns {
-        echo "FIXME: Use odd+even isacosy data" 1>&2
-        jq -n --slurpfile evens <(lzip -d < "$isacosyData") \
-              --arg key 'benchmarks.track_data'       \
-              '$evens | .[0] | .results | .[$key] | .result | .[0]'
-      }
-
       function rawSizes {
-        quickspecRuns | jq -r 'keys | .[]'
-        isacosyRuns   | jq -r 'keys | .[]'
+        jq -r 'keys | .[]' < "$quickspecData"
+        jq -r 'keys | .[]' < "$isacosyData"
       }
 
       function sizes {
-        rawSizes | sort -u
+        rawSizes | sort -n -u
       }
 
+      TO=$(jq -r '[.[] | .[] | .timeout] | .[0]' < "$quickspecData")
+
+      function getTime {
+        jq --arg size "$1" --arg rep "$2" --argjson to "$TO" -r \
+           '.[$size] | .[$rep] | [.time, $to] | min'
+      }
+
+      Q_TIMES=$(jq 'map_values(map_values({"time": .time}))' < "$quickspecData")
+      I_TIMES=$(jq 'map_values(map_values({"time": .time}))' < "$isacosyData"  )
+
+      mkdir "$out"
       while read -r SIZE
       do
-        echo "Comparing runs of size $SIZE" 1>&2
-        QUICKSPEC_TIMES=$(quickspecRuns | jq --arg size "$SIZE" \
-                            '.[$size] | .reps | map_values(.time)')
-        echo "QUICKSPEC_TIMES: $QUICKSPEC_TIMES" 1>&2
-          ISACOSY_TIMES=$(isacosyRuns   | jq --arg size "$SIZE" \
-                            '{"keys": keys, "size":$size}' 1>&2) #.[$size] | keys' 1>&2) #        map_values(.time)')
+        echo "" 1>&2
+        printf "Comparing runs of size $SIZE" 1>&2
+        mkdir "$out/times_$SIZE"
+        #echo "rep,quickspec,isacosy" > "$out/times_$SIZE.csv"
 
-        echo "ISACOSY_TIMES: $ISACOSY_TIMES" 1>&2
+        CONF="$out/times_$SIZE/config.csv"
+        echo "Name,Sample1,Sample2,ConfLevel,Coef" > "$CONF"
+
+        while read -r REP
+        do
+          printf '.' 1>&2
+          Q_TIME=$(echo "$Q_TIMES" | getTime "$SIZE" "$REP")
+          I_TIME=$(echo "$I_TIMES" | getTime "$SIZE" "$REP")
+          echo "$Q_TIME" > "$out/times_$SIZE/quickspec_$REP.csv"
+          echo "$I_TIME" > "$out/times_$SIZE/isacosy_$REP.csv"
+          printf '"%s","%s","%s",0.95,\n'              \
+                 "rep$REP"                             \
+                 "$out/times_$SIZE/quickspec_$REP.csv" \
+                 "$out/times_$SIZE/isacosy_$REP.csv"   >> "$CONF"
+          #echo "$REP,$Q_TIME,$I_TIME" >> "$out/times_$SIZE.csv"
+        done < <(echo "$Q_TIMES" | jq -r --arg size "$SIZE" \
+                                      '.[$size] | keys | .[]' | sort -n)
       done < <(sizes)
-
-      exit 1
     '';
 
-  #compare     = ./compare.R;
+  compareTimes = runCommand "compare-times"
+    {
+      inherit comparisonData;
+      buildInputs = [ R which ] ++ (with rPackages; [ coin ]);
+      script      = ./compare.R;
+      speedupSrc  = ./SpeedupTestTool.tar.bz2;
+    }
+    ''
+      tar xf "$speedupSrc"
+      TOOL="$PWD/SpeedupTest/SpeedUpTest.sh"
+
+      mkdir "$out"
+      for D in "$comparisonData"/times_*
+      do
+        SIZE=$(basename "$D" | grep -o '[0-9]*')
+        mkdir "$out/times_$SIZE"
+        pushd "$out/times_$SIZE" > /dev/null
+          cp "$D/config.csv" ./config.csv
+          echo "Config for size $SIZE" 1>&2
+          cat ./config.csv 1>&2
+          "$TOOL" config.csv || {
+            echo "config.csv follows..."
+            cat config.csv
+            echo "config.csv follows..."
+            cat config.csv.error
+            exit 1
+          } 1>&2
+        popd > /dev/null
+        #Rscript --vanilla "$script" < "$F" > "$out/times_$SIZE"
+      done
+    '';
 
   teTools = (import "${haskell-te-src}/nix-support" {}).tipBenchmarks.tools;
 
