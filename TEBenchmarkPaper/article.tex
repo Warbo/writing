@@ -1304,13 +1304,32 @@ IsaCoSy is a tool for the Isabelle proof assistant, mostly written in Standard
 ML. We took IsaCoSy from version 2015.0.3 of the IsaPlanner project, and ran it
 with the 2015 version of Isabelle.
 
-The following issues had to be overcome for the benchmarking to be successful:
+The following issues had to be overcome to make our benchmark applicable to
+IsaCoSy:
 
 \begin{itemize}
-  polyrec can't be represented
-  constructors were being included
-  proofs had to be skipped
-  partial functions needed adding to the constraints
+\item TIP includes a benchmark called \texttt{polyrec} whose types cannot be
+  encoded in Isabelle. We strip out this type and the functions which depend on
+  it before translating.
+\item When using a type in an IsaCoSy signature, that type's constructors will
+  automatically be included in the exploration. Since those constructors will
+  not appear in the ground truth (we use $\eta$-expanded wrappers instead, and
+  even those may not be present in the current sample) this will unfairly reduce
+  the tool's precision. To avoid this, we add a post-processing step which
+  replaces all occurrences of a constructor with the corresponding wrapper, then
+  discards any conjectures which involve functions other than those in the
+  current sample.
+\item Since Isabelle is designed for theorem proving rather than programming, it
+  requires every definition to be accompanied by proofs of exhaustiveness and
+  termination. These are difficult to generate automatically, and don't exist in
+  the case of partial functions like destructor wrappers. Hence we use the
+  ``quick and dirty'' option in Isabelle, which lets us skip these proofs with
+  the \texttt{sorry} keyword.
+\item Partial functions cause problems during exploration, since they can throw
+  an ``undefined'' exception which causes IsaCoSy to abort. We avoid this by
+  pre-populating IsaCoSy's constraint set with these undefined expressions
+  (for example \texttt{head Nil}), hence preventing IsaCoSy from ever generating
+  them.
 \end{itemize}
 
 \begin{figure}
@@ -1337,16 +1356,22 @@ The following issues had to be overcome for the benchmarking to be successful:
 
 The most striking result is how rapidly IsaCoSy's running time increases with
 sample size: from size 8 upwards, all runs failed (most timed out, a few aborted
-early due to running out of memory).
+early due to running out of memory). As we found with our preliminary testing,
+this increase appears exponential, so even large increases to the timeout would
+not produce many more successes.
+
 
 \subsection{Comparison}
 
-We compare the performance of QuickSpec and IsaCoSy using a similar protocol to
-the Speedup-Test of Touati, Worms and Briais~\cite{touati2013speedup}. We differ
-by timing a wider variety of inputs: running many samples once, rather than a
-few samples many times and taking the medians. Since each sample is run through
-both tools, we can also gain statistical power by using the \emph{paired} form
-of the Wilcoxon signed-rank test.
+We compare the running times of QuickSpec and IsaCoSy using a similar protocol
+to the Speedup-Test of Touati, Worms and Briais~\cite{touati2013speedup}. We
+differ by timing a wider variety of inputs: running many samples once, rather
+than a few samples many times and taking the medians. Since each sample is run
+through both tools, we can also gain statistical power by using the
+\emph{paired} form of the Wilcoxon signed-rank test. We compare each sample size
+is compared separately, to find the probability that QuickSpec is significantly
+faster.
+
 
 % Altogether TIP problem by QuickSpec and IsaCoSy theory
 % exploration systems. To assess the scalability of their algorithms, we sampled
