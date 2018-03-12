@@ -1,12 +1,13 @@
-{ fail, fetchgit, jq, lzip, mkBin, perl, python, R, rPackages, runCommand,
-  teBenchmark, tetex, tex, textWidth, which, wrap, writeScript }:
+{ fail, fetchgit, jq, lzip, mkBin, nixListToBashArray, perl, python, R, replace,
+  rPackages, runCommand, teBenchmark, tetex, tex, textWidth, which, wrap,
+  writeScript }:
 
 with builtins;
 rec {
   haskell-te-src = fetchgit {
     url    = http://chriswarbo.net/git/haskell-te.git;
-    rev    = "3c15e23";
-    sha256 = "1y9ak8qwwa5g7ha2n2d26rbavgcv3y19s6qkk127wc0dip70z806";
+    rev    = "68b98f8";
+    sha256 = "1vb2crd6wcad21lmydr9ph3srk64v4l3p5qxyrymzqfxsx3c7sk9";
   };
 
   normaliseData = name: repo: key: resultPaths: runCommand
@@ -32,7 +33,7 @@ rec {
             data[size] = data[size]['reps']
 
           # Keep track of the samples we've already seen
-          seenSamples = []
+          seenSamples = {}
 
           for rep in sorted(data[size].keys()):
             # Remove more unnecessary wrappers
@@ -99,9 +100,12 @@ rec {
             # Remove this result if the sample has been seen before
             if sampleSet in seenSamples:
               sys.stderr.write(
-                'Skipping dupe rep {} of size {}\n'.format(rep, size))
+                'Rep {} of size {} is a dupe of {}, skipping\n'.format(
+                  rep,
+                  size,
+                  seenSamples[sampleSet]))
               del(data[size][rep])
-            seenSamples += [sampleSet]
+            seenSamples[sampleSet] = rep
 
         print(json.dumps(data))
       '';
@@ -113,11 +117,13 @@ rec {
         echo "Processing '$F'" 1>&2
         if [[ -e input.json ]]
         then
-          jq -n --slurpfile first  input.json              \
-                --slurpfile second <(lzip -d < "$repo/$F") \
-                --arg key "$key"                     \
-            '($first  | .[0]) +
-             ($second | .[0] | .results | .[$key] | .result | .[0])' > temp.json
+          lzip -d < "$repo/$F" |
+            jq --arg key "$key"                       \
+               '.results | .[$key] | .result | .[0]'  > this.json
+          jq -n --slurpfile first  input.json         \
+                --slurpfile second this.json          \
+                --arg key  "$key"                     \
+                '($first  | .[0]) * ($second | .[0])' > temp.json
           mv temp.json input.json
         else
           lzip -d < "$repo/$F" | jq --arg key "$key" \
@@ -133,18 +139,20 @@ rec {
   isacosyData = normaliseData "isacosy"
     (fetchgit {
       url    = http://chriswarbo.net/git/isaplanner-tip.git;
-      rev    = "1db28e7";
-      sha256 = "0iarxsxl2pq5w4mv7y34anpzdvbzm8rsfkmdxlb49d1k5gkkc62w";
+      rev    = "46e6d37";
+      sha256 = "0l9nagfqy95jcprv4ygqg3riyn1prgnx0lc84qqsn456dha0k9xm";
     })
     "benchmarks.track_data"
     [ "results/13dd39d1-nix-py-dirnull.json.lz"
-      "results/08d9091f-nix-py-dirnull.json.lz" ];
+      "results/08d9091f-nix-py-dirnull.json.lz"
+      "results/916004b9-nix-py-dirnull.json.lz" ];
 
   quickspecData = normaliseData "quickspec"
     haskell-te-src
     "quickspectip.track_data"
     [ "benchmarks/results/desktop/b1247807-nix-py-dirnull.json.lz"
-      "benchmarks/results/desktop/bdea634a-nix-py-dirnull.json.lz" ];
+      "benchmarks/results/desktop/bdea634a-nix-py-dirnull.json.lz"
+      "benchmarks/results/desktop/a531ce8f-nix-py-dirnull.json.lz" ];
 
   comparisonData = runCommand "benchmark-comparison-data"
     {
@@ -172,66 +180,97 @@ rec {
       I_TIMES=$(jq 'map_values(map_values({"time": .time}))' < "$isacosyData"  )
 
       mkdir "$out"
+      CONF="$out/times.csv"
+      echo "Name,Sample1,Sample2,ConfLevel,Coef" > "$CONF"
+
       while read -r SIZE
       do
         echo "" 1>&2
         printf "Comparing runs of size $SIZE" 1>&2
         mkdir "$out/times_$SIZE"
-        #echo "rep,quickspec,isacosy" > "$out/times_$SIZE.csv"
 
-        CONF="$out/times_$SIZE/config.csv"
-        echo "Name,Sample1,Sample2,ConfLevel,Coef" > "$CONF"
+        printf '"%s","%s","%s",0.95,\n'             \
+               "size$SIZE"                      \
+               "$out/times_$SIZE/isacosy.csv"   \
+               "$out/times_$SIZE/quickspec.csv" >> "$CONF"
 
         while read -r REP
         do
           printf '.' 1>&2
           Q_TIME=$(echo "$Q_TIMES" | getTime "$SIZE" "$REP")
           I_TIME=$(echo "$I_TIMES" | getTime "$SIZE" "$REP")
-          echo "$Q_TIME" > "$out/times_$SIZE/quickspec_$REP.csv"
-          echo "$I_TIME" > "$out/times_$SIZE/isacosy_$REP.csv"
-          printf '"%s","%s","%s",0.95,\n'              \
-                 "rep$REP"                             \
-                 "$out/times_$SIZE/quickspec_$REP.csv" \
-                 "$out/times_$SIZE/isacosy_$REP.csv"   >> "$CONF"
+          echo "$Q_TIME" >> "$out/times_$SIZE/quickspec.csv"
+          echo "$I_TIME" >> "$out/times_$SIZE/isacosy.csv"
           #echo "$REP,$Q_TIME,$I_TIME" >> "$out/times_$SIZE.csv"
         done < <(echo "$Q_TIMES" | jq -r --arg size "$SIZE" \
                                       '.[$size] | keys | .[]' | sort -n)
       done < <(sizes)
     '';
 
-  compareTimes = runCommand "compare-times"
-    {
-      inherit comparisonData;
-      buildInputs = [ R which ] ++ (with rPackages; [ coin ]);
-      script      = ./compare.R;
-      speedupSrc  = ./SpeedupTestTool.tar.bz2;
-    }
-    ''
-      tar xf "$speedupSrc"
-      TOOL="$PWD/SpeedupTest/SpeedUpTest.sh"
+  compareTimes =
+    with nixListToBashArray {
+      name = "REPLACEMENTS";
+      args = [
+        ''wilcox.test(data1, data2, alternative="greater")''
+        ''wilcoxsign_test(data1 ~ data2, paired=TRUE,
+                          distribution='exact', correct=FALSE,
+                          alternative="greater",
+                          zero.method = c('Pratt'))''
 
-      mkdir "$out"
-      for D in "$comparisonData"/times_*
-      do
-        SIZE=$(basename "$D" | grep -o '[0-9]*')
-        mkdir "$out/times_$SIZE"
-        pushd "$out/times_$SIZE" > /dev/null
-          cp "$D/config.csv" ./config.csv
-          echo "Config for size $SIZE" 1>&2
-          cat ./config.csv 1>&2
-          "$TOOL" config.csv || {
+        ''if(is.na(wt$p.value)) {''
+        ''write(sprintf("P VALUE %f\n", pvalue(wt)), file="p-values",append=TRUE)
+          if(is.na(pvalue(wt))) {''
+
+        ''if(kt$p.value <= alpha) {''
+        ''write(sprintf("KT P VALUE %f, ALPHA %f\n", kt$p.value, alpha), file="p-values",append=TRUE)
+          if(kt$p.value <= alpha) {''
+
+        ''if(!failed) {''
+        ''write(sprintf("FAILED? %d\n", failed), file="p-values",append=TRUE)
+          if(!failed) {''
+
+        ''wt$p.value''
+        ''pvalue(wt)''
+      ];
+    };
+    runCommand "compare-times"
+      (env // {
+        inherit comparisonData;
+        buildInputs = [ R replace which ] ++ (with rPackages; [ coin ]);
+        script      = ./compare.R;
+        speedupSrc  = ./SpeedupTestTool.tar.bz2;
+      })
+      ''
+        # Initialise our bash arrays
+        ${code}
+
+        tar xf "$speedupSrc"
+        TOOL="$PWD/SpeedupTest/SpeedUpTest.sh"
+        R="$PWD/SpeedupTest/SpeedUpTest.R"
+
+        echo "Patching $R to use paired Wilcoxon test" 1>&2
+
+        # 'coin' package is needed for more flexible wilcoxon function
+        echo "library(coin)" >  temp
+        cat  "$R"            >> temp
+        mv temp "$R"
+
+        replace "${"$" + "{REPLACEMENTS[@]}"}" < "$R" > temp
+        mv temp "$R"
+
+        mkdir "$out"
+        cp -v "$R" "$out/SCRIPT.R"
+        pushd "$out" > /dev/null
+          cp "$comparisonData/times.csv" ./config.csv
+          "$TOOL" config.csv --weight equal || {
             echo "config.csv follows..."
-            cat config.csv
+            cat   config.csv
             echo "config.csv follows..."
-            cat config.csv.error
+            cat   config.csv.error
             exit 1
           } 1>&2
         popd > /dev/null
-        #Rscript --vanilla "$script" < "$F" > "$out/times_$SIZE"
-      done
-    '';
-
-  teTools = (import "${haskell-te-src}/nix-support" {}).tipBenchmarks.tools;
+      '';
 
   tetex-hack = runCommand "tetex-hack"
     {
