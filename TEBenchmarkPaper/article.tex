@@ -1359,8 +1359,17 @@ The most striking result is how rapidly IsaCoSy's running time increases with
 sample size: from size 7 upwards, all runs failed (most timed out, a few aborted
 early due to running out of memory). As we found with our preliminary testing,
 this increase appears exponential, so even large increases to the timeout would
-not produce many more successes.
+not produce many more successful observations. A significant amount of IsaCoSy's
+time (around 50 seconds) was spent loading the generated theory (containing all
+distinct datatypes and functions from TIP); this overhead is unfortunate, but
+since it is constant across all sample sizes it does not affect our conclusions.
 
+With so few successful datapoints it is difficult to make strong claims about
+the precision/recall quality of IsaCoSy's output. It is clear from the quantity
+of non-zero proportions that IsaCoSy is capable of discovering interesting
+conjectures, and the graphs appear to follow the same shapes as those of
+QuickSpec (decreasing precision, flat recall), although the error margins are
+too wide to be definitive.
 
 \subsection{Comparison}
 
