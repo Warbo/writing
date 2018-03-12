@@ -1375,13 +1375,26 @@ too wide to be definitive.
 
 We compare the running times of QuickSpec and IsaCoSy using a similar protocol
 to the Speedup-Test of Touati, Worms and Briais~\cite{touati2013speedup}. We
-differ by timing a wider variety of inputs: running many samples once, rather
-than a few samples many times and taking the medians. Since each sample is run
-through both tools, we can also gain statistical power by using the
-\emph{paired} form of the Wilcoxon signed-rank test. We compare each sample size
-is compared separately, to find the probability that QuickSpec is significantly
-faster.
+treat each of our sample sizes as a separate ``benchmark'', but deviate from
+their approach by using a different input (sample) for each run. This reduces
+the sampling bias, but also reduces the accuracy of our confidence intervals.
+We used version 2 of the Speedup-Test \texttt{R} implementation, which we
+patched to use the \emph{paired} form of the (one-sided) Wilcoxon signed-rank
+test~\cite{wilcoxon1945individual}, since this increases our statistical power
+given that each sample is run through both tools. We use Pratt's
+method~\cite{pratt1959remarks} to handle ties, which occur when both tools time
+out.
 
+For each sample size (``benchmark'') the Speedup-Test protocol compares the
+distributions of each tool's times using a Kolmogorov-Smirnov test. If these are
+significantly different (with $\alpha < 0.05$), then the signed-rank test is
+only performed if more than 30 samples are available. This was the case for all
+sample sizes except for 1 and 2 (due to the removed duplicates), and hence those
+two speedups were not deemed statistically significant. For all other sample
+sizes QuickSpec was found to be faster, with 95\% confidence. The speedup for
+each size is given in table~\ref{FIXME}. The 95\% confidence interval for the
+proportion of sample sizes where QuickSpec's median running time is faster than
+IsaCoSy's is 66.9\% to 98.2\%.
 
 % Altogether TIP problem by QuickSpec and IsaCoSy theory
 % exploration systems. To assess the scalability of their algorithms, we sampled
