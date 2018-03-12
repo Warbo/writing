@@ -18,11 +18,12 @@ rec {
   # The final paper, with all graphs, etc.
   paper = render {
     inherit article;
-    inherit (graphs) graphs;
+    inherit (graphs) graphs timeComparison;
     name   = "benchmark-article.pdf";
     script = ''
-      ln -s "$bibtex"   ./Bibtex.bib
-      cp -s "$graphs"/* ./.
+      ln -s "$bibtex"           ./Bibtex.bib
+      cp -s "$graphs"/*         ./.
+      cp -s "$timeComparison"/* ./.
 
       render
       bibtex article
@@ -32,9 +33,9 @@ rec {
     '';
   };
 
-  render = { article, graphs, name, script }: runCommand name
+  render = { article, graphs, name, script, timeComparison }: runCommand name
     {
-      inherit article bibtex graphs latex;
+      inherit article bibtex graphs latex timeComparison;
       buildInputs = [
         tex
         unzip
@@ -60,8 +61,8 @@ rec {
   # document and the matplotlib graphs
   tex = (texlive.combine {
     inherit (texlive)
-    scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e algorithms
-    frankenstein csquotes multirow type1cm;
+    csvsimple scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e
+    algorithms frankenstein csquotes multirow type1cm;
   });
 
   # Render a "dummy" version of the paper which has all of the same styling, but
@@ -82,7 +83,6 @@ rec {
 
         jq -Rs '.' < ./article.tex > "$out"
       ''));
-    graphs  = null;
     name    = "text-width";
     script  = ''
       set -o pipefail
@@ -91,5 +91,9 @@ rec {
       sed -e 's/WIDTH//g'                           |
       tr -d 'pt ' > "$out"
     '';
+
+    # Prevent infinite recursion
+    graphs         = null;
+    timeComparison = null;
   };
 }

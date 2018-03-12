@@ -46,6 +46,7 @@ grestore
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{array}
+\usepackage{csvsimple}
 \usepackage{hhline}
 \usepackage{mathtools}
 \usepackage{multirow}
@@ -1391,10 +1392,25 @@ significantly different (with $\alpha < 0.05$), then the signed-rank test is
 only performed if more than 30 samples are available. This was the case for all
 sample sizes except for 1 and 2 (due to the removed duplicates), and hence those
 two speedups were not deemed statistically significant. For all other sample
-sizes QuickSpec was found to be faster, with 95\% confidence. The speedup for
-each size is given in table~\ref{FIXME}. The 95\% confidence interval for the
-proportion of sample sizes where QuickSpec's median running time is faster than
-IsaCoSy's is 66.9\% to 98.2\%.
+sizes QuickSpec was found to be significantly faster with $\alpha = 0.05$,
+giving a 95\% confidence interval for the proportion of (median) speedups to be
+$[0.669;0.982]$. The magnitude of each speedup is is given in
+table~\ref{table:speedups}.
+
+\begin{table}
+  \begin{tabular}{ |r|l| }
+    \hline
+    \bfseries Sample Size & \bfseries Speedup
+    \csvreader[]{speedups.csv}{}
+    {\\\hline\csvcoli&\csvcolii} \\
+    \hline
+  \end{tabular}
+  \caption{Speedup when using QuickSpec compared to IsaCoSy for each sample
+    size. Those which aren't statistically significant with 95\% confidence are
+    marked as ``-''. These are conservative estimates, since the difference is
+    bounded by the timeout.}
+  \label{table:speedups}
+\end{table}
 
 % Altogether TIP problem by QuickSpec and IsaCoSy theory
 % exploration systems. To assess the scalability of their algorithms, we sampled

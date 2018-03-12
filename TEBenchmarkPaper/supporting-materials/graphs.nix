@@ -237,7 +237,6 @@ rec {
       (env // {
         inherit comparisonData;
         buildInputs = [ R replace which ] ++ (with rPackages; [ coin ]);
-        script      = ./compare.R;
         speedupSrc  = ./SpeedupTestTool.tar.bz2;
       })
       ''
@@ -271,6 +270,48 @@ rec {
           } 1>&2
         popd > /dev/null
       '';
+
+  timeComparison = runCommand "time-comparison"
+    {
+      inherit compareTimes;
+      buildInputs = [ fail ];
+    }
+    ''
+      mkdir "$out"
+      echo "Checking columns" 1>&2
+      for PAIR in '1	Name' '6	SpeedupMedian' '7	IsMedianSignificant'
+      do
+         COLUMN=$(echo "$PAIR" | cut -f1)
+        HEADING=$(echo "$PAIR" | cut -f2)
+          FOUND=$(head -n1 < "$compareTimes"/config.csv.out |
+                  cut -d ',' -f"$COLUMN")
+        [[ "x$FOUND" = 'x"'"$HEADING"'"' ]] ||
+          fail "Column '$COLUMN' was '$FOUND' not '$HEADING'"
+      done
+
+      echo 'Sample Size,Speedup' > "$out/speedups.csv"
+
+      SIZES=$(grep -o 'size[0-9]*' < "$compareTimes"/config.csv.out |
+              grep -o '[0-9]*'                                      |
+              sort -n                                               )
+      while read -r SIZE
+      do
+        LINE=$(grep "size$SIZE"'"' < "$compareTimes"/config.csv.out)
+         SIG=$(echo "$LINE" | cut -d ',' -f7 | tr '[:upper:]' '[:lower:]')
+
+        if [[ "x$SIG" = "xtrue" ]]
+        then
+          SPEED=$(echo "$LINE" | cut -d ',' -f6)
+        else
+          SPEED='-'
+        fi
+        echo "$SIZE,$SPEED" >> "$out/speedups.csv"
+      done < <(echo "$SIZES")
+
+      echo "Checking table" 1>&2
+      COUNT=$(wc -l < "$out/speedups.csv")
+      [[ "$COUNT" -gt 5 ]] || fail "Only '$COUNT' lines in table"
+    '';
 
   tetex-hack = runCommand "tetex-hack"
     {
