@@ -1,6 +1,5 @@
-{ buildEnv, callPackage, haskell-te, haskell-te-defs, haskell-te-src, jq, lib,
-  makeWrapper, miller, pythonPackages, runCommand, sampledBenchmarkData,
-  sampledTestData, stdenv, writeScript }:
+{ buildEnv, callPackage, jq, lib, makeWrapper, miller, pythonPackages,
+  runCommand, sampledBenchmarkData, sampledTestData, stdenv, writeScript }:
 
 with builtins;
 with lib;
