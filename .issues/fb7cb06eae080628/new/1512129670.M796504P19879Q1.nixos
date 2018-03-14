@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 01 Dec 2017 12:00:35 +0000
-State: new
+State: resolved
 Subject: Focus on the systems we evaluate
 Message-Id: <fb7cb06eae080628-0-artemis@nixos>
+resolution: fixed
 
 Lots of background discusses IsaScheme and IsaCoSy, but we evaluate
 QuickSpec.
