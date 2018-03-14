@@ -69,8 +69,12 @@ grestore
 
 % For example theory of lists
 \newcommand{\function}{\rightarrow}
+
 \newcommand{\Zero}{\text{Z}}
 \newcommand{\Succ}{\text{S}}
+\newcommand{\plus}{\text{plus}}
+\newcommand{\mult}{\text{times}}
+
 \newcommand{\List}{\text{List}}
 \newcommand{\ListA}{\text{List} \  a}
 \newcommand{\Nil}{\text{Nil}}
@@ -187,16 +191,16 @@ the conjecture generation of MTE systems. Our contributions include:
 \item A specific instantiation of this methodology, using the Tons of Inductive
   Problems benchmark as a corpus.
 \item Automated tooling to perform this benchmarking.
-\item Application of our methodology to the QuickSpec MTE system, and a
-  discussion of the results.
+\item Application of our methodology to the QuickSpec and IsaCoSy MTE systems,
+  and a comparison and discussion of the results.
 \end{itemize}
 
 Section \ref{sec:background} describes MTE and the conjecture generation problem
 in more detail, along with existing approaches and their evaluation
 methodologies. We explain our proposal for a more general benchmark in section
-\ref{sec:proposal} and section \ref{sec:application} shows the results when
+\ref{sec:proposal} whilst section \ref{sec:application} shows the results when
 applied to existing MTE tools. Analysis of these results is given in section
-\ref{sec:discussion} and concluding remarks in \ref{sec:conclusion}.
+\ref{sec:discussion} and concluding remarks in section \ref{sec:conclusion}.
 
 %- Existing approaches are difficult to compare
 % - They want different things
@@ -260,8 +264,9 @@ following theorem for our theory of lists:
 
 Equation \ref{eq:mapreduce} justifies a rewrite rule for splitting a single
 $\Map$ call into multiple independent calls dealing with different sections of a
-list. Such rules are useful optimisations since each call can be evaluated in
-parallel, leading to the ``map/reduce'' programming paradigm.
+list. Such rules can be useful optimisations, for example in a distributed
+context where since each call can be evaluated in parallel (this is the basis of
+the ``map/reduce'' programming paradigm).
 
 All of these example use cases require the ability to discover theorems about
 some particular theory. This is a hard problem in general, but presents
@@ -286,15 +291,15 @@ the set of generated conjectures to those deemed ``interesting'', since this is
 an imprecise term with many different interpretations. For example, all existing
 approaches agree that simple tautologies are ``uninteresting'', but differ when
 it comes to more complex statements.  Colton \etal{} give a survey of systems for
-theory formation and exploration, and their notions of ``interestingness'' for
-concepts and conjectures, identifying six notions in
-total~\cite{colton2000notion}. These notions, as applied to conjectures, are:
+theory formation and exploration, and their associated notions of
+``interestingness'' for concepts and conjectures~\cite{colton2000notion}. Six
+notions are identified, which are applied to conjectures as follows:
 
-{\bf Empirical plausibility}, which checks whether a property holds
-across some specific examples. This is especially useful for avoiding
-false conjectures, without resorting to a full proof search.
+{\bf Empirical plausibility} checks whether a property holds across some
+specific examples. This is especially useful for avoiding false conjectures,
+without resorting to a full proof search.
 
-{\bf Novelty} is whether a conjecture, or one isomorphic or more
+{\bf Novelty} depends on whether a conjecture, or one isomorphic or more
 general, has already been seen.
 
 {\bf Surprisingness} of a conjecture is whether or not it is
@@ -341,6 +346,7 @@ expressions are in real usage.
     to include those from~\cite{claessen2013automating} (QuickSpec is the
     conjecture generation component of HipSpec) and the similar Speculate
     system~\cite{braquehais2017speculate}. The interestingness measures are
+    to include four more recent systems. The interestingness measures are
     \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
     \iA{}pplicability, \iC{}omprehensibility (low complexity) and \iU{}tility.}
   \label{table:colton}
@@ -384,20 +390,18 @@ Speculate~\cite{braquehais2017speculate},
 IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}
 and IsaScheme~\cite{MontanoRivas2011}.
 
-The latter systems all use testing to check for counterexamples, which ensures
-results are empirically plausible and applicable (conditions are satisfiable,
-types are inhabited, etc.). They also use a small-to-large search order,
-ensuring more easily-comprehensibile conjectures are explored first.
+The latter systems are described in more detail in section~\ref{section:mte},
+but all use testing to check for counterexamples, which ensures results are
+empirically plausible and applicable (conditions are satisfiable, types are
+inhabited, etc.). They also use a small-to-large search order, ensuring more
+easily-comprehensibile conjectures are explored first.
 
-IsaCoSy ensures novelty using a constraint system, such that no generated
-expression can be simplified using a previously-found equation. The other
-systems use post-hoc filters based on unification and term rewriting to discard
-expressions or equations which are special-cases of some other, more general
-result.
-
-IsaCoSy is able to look for commonly desirable patterns, such as commutativity
-and associativity, which increases the utility of its output, whilst IsaScheme
-is completely based around such pattern-instantiation.
+IsaCoSy ensures novelty using a constraint system to prevent special-cases being
+generated, whilst the others use post-hoc filters based on unification and term
+rewriting to achieve the same result. IsaCoSy is able to look for commonly
+desirable patterns, such as commutativity and associativity, which increases the
+utility of its output, whilst IsaScheme is completely based around such
+pattern-instantiation.
 
 This diversity of approaches makes it difficult to compare the existing
 evaluations of these systems directly. In particular, evaluation methods created
@@ -541,6 +545,7 @@ were sometimes under-explained. For an argument of why many of the
 claims made by Lenat about AM were false, see chapter 13 of~\cite{colton:book}.
 
 \subsection{Mathematical Theory Exploration}
+\label{section:mte}
 
 The phrase Mathematical Theory Exploration (MTE) is a recent term
 which seems to have originated with Buchberger and colleagues (see,
@@ -564,27 +569,29 @@ libraries). Buchberger has evaluated the potential of this strategy by
 illustrating the automated synthesis of his own Gr\"obner bases
 algorithm~\cite{buchberger:04}.
 
-Recent systems developed in this area include MATHsAiD~\cite{roy},
-IsaScheme~\cite{MontanoRivas2011} and
-IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}. The goal of the
-MATHsAiD (Mechanically Ascertaining Theorems from Hypotheses, Axioms and
-Definitions) project is to build a tool which takes in a set of axioms, concept
-definitions and a logic and applies its inference rules to reason from the
-axioms to theorems. The motivation is to produce a tool which will help
-mathematicians to explore the consequences of a set of axioms or a particular
-concept definition. One of the main challenges of the project has been to
-automatically evaluate interestingness: to distinguish important theorems from
-results which, although they follow from a set of axioms, are of little
-mathematical interest.
+Recent systems developed in this area include IsaScheme~\cite{MontanoRivas2011},
+IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation},
+QuickSpec~\cite{QuickSpec} and Speculate~\cite{braquehais2017speculate}
+(included in table~\ref{table:colton}) as well as MATHsAiD~\cite{roy}.
+
+The goal of the MATHsAiD (Mechanically Ascertaining Theorems from Hypotheses,
+Axioms and Definitions) project is to build a tool which takes in a set of
+axioms, concept definitions and a logic and applies its inference rules to
+reason from the axioms to theorems. The motivation is to produce a tool which
+will help mathematicians to explore the consequences of a set of axioms or a
+particular concept definition. One of the main challenges of the project has
+been to automatically evaluate interestingness: to distinguish important
+theorems from results which, although they follow from a set of axioms, are of
+little mathematical interest.
 
 %IsaScheme
 Monta{\~n}o-Rivas \etal{} have implemented a scheme-based approach to MTE in their
 IsaScheme system~\cite{MontanoRivas2011}. Schemes are higher-order formulae
 which can be used to generate new concepts and conjectures; variables within the
 scheme are instantiated automatically and this drives the invention process.
-For instance, in the theory of natural numbers, given the concepts of successor
-($suc$), addition ($+$) and zero ($0$), IsaScheme can use the following scheme
-to invent the concept of multiplication:
+For instance, in the theory of natural numbers, given the concepts of zero
+($\Zero$), successor ($\Succ$) and addition ($\plus$), IsaScheme can use the
+following scheme to invent the concept of multiplication:
 
 \[
 \text{def-scheme}(g,h,i,j) \equiv\\
@@ -594,30 +601,72 @@ to invent the concept of multiplication:
     f(i(x),y) = j(y,f(x,y)) & \\
   \end{array} \right.
 \]
+
 where the existentially quantified variable $f$ stands for the new
-function to be defined in terms of the variables g, h, i and j. Within
+function to be defined in terms of the variables $g$, $h$, $i$ and $j$. Within
 the theory of natural numbers, IsaScheme instantiates this scheme with
-$\sigma_1 = \{g \mapsto 0, h \mapsto (\lambda x.0), i \mapsto suc, j
-\mapsto +\}$. In this example, $f \mapsto *$ (multiplication), since:
+$\sigma_1 = \{g \mapsto \Zero, h \mapsto (\lambda x.\Zero), i \mapsto \Succ, j
+\mapsto \plus\}$. In this example, $f \mapsto \mult$ (multiplication), since:
 
 \begin{align*}
-0*y  &= 0 \\
-suc(x) * y &=y + (x*y).
+\mult(\Zero, y)  &= \Zero \\
+\mult(\Succ(x), y) &= \plus(y, \mult(x, y))
 \end{align*}
+
 The new multiplication function $f$ can itself be used to instantiate
 variables in the same scheme, resulting in the invention of the
 exponentiation concept (these examples are taken from~\cite{MontanoRivas2011}).
 
 %IsaCoSy
-The IsaCoSy system (Isabelle Conjecture Synthesis) is a program for
-inductive theory formation, which synthesises conjectures from the
-available constants and free variables. Only terms which do not
-contain subterms that can be rewritten by a set of rewrite rules can
-be synthesised.  Conjectures are tested by sending them to a
-counterexample checker and, if no counterexamples are found, then sent
-to IsaPlanner which attempts to prove them.
+The IsaCoSy system (Isabelle Conjecture Synthesis) conjectures equations by
+enumerating expressions involving a given set of (typed) constants and free
+variables (a signature). A constraint solver forbids certain (sub)expressions
+from being synthesised, and these constraints are extended whenever a new
+conjecture is generated, to avoid generating any special-cases of this
+conjecture in the future. Conjectures are tested by sending them to the
+QuickCheck counterexample finder and, if no counterexamples are found, then
+sent to IsaPlanner which attempts to prove them.
 
-% Discussion.
+%QuickSpec
+QuickSpec emerged from work on the QuickCheck software testing framework for the
+Haskell programming language, and has been used to generate conjectures for the
+subsequent HipSpec and Hipster MTE systems. Like IsaCoSy, a signature is
+provided and terms are enumerated. Rather than a constraint system, QuickSpec
+version 1 collects expressions of the same type into equivalence classes,
+assuming them to be equal. QuickCheck is used to test this assumption by
+instantiating each variable with a randomly chosen value, evaluating the
+resulting expressions and comparing them. Any equivalence class whose elements
+don't compare equal are split up to separate those observably-different
+expressions, and the process is repeated with new random values.
+
+After 500 rounds of testing, any expressions still sharing the same equivalence
+class are conjectured to be equal for all values of their variables. Finally, a
+congruence closure algorithm is applied to these equations, to remove
+redundancies and special-cases.
+
+QuickSpec version 2 replaces this two-step process with a single, iterative
+algorithm similar to that of IsaCoSy. Generated conjectures are fed into a
+Knuth-Bendix completion algorithm to form a corresponding set of rewrite rules.
+As expressions are enumerated, they are simplified using these rules and
+discarded if equal to a known expression. If not, QuickCheck tests whether the
+new expression can be distinguished from the known expressions through random
+testing: those which can are added to the set of known expressions. Those which
+cannot be distinguished are conjectured to be equal, and the rewrite rules are
+updated.
+
+%Speculate
+Speculate is a Haskell tool which operates in a similar way to QuickSpec
+version 2. In addition to equations, Speculate uses the laws of total orders and
+Boolean algebra, along with testing (via LeanCheck), to conjecture inequalities
+and conditional relations between expressions, such as (for
+$x, y \in \mathbb{Z}$):
+
+\begin{equation*}
+  \begin{aligned}
+    x + y \leq \lvert x \rvert + \lvert y \rvert \\
+    x \leq 0 \rightarrow x + \lvert x \rvert = 0
+  \end{aligned}
+\end{equation*}
 
 \subsection{Commonalities and Differences between MTE and ATF}
 
@@ -667,12 +716,10 @@ abstract mathematical objects exist independently of us and are {\em
   involved in discovery, the fields of ATF and MTE are not currently
   concerned with this level of detail and so the philosophical
   distinction is not relevant for our purposes.} As can be seen above,
-some of these historical differences are disappearing, and current
-systems such as MATHsAiD~\cite{roy}, IsaScheme~\cite{MontanoRivas2011}
-and IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation} are bridging the
-methodological gap between ATF and MTE. This is particularly true in terms of
-fully-automatic/user-interactive and the domain-specific/general
-aspects.
+some of these historical differences are disappearing, and recent
+implementations are bridging the methodological gap between ATF and MTE. This is
+particularly true in terms of fully-automatic/user-interactive and the
+domain-specific/general aspects.
 
 \subsection{Existing Evaluations}
 \label{sec:existing}
