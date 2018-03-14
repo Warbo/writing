@@ -11,6 +11,10 @@ rec {
 
   graphs = callPackage ./graphs.nix { inherit teBenchmark tex textWidth; };
 
+  comparison = callPackage ./comparison.nix {
+    inherit (graphs) isacosyData quickspecData;
+  };
+
   # Journal of Automated Reasoning LaTeX files, from
   # http://www.springer.com/cda/content/document/cda_downloaddocument/?SGWID=0-0-45-468198-0
   latex = ./LaTeX.zip;
@@ -18,7 +22,8 @@ rec {
   # The final paper, with all graphs, etc.
   paper = render {
     inherit article;
-    inherit (graphs) graphs timeComparison;
+    inherit (comparison) timeComparison;
+    inherit (graphs    ) graphs;
     name   = "benchmark-article.pdf";
     script = ''
       ln -s "$bibtex"           ./Bibtex.bib
