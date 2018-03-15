@@ -209,7 +209,7 @@ rec {
         library(Exact)
         tbl <- as.matrix(read.csv('precisionSuccess.csv', header=FALSE))
         exact.test(tbl, alternative="two.sided", method='Boschloo',
-                   model='binomial')
+                   cond.row=TRUE, model='binomial')
       '';
     }
     ''
