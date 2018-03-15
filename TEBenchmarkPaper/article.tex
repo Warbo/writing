@@ -47,6 +47,8 @@ grestore
 \usepackage{amssymb}
 \usepackage{array}
 \usepackage{csvsimple}
+\usepackage{float}
+\restylefloat{table}
 \usepackage{hhline}
 \usepackage{mathtools}
 \usepackage{multirow}
@@ -1465,7 +1467,7 @@ samples where both tools succeeded. We pooled these together from all sample
 sizes to produce the following table, and found that QuickSpec is significantly
 different from IsaCoSy with a p value of 0.0026.
 
-{
+\begin{table}[H]
   \centering
   \begin{tabular}{ |l|l|l| }
     \hline
@@ -1475,7 +1477,7 @@ different from IsaCoSy with a p value of 0.0026.
     Not found by QuickSpec & 4                & 28                   \\
     \hline
   \end{tabular}
-}
+\end{table}
 
 Precision was also compared by pooling results from samples where both tools
 finished successfully. We cannot perform McNemar's test in this case, since each
@@ -1483,7 +1485,7 @@ tool generated different sets of conjectures. Instead, we add up the number of
 results which are ``interesting'' (appear in the ground truth) and those which
 are ``uninteresting'' (do not appear in the ground truth):
 
-{
+\begin{table}[H]
   \centering
   \begin{tabular}{ |l|l|l| }
     \hline
@@ -1493,7 +1495,7 @@ are ``uninteresting'' (do not appear in the ground truth):
     QuickSpec & 47          & 301      \\
     \hline
   \end{tabular}
-}
+\end{table}
 
 These totals were tested for independence using Boschloo's test, assuming a
 binomial distribution, and gave an p-value of 0.111. With our (arbitrary) choice
