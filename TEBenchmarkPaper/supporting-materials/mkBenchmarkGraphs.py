@@ -287,7 +287,7 @@ import seaborn           as sns
 def makeColours(agg):
     def go(key):
         from matplotlib.colors import ListedColormap
-        maxVal    = max(agg[key])
+        maxVal    = max([agg[key][i] for i,s in enumerate(agg['success']) if s])
         colourMap = sns.color_palette('viridis', maxVal + 1).as_hex()
         msg('Highest {0} count is {1}'.format(key, maxVal))
         return {
