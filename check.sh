@@ -65,6 +65,7 @@ for PAT in 'Invalid checksum for ISBN' \
            'Suspicious year'           \
            'year ='                    \
            'pages ='                   \
+           'Unexpected protocol://'    \
            '?? "stdin", line 1: Expected comma after last field'
 do
     grep -v "$PAT" < "$DIR/bibclean.stderr" > "$DIR/bibclean.stderr2" || true
