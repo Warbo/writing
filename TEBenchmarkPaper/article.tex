@@ -144,7 +144,7 @@ grestore
 
 \maketitle
 
-% Look carefully at each system's (paper's) eval section
+% Look carefully at each tool's (paper's) eval section
 
 % Make it clear that methodology is the point (it's not just a detail, like in a
 % chemistry paper for example)
@@ -165,7 +165,7 @@ grestore
 \section{Introduction}
 \label{intro}
 
-% Lay out the field of TE: motivation, systems, evaluation, problems...
+% Lay out the field of TE: motivation, tools, evaluation, problems...
 
 \emph{Conjecture generation/formation}, a sub-field of \emph{mathematical theory
   exploration} (MTE), is the open-ended problem of producing conjectures about a
@@ -182,7 +182,7 @@ their choice of evaluation method.
 
 We attempt to solve this discrepancy, at least for the foreseeable future, by
 defining a standard, unambiguous benchmarking approach with which to compare
-the conjecture generation of MTE systems. Our contributions include:
+the conjecture generation of MTE tools. Our contributions include:
 
 \begin{itemize}
 \item A general methodology for benchmarking conjecture generation.
@@ -191,7 +191,7 @@ the conjecture generation of MTE systems. Our contributions include:
 \item A specific instantiation of this methodology, using the Tons of Inductive
   Problems benchmark as a corpus.
 \item Automated tooling to perform this benchmarking.
-\item Application of our methodology to the QuickSpec and IsaCoSy MTE systems,
+\item Application of our methodology to the QuickSpec and IsaCoSy MTE tools,
   and a comparison and discussion of the results.
 \end{itemize}
 
@@ -290,7 +290,7 @@ A major challenge for both ATF and MTE is choosing how to narrow down
 the set of generated conjectures to those deemed ``interesting'', since this is
 an imprecise term with many different interpretations. For example, all existing
 approaches agree that simple tautologies are ``uninteresting'', but differ when
-it comes to more complex statements.  Colton \etal{} give a survey of systems for
+it comes to more complex statements.  Colton \etal{} give a survey of tools for
 theory formation and exploration, and their associated notions of
 ``interestingness'' for concepts and conjectures~\cite{colton2000notion}. Six
 notions are identified, which are applied to conjectures as follows:
@@ -306,13 +306,13 @@ general, has already been seen.
 ``obvious'', for example if it is an instance of a tautology.
 
 {\bf Applicability} depends on the number of models in which a
-conjecture holds. The system of \Bagai{} conjectures the non-existence of
-objects, and hence favours statements with zero applicability. Other systems
-treat applicability as a positive aspect: the more applicable the statement, the
-more interesting it is.
+conjecture holds. The tool of \Bagai{} conjectures the non-existence of
+objects, and hence favours statements with zero applicability. Other tools treat
+applicability as a positive aspect: the more applicable the statement, the more
+interesting it is.
 
 {\bf Comprehensibility} depends on the complexity of a statement. Simpler
-statements are considered more interesting, hence many of the systems explore
+statements are considered more interesting, hence many of the tools explore
 simpler/smaller statements before complex/larger ones, to more efficiently find
 those which are interesting.
 
@@ -342,11 +342,8 @@ expressions are in real usage.
     \tRow{IsaCoSy   & \tEQ                &   X &   X &     &   X &   X &   X}
     \tRow{IsaScheme & \tEQ                &   X &   X &     &   X &   X &   X}
   \end{tabular}
-  \caption{Classification of MTE systems from~\cite{colton2000notion}, extended
-    to include those from~\cite{claessen2013automating} (QuickSpec is the
-    conjecture generation component of HipSpec) and the similar Speculate
-    system~\cite{braquehais2017speculate}. The interestingness measures are
-    to include four more recent systems. The interestingness measures are
+  \caption{Classification of MTE tools from~\cite{colton2000notion}, extended
+    to include four more recent tools. The interestingness measures are
     \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
     \iA{}pplicability, \iC{}omprehensibility (low complexity) and \iU{}tility.}
   \label{table:colton}
@@ -382,15 +379,15 @@ expressions are in real usage.
 % rather than e.g. implications of some abstract specification.
 
 We summarise the criteria in Table 1 and state which were used in key
-ATF/MTE systems. The entries for AM, GT, Graffiti, \Bagai{} and HR are based
-on this survey (the latter is Colton's own system). We extend this analysis to
-some more recent systems in the remaining rows (based on our understanding of
+ATF/MTE tools. The entries for AM, GT, Graffiti, \Bagai{} and HR are based
+on this survey (the latter is Colton's own tool). We extend this analysis to
+some more recent tools in the remaining rows (based on our understanding of
 their function): QuickSpec~\cite{QuickSpec},
 Speculate~\cite{braquehais2017speculate},
 IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}
 and IsaScheme~\cite{MontanoRivas2011}.
 
-The latter systems are described in more detail in section~\ref{section:mte},
+The latter tools are described in more detail in section~\ref{section:mte},
 but all use testing to check for counterexamples, which ensures results are
 empirically plausible and applicable (conditions are satisfiable, types are
 inhabited, etc.). They also use a small-to-large search order, ensuring more
@@ -404,8 +401,8 @@ utility of its output, whilst IsaScheme is completely based around such
 pattern-instantiation.
 
 This diversity of approaches makes it difficult to compare the existing
-evaluations of these systems directly. In particular, evaluation methods created
-for one system might not make sense for another, due to assumptions made about
+evaluations of these tools directly. In particular, evaluation methods created
+for one tool might not make sense for another, due to assumptions made about
 the algorithms' operation. For example, the novelty filters used by QuickSpec
 and Speculate are applied to the whole output set, guaranteeing that no
 special-cases will appear; yet we cannot assume this in the case of IsaCoSy,
@@ -413,18 +410,18 @@ since its constraint solver allows special cases if they're found \emph{before}
 the general case (it does not go back and discard previous results).
 
 With such ambiguous and varied goals, approaches and assessment criteria it is
-difficult to compare MTE systems in a quantitative way, and hence to form some
+difficult to compare MTE tools in a quantitative way, and hence to form some
 measure of ``progress'' for the field. Our proposed benchmarking methodology
 attempts to remedy this by setting a clear target, hopefully in line with the
 myriad goals of existing researchers, whilst being generally applicable to
-systems of this type.
+tools of this type.
 
 \section{Theory Exploration versus Theory
   Formation}\label{exploration-versus-formation}
 
 In this section we put the Mathematical Theory Exploration approach
 into context both historically, and with respect to related approaches
-such as in Automated Theory Formation systems.
+such as in Automated Theory Formation tools.
 
 \subsection{A Short History of Automated Mathematics}
 
@@ -435,11 +432,11 @@ rivalling the labours of the most practised mathematicians in all
 branches of their science.''~\cite[p. 498]{jevons}
 \end{quote}
 
-The first automated mathematical system, the mechanical calculator
+The first automated mathematical tool, the mechanical calculator
 (known as the Pascaline), was an adding machine that could perform
 additions and subtractions directly and multiplication and divisions
 by repetitions, and was conceived by Pascal in 1642 while reorganising
-tax revenues~\cite{d'ocagne}. Subsequent early systems include
+tax revenues~\cite{d'ocagne}. Subsequent early tools include
 M\"uller's universal calculating machine in 1784, which he built for
 the purpose of calculating and printing numerical tables: he invented
 this when he had to check and recalculate some tables relating to the
@@ -451,7 +448,7 @@ machines would be quicker and more reliable~\cite{bowden}. It is
 interesting to note background and motivation: while Pascal and
 Babbage were mathematicians, with an interest in engineering, M\"uller
 was an engineer with an interest in mathematical knowledge. All three
-systems were conceived as an aid to mathematicians, as well as
+tools were conceived as an aid to mathematicians, as well as
 scientists, accountants and surveyors.
 
 Differences in background and motivation continue to be relevant
@@ -474,18 +471,20 @@ methodology. Below we discuss commonalities and differences between
 the two schools of thought.
 
 We limit our discussion to applications in mathematics, although there are
-similar approaches being applied to the task of \emph{scientific} discovery.
+similar approaches being applied to the task of Computational \emph{Scientific}
+Discovery~\cite{king2004functional,Williams20141289,schmidt2009distilling}.
 Scientific knowledge relies on inductive reasoning and experimental testing,
 which (in principle) are not so important to a mathematical theory. However,
-these techniques \emph{do} play an important role in many existing formation and
-exploration tools: in particular, inductive reasoning allows a system to
-conjecture statements which may be too difficult for it to deductively prove;
-whilst experimental testing, e.g. by checking universally-quantified statements
-against some specific values, is a simple way to quickly discard many obvious
-falsehoods generated by powerful but imperfect algorithms (as opposed to, say,
-limiting ourselves to verified theorem generators).
+these techniques \emph{do} play an important role in many mathematical theory
+formation and exploration tools: in particular, inductive reasoning allows a
+tool to conjecture statements which may be too difficult for it to deductively
+prove; whilst experimental testing, e.g. by checking universally-quantified
+statements against some specific values, is a simple way to quickly discard many
+obvious falsehoods generated by powerful but imperfect algorithms (as opposed
+to, say, limiting ourselves to verified theorem generators).
 
 \subsection{Automated Theory Formation}
+\label{section:atf}
 
 % 1. history of terminology
 Automated theory formation derives its terminology from psychology in which the
@@ -494,7 +493,7 @@ describe the search for features which differentiate exemplars from
 non-exemplars of various categories. Lenat used this term in his 1977 paper:
 {\em Automated Theory Formation in Mathematics}~\cite{lenat:77}.
 
-% 4. example systems - AM, HR, ...
+% 4. example tools - AM, HR, ...
 When Lenat built the AM system~\cite{lenat:77}, there were systems
 which could define new concepts for investigation, such as those
 described in~\cite{winston}, and systems which could discover
@@ -681,6 +680,7 @@ mathematical theory, including concepts, conjectures, theorems, axioms
 and examples. Both strands contrast themselves with Automated Theorem
 Proving. The main historical differences between these two approaches
 seem to be that in MTE:
+
 \begin{itemize}
 \item the main proponents define themselves as mathematicians (they
   hold a PhD and have experience in research mathematics);
@@ -724,80 +724,89 @@ domain-specific/general aspects.
 \subsection{Existing Evaluations}
 \label{sec:existing}
 
-There are three aspects to consider when we evaluate a conjecture generation
-system:
+There are three aspects to consider when evaluating a tool for conjecture
+generation:
 
 \begin{enumerate}
-\item The quality of each conjecture, which is the ``interestingness'' discussed
-  above.
-\item The quality of the \emph{set} of conjectures produced, used for relative
-  interestingness criteria like novelty, as well as to assess consistency.
-\item Performance of the system, to find the balance struck between output
+\item The quality of each individual conjecture, which we will refer to as their
+  ``interestingness''.
+\item The quality of the \emph{set} of generated conjectures, which is important
+  for criteria like novelty, as well as to assess consistency.
+\item Resources used by the tool, to find the balance struck between output
   quality and time taken.
 \end{enumerate}
 
-We also make the assumption that the system is intended to be \emph{general},
-and hence isn't hard-coded or fine-tuned to only perform well in a narrow
-domain. Examples where this does \emph{not} hold include the natural number
-heuristics of AM (discussed above), as well as machine learning models trained
-on some specific dataset.
+We make the assumption that each tool is intended to be \emph{general}, and
+hence isn't hard-coded or fine-tuned to only perform well in a narrow domain.
+Examples where this does \emph{not} hold include the natural number heuristics
+of AM discussed in section~\ref{section:atf}, as well as machine learning models
+trained on some specific dataset (such as this benchmark).
 
-If we limit ourselves to exploring higher-order theories with inductive types
-(a domain useful for analysing software), we do find a direct comparison of
-three systems~\cite{claessen2013automating}: HipSpec, IsaCoSy and IsaScheme.
-QuickSpec, shown in table \ref{table:colton}, is the conjecture-generating
-component of HipSpec.
+Evaluation of new tools and techniques for conjecture generation tends to be
+\emph{ad hoc} and hence difficult to compare, whilst comparative surveys (such
+as Colton's) are descriptive and qualitative rather than providing direct
+numerical measurements.
 
-This comparison uses \emph{precision/recall analysis}: a particular set of
-definitions is chosen, such as those in figure \ref{figure:list_theory}, and a
-\emph{ground truth} is chosen as the 'ideal' set of conjectures which we would
-like an MTE system to produce from these definitions.
-
-Each system is run on these definitions, and their outputs are compared to the
-ground truth. To score 100\% on precision and recall, an MTE system must output
-all of the conjectures which appear in the ground truth, and nothing else:
+One quantitative approach which has gained traction is \emph{precision/recall
+  analysis}. This has been applied to IsaCoSy, IsaScheme and HipSpec, the latter
+providing a direct comparison of these
+tools~\cite{claessen2013automating}.\footnote{Unfortunately this comparison only
+  reports prior results from the other tools, rather than reproducing them.
+  This makes the numbers less comparable, since each tool was tested with
+  slightly different definitions (e.g. whether or not the exponential and
+  maximum functions were included).} To measure precision and recall we first
+choose a set of definitions, such as those in figure \ref{figure:list_theory},
+and a \emph{ground truth} to treat as the 'ideal' set of conjectures we would
+like a tool to produce for those definitions. Each tool is run and their outputs
+are compared to the ground truth. To score 100\% on precision and recall, all of
+the conjectures which appear in the ground truth must be generated, and nothing
+else:
 
 \begin{itemize}
-\item \emph{Precision} is the proportion of a system's output which appears in
-  the ground truth. This penalises systems which output large numbers of
-  conjectures in the hope that some turn out to be ``good''.
+\item \emph{Precision} is the proportion of a tool's output which appears in
+  the ground truth. This penalises overly-liberal tools which output large
+  numbers of conjectures in the hope that some turn out to be ``good''.
 \item \emph{Recall} is the proportion of the ground truth which appears in the
-  system's output. This penalises systems which overly restrict their output to
-  avoid generating ``bad'' conjectures.
+  tool's output. This penalises overly-conservative tools which generate very
+  few conjectures as a way to avoid ``bad'' ones.
 \end{itemize}
 
-Precision and recall fulfil our second requirement, by directly measuring the
-quality of the \emph{set} of conjectures. Their ``interestingness'' criterion is
-indirect: asking only whether or not a conjecture appears in the ground truth.
-A satisfactory solution to our first requirement hence requires careful choice
-of the ground truth set.
+Precision and recall act as quality tests for sets of conjectures, fulfilling
+one of our requirements. They also provide a coarse quality assessment for
+individual conjectures: either a conjecture appears in the ground truth set or
+it doesn't.
 
-This particular analysis takes its ground truths from the standard library of
-the Isabelle theorem prover, with one involving the natural numbers, and the
-other involving the list functions from figure \ref{figure:list_theory}. Since
-the library authors have gone to the effort of stating, proving and including
-these theorems in every copy of their software, this is a good indication that
-they are useful or important.
+The analyses in~\cite{claessen2013automating} took their definitions and ground
+truths from the standard library of the Isabelle theorem prover: since the
+library authors have gone to the effort of stating, proving and including these
+theorems in every copy of their software, this is a good indication that they
+are interesting.
 
-One problem with this choice is the small size of these libraries. For example,
-the benchmark based on Isabelle/HOL's theory of natural numbers given
-in~\cite{Johansson.Dixon.Bundy:conjecture-generation} contains only 4
-definitions and a ground truth of 12 theorems. Whilst such benchmarks allow
-objective comparisons between different approaches, their narrow scope doesn't
-provide much indication of performance in different, especially \emph{novel},
-domains.
+Two tests were performed: one on a theory of natural numbers and one on a theory
+of lists (whose definitions are shown in figure~\ref{figure:list_theory}). These
+tests are limited both in number (it is difficult to draw general conclusions
+from two datapoints) and by the small size of these theories (e.g. the natural
+number theory from~\cite{Johansson.Dixon.Bundy:conjecture-generation} contains
+only 4 definitions and 12 theorems).
+
+We believe that this is a viable approach to drawing meaningful, objective
+conclusions about such tools, but larger data sets are needed to judge
+performance in different, especially \emph{novel}, domains (which, after all, is
+the purpose of such tools). In addition, we might be concerned that such
+``popular'' theories may be unrepresentative of typical usage. For example, we
+would not expect the library functions in a typical verification problem to be
+as mathematically rich as number theory.
 
 \section{Theory Exploration Benchmark}
 \label{sec:proposal}
 
 Our main contribution is a benchmarking methodology, shown in figure
-\ref{figure:flow_chart}, which generates both a large definition/ground-truth
-corpus (an order of magnitude larger than previous work) and a scalable,
-statistical approach to evaluating MTE systems using this corpus. We follow a
-precision/recall approach similar to the work described above, with the main
-difference being the source of definitions and ground truths: we take existing
-problem sets designed for automated \emph{theorem proving}, and adapt their
-content for use in the \emph{theory exploration} setting.
+\ref{figure:flow_chart}, which both generates a large definition/ground-truth
+corpus, and provides a scalable, statistical approach to evaluating MTE tools
+using this corpus. We follow a precision/recall approach similar to prior work,
+with the main difference being the source of definitions and ground truths: we
+take existing problem sets designed for automated theorem proving, and adapt
+their content for use in the conjecture generation setting.
 
 \subsection{Preparation}
 \label{section:prep}
@@ -805,8 +814,8 @@ content for use in the \emph{theory exploration} setting.
 Automated theorem proving is an active area of research, with large problem sets
 and regular competitions to prove as much as possible, as fast as
 possible~\cite{pelletier2002development}. These problem sets are an opportunity
-for theory exploration, as their definitions and theorems can be used as a
-corpus, in the same way that Isabelle libraries have been used in the past.
+for MTE, as their definitions and theorems can be used as a corpus in the same
+way that Isabelle libraries have been used in the past.
 
 Some problem sets are more amenable for this purpose than others. The most
 suitable are those which have the following properties:
@@ -818,12 +827,13 @@ suitable are those which have the following properties:
   SMT-COMP~\cite{barrett2005smt}, where many problems involve uninterpreted
   functions, whose behaviour is \emph{implicit} in the logical structure of the
   theorem statement but not separately \emph{defined}.
-\item Definitions should be \emph{strongly typed}, such that they can be
-  translated into the native language of each MTE system (in this work, that
-  includes Haskell\iffalse FIXME and Isabelle\fi).
-\item The problem set should be relevant to the desired domain. In our case, we
-  desire higher-order functions and inductively defined types, which rules out
-  first-order languages/logics (such as TPTP~\cite{sutcliffe2009tptp}).
+\item Definitions should be translatable into a form suitable for the MTE tools
+  under study. Our application translates to Haskell and Isabelle, which also
+  benefits from having definitions be strongly typed.
+\item The problem set should be relevant to the desired domain. Our focus on
+  functional programming requires higher-order functions and inductively defined
+  datatypes, which rules out first-order languages/logics (such as
+  TPTP~\cite{sutcliffe2009tptp}).
 \item Since it will act as our ground truth, the problem set should ideally
   contain every ``interesting'' conjecture involving its included
   definitions. Realistically, we should aim for each definition to appear in
@@ -835,8 +845,8 @@ suitable are those which have the following properties:
 
 Once such a problem set has been chosen, we must separate the definitions
 referenced by the theorems from the theorem statements themselves. The former
-will be used as input to the MTE systems under evaluation, whilst the latter
-form a ground truth corpus against which to compare the MTE output.
+will be used as input to the tools, whilst the latter form a ground truth corpus
+against which to compare the output.
 
 It is important to ensure that there are no duplicate definitions: we are only
 concerned with the \emph{logical} content of the input, not the more arbitrary
@@ -844,11 +854,11 @@ aspects like the names of functions. For example, consider a problem set which
 includes a commutativity theorem for a \texttt{plus} function, and an
 associativity theorem for an \texttt{add} function, where the definitions of
 \texttt{plus} and \texttt{add} are $\alpha$-equivalent. We would expect an MTE
-system to conjecture commutativity and associativity for \emph{both} functions,
-or for \emph{neither} function, since they're logically equivalent. Yet a
-na\"ive precision/recall analysis would treat commutativity of \texttt{add} and
-associativity of \texttt{plus} as \emph{uninteresting}, since they don't appear
-in the ground truth.
+tool to either conjecture commutativity and associativity for \emph{both}
+functions, or for \emph{neither} function, since they're logically equivalent.
+Yet a na\"ive precision/recall analysis would treat commutativity of
+\texttt{add} and associativity of \texttt{plus} as \emph{uninteresting}, since
+they don't appear in the ground truth.
 
 For this reason, duplicates should be removed, and any references in the theorem
 statements updated to use the remaining definition (e.g. chosen based on
@@ -859,39 +869,40 @@ instead.
 \subsection{Sampling}
 
 We could, in theory, send these de-duplicated definitions straight into an MTE
-system, and use the updated theorem statements as the ground truth for analysis.
+tool and use the updated theorem statements as the ground truth for analysis.
 However, this would cause two problems:
 
 \begin{itemize}
 \item The result would be a single data point, which makes it difficult to
   infer performance \emph{in general}.
-\item It is impractical to run any existing MTE system on ``large'' inputs,
+\item It is impractical to run existing MTE tools on ``large'' inputs,
   containing more than a few dozen definitions.
 \end{itemize}
 
 To solve both of these problems we instead \emph{sample} a subset of
-definitions. Given a sample size, we choose a subset of that many definitions,
-and provide those definitions as input to our MTE tool. We generate a
-corresponding ground truth by selecting those theorems from the corpus which
-``depend on'' (contain references to) \emph{only} the definitions in that
-sample. Transitive dependencies aren't required (e.g. a theorem which only
-references \texttt{times} does not depend on \texttt{plus}, even if
-\texttt{plus} occurs in the definition of \texttt{times}).
+definitions.\footnote{This could be done randomly, but for reproducibility we
+  use a deterministic order (based on cryptographic hashes, to discourage
+  ``cheating'').} Given a sample size, we choose a subset of that many definitions,
+and provide only those as input to the tool. We generate a corresponding
+ground truth by selecting those theorems from the corpus which ``depend on''
+(contain references to) \emph{only} the definitions in that sample. Transitive
+dependencies aren't required (e.g. a theorem which only references
+\texttt{times} does not depend on \texttt{plus}, even if \texttt{plus} occurs in
+the definition of \texttt{times}).
 
 Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
-given sample size, increasing the size of the corpus (which, as detailed above,
-is advantageous) makes it less likely that a chosen sample will contain all of
+given sample size, increasing the size of the corpus (which provides better
+statistics) makes it less likely that a chosen sample will contain all of
 a theorem's dependencies. The majority of such samples would hence have an empty
 ground truth, and thus $0$ precision and undefined recall \emph{independent} of
-what the MTE tool produces! This is clearly undesirable as an evaluation
-method.
+the tool's output! This is clearly undesirable as an evaluation method.
 
 Instead, we only allow a sample if it contains all dependencies of at least one
 theorem. We could do this using rejection sampling, but it is more efficient to
-pick a theorem, weighted in proportion to their number of dependencies (ignoring
-those with too many dependencies to fit in our sample). We use those
-dependencies as our sample, padded up to the required size with definitions
-chosen uniformly from the remainder.
+pick a theorem, weighted in proportion to their number of dependencies and
+ignoring those with more dependencies than our sample size. That theorem's
+dependencies become our sample, padded up to the required size with uniform
+choices from the remaining definitions.
 
 The ground truth for such samples is guaranteed to contain at least one theorem
 (the one we picked), and hence the precision and recall will depend meaningfully
@@ -900,78 +911,96 @@ on the tool's output.
 \subsection{Evaluation}
 
 Given a sample of definitions and a corresponding ground truth, the actual
-execution of the MTE system proceeds as in prior work. We must translate the
-chosen definitions into the particular input format of the tool under study,
-then we time the execution, with a timeout after e.g. 5 minutes.
+execution of the MTE tool proceeds as in prior work. We must translate the
+chosen definitions into the required input format, then we time the execution
+with a timeout (e.g. 5 minutes).
 
 In our experiments we have found that memory usage is also an important part of
-a system's performance, but rather than complicating our analysis with an extra
-dimension, we instead set a limit (as large as practical) and terminate program
-runs which cross it.~\footnote{We could treat the hardware's RAM capacity as our
-  limit, allow the operating system to swap any overflow to disk, and wait for
-  the inevitable slowdown to trigger the timeout. This requires no work to
-  implement, but wastes a lot of time waiting for runs which could otherwise be
-  terminated early.} This is in line with the expected usage of these systems:
+a tool's performance, but rather than complicating our analysis with an extra
+dimension, we instead allow programs to use as much memory as they like, and
+either get killed by the operating system or slow down so much from swapping
+that they time out. This is in line with the expected usage of these tools:
 either there is enough memory, or there isn't; implementations shouldn't be
 penalised for making use of available resources.
 
-This approach produces a single runtime, precision and recall value for each
+To calculate precision and recall, the conjectures generated by each tool, as
+well as the ground-truth theorems, need to be parsed into a common format and
+compared syntactically after normalising away ``irrelevant'' details. We
+consider variable naming to be irrelevant, which can be normalised by numbering
+free variables from left to right and using de Bruijn indices for bound
+variables. We also consider the left/right order of equations to be irrelevant,
+which we normalise by choosing whichever order results in the
+lexicographically-smallest expression.
+
+Other than $\alpha$-equivalence and equation symmetry, we specifically
+\emph{ignore} logical relationships between syntactically distinct statements,
+such as one equation being implied by another. Whilst logically sound,
+second-guessing the ground truth in this way would harm other aspects which
+influence interestingness (for example, a more general statement is more widely
+applicable, but it might also be harder to comprehend).
+
+This procedure gives us a single runtime, precision and recall value for each
 sample. We propose two methods for analysing this data: \emph{summarising}
-the performance of an MTE system, or \emph{comparing} the performance of
-\emph{two} MTE systems.
+the performance of a single MTE tool and \emph{comparing} the performance of two
+tools.
 
 \subsection{Summarising}
 
-Each sample is only explored once, so that we cover as many independent samples
-as possible to better estimate how a system's performance generalises to unseen
-inputs. To combine these data into an aggregate summary depends on what we are
-interested in measuring.
+Each sample is only explored once by each tool, so that we cover as many
+independent samples as possible to better estimate how a tool's performance
+generalises to unseen inputs. How we combine these data into an aggregate
+summary depends on what we are interested in measuring.
 
-One general question we might ask is how a system's performance scales with
-respect to the input size (the number of definitions in the theory). This is
+One general question we might ask is how a tool's performance scales with
+respect to the input size (the number of given definitions). This is
 straightforward to measure by varying the sample size, but we need some way to
 combine the results from samples of the same size.
 
-The precision and recall for multiple samples $S$ can be combined in two ways:
-finding their mean value (the \emph{average of the ratios}) or by summing the
-numerators and denominators (the \emph{ratio of the averages}). The former gives
-the expected precision and recall for a run, which is of direct relevance to
-users of these tools, and is hence our preferred measure. The latter assigns
-more weight to theories which generate more conjectures, but we avoid this since
-there is no \emph{a priori} justification for considering such theories as
-``better''.
-
-We summarise the runtimes by choosing their median, as this is more robust
+We can summarise runtimes by choosing their median, as this is more robust
 against long-running outliers, and hence represents performance for a
-``typical'' theory.
+``typical'' input of that size. Unlike previous one-off evaluations, we can also
+compute the \emph{spread} of our data, for example with the inter-quartile
+range.
 
-Another advantage to our statistical approach is that we can compute the
-\emph{spread} of our data, which is unknown in the previous one-off
-evaluations. In particular, we might be concerned that such previous evaluations
-used ``popular'' theories, like those involving natural numbers, which may be
-unrepresentative of typical usage: we should not expect a typical user's theory
-(e.g. a software library) to be as mathematically rich as number theory!
+The precision and recall for multiple samples can be combined in two ways. We
+can calculate their mean value, known as the \emph{average of the ratios}, to
+find the expected precision and recall for runs of this size. Alternatively, we
+can sum their numerators and denominators to get the \emph{ratio of the
+  averages}: this normalises the size of the generated and ground truth sets,
+letting us model precision and recall as simple Bernoulli processes.
 
 \subsection{Comparison}
 
-To encourage competition in the field, it is important to compare the relative
-performance of different MTE systems on the same task. Since the aggregate
-statistics in the above summaries do not include details of specific runs, any
-comparison based on them would have very low statistical power, and therefore it
-is appropriate to use an alternative approach when comparing.
+To measure progress and encourage competition in the field, it is important to
+compare the relative performance of different tools on the same task. Since the
+aggregate statistics in the above summaries have obscured the details of
+specific runs, any comparison based on them (such as comparing average recall)
+would have very low statistical power. More direct comparisons can be made using
+\emph{paired} tests, since for each individual sample we have measurements for
+\emph{both} tools.
 
-We propose comparing the data points directly, using a \emph{paired difference
-  test}: for each individual sample, we find the \emph{difference} between the
-two systems' data \emph{for that sample}. We then aggregate these
-\emph{differences}, to determine whether one system performs significantly
-better or worse than the other.
+We propose that running times are compared using a Wilcoxon signed-rank
+test~\cite{wilcoxon1945individual}, since it does not require that the data be
+normally distributed (unlike, say, the z-test or t-test). In our application we
+follow a variant of the Speedup-Test protocol of Touati, Worms and
+Briais~\cite{touati2013speedup}; the differences are our use of the paired form
+of the Wilcoxon test, and the fact that each run was performed on a different
+sample (to reduce sampling bias, at the expense of accuracy).
 
-This neatly avoids the variance inherent in the summary statistics, and (with
-enough samples) approaches a normal distribution. Paired difference tests are
-also robust to the censoring caused by timeouts: upper-bounding the run time
-gives an upper bound to the (observable) differences, biasing our inference
-towards the null hypothesis (indistinguishable performance) rather than
-unfounded conclusions.
+Another benefit to such a paired difference test is its robustness to the
+censoring caused by timeouts: upper-bounding the run time gives an upper-bound
+to the observable difference, which biases our results \emph{towards} the null
+hypothesis of indistinguishable performance.
+
+To compare the recall we use the standard McNemar test for paired samples: each
+ground-truth theorem is categorised as either being found only by the first
+tool, only by the second, by both or by neither. Those found by both or neither
+are ignored, and the tool-specific numbers are tested for marginal homogeneity
+(i.e. whether their differences give rise to similar totals).
+
+We cannot use McNemar's test to compare precision, since each tool may generate
+different conjectures. Instead, we use Boschloo's form of Barnard's test to
+compare the number of wanted and unwanted conjectures generated by each tool.
 
 \begin{figure}
   \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm,
@@ -1001,7 +1030,7 @@ unfounded conclusions.
     \node (def) [process, below  left=1.5cm and -1cm of sep]{Remove duplicate definitions};
     \node (ref) [process, below right=1.5cm and -1cm of sep]{Update references};
 
-    \node (thy)  [startstop, below=1cm of def]{Full Theory};
+    \node (thy)  [startstop, below=1cm of def]{Distinct Definitions};
     \node (thm)  [startstop, below=1cm of ref]{Theorem Corpus};
 
     \draw [arrow] (in)  -- (sep);
@@ -1016,20 +1045,18 @@ unfounded conclusions.
 
     % Sampling section
 
-    \node (choose) [process, below=of thm   ]{Sample a theorem};
-    \node (deps)   [process, below=of choose]{List referenced definitions};
+    \node (choose) [process, below=of thm   ]{Choose a theorem};
+    \node (deps)   [process, below=of choose]{List theorem dependencies};
 
     % Create dummy coordinate below deps, then use its y coordinate for pad
     \coordinate [below=of deps] (padDummy);
     \path let \p{dummy} = (padDummy),
               \p{in}    = (in)
               in coordinate (padPos) at (\x{in}, \y{dummy});
-    \node (pad)  [process, at=(padPos)]{Sample definitions to pad list};
+    \node (pad)  [process, at=(padPos)]{Pad list to form sample};
 
-    \node (find) [process,   below right=1.5cm and -1cm of pad]{List all applicable theorems};
+    \node (sthm) [startstop, below right=1.5cm and -1cm of pad]{Ground Truth};
     \node (sthy) [startstop, below  left=1.5cm and -1cm of pad]{Sampled Theory};
-
-    \node (sthm)  [startstop, below=of find]{Ground Truth};
 
 
     % Calculate position of (size) using let, then define as normal
@@ -1042,7 +1069,7 @@ unfounded conclusions.
     \path let \p{pad}  = (pad),
               \p{sthm} = (sthm)
            in coordinate (runPos) at (\x{pad}, \y{sthm});
-    \node (run) [process, below=of runPos]{Run MTE system};
+    \node (run) [process, below=of runPos]{Run MTE tool};
     \node (pr)  [process, below=of run]{Analysis};
 
     \node (prec) [startstop, below=of pr  ]{Precision};
@@ -1055,9 +1082,8 @@ unfounded conclusions.
     \draw [arrow] (deps)   |- (pad);
     \draw [arrow] (size)   -- (choose);
     \draw [arrow] (size)   -- (pad);
-    \draw [arrow] (pad)    -- (find);
+    \draw [arrow] (pad)    -- (sthm);
     \draw [arrow] (pad)    -- (sthy);
-    \draw [arrow] (find)   -- (sthm);
     \draw [arrow] (sthy)   |- (run);
     \draw [arrow] (run)    -- (pr);
     \draw [arrow] (sthm)   |- (pr);
@@ -1067,7 +1093,7 @@ unfounded conclusions.
 
 
     % Awkward arrow
-    \draw [arrow] (thm) -| ([shift={(7mm,-7mm)}]thm.east) |- (find);
+    \draw [arrow] (thm) -| ([shift={(7mm,-7mm)}]thm.east) |- (sthm);
 
     % Braces
 
@@ -1116,8 +1142,7 @@ unfounded conclusions.
 
 We have applied our benchmarking methodology to the QuickSpec and IsaCoSy MTE
 tools, using version 0.2 of the TIP (Tons of Inductive Problems) theorem proving
-benchmark as our ground truth corpus. TIP 0.2 contains 343 theorem statements,
-which depend on 182 distinct function definitions.
+benchmark as our ground truth corpus.
 
 To determine our benchmarking parameters we ran some initial tests on both tools
 for a few samples sized between 1 and 100, for an hour each. Most QuickSpec runs
@@ -1126,30 +1151,16 @@ timed out. IsaCoSy mostly finished within 300 seconds on sample sizes up to 4,
 but by size 8 was mostly timing out; its few successes above this took thousands
 of seconds each, which we deemed infeasibly long.
 
-We decided to benchmark sample sizes up to 20, since neither tool seemed to
-perform well beyond this. Our results will be analysed by Speedup-test protocol,
-which follows the statistical ``rule of thumb'' of treating sample sizes
-$\leq$ 30 as ``small'', so we pick 31 samples of each size in order to cross
-this (arbitrary) threshold\footnote{Only 14 samples of size 1 were analysed, and
-  30 of size 2, since the rest were duplicates. This is due to the constraint
-  that samples contain at least one theorem's dependencies.}. This gave $20$
-sizes $\times 31$ samples $\times 2$ tools $= 1240$ runs. To keep the total time
-down to a few days we chose a timeout of 300 seconds, since that covered most of
-the successful QuickSpec and IsaCoSy results we saw, and longer times gave
-rapidly diminishing returns.
-
-We normalised the conjectures generated by each tool, as well as the theorems
-from the ground truth, by numbering their free variables from left to right and
-using de Bruijn indices for bound variables. Since both tools can only output
-equations, we also sorted their left- and right-hand-sides into lexicographical
-order. Precision and recall were calculated by syntactically comparing the sets
-of generated conjectures to those of their ground truth. Other than equation
-symmetry, we specifically \emph{ignored} logical relationships between
-syntactically distinct statements, such as one equation being implied by
-another. Whilst logically sound, second-guessing the ground truth in this way
-would harm the other aspects which we care about which influence interestingness
-(for example, a more general statement is more widely applicable, but it might
-also be harder to understand).
+Based on this we decided to benchmark sample sizes up to 20, since neither tool
+seemed to perform well beyond that. The Speedup-test protocol follows the
+statistical ``rule of thumb'' of treating sample sizes $\leq$ 30 as ``small'',
+so we pick 31 samples of each size in order to cross this (arbitrary)
+threshold. This gave a total of 1240 runs. To keep the benchmarking time down to
+a few days we chose a timeout of 300 seconds, since that covered most of the
+successful QuickSpec and IsaCoSy results we saw, and longer times gave rapidly
+diminishing returns. During analysis, duplicate samples (caused by our sampling
+restrictions) were found and discarded, so only 14 samples of size 1 were used
+and 30 of size 2.
 
 \subsection{TIP}
 
@@ -1230,36 +1241,21 @@ When we add all of these generated types and functions to those in TIP, we get a
 total of 3598 definitions. Removing $\alpha$-equivalent duplicates leaves 269,
 and we choose to only sample from those 182 functions which occur in at least
 one theorem statement (this removes ambiguity about which \emph{definitions}
-count as ``interesting'' and which are just ``implementation details'' for other
+count as interesting and which are just ``implementation details'' for other
 definitions).
 
 TIP comes with software to translate its definitions into Haskell and Isabelle
 code, including comparison functions and random data generators suitable for
-QuickSpec. We translate all 269 unique definitions into a single module/theory
+QuickCheck. We translate all 269 unique definitions into a single module/theory
 which is imported on each run of the tools, although only those functions which
 appear in the current sample are actually explored.
 
 \subsection{QuickSpec}
 
-We benchmarked QuickSpec version 0.9.6, which is tool written in Haskell for
-conjecturing equations involving a given set of Haskell functions and
-universally-quantified variables (a \emph{signature}).
-
-The QuickSpec algorithm first enumerates all well-typed expressions containing
-terms from the signature, up to a chosen depth (3 by default). Expressions of
-the same type are assumed to be equal, and grouped into equivalence classes. A
-testing process then tries to refute this assumption by instantiating each
-variable with a randomly chosen value (using the QuickCheck testing library),
-evaluating the expressions with those values and comparing the results. The
-equivalence classes are split up to separate any expressions which are observed
-to be different, and the process is repeated with new random values.
-
-After 500 rounds of testing, any expressions still sharing the same equivalence
-class are conjectured to be equal. Finally, a congruence closure algorithm is
-applied to these equations, to remove redundancies and special-cases.
-
-In order to thoroughly benchmark QuickSpec, we need to automate some of the
-decisions which are normally left up to the user:
+We benchmarked QuickSpec version 1 (0.9.6), a tool written in Haskell for
+conjecturing equations involving Haskell functions, described in more detail in
+section~\ref{section:mte}. In order to thoroughly benchmark QuickSpec, we need
+to automate some of the decisions which are normally left up to the user:
 
 \begin{itemize}
 \item We must decide what variables to include. We choose to add three variables
@@ -1359,15 +1355,19 @@ IsaCoSy:
 \begin{itemize}
 \item TIP includes a benchmark called \texttt{polyrec} whose types cannot be
   encoded in Isabelle. We strip out this type and the functions which depend on
-  it before translating.
+  it before translating. It still appears in samples and contributes to the
+  ground truth, which penalises IsaCoSy for being unable to explore such
+  definitions.
 \item When using a type in an IsaCoSy signature, that type's constructors will
   automatically be included in the exploration. Since those constructors will
   not appear in the ground truth (we use $\eta$-expanded wrappers instead, and
   even those may not be present in the current sample) this will unfairly reduce
-  the tool's precision. To avoid this, we add a post-processing step which
+  the calculated precision. To avoid this, we add a post-processing step which
   replaces all occurrences of a constructor with the corresponding wrapper, then
   discards any conjectures which involve functions other than those in the
-  current sample.
+  current sample. This presumably results in more work for IsaCoSy, exploring
+  constructors unnecessarily, but it at least does not bring down the quality
+  measures.
 \item Since Isabelle is designed for theorem proving rather than programming, it
   requires every definition to be accompanied by proofs of exhaustiveness and
   termination. These are difficult to generate automatically, and don't exist in
@@ -1377,7 +1377,7 @@ IsaCoSy:
 \item Partial functions cause problems during exploration, since they can throw
   an ``undefined'' exception which causes IsaCoSy to abort. We avoid this by
   pre-populating IsaCoSy's constraint set with these undefined expressions
-  (for example \texttt{head Nil}), hence preventing IsaCoSy from ever generating
+  (for example $\Head(\Nil)$), hence preventing IsaCoSy from ever generating
   them.
 \end{itemize}
 
@@ -1385,9 +1385,9 @@ IsaCoSy:
   \centering
   \input{isacosytime.pgf}
   \caption{Running times of IsaCoSY on theories sampled from TIP. Each point
-    is an individual run, with 30 per size except for 2 (29). Colour indicates
-    the total number of conjectures produced by each run, with failing processes
-    shown in red (timeouts and out of memory). Points are spread out
+    is an individual run, with 31 per size except for 1 (14) and 2 (30). Colour
+    indicates the total number of conjectures produced by each run, with failing
+    processes (timeouts and out of memory) shown in red. Points are spread out
     horizontally to prevent overlaps. Box plots show median and quartiles, with
     whiskers showing points at 1.5$\times$~inter-quartile range.}
   \label{figure:isacosy_runtimes}
@@ -1421,15 +1421,11 @@ too wide to be definitive.
 
 \subsection{Comparison}
 
-We compare the running times of QuickSpec and IsaCoSy using a similar protocol
-to the Speedup-Test of Touati, Worms and Briais~\cite{touati2013speedup}. We
-treat each of our sample sizes as a separate ``benchmark'', but deviate from
-their approach by using a different input (sample) for each run. This reduces
-the sampling bias, but also reduces the accuracy of our confidence intervals.
-We used version 2 of the Speedup-Test \texttt{R} implementation, which we
-patched to use the \emph{paired} form of the (one-sided) Wilcoxon signed-rank
-test~\cite{wilcoxon1945individual}, since this increases our statistical power
-given that each sample is run through both tools. We use Pratt's
+We compare the running times of QuickSpec and IsaCoSy using our paired variant
+of the Speedup-Test protocol, where each of our sample sizes is a separate
+``benchmark''. We used version 2 of the Speedup-Test \texttt{R} implementation,
+which we patched to use the \emph{paired} form of the (one-sided) Wilcoxon
+signed-rank test~\cite{wilcoxon1945individual}. We use Pratt's
 method~\cite{pratt1959remarks} to handle ties, which occur when both tools time
 out.
 
@@ -1440,11 +1436,15 @@ only performed if more than 30 samples are available. This was the case for all
 sample sizes except for 1 and 2 (due to the removed duplicates), and hence those
 two speedups were not deemed statistically significant. For all other sample
 sizes QuickSpec was found to be significantly faster with $\alpha = 0.05$,
-giving a 95\% confidence interval for the proportion of (median) speedups to be
-$[0.669;0.982]$. The magnitude of each speedup is is given in
-table~\ref{table:speedups}.
+putting the proportion of sizes with faster median times between 66.9\% and
+98.2\% with 95\% confidence. The magnitude of each speedup is given in
+table~\ref{table:speedups}. We would predict the speedup to grow for larger
+sample sizes, but the increasing proportion of timeouts causes our estimates to
+become more conservative: by size 20 most runs are timing out, and hence are
+tied.
 
 \begin{table}
+  \centering
   \begin{tabular}{ |r|l| }
     \hline
     \bfseries Sample Size & \bfseries Speedup
@@ -1452,18 +1452,66 @@ table~\ref{table:speedups}.
     {\\\hline\csvcoli&\csvcolii} \\
     \hline
   \end{tabular}
-  \caption{Speedup when using QuickSpec compared to IsaCoSy for each sample
-    size. Those which aren't statistically significant with 95\% confidence are
-    marked as ``-''. These are conservative estimates, since the difference is
-    bounded by the timeout.}
+  \caption{Speed up from using QuickSpec compared to IsaCoSy, as reported by
+    Speedup-test for a confidence level of 95\%. Sizes 1 and 2 were not
+    considered statistically significant due to having less than 30 samples.
+    These are conservative estimates, since the 300 second time limit acts to
+    reduce the measured time difference.}
   \label{table:speedups}
 \end{table}
 
-% Altogether TIP problem by QuickSpec and IsaCoSy theory
-% exploration systems. To assess the scalability of their algorithms, we sampled
-% theories of various sizes: from theories containing only a single definition, up
-% to theories containing 20 definitions.
-%  We call the Theory Exploration Benchmark (TEB).
+We compare the recall proportions by applying McNemar's test to only those
+samples where both tools succeeded. We pooled these together from all sample
+sizes to produce the following table, and found that QuickSpec is significantly
+different from IsaCoSy with a p value of 0.0026.
+
+{
+  \centering
+  \begin{tabular}{ |l|l|l| }
+    \hline
+                           & Found by IsaCoSy & Not found by IsaCoSy \\
+    \hline
+    Found by QuickSpec     & 28               & 19                   \\
+    Not found by QuickSpec & 4                & 28                   \\
+    \hline
+  \end{tabular}
+}
+
+Precision was also compared by pooling results from samples where both tools
+finished successfully. We cannot perform McNemar's test in this case, since each
+tool generated different sets of conjectures. Instead, we add up the number of
+results which are ``interesting'' (appear in the ground truth) and those which
+are ``uninteresting'' (do not appear in the ground truth):
+
+{
+  \centering
+  \begin{tabular}{ |l|l|l| }
+    \hline
+              & Interesting & Uninteresting \\
+    \hline
+    IsaCoSy   & 32          & 137      \\
+    QuickSpec & 47          & 301      \\
+    \hline
+  \end{tabular}
+}
+
+These totals were tested for independence using Boschloo's test, assuming a
+binomial distribution, and gave an p-value of 0.111. With our (arbitrary) choice
+of $\alpha = 0.05$, this is not significant enough to reject the null hypothesis
+that their precision is equal.
+
+Note that this is the only comparison where IsaCoSy performed better (although
+not significantly so) with 19\% precision compared to QuickSpec's 14\%. However,
+precision on its own is not the whole story: it can be increased at the expense
+of recall by simply generating fewer conjectures. IsaCoSy's significantly lower
+recall indicates that it may be overly-conservative in this way, compared to
+QuickSpec.
+
+More importantly, the poor time and memory usage of IsaCoSy meant that very few
+samples finished successfully. If we include failed runs in our tables, treating
+them as if they succeeded with no output, the resulting statistics lean heavily
+in favour of QuickSpec simply because it generated so much more than IsaCoSy in
+the available time.
 
 % To do this we can take a set of ATP tasks, for example proving the equation
 % \ref{eq:mapreduce} from the theory in figure \ref{figure:list_theory}, and we
@@ -1474,31 +1522,25 @@ table~\ref{table:speedups}.
 % benchmark~\cite{claessen2015tip}, since it has several desirable properties:
 
 % All together, TIP provides 219 distinct function definitions and 343
-%   theorem statements, which is enough to fully exercise current MTE systems.
+%   theorem statements, which is enough to fully exercise current MTE tools.
 % Benchmark problems include examples from the theorem proving literature
 %   as well as common program verification tasks, ensuring the resulting corpus is
 %   relevant to researchers and practitioners.
 % TIP's maintainers provide a set of tools, including translators from TIP's
 %   native format (based on SMT-Lib~\cite{BarFT-SMTLIB}) to Haskell and Isabelle
-%   (which are used by MTE systems).
+%   (which are used by MTE tools).
 
 % To aid reproducibility, we use a cryptographic hash as our source of randomness:
 % the $n$th sample of size $s$ uses the SHA256 hash of $n$, $s$ and the definition
 % corpus; the latter prevents tailoring the corpus to influence the choices,
-% although MTE systems could .
+% although MTE tools could .
 
-% To provide a more robust comparison of these two systems, we also applied a
+% To provide a more robust comparison of these two tools, we also applied a
 % paired difference test: measuring, for each sampled theory, the difference in
-% time, precision and recall between the two systems.
+% time, precision and recall between the two tools.
 
 \section{Discussion}
 \label{sec:discussion}
-
-The key to our benchmarking methodology is the simplifying assumption that
-theorem proving problem sets are a good proxy for desirable MTE output. This
-allows us to side-step the philosophical quagmire of ``interestingness'' to
-produce concrete, measurable values; it is also a core weakness, as there are
-compelling reasons to refute it.
 
 Fundamentally, any mathematical reasoning system must decide on, and formalise,
 what counts as ``the good'' in mathematics.  Obvious metrics such as ``true'' or
@@ -1510,10 +1552,10 @@ proposed metric. Methods for finding out what that means have come from
 neuro-scientists, such as the study by Zeki \etal{} in which they test whether
 mathematicians' experiences of abstract beauty correlates with the same brain
 activity as experiences of sensory beauty~\cite{zeki}; computer scientists, such
-as Colton's metrics above which are proposed based largely on a computer
-scientist's ``intuition'' and argumentation about why a metric would be
-important (and previous use of such metrics, and - in one isolated case
-(surprisingingness) - on a single quote from a mathematician\footnote{Similarly,
+as Colton's metrics in table~\ref{table:colton} which are proposed based largely
+on a computer scientist's ``intuition'' and argumentation about why a metric
+would be important (and previous use of such metrics, and - in the case of
+``surprisingingness'' - on a single quote from a mathematician\footnote{Similarly,
   classification of a MATHsAiD result as either interesting or
   uninteresting~\cite{roy} was made by the main system developer: in both cases
   the main developer had a background in mathematics.}; and mathematicians
@@ -1528,6 +1570,12 @@ Inglis and colleagues has shown that there is not a single standard of validity
 among contemporary mathematicians %FIXME https://dspace.lboro.ac.uk/dspace-jspui/handle/2134/12150
 nor beauty. %FIXME needs citation
 
+The key to our benchmarking methodology is the simplifying assumption that
+theorem proving problem sets are a good proxy for desirable MTE output. This
+allows us to side-step this philosophical quagmire to produce concrete,
+measurable values; it is also a core weakness, as there are compelling reasons
+to refute it.
+
 We do not claim that our use of corpora as a ground truth exactly captures all
 interesting conjectures of their definitions, or that those definitions exactly
 represent all theories we may wish to explore. Rather, we consider our approach
@@ -1540,23 +1588,15 @@ Notably, if MTE matures to the point of providing \emph{truly novel} insights,
 even in well-studied domains, then the assumptions we rely on break down because
 such results cannot (by definition) appear in any existing corpus.
 
-Another practical limitation limitation of our benchmarking approach is that it
-only applies to systems which act in ``batch mode'', i.e. those which choose to
-halt after emitting some output. Whilst all of the systems we have encountered
-are of this form, an analogous benchmark may be desirable for systems which
-instead run continuously or interactively (perhaps akin to McCarthy's
-``advice taker''~\cite{McCarthy_Programs59}).
-
-% philosophical bits
-
-% We're assuming there is general agreement on what is "good maths", when
-% actually this isn't at all clear-cut
-
-% agreement in maths? matt inglis
-
-% other - zeki/two papers with ursula...
-
-% methodology behind Simon's paper
+Another practical limitation of our benchmarking approach is that it only
+applies to tools which act in ``batch mode'', i.e. those which choose to halt
+after emitting some output. Whilst all of the systems we have encountered are of
+this form, some (such as IsaCoSy, QuickSpec 2 and Speculate) could conceivably
+be run without a depth limit, and form part of the ``scientist assistant'' role
+envisaged by Lenat (or McCarthy's earlier
+``advice taker''~\cite{McCarthy_Programs59}). Analogous benchmarks could be
+designed for such long-running, potentially interactive programs, but that
+beyond the scope of this project.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1581,8 +1621,6 @@ we believe that our approach will provide a compelling challenge, at least for
 the foreseeable future.
 
 %\begin{acknowledgements}
-%  We are grateful to Jianguo Zhang for help with our statistical analysis.
-%
 %  EPSRC
 %\end{acknowledgements}
 
