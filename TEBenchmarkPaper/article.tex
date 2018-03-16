@@ -271,14 +271,14 @@ following theorem for our theory of lists:
     \Map(f, \Append(xs, ys)) = \Append(\Map(f, xs), \Map(f, ys))
 \end{equation}
 
-Equation \ref{eq:mapreduce} justifies a rewrite rule for splitting a single
+Equation~\ref{eq:mapreduce} justifies a rewrite rule for splitting a single
 $\Map$ call into multiple independent calls dealing with different sections of a
 list. Such rules can be useful optimisations, for example in a distributed
-context where since each call can be evaluated in parallel (this is the basis of
-the ``map/reduce'' programming paradigm).
+context where each call can be evaluated in parallel (this is the basis of the
+``map/reduce'' programming paradigm).
 
 All of these example use cases require the ability to discover theorems about
-some particular theory. This is a hard problem in general, but presents
+some particular definitions. This is a hard problem in general, but presents
 opportunities for automation due to the precise, symbolic nature of the domain.
 
 \subsection{Automating Construction and Exploration of Theories}
@@ -327,8 +327,8 @@ those which are interesting.
 
 {\bf Utility} is the relevance or usefulness of a conjecture to the
 user's particular task. For example, if we want to find optimising
-rewrite rules such as equation 1, then utility would include whether
-or not a conjecture justifies a rewrite rule, the difference in
+rewrite rules such as equation~\ref{eq:mapreduce}, then utility would include
+whether or not a conjecture justifies a rewrite rule, the difference in
 resource usage of the expressions involved, and how common those
 expressions are in real usage.
 
@@ -396,7 +396,7 @@ Speculate~\cite{braquehais2017speculate},
 IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}
 and IsaScheme~\cite{MontanoRivas2011}.
 
-The latter tools are described in more detail in section~\ref{section:mte},
+The latter tools are described in more detail in $\S$\ref{section:mte},
 but all use testing to check for counterexamples, which ensures results are
 empirically plausible and applicable (conditions are satisfiable, types are
 inhabited, etc.). They also use a small-to-large search order, ensuring more
@@ -687,28 +687,11 @@ are that both are interested in the same aspects of mathematical
 thinking, aiming to automatically construct and evaluate elements of a
 mathematical theory, including concepts, conjectures, theorems, axioms
 and examples. Both strands contrast themselves with Automated Theorem
-Proving. The main historical differences between these two approaches
-seem to be that in MTE:
-
-\begin{itemize}
-\item the main proponents define themselves as mathematicians (they
-  hold a PhD and have experience in research mathematics);
-\item the primary motivation is to support mathematicians;
-\item systems tend to be user-interactive;
-\item systems tend to be specific to mathematics,
-\end{itemize}
-
-while in ATF:
-
-\begin{itemize}
-\item the main proponents define themselves as AI researchers (they
-  often have a mathematics background up to Masters level, but their
-  PhD and research experience is in AI);
-\item the primary motivation is to extend AI techniques; a secondary
-  motivation is to produce interesting new mathematics;
-\item systems tend to be fully automated;
-\item systems can often be applied to non-mathematical domains.
-\end{itemize}
+Proving. The main historical differences between these two approaches seem to be
+that MTE was initiated by mathematicians as an attempt to support existing
+mathematical research, perhaps with user interaction; while ATF is a product of
+AI researchers trying to extend AI techniques, with full automation and often
+applications to non-mathematical domains.
 
 The different backgrounds of the people who named the fields
 ``automated theory formation'' (Lenat) and ``mathematical theory
