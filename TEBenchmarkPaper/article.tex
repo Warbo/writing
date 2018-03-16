@@ -731,8 +731,8 @@ generation:
 We make the assumption that each tool is intended to be \emph{general}, and
 hence isn't hard-coded or fine-tuned to only perform well in a narrow domain.
 Examples where this does \emph{not} hold include the natural number heuristics
-of AM discussed in section~\ref{section:atf}, as well as machine learning models
-trained on some specific dataset (such as this benchmark).
+of AM discussed in $\S$\ref{section:atf}, as well as machine learning models
+trained on some specific dataset (such as the benchmark we describe).
 
 Evaluation of new tools and techniques for conjecture generation tends to be
 \emph{ad hoc} and hence difficult to compare, whilst comparative surveys (such
@@ -769,25 +769,25 @@ individual conjectures: either a conjecture appears in the ground truth set or
 it doesn't.
 
 The analyses in~\cite{claessen2013automating} took their definitions and ground
-truths from the standard library of the Isabelle theorem prover: since the
+truths from the standard library of the Isabelle proof assistant: since the
 library authors have gone to the effort of stating, proving and including these
 theorems in every copy of their software, this is a good indication that they
 are interesting.
 
-Two tests were performed: one on a theory of natural numbers and one on a theory
-of lists (whose definitions are shown in figure~\ref{figure:list_theory}). These
-tests are limited both in number (it is difficult to draw general conclusions
-from two datapoints) and by the small size of these theories (e.g. the natural
-number theory from~\cite{Johansson.Dixon.Bundy:conjecture-generation} contains
-only 4 definitions and 12 theorems).
+Tests were performed with a theory of natural numbers and a theory of lists (the
+definitions shown in figure~\ref{figure:list_theory}), but it is difficult to
+draw general conclusions from only two datapoints. These theories were also
+quite small, the natural number theory
+from~\cite{Johansson.Dixon.Bundy:conjecture-generation} only containing 4
+definitions and 12 theorems.
 
-We believe that this is a viable approach to drawing meaningful, objective
-conclusions about such tools, but larger data sets are needed to judge
-performance in different, especially \emph{novel}, domains (which, after all, is
-the purpose of such tools). In addition, we might be concerned that such
-``popular'' theories may be unrepresentative of typical usage. For example, we
-would not expect the library functions in a typical verification problem to be
-as mathematically rich as number theory.
+Despite these limitations we believe that this is a viable approach to drawing
+meaningful, objective conclusions about such tools; but only with larger data
+sets can we judge performance in different, especially \emph{novel}, domains
+(which, after all, is the purpose of such tools). In addition, we might be
+concerned that such ``popular'' theories may be unrepresentative of typical
+usage. For example, we would not expect the library functions in a typical
+verification problem to be as mathematically rich as number theory.
 
 \section{Theory Exploration Benchmark}
 \label{sec:proposal}
