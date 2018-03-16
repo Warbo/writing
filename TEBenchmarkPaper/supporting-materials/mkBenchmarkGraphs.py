@@ -290,6 +290,8 @@ def makeColours(agg):
         maxVal    = max([agg[key][i] for i,s in enumerate(agg['success']) if s])
         colourMap = sns.color_palette('viridis', maxVal + 1).as_hex()
         msg('Highest {0} count is {1}'.format(key, maxVal))
+        with open('highest_{0}_count'.format(key), 'w') as f:
+            f.write(str(maxVal))
         return {
             'cmap'    : ListedColormap(colourMap),
             'norm'    : mpl.colors.Normalize(vmin=0, vmax=maxVal),
