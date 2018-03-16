@@ -628,24 +628,26 @@ exponentiation concept (these examples are taken from~\cite{MontanoRivas2011}).
 %IsaCoSy
 The IsaCoSy system (Isabelle Conjecture Synthesis) conjectures equations by
 enumerating expressions involving a given set of (typed) constants and free
-variables (a signature). A constraint solver forbids certain (sub)expressions
-from being synthesised, and these constraints are extended whenever a new
-conjecture is generated, to avoid generating any special-cases of this
-conjecture in the future. Conjectures are tested by sending them to the
-QuickCheck counterexample finder and, if no counterexamples are found, then
-sent to IsaPlanner which attempts to prove them.
+variables (a \emph{signature}). A constraint solver forbids certain
+(sub)expressions from being synthesised, and these constraints are extended
+whenever a new conjecture is generated, to avoid generating any special-cases of
+this conjecture in the future. Conjectures are tested by looking for
+counterexamples and, if none are found, sent to IsaPlanner which attempts to
+prove them.
 
 %QuickSpec
 QuickSpec emerged from work on the QuickCheck software testing framework for the
-Haskell programming language, and has been used to generate conjectures for the
-subsequent HipSpec and Hipster MTE systems. Like IsaCoSy, a signature is
-provided and terms are enumerated. Rather than a constraint system, QuickSpec
-version 1 collects expressions of the same type into equivalence classes,
-assuming them to be equal. QuickCheck is used to test this assumption by
-instantiating each variable with a randomly chosen value, evaluating the
-resulting expressions and comparing them. Any equivalence class whose elements
-don't compare equal are split up to separate those observably-different
-expressions, and the process is repeated with new random values.
+Haskell programming language~\cite{claessen2011quickcheck}, and has been used to
+generate conjectures for the subsequent
+HipSpec~\cite{Claessen_hipspec:automating} and Hipster~\cite{Hipster} MTE
+systems. Like IsaCoSy, a signature is provided and terms are enumerated. Rather
+than a constraint system, QuickSpec version 1 collects expressions of the same
+type into equivalence classes, assuming them to be equal. QuickCheck is used to
+test this assumption by instantiating each variable with a randomly chosen
+value, evaluating the resulting expressions and comparing them. Any equivalence
+class whose elements don't compare equal are split up to separate those
+observably-different expressions, and the process is repeated with new random
+values.
 
 After 500 rounds of testing, any expressions still sharing the same equivalence
 class are conjectured to be equal for all values of their variables. Finally, a
