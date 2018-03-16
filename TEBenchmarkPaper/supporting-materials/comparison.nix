@@ -201,7 +201,7 @@ rec {
       "$script"
     '';
 
-  qualityComparisons = runCommand "quality-comparisons"
+  qualityComparison = runCommand "quality-comparisons"
     {
       inherit tabulatedPrecRec;
       buildInputs = [ R rPackages.Exact ];

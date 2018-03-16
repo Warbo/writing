@@ -22,13 +22,14 @@ rec {
   # The final paper, with all graphs, etc.
   paper = render {
     inherit article;
-    inherit (comparison) timeComparison;
+    inherit (comparison) qualityComparison timeComparison;
     inherit (graphs    ) graphs;
     name   = "benchmark-article.pdf";
     script = ''
-      ln -s "$bibtex"           ./Bibtex.bib
-      cp -s "$graphs"/*         ./.
-      cp -s "$timeComparison"/* ./.
+      ln -s "$bibtex" ./Bibtex.bib
+      [[ -z "$graphs"            ]] || cp -rs "$graphs"/*            ./.
+      [[ -z "$qualityComparison" ]] || cp -rs "$qualityComparison"/* ./.
+      [[ -z "$timeComparison"    ]] || cp -rs "$timeComparison"/*    ./.
 
       render
       bibtex article
@@ -38,29 +39,30 @@ rec {
     '';
   };
 
-  render = { article, graphs, name, script, timeComparison }: runCommand name
-    {
-      inherit article bibtex graphs latex timeComparison;
-      buildInputs = [
-        tex
-        unzip
-        (mkBin {
-          name   = "render";
-          script = ''
-            #!/usr/bin/env bash
-            exec pdflatex -interaction=nonstopmode \
-                          -halt-on-error \
-                          --shell-escape article
-          '';
-        })
-      ];
-    }
-    ''
-      set -e
-      unzip "$latex"
-      cp "$article" ./article.tex
-      ${script}
-    '';
+  render = { article, graphs, name, script, qualityComparison, timeComparison }:
+    runCommand name
+      {
+        inherit article bibtex graphs latex qualityComparison timeComparison;
+        buildInputs = [
+          tex
+          unzip
+          (mkBin {
+            name   = "render";
+            script = ''
+              #!/usr/bin/env bash
+              exec pdflatex -interaction=nonstopmode \
+                            -halt-on-error \
+                            --shell-escape article
+            '';
+          })
+        ];
+      }
+      ''
+        set -e
+        unzip "$latex"
+        cp "$article" ./article.tex
+        ${script}
+      '';
 
   # Provides a pdflatex binary with all packages needed by template, our
   # document and the matplotlib graphs
@@ -98,7 +100,8 @@ rec {
     '';
 
     # Prevent infinite recursion
-    graphs         = null;
-    timeComparison = null;
+    graphs            = null;
+    qualityComparison = null;
+    timeComparison    = null;
   };
 }
