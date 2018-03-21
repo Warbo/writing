@@ -1,14 +1,21 @@
-Title: Use of "Interestingness" in Scaling Automated Mathematical Discovery
+Title: Use of "Interestingness" in Scaling Mathematical Theory Exploration
 
-What we need to include:
+Introduction:
+
+ - Description of problem
+ - Motivation
+
+Background (/Literature review)
 
  - History of automated mathematical discovery
  - History of what counts as "interesting"
+ - Relevance filtering
 
-Empirical proposal for measuring what is "interesting" (TEBenchmark)
+Contributions:
 
-Evaluation and comparison of existing systems using this benchmark (QuickSpec v1
-and IsaCoSy)
+ - Empirical proposal for measuring what is "interesting" (TEBenchmark)
+ - Evaluation and comparison of existing systems using this benchmark (QuickSpec
+   v1 and IsaCoSy)
 
 Application of machine learning to focus existing systems on what is "interesting"
 
