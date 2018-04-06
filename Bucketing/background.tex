@@ -24,9 +24,24 @@
 \newcommand{\CRec}{\texttt{Rec}}
 \newcommand{\CBind}{\texttt{Bind}}
 
-We decided to focus on theory exploration in the Haskell programming language as it has mature, state-of-the-art implementations (\qspec{} \cite{QuickSpec} and \hspec{} \cite{claessen2013automating}). This is evident from the fact that the state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster} \cite{Hipster} system, is actually implemented by translating to Haskell and invoking \hspec{}.
+We decided to focus on the Haskell programming language since it has direct
+applications in industry, a large selection of library code for testing and
+mature, state-of-the-art MTE tools including \qspec{}~\cite{QuickSpec},
+\hspec{}~\cite{claessen2013automating} and
+\textsc{Speculate}~\cite{braquehais2017speculate}. Our overall approach is
+agnostic to the underlying system, so could also be applied to other targets
+such as the Isabelle/HOL, which has the
+\textsc{IsaCoSy}~\cite{johansson2009isacosy}, \textsc{IsaScheme}~\cite{omar} and
+more recent \textsc{Hipster}~\cite{Hipster} MTE tools. However, since
+\textsc{Hipster} works by translating to Haskell and invoking \hspec{}, it seems
+that improving the Haskell tools will give the most benefit.
 
-Like most functional programming languages, Haskell builds upon $\lambda$-calculus, with extra features such as a strong type system and ``syntactic sugar'' to improve readability. To avoid the relatively large and complex syntax of Haskell proper, we will focus on an intermediate representation of the \textsc{GHC} compiler known as \emph{GHC Core}, described in Appendix \ref{sec:core}.
+Like most functional programming languages, Haskell builds upon
+$\lambda$-calculus, with extra features such as a strong type system and
+``syntactic sugar'' to improve readability. To avoid the relatively large and
+complex syntax of Haskell proper, we will focus on an intermediate
+representation of the \textsc{GHC} compiler known as \emph{GHC Core}, described
+in Appendix \ref{sec:core}.
 
 We will use quoted strings to denote names and literals, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr "quux"} and \texttt{LitNum "42"}, and require only that they can be compared for equality.
 
