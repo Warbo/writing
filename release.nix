@@ -6,6 +6,7 @@
   JianguoMeeting     = import ./JianguoMeeting;
   ML4HSTechReport    = import ./ML4HSTechReport;
   PhDSymposium2017   = import ./PhDSymposium2017;
+  PhDThesis          = import ./PhDThesis;
   TEBenchmarkPaper   = import ./TEBenchmarkPaper;
   TheoryExploration  = import ./TheoryExploration;
   TransferReport     = import ./TransferReport;
