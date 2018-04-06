@@ -1,0 +1,106 @@
+\section{Background}
+
+\subsection{Conjecture Generation}
+
+\begin{figure}
+  \begin{equation*}
+    \begin{split}
+      \forall a. \Nil            &: \ListA                                  \\
+      \forall a. \Cons           &: a \rightarrow \ListA \rightarrow \ListA \\
+      \Head(\Cons(x, xs))        &= x                                       \\
+      \Tail(\Cons(x, xs))        &= xs                                      \\
+      \Append(\Nil,         ys)  &= ys                                      \\
+      \Append(\Cons(x, xs), ys)  &= \Cons(x, \Append(xs, ys))               \\
+      \Reverse(\Nil)             &= \Nil                                    \\
+      \Reverse(\Cons(x, xs))     &= \Append(\Reverse(xs), \Cons(x, \Nil))   \\
+      \Length(\Nil)              &= \Zero                                   \\
+      \Length(\Cons(x, xs))      &= \Succ (\Length(xs))                     \\
+      \Map(f, \Nil)              &= \Nil                                    \\
+      \Map(f, \Cons(x, xs))      &= \Cons(f(x), \Map(f, xs))                \\
+      \Foldl(f, x, \Nil)         &= x                                       \\
+      \Foldl(f, x, \Cons(y, ys)) &= \Foldl(f, f(x, y), ys)                  \\
+      \Foldr(f, \Nil,         y) &= y                                       \\
+      \Foldr(f, \Cons(x, xs), y) &= f(x, \Foldr(f, xs, y))
+    \end{split}
+  \end{equation*}
+  \caption{A simple theory defining a $\List$ type and some associated
+    operations, taken from~\cite{Johansson.Dixon.Bundy:conjecture-generation}.
+    $\Zero$ and $\Succ$ are from a Peano encoding of the natural numbers.}
+  \label{figure:list_theory}
+\end{figure}
+
+We focus on the task of generating conjectures from some given mathematical
+theory. This theory may be, for example, a scientific model, an executable
+computer program or simply an object of mathematical curiosity. A theory
+defines (perhaps implicitly) a particular system of logic in which to work (for
+example higher-order logic), along with a finite set of \emph{definitions} (like
+those in figure~\ref{figure:list_theory}) which assign structure or meaning to
+particular terms. Theoretically, this is all of the information we need to
+derive the truth or falsity of all decidable statements involving these terms,
+for example by enumerating all valid proofs. However, due to the exponential
+search spaces involved, such brute-force enumeration is infeasible in practice;
+plus the resulting proofs would be difficult to comprehend and the processed
+statements would be overwhelming in number and mostly uninteresting in content.
+
+The impracticality of enumeration demonstrates that a statement being ``true''
+or ``provable'' is not \emph{sufficient} to warrant the (limited) attention of a
+human operator. We would also argue that it is not \emph{necessary}, since there
+are many statements considered to be interesting whose truth is either unknown,
+or which later turned out to be false. We thus focus on the automated production
+of \emph{interesting conjectures}, with the primary focus being on efficient
+generation and interest to the user.
+
+As an example, we use the theory of lists shown in
+figure~\ref{figure:list_theory}. These definitions are so widely used in
+software that they appear in the standard libraries of many programming
+languages. An example of a conjecture involving these definitions is the
+following universally quantified equation:
+
+\begin{equation} \label{eq:mapreduce}
+  \forall f. \forall xs. \forall ys.
+    \Map(f, \Append(xs, ys)) = \Append(\Map(f, xs), \Map(f, ys))
+\end{equation}
+
+Equation~\ref{eq:mapreduce} states that combining small lists into a larger one
+using $\Append$ then transforming the elements with $\Map$ is the same as
+transforming the elements of the small lists then combining. This is interesting
+due to its applicability as an optimisation: if a program calls $\Map$ with an
+expensive transformation $f$, we can divide up the work across multiple machines
+in parallel (this is the basis of the ``map/reduce'' programming paradigm).
+Whether or not this equation holds depends on the choice of logical framework,
+and hence (in the case of software) on the semantics of the programming
+language: in particular this equation and optimisation are invalid for systems
+with strict evaluation order and side-effects (common in imperative programming)
+since any error/exception in the calculation of $ys$ will cause the surrounding
+calls to abort; on the left-hand-side this will abort $\Append$ then $\Map$, so
+$f$ will never be executed; on the right-hand-side there is an additional
+$\Map(f, xs)$ call which will \emph{not} be aborted, which may execute $f$ many
+times and trigger arbitrary observable effects.
+
+\section{Machine Learning}
+
+Machine learning (ML) is a sub-field of artificial intelligence (AI) which
+emphasises the use of statistical methods to find patterns and optimise
+functions, in contrast with symbolic reasoning approaches like automated theorem
+proving (commonly referred to as ``Good Old-Fashioned AI'').
+
+The machine learning umbrella spans many techniques and applications, but one
+common distinction is between \emph{supervised} and \emph{unsupervised} tasks.
+In supervised learning we allow the system to perform some behaviour, then an
+external process assesses whether it behaved well or poorly (akin to Justice
+Potter Stewart's test for obscenity: ``I know it when I see it''). The system's
+parameters are optimised to try and score highly on the test. Common supervised
+learning tasks include function approximation using input/output examples (e.g.
+classifying scanned images of numerals) where the test is the proportion of
+example inputs which got the correct output, and reinforcement learning where
+the system chooses from a set of ``actions'', receives a pair of ``observation''
+and ``reward'' (test score) in response, and must accumulate the most reward.
+
+Unsupervised learning does not have the same testable ``success'' criteria as
+supervised learning. Instead, the goal is to find patterns and form models of
+the target domain, which is more ambitious and open-ended than supervised
+learning but also much harder to define, measure and optimise. Examples of this
+are prediction and compression tasks such as auto-encoders
+(learned compressor/decompressor pairs, rewarded by how well they preserve data
+through a round-trip) and adversarial or co-evolution tasks (coupled systems
+where each is rewarded by exploiting mis-prediction in the others).
