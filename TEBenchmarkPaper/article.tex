@@ -158,10 +158,11 @@ grestore
   tasks as a \emph{ground-truth} corpus, and we demonstrate its use on the
   QuickSpec and IsaCoSy tools, finding that the former takes significantly less
   time to produce significantly more ``interesting'' output. By providing a
-  standard, cross-tool evaluation technique we hope to encourage innovation and
-  comparison between the disparate approaches currently being pursued, and spur
-  improvements similar to those seen in the competitive field of automated
-  theorem proving.
+  standard, cross-tool evaluation technique we allow the disparate approaches
+  currently being pursued to be more directly compared. Our hope is to encourage
+  innovation and improvements similar to those seen in fields like automated
+  theorem proving, where the availability of benchmarks encourages healthy
+  competition.
 %\keywords{First keyword \and Second keyword \and More}
 % \PACS{PACS code1 \and PACS code2 \and more}
 % \subclass{MSC code1 \and MSC code2 \and more}
@@ -172,9 +173,9 @@ grestore
 
 % Lay out the field of TE: motivation, tools, evaluation, problems...
 
-\emph{Conjecture generation/formation}, a sub-field of \emph{mathematical theory
-  exploration} (MTE), is the open-ended problem of producing conjectures about a
-given logical theory which are somehow ``interesting''.
+\emph{Conjecture generation} is the open-ended task of producing conjectures
+about a given logical theory which are somehow ``interesting'', and is studied
+as a sub-field of \emph{mathematical theory exploration} (MTE).
 
 This has applications wherever we find use for formal statements: in proof
 assistants and their libraries, in mathematics education and research, and in
@@ -284,15 +285,13 @@ opportunities for automation due to the precise, symbolic nature of the domain.
 \subsection{Automating Construction and Exploration of Theories}
 \label{sec:te}
 
-The task of discovering theorems in an arbitrary theory can be
-described as the interplay of several processes: (i) formulating new
-definitions and concepts; (ii) finding patterns suitable for posing as
-conjectures; and (iii) proving that those conjectures are theorems.
-The latter is studied extensively in the field of Automated Theorem
-Proving (ATP). Far less attention has been paid to automating the
-first two tasks, which both Automated Theory Formation (ATF) and
-Mathematical Theory Exploration (MTE) address.  We discuss the relationship
-between ATF and ATE in historical context in
+The task of automatically proving or disproving a \emph{given} conjecture has
+been studied extensively in the field of Automated Theorem Proving (ATP). Less
+attention has been paid to \emph{generating} such conjectures automatically,
+either from a given set of definitions (the task we will focus on) or where the
+definitions are also generated. The fields of Automated Theory Formation (ATF)
+and Mathematical Theory Exploration (MTE) both tackle these generation tasks,
+and we discuss their relationship in historical context in
 $\S$\ref{exploration-versus-formation}.
 
 A major challenge for both ATF and MTE is choosing how to narrow down
