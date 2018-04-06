@@ -1,6 +1,7 @@
 with builtins;
 with { inherit (import ../resources) bibtex nixpkgs; };
 with nixpkgs.repo1609."00ef7f9";
+with lib;
 with { defs = rec {
   inherit bibtex;
 
@@ -11,9 +12,9 @@ with { defs = rec {
 
   isTex = path: hasSuffix ".tex" (baseNameOf path);
 
-  render = { name, src }: runCommand "${name}.pdf"
+  render = { file, src }: runCommand "${file}.pdf"
     {
-      inherit bibtex name src;
+      inherit bibtex file src;
       buildInputs = [ tex ];
     }
     ''
@@ -24,22 +25,29 @@ with { defs = rec {
       cp -s "$src"/*  ./
       ln -s "$bibtex" ./Bibtex.bib
 
-      go     "$name"
-      bibtex "$name"
-      go     "$name"
-      go     "$name"
+      go     "$file"
+      #bibtex "$file"
+      go     "$file"
+      go     "$file"
+
+      cp "$file.pdf" "$out"
     '';
 
   outline = render {
-    name = "outline";
-    src  = attrsToDir { outline = ./outline.tex; };
+    file = "outline";
+    src  = attrsToDirs { outline = ./outline.tex; };
   };
 
   thesis = withDeps [ outline ] (render {
-    name = "thesis";
+    file = "thesis";
     src  = filterSource (path: type: isTex path) ./.;
   });
 
+  pdfs = attrsToDirs {
+    "outline.pdf" = outline;
+    "thesis.pdf"  = thesis;
+  };
+
 }; };
 
-{ pdfOnly ? true }: if pdfOnly then defs.thesis else defs
+{ pdfOnly ? true }: if pdfOnly then defs.pdfs else defs

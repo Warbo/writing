@@ -1,86 +1,117 @@
-Title: Use of "Interestingness" in Scaling Mathematical Theory Exploration
+\title{``Interestingness'' in Mathematical Theory Exploration}
+\documentclass{article}
+\begin{document}
+\maketitle
 
-Introduction:
+\begin{itemize}
+\item Introduction
+  \begin{itemize}
+  \item Description of problem (simple examples)
+  \item Motivation (education, research, formalising, verification, ...)
+  \item Difficulties (ambiguity, open-endedness, large search space, ...)
+  \end{itemize}
 
- - Description of problem
- - Motivation
+\item Contributions:
+  \begin{itemize}
+  \item TEBenchmark (large, unambiguous empirical measurement and comparison)
+  \item MLSpec (bucketing methods, recurrent clustering, etc.)
+  \end{itemize}
 
-Background (/Literature review)
+\item Background/Literature review
+  \begin{itemize}
+  \item History of automated discovery/creativity
+    \begin{itemize}
+    \item Theorem proving (Logic Theorist)
+    \item Theory formation/exploration (AM, HR, Graffiti, IsaCoSy, IsaScheme,
+      QuickSpec, Speculate, ...)
+    \item Scientific discovery (Adam/Eve, invariant discovery)
+    \item Artificial curiosity (model building, motor babbling, play, language invention, ...)
+    \item Artistic creativity?
+    \end{itemize}
+  \item History of "interestingness"
+    \begin{itemize}
+    \item From philosophical perspective (surprising, novel, useful, Wundt
+      curves, ...)
+    \item From real implementations (non-redundancy, precision/recall,
+      compression progress, learnability, ...)
+    \end{itemize}
+  \item Overview of machine learning techniques:
+    \begin{itemize}
+    \item Models (neural networks, generative models, probabilistic programming,
+      gradient descent, kernel methods, population models, ...)
+    \item Supervised (classification, reinforcement learning, ...)
+    \item Unsupervised (clustering, co-evolution, adversarial, ...)
+    \item Feature engineering
+      \begin{itemize}
+      \item Hand-crafted features (comparison with probabalistic programming?)
+      \item Distributed representations
+      \item Learned representations (auto-encoding, deep learning, convolutional
+        neural networks, ...)
+      \end{itemize}
+    \item Structured representations (recurrent NNs, recursive NNs, tree
+      kernels, Tree Based CNN, generative models, ...)
+    \end{itemize}
+  \item (Statistical) machine learning in formal systems
+    \begin{itemize}
+    \item Relevance filtering (Sledgehammer, Josef Urban's alternatives)
+    \item Recurrent clustering
+    \item Program manipulation (Learning to Execute, Tree Based CNN tasks
+      (program classification, bubble-sort identification), auto-generated bug
+      fixes, auto-generated compiler test cases, ...
+    \end{itemize}
+  \end{itemize}
 
- - History of automated mathematical discovery
- - History of what counts as "interesting"
- - Relevance filtering
+\item TEBenchmark (mostly from paper)
+  \begin{itemize}
+    \item Methodology
+    \item TIP corpus
+    \item Haskell translation (specific issues, etc.)
+    \item Isabelle translation (specific issues, etc.)
+    \item QuickSpec analysis
+    \item IsaCoSy analysis
+    \item QuickSpec/IsaCoSy comparison
+    \item Discussion of pros and cons
+  \end{itemize}
 
-Contributions:
+\item Bucketing (mostly paper and transfer report)
+  \begin{itemize}
+  \item Justification (exponential running times, large numbers of discarded
+    equations, low precision, ...)
+  \item Bucketing as a solution (big-O analysis, oracles, ...)
+  \item Bucketing algorithms
+    \begin{itemize}
+    \item Pseudorandom features (baseline)
+    \item Circular convolution (language agnostic, distributed representation,
+      not learned)
+    \item Recurrent clustering (Haskell-specific, not distributed, hand-crafted,
+      solves global name problem)
+    \item Non-recurrent clustering?
+    \end{itemize}
+  \item Application to TEBenchmark (impact on total recall)
+  \item Discussion
+    \begin{itemize}
+    \item Pros and cons
+    \end{itemize}
+  \end{itemize}
 
- - Empirical proposal for measuring what is "interesting" (TEBenchmark)
- - Evaluation and comparison of existing systems using this benchmark (QuickSpec
-   v1 and IsaCoSy)
+\item Other contributions (may splice into the other sections)
+  \begin{itemize}
+    \item Sandboxed evaluation of Haskell code (nix-eval)
+    \item Haskell AST extraction and annotation (GHC plugin, standalone command)
+    \item Exploration of popular Hackage packages
+  \end{itemize}
 
-Application of machine learning to focus existing systems on what is "interesting"
+\item Conclusions
+  \begin{itemize}
+  \item Exploration is an important problem with many applications
+  \item Hampered by ambiguous goals, small sample sizes, etc.
+  \item Hampered by (lack of) efficiency
+  \item Unambiguous benchmark is provided for comparison
+  \item ``Smart'' bucketing method to improve efficiency
+  \item Lots of room for future work (other corpora, other tools, other
+    languages, applications of results, optimisation through profiling,
+    abstraction invention through anti-unification, self-modelling, ...)
+  \end{itemize}
+\end{itemize}
 
- - Overview of machine learning techniques:
-  - Supervised vs unsupervised
-  - Clustering
-  - Representing structured inputs
- - Bucketing algorithm
-  - Use with pseudorandom similarity metric
-  - Use with "flattened tree" similarity metric
-  - Potentially some other comparison?
-
-Practical uses of automated mathematical discovery systems
-
- - Optimisation
-  - Self-optimising programs
-  - Use with Hutter search?
- - Finding abstractions (anti-unification)
-  - Concept formation?
-
-Application of discovery system to existing software packages
-
- - Packages from Hackage (may need extra Arbitrary instances)
- - GHC libraries (base, maybe more)
- - Maybe use test suites as ground truth?
-
-Conclusions
-
-
----
-
-We have a few things sat around gathering dust. Can we fit them in somewhere?
-
- - Purely-functional self-modifying code. This could be an implementation
-   vehicle for open-ended self-optimising code.
-
- - Powerplay. This uses self-invented problems. Could we use "interesting"
-   conjectures from a theory exploration system to guide the self-improvement of
-   an automated theorem prover?
-
-Things which have influenced my thinking, which would be nice to include:
-
- - Interestingness based on compression progress. The "compression" could
-   perhaps come from writing proof tactics? For example, try to prove any given
-   conjecture using a single 'prove' tactic. Given a (conjecture, tactic) pair,
-   and an existing tactic, we deem the conjecture to be "interesting" if it
-   can't be proved by the existing tactic, it can be proved by the new tactic,
-   and the new tactic is smaller than the old tactic. Hmm... This wouldn't allow
-   tactics to increase in size. The compression progress idea relies on a
-   lossless compression of all 'past experience', which in this situation would
-   just be a list of all conjectures we've tried. This just passes the buck on
-   what's "interesting", since those conjectures need to be chosen somehow...
-
- - Artificial curiosity systems, like problem generators rewarded by the
-   variance of how difficult a population of solvers found the problem to be.
-
- - Recursive self-improvement: take an algorithm which searches for improvements
-   to itself, and run it for a few self-improvement iterations. How do the
-   improvements to the search algorithm compare against the difficulty of
-   improving an optimised system ('recalcitrance')?
-
- - Can we create a compiler by providing a property discovery algorithm with a
-   specification and an model interpreter (e.g. for x86 machine code)?
-
- - A result I'd really like to have is a system which collapses down abstraction
-   layers. This would be especially nice if it worked across languages, and we
-   could either use staged execution/compilation and/or a database of
-   compiled/transformed code.
+\end{document}
