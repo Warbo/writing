@@ -172,6 +172,10 @@ grestore
 \label{intro}
 
 % Lay out the field of TE: motivation, tools, evaluation, problems...
+% FIXME: Strengthen motivation:
+%  - Automated Scientific Discovery (e.g. Dundee drug discovery "centaur" story)
+%  - "Mixed initiative" (social machine?); maybe Kasparov
+%  - Gowers calling for better AI in maths
 
 \emph{Conjecture generation} is the open-ended task of producing conjectures
 about a given logical theory which are somehow ``interesting'', and is studied
@@ -179,16 +183,22 @@ as a sub-field of \emph{mathematical theory exploration} (MTE).
 
 This has applications wherever we find use for formal statements: in proof
 assistants and their libraries, in mathematics education and research, and in
-the specification, verification, optimisation and testing of software.
+the specification, verification, optimisation and testing of software. Similar
+tasks are also studied in Computational \emph{Scientific}
+Discovery~\cite{king2004functional,Williams20141289,schmidt2009distilling},
+although that relies on inductive reasoning and experimental testing which (in
+principle) are not so important for pure mathematics. Whilst we \emph{have}
+found these methods to also be important for MTE tools (in particular for the
+\emph{plausibility} of generated conjectures), we leave a more thorough
+application of our results to scientific reasoning for future work.
 
-Existing attempts at tackling this problem are difficult to compare, due
-partially to the variety of approaches taken, but also because of the inherent
-ambiguity of the task and the different goals emphasised by their designers and
-their choice of evaluation method.
-
-We attempt to solve this discrepancy, at least for the foreseeable future, by
-defining a standard, unambiguous benchmarking approach with which to compare
-the conjecture generation of MTE tools. Our contributions include:
+Even limiting ourselves to mathematics applications, it is difficult to measure
+and compare the success of approaches and tools. This is partially due to their
+diversity, but also because of the inherent ambiguity of the task, the different
+goals emphasised by their designers and the variety of evaluation methods
+employed. We attempt to solve this discrepancy, at least for the foreseeable
+future, by defining a standard, unambiguous benchmarking approach with which to
+compare the conjecture generation of MTE tools. Our contributions include:
 
 \begin{itemize}
 \item A general methodology for benchmarking conjecture generation.
@@ -202,15 +212,12 @@ the conjecture generation of MTE tools. Our contributions include:
 \end{itemize}
 
 We introduce the conjecture generation problem in more detail, along with the
-difficulty of comparing existing solutions, in $\S$\ref{sec:background}. In
-$\S$\ref{exploration-versus-formation} we give a history of the MTE field, and
-its close cousin Automated Theory Formation (ATF), describing a variety of
-existing approaches and clarifying the diverse terminology found in the
-literature. We explain our proposal for a more general benchmark in
+difficulty of comparing existing solutions, in $\S$\ref{sec:background}. We explain our proposal for a more general benchmark in
 $\S$\ref{sec:proposal} and demonstrate its application to existing MTE tools
 in $\S$\ref{sec:application}. Issues facing our approach, and the field in
-general, are discussed in $\S$\ref{sec:discussion} and concluding remarks
-are given in $\S$\ref{sec:conclusion}.
+general, are discussed in $\S$\ref{sec:discussion}; related work is surveyed in
+$\S$\ref{sec:related-work}, including the diverse terminology found in the
+literature; and concluding remarks are given in $\S$\ref{sec:conclusion}.
 
 %- Existing approaches are difficult to compare
 % - They want different things
@@ -228,6 +235,10 @@ are given in $\S$\ref{sec:conclusion}.
 
 % more detail about evaluation, interestingness, etc. Reference Simon/Alan
 % interestingness, e.g. examples from textbooks, etc.
+
+% FIXME: Perhaps mention examples like "plus(x, 0) = 0" as motivating examples
+% of things which are "simple" but which proof assistants still don't do
+% automatically (reference Moa's use of TE for background lemma generation)
 
 \begin{figure}
   \begin{equation*}
@@ -255,6 +266,10 @@ are given in $\S$\ref{sec:conclusion}.
     $\Zero$ and $\Succ$ are from a Peano encoding of the natural numbers.}
   \label{figure:list_theory}
 \end{figure}
+
+% FIXME: We jump from conjectures to theorems. Maybe to prevent confusion we
+% should talk more generally about "interesting properties" of a formal system,
+% and use that as motivation for conjecturing and proving?
 
 Given a logical theory, such as the theory of lists shown in
 Figure~\ref{figure:list_theory}, we may want to find theorems which describe its
@@ -292,7 +307,7 @@ either from a given set of definitions (the task we will focus on) or where the
 definitions are also generated. The fields of Automated Theory Formation (ATF)
 and Mathematical Theory Exploration (MTE) both tackle these generation tasks,
 and we discuss their relationship in historical context in
-$\S$\ref{exploration-versus-formation}.
+$\S$\ref{related-work}.
 
 A major challenge for both ATF and MTE is choosing how to narrow down
 the set of generated conjectures to those deemed ``interesting'', since this is
@@ -331,7 +346,7 @@ whether or not a conjecture justifies a rewrite rule, the difference in
 resource usage of the expressions involved, and how common those
 expressions are in real usage.
 
-
+% FIXME: This is original work, so should be in a different section
 \begin{table}
   \centering
   \begin{tabular}{ |l|l|c|c|c|c|c|c| }
@@ -386,6 +401,9 @@ expressions are in real usage.
 % Speculate ensure that there's a model? After all, these are concrete values
 % rather than e.g. implications of some abstract specification.
 
+% FIXME: Give brief description and reference for each system in the text.
+% We could include the more lengthy descriptions of IsaCoSy and QuickSpec here?
+
 We summarise the criteria in Table 1 and state which were used in key
 ATF/MTE tools. The entries for AM, GT, Graffiti, \Bagai{} and HR are based
 on this survey (the latter is Colton's own tool). We extend this analysis to
@@ -430,6 +448,7 @@ tools of this type.
 There are three aspects to consider when evaluating a tool for conjecture
 generation:
 
+% FIXME: How are these referred to/considered in the paper?
 \begin{enumerate}
 \item The quality of each individual conjecture, which we will refer to as their
   ``interestingness''.
@@ -486,7 +505,8 @@ theorems in every copy of their software, this is a good indication that they
 are interesting.
 
 Tests were performed with a theory of natural numbers and a theory of lists (the
-definitions shown in figure~\ref{figure:list_theory}), but it is difficult to
+definitions shown in figure~\ref{figure:list_theory}), %FIXME: add page ref
+but it is difficult to
 draw general conclusions from only two datapoints. These theories were also
 quite small, the natural number theory
 from~\cite{Johansson.Dixon.Bundy:conjecture-generation} only containing 4
@@ -542,9 +562,11 @@ suitable are those which have the following properties:
   \emph{ideally} contain every ``interesting'' conjecture involving its included
   definitions. More \emph{realistically}, we should aim for each definition to
   appear in \emph{many} theorem statements; rather than each problem having
-  unique definitions.
+  unique definitions. % FIXME: Reword: make clear that non-membership means
+  % uninteresting, and hence the things we *don't* include are just as important
+  % as the things we do
 \item The problem set should be as large as possible, for robustness of the
-  resulting statistics.
+  resulting statistics. % FIXME: Prioritising quantity over quality?
 \end{itemize}
 
 Once such a problem set has been chosen, we must separate the definitions
@@ -559,7 +581,7 @@ includes a commutativity theorem for a \texttt{plus} function, and an
 associativity theorem for an \texttt{add} function, where the definitions of
 \texttt{plus} and \texttt{add} are $\alpha$-equivalent. We would expect an MTE
 tool to either conjecture commutativity and associativity for \emph{both}
-functions, or for \emph{neither} function, since they're logically equivalent.
+functions, or for \emph{neither} function, since they are logically equivalent.
 Yet a na\"ive precision/recall analysis would treat commutativity of
 \texttt{add} and associativity of \texttt{plus} as \emph{uninteresting}, since
 they don't appear in the ground truth.
@@ -715,6 +737,9 @@ unwanted conjectures generated by each tool, assuming a binomial distribution
 and conditioning on the number of generated conjectures (as if this were fixed
 by design).
 
+% FIXME: Add section references to the braces
+% FIXME: Maybe rethink "analysis" bit; maybe add summary and comparison
+% references (although maybe not as full blown steps)
 \begin{figure}
   \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm,
                            minimum height=1cm,text centered, draw=black]
@@ -852,7 +877,7 @@ by design).
 
 \section{Application}
 \label{sec:application}
-
+% FIXME: Maybe use (red?) crosses rather than red dots? More useful for black and white
 We have applied our benchmarking methodology to the QuickSpec and IsaCoSy MTE
 tools, using version 0.2 of the TIP (Tons of Inductive Problems) theorem proving
 benchmark as our ground truth corpus~\cite{claessen2015tip}.
@@ -876,7 +901,7 @@ diminishing returns. During analysis, duplicate samples (caused by our sampling
 restrictions) were found and discarded, so only 14 samples of size 1 were used
 and 30 of size 2.
 
-\subsection{TIP}
+\subsection{TIP} % FIXME: Expand acronym
 
 We chose TIP for our ground truth since it satisfies the desiderata of
 $\S$\ref{section:prep}: each problem has standalone type and function
@@ -1239,6 +1264,7 @@ than IsaCoSy in the available time.
 \section{Discussion}
 \label{sec:discussion}
 
+% FIXME: The designers must decide on, not the system
 Fundamentally, any mathematical reasoning system must decide on, and formalise,
 what counts as ``the good'' in mathematics.  Obvious metrics such as ``true'' or
 ``provable'' include trivial tautologies, while at the same time failing to
@@ -1261,8 +1287,8 @@ in~\cite{aigner2010proofs}) as well as McCasland's evaluation of the
 interestingness of MATHsAiD's output~\cite{roy} (of which he was the main system
 developer).
 
-All of these approaches rest upon the assumption that it even makes sense to
-speak of ``the good'' in mathematics. However, empirical psychological studies
+All of these approaches rest upon the assumption that it makes sense to speak of
+``the good'' in mathematics. However, empirical psychological studies
 call into question such assumptions: for example, work by Inglis and colleagues
 has shown that there is not even a single standard of \emph{validity} among
 contemporary mathematicians~\cite{inglis2013mathematicians}.
@@ -1294,7 +1320,7 @@ existing human knowledge surpasses that discovered by the machine. Any
 \emph{truly novel} insights discovered during testing will not, by definition,
 appear in any existing corpus, and we would in fact \emph{penalise} tools for
 such output. We do not believe this to be a realistic problem for the time
-being, although we would be delighted if proved wrong.
+being, although we would be delighted if proved wrong. % FIXME: Is there a solution? Mention that this is common to most tests
 
 Another practical limitation of our benchmarking approach is that it only
 applies to tools which act in ``batch mode'', i.e. those which choose to halt
@@ -1306,22 +1332,13 @@ taker''~\cite{McCarthy_Programs59}). Analogous benchmarks could be designed for
 such long-running, potentially interactive programs, but that is beyond the
 scope of this project.
 
-\section{Theory Exploration versus Theory
-  Formation}\label{exploration-versus-formation}
+\section{Related Work}
+\label{sec:related-work}
 
-In this section we put the Mathematical Theory Exploration approach
-into context both historically, and with respect to related approaches
-such as in Automated Theory Formation tools.
-
-\subsection{A Short History of Automated Mathematics}
-
-\begin{quote}
-...``in his subsequent design for an Analytical Engine Mr. Babbage has
-shown that material machinery is capable, in theory at least, of
-rivalling the labours of the most practised mathematicians in all
-branches of their science.''~\cite[p. 498]{jevons}
-\end{quote}
-
+% FIXME: Reword into a short intro, e.g. "There is a long history of automating
+% mathematics, going back to... A recurring theme is separation between the
+% efforts of pure mathematicians and those wanting practical engineering
+% applications....
 The first automated mathematical tool, the mechanical calculator
 (known as the Pascaline), was an adding machine that could perform
 additions and subtractions directly and multiplication and divisions
@@ -1360,21 +1377,12 @@ somewhat independently without a clear differentiating
 methodology. Below we discuss commonalities and differences between
 the two schools of thought.
 
-We limit our discussion to applications in mathematics, although there are
-similar approaches being applied to the task of Computational \emph{Scientific}
-Discovery~\cite{king2004functional,Williams20141289,schmidt2009distilling}.
-Scientific knowledge relies on inductive reasoning and experimental testing,
-which (in principle) are not so important to a mathematical theory. However,
-these techniques \emph{do} play an important role in many mathematical theory
-formation and exploration tools: in particular, inductive reasoning allows a
-tool to conjecture statements which may be too difficult for it to deductively
-prove; whilst experimental testing, e.g. by checking universally-quantified
-statements against some specific values, is a simple way to quickly discard many
-obvious falsehoods generated by powerful but imperfect algorithms (as opposed
-to, say, limiting ourselves to verified theorem generators).
-
 \subsection{Automated Theory Formation}
 \label{section:atf}
+
+% FIXME: Cut this down a lot. Currently it's not even an ATF section, it's just
+% an AM section. We should maybe remove its status as a section, and instead
+% just remark on the influence of AM on the field
 
 % 1. history of terminology
 Automated theory formation derives its terminology from psychology in which the
@@ -1436,8 +1444,8 @@ claims made by Lenat about AM were false, see chapter 13 of~\cite{colton:book}.
 \subsection{Mathematical Theory Exploration}
 \label{section:mte}
 
-The phrase Mathematical Theory Exploration (MTE) is a recent term
-which seems to have originated with Buchberger and colleagues (see,
+The phrase Mathematical Theory Exploration (MTE) is a recent term % FIXME: When?
+which seems to have originated with Buchberger and colleagues (see, % FIXME: informal
 for example,~\cite{buchberger}). His motivation is to support
 mathematicians during their exploration of mathematical theories. This
 support is intended to be for the straightforward reasoning, which he
@@ -1473,7 +1481,10 @@ been to automatically evaluate interestingness: to distinguish important
 theorems from results which, although they follow from a set of axioms, are of
 little mathematical interest.
 
-%IsaScheme
+% IsaScheme FIXME: Maybe strip down this description? We could use prose instead,
+% like "schemes capture common patterns such as iteration, which can be
+% instantiated with an addition function to produce multiplication, or with
+% multiplication to produce exponentiation.
 Monta{\~n}o-Rivas \etal{} have implemented a scheme-based approach to MTE in their
 IsaScheme system~\cite{MontanoRivas2011}. Schemes are higher-order formulae
 which can be used to generate new concepts and conjectures; variables within the
@@ -1535,6 +1546,7 @@ class are conjectured to be equal for all values of their variables. Finally, a
 congruence closure algorithm is applied to these equations, to remove
 redundancies and special-cases.
 
+% FIXME: CITE
 QuickSpec version 2 replaces this two-step process with a single, iterative
 algorithm similar to that of IsaCoSy. Generated conjectures are fed into a
 Knuth-Bendix completion algorithm to form a corresponding set of rewrite rules.
@@ -1561,7 +1573,8 @@ $x, y \in \mathbb{Z}$):
 
 \subsection{Commonalities and Differences between MTE and ATF}
 
-We believe that ATF and MTE share many goals and would benefit from a
+% FIXME: Condense
+ATF and MTE share many goals and would benefit from a
 closer alignment: both fields are highly specialised and by joining
 forces (while being explicit about differences) the techniques being
 developed would have greater impact. This closer alignment is already
@@ -1635,7 +1648,7 @@ healthy competition to improve the field.
   especially like to thank Koen Claessen, Lucas Dixon, Moa Johansson, Dan
   Ros\'{e}n and Nicholas Smallbone for useful discussions and help in adapting
   their software to our purposes.
-%  EPSRC
+%  FIXME: EPSRC, Katya, Jianguo fundung, Alison funding
 \end{acknowledgements}
 
 \bibliographystyle{plain}
