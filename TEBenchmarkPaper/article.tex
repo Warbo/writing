@@ -175,7 +175,6 @@ grestore
 % FIXME: Strengthen motivation:
 %  - Automated Scientific Discovery (e.g. Dundee drug discovery "centaur" story)
 %  - "Mixed initiative" (social machine?); maybe Kasparov
-%  - Gowers calling for better AI in maths
 
 \emph{Conjecture generation} is the open-ended task of producing conjectures
 about a given logical theory which are somehow ``interesting'', and is studied
@@ -191,25 +190,32 @@ dependently-typed
 programming~\cite{McKinna:2006, chlipala2011certified, Xi2003}), they have a
 reputation for being difficult and expensive, which has historically limited
 their use to high-assurance domains such as aerospace and microprocessor design.
-Increased automation is one way to address these problems, and conjecture
-generation has already been shown to aid in specification and verification of
-software properties~\cite{Claessen.Johansson.Rosen.ea:2013}).
+One way to reduce these hurdles is to increase automation, which in the case of
+software verification can benefit from the introduction of conjecture generation
+tools~\cite{Claessen.Johansson.Rosen.ea:2013}. Another approach is to tailor the
+division of labour between humans and machines such that each is playing to
+their strengths, which has been referred to as ``centaur
+teams''~\cite{harari2017reboot, davenport2015beyond}. In this respect a
+conjecture generating tool can search a much larger space of relationships than
+a human, whilst leaving the ultimate judgement of which to investigate in more
+detail to the user.
 
 Similar tasks are also studied in the domain of Computational \emph{Scientific}
-Discovery~\cite{king2004functional,Williams20141289,schmidt2009distilling},
-although that relies on inductive reasoning and experimental testing which (in
-principle) are not so important for pure mathematics. Whilst we \emph{have}
-found these methods to also be important for MTE tools (in particular for the
-\emph{plausibility} of generated conjectures), we leave a more thorough
-application of our results to scientific reasoning for future work.
+Discovery~\cite{king2004functional,Williams20141289,schmidt2009distilling}, for
+example searching for new drugs. The major difference between scientific and
+mathematical discovery is that inductive reasoning and experimental testing are,
+in principle, more important for the former, although we note that they are also
+core principles in the mathematical tools we have investigated (in particular
+for ensuring the \emph{plausibility} of conjectures).
 
-Even limiting ourselves to mathematics applications, it is difficult to measure
-and compare the success of approaches and tools. This is partially due to their
-diversity, but also because of the inherent ambiguity of the task, the different
-goals emphasised by their designers and the variety of evaluation methods
-employed. We attempt to solve this discrepancy, at least for the foreseeable
-future, by defining a standard, unambiguous benchmarking approach with which to
-compare the conjecture generation of MTE tools. Our contributions include:
+We limit ourselves to applications in mathematics, but even here it is difficult
+to measure and compare the success of approaches and tools. This is partially
+due to their diversity, but also because of the inherent ambiguity of the task
+(what counts as ``interesting''?), the different goals emphasised by their
+designers and the variety of evaluation methods employed. We attempt to solve
+this discrepancy, at least for the foreseeable future, by defining a standard,
+unambiguous benchmarking approach with which to compare the conjecture
+generation of MTE tools. Our contributions include:
 
 \begin{itemize}
 \item A general methodology for benchmarking conjecture generation.
