@@ -1,0 +1,116 @@
+\documentclass[]{default}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{amssymb,amsmath}
+\usepackage{paralist}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={Exploring Software with Symbolic and Statistical Algorithms},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{5}
+
+
+\title{Exploring Software with Symbolic and Statistical Algorithms}
+  \author{
+          Chris Warburton \\
+      University of Dundee \\
+      \texttt{cmwarburton@dundee.ac.uk}
+    }
+\date{}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+  We propose a benchmarking methodology to evaluate the efficiency and quality
+  of \emph{conjecture generation} by automated tools for \emph{mathematical
+    theory exploration}. Our approach uses widely available theorem proving
+  tasks as a \emph{ground-truth} corpus, and we demonstrate its use on the
+  QuickSpec and IsaCoSy tools, finding that the former takes significantly less
+  time to produce significantly more ``interesting'' output. By providing a
+  standard, cross-tool evaluation technique we allow the disparate approaches
+  currently being pursued to be more directly compared. Our hope is to encourage
+  innovation and improvements similar to those seen in fields like automated
+  theorem proving, where the availability of benchmarks encourages healthy
+  competition.
+\end{abstract}
+
+\section{Introduction}\label{introduction}
+
+\emph{Conjecture generation} (CG) is the open-ended task of producing
+conjectures about a given logical theory (such as a software library) which are
+somehow ``interesting'', and is studied as a sub-field of \emph{mathematical
+  theory exploration}. CG tools can discover formal specifications for software,
+and complement theorem provers by spotting crucial lemmas needed in verification
+tasks~\cite{Claessen.Johansson.Rosen.ea:2013}. Increasing the automation of
+formal methods in this way can reduce their cost and difficulty, which have
+historically limited their use to mission- or life-critical domains like
+aerospace and microprocessor design. Promising applications which would benefit
+from more practical automated reasoning include correctness proofs for software
+engineering~\cite{McKinna:2006,chlipala2011certified,Xi2003}, automated
+``assistants'' for STEM
+research~\cite{McCarthy_Programs59,lenat:77,benzmuller1997omegamega} and more
+powerful education software~\cite{conf/ijcai/TrybulecB85,hendriks2010teaching}.
+
+Progress in this field is hard to ascertain, since there is no standard measure
+of ``success'' which we can compare across different approaches. This is
+partially due to the inherent ambiguity of the task, i.e. what counts as
+``interesting''? Different researchers may have different goals, and a variety
+of evaluation methods are employed. We attempt to solve this discrepancy, at
+least for the foreseeable future, by defining a standard, unambiguous
+benchmarking approach with which to compare conjecture generation tools. Our
+contributions include:
+
+\begin{itemize}
+\item A general methodology for benchmarking conjecture generation.
+\item Resolving the issue of ``interestingness'' through the use of
+  theorem-proving benchmarks as a ground-truth.
+\item A specific instantiation of this methodology, using the Tons of Inductive
+  Problems benchmark as a corpus.
+\item Automated tooling to perform this benchmarking.
+\item Application of our methodology to the QuickSpec and IsaCoSy MTE tools,
+  and a comparison and discussion of the results.
+\end{itemize}
+
+
+\bibliographystyle{plain}
+\bibliography{../Bibtex}
+
+\end{document}
