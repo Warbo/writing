@@ -1,41 +1,59 @@
 { docsOnly ? true }:
 
 with { defs = rec {
-  abstract =
+  abstract = graphs:
     with pkgs // {
       render = "pdflatex -interaction=nonstopmode -halt-on-error abstract";
     };
     runCommand "phd-symp-2018-abstract.pdf"
       {
+        inherit graphs src;
+        inherit (support.comparison) qualityComparison timeComparison;
+        inherit (resources)  bibtex;
+
         buildInputs = [ tex ];
-        src = attrsToDirs {
-          "abstract.tex"            = ./abstract.tex;
-          "acm_proc_article-sp.cls" = ./acm_proc_article-sp.cls;
-          "acm-sig-proceedings.csl" = ./acm-sig-proceedings.csl;
-          "Bibtex.bib"              = resources.bibtex;
-          "default.cls"             = ./default.cls;
-          "sig-alternate.cls"       = ./sig-alternate.cls;
-        };
       }
       ''
-        cp -s "$src"/* ./
-        ${render}
-        bibtex abstract
-        ${render}
-        ${render}
-        mv abstract.pdf "$out"
+        mkdir src
+        cp -s "$src"/* ./src/
+
+        [[ -z "$graphs"            ]] || cp -rs "$graphs"/*            src/.
+        [[ -z "$qualityComparison" ]] || cp -rs "$qualityComparison"/* src/.
+        [[ -z "$timeComparison"    ]] || cp -rs "$timeComparison"/*    src/.
+
+        ln -s "$bibtex" Bibtex.bib
+        pushd src
+          ${render}
+          bibtex abstract
+          ${render}
+          ${render}
+          mv abstract.pdf "$out"
+        popd
     '';
 
   both = pkgs.attrsToDirs {
-    "abstract.pdf" = abstract;
+    "abstract.pdf" = abstract support.graphs.graphs;
     "slides.pdf"   = slides;
   };
 
-  pkgs = resources.nixpkgs.repo1709."809056c";
+  pkgs = resources.nixpkgs.repo1609."00ef7f9";
 
   resources = import ../resources;
 
   slides = pkgs.nothing;
+
+  src = pkgs.attrsToDirs {
+    "abstract.tex"            = ./abstract.tex;
+    "acm_proc_article-sp.cls" = ./acm_proc_article-sp.cls;
+    "acm-sig-proceedings.csl" = ./acm-sig-proceedings.csl;
+    "default.cls"             = ./default.cls;
+    "sig-alternate.cls"       = ./sig-alternate.cls;
+  };
+
+  support = import ./supporting-materials {
+    inherit pkgs tex src;
+    inherit (resources) bibtex;
+  };
 
   # Provides a pdflatex binary with all packages needed by template, our
   # document and the matplotlib graphs
