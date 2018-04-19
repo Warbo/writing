@@ -322,68 +322,6 @@ def newFigure(name):
 
     return fig
 
-def drawPoints(agg, y=None, colours=None, hue=None, yLabel=None, ax=None,
-               condition=None, failures=False):
-    '''Draw a scatter plot of agg[y][n] against agg['size'][n], for each point
-    n. Points will be spread out horizontally to avoid overlaps, and the colour
-    of each will be colours['palette'][agg[hue][n]].
-
-    If condition is given, we filter the data to only keep those where filter(n)
-    returns True, where n is the index as above. If failures is True, failed
-    runs will be marked with red crosses.
-
-    The the x-axis will be labelled with "Sample size", the y-axis with yLabel.
-
-    The resulting plot (axes) are returned. To draw on existing axes, pass them
-    in as ax.'''
-
-    # Filter data, if asked
-    newAgg = agg
-    if condition is not None:
-        keepIndices = filter(condition, [i for i, s in enumerate(agg['size'])])
-        keepers     = lambda key: [agg[key][i] for i in keepIndices]
-        newAgg = {
-            'size' : keepers('size'),
-            y      : keepers(y),
-            hue    : keepers(hue)
-        }
-
-    #plt.xlim((0, 21))
-    #plt.ylim((0, 300))
-    #newAx.set_xlim((0, 21))
-    #plt.xticks(range(1, 21))
-
-    # Alternatively, we could use stripplot with jitter
-    newAx = sns.swarmplot(data      = newAgg,
-                          x         = 'size',
-                          y         = y,
-                          size      = 2,  # Marker size
-                          marker    = '+',
-                          #edgecolor = 'k',
-                          color     = 'k',
-                          linewidth = 0.3,
-                          #palette   = colours['palette'],
-                          #hue       = hue,
-                          ax        = ax)
-    if newAx.legend_: newAx.legend_.remove()
-    newAx.set_xlabel('Sample size')
-    newAx.set_ylabel(yLabel)
-
-    [newAx.spines[edge].set_linewidth(0.3) \
-     for edge in ['top', 'bottom', 'left', 'right']]
-
-    # Plot failures as red crosses, if given
-    if failures:
-        failed = lambda key: [agg[key][i] \
-                              for i, s in enumerate(agg['success']) if not s]
-        failAgg = {
-            'x' : failed('size'),
-            'y' : failed(y)
-        }
-        newAx = sns.swarmplot(data=failAgg, x='x', y='y', color='r',
-                              marker='x', s=2, ax=newAx)
-    return newAx
-
 def savePlot(name):
     '''Write our the current figure as LaTeX.'''
     plt.tight_layout()
@@ -429,14 +367,50 @@ def plotTime(system, agg):
                  capsize=1.5,     # cap length for error bar
                  capthick=0.5)   # cap thickness for error bar
 
-    ax = drawPoints(
-        agg,
-        colours   = agg['found colours'],
-        hue       = 'timeHue',
-        y         = 'time',
-        yLabel    = 'Runtime (seconds)',
-        failures  = True,
-        condition = succeeded(agg))
+    # Filter data, if asked
+    newAgg = agg
+
+    keepIndices = [i for i,_ in enumerate(agg['size']) if succeeded(agg)(i)]
+    keepers     = lambda key: [agg[key][i] for i in keepIndices]
+    newAgg = {
+        'size'    : keepers('size'),
+        'time'    : keepers('time'),
+        'timeHue' : keepers('timeHue')
+    }
+
+    #plt.xlim((0, 21))
+    #plt.ylim((0, 300))
+    #newAx.set_xlim((0, 21))
+    #plt.xticks(range(1, 21))
+
+    # Alternatively, we could use stripplot with jitter
+    newAx = sns.swarmplot(data      = newAgg,
+                          x         = 'size',
+                          y         = 'time',
+                          size      = 2,  # Marker size
+                          marker    = '+',
+                          #edgecolor = 'k',
+                          color     = 'k',
+                          linewidth = 0.3,
+                          #hue       = 'timeHue',
+                          ax        = None)
+    if newAx.legend_: newAx.legend_.remove()
+    newAx.set_xlabel('Sample size')
+    newAx.set_ylabel('Runtime (seconds)')
+
+    [newAx.spines[edge].set_linewidth(0.3) \
+     for edge in ['top', 'bottom', 'left', 'right']]
+
+    # Plot failures as red crosses
+    failed = lambda key: [agg[key][i] \
+                          for i, s in enumerate(agg['success']) if not s]
+    failAgg = {
+        'x' : failed('size'),
+        'y' : failed('time')
+    }
+
+    ax = sns.swarmplot(data=failAgg, x='x', y='y', color='r',
+                       marker='x', s=2, ax=newAx)
 
     #ax = plt.gca()
     if ax.legend_: ax.legend_.remove()
@@ -607,23 +581,34 @@ def plotPrecRec(system, agg):
         [{'ax': precAx, 'xs': precXs, 'lows': precLows, 'highs': precHighs},
          {'ax':  recAx, 'xs':  recXs, 'lows':  recLows, 'highs':  recHighs}])
 
-    drawPoints(
-        agg,
-        ax        = precAx,
-        colours   = agg['wanted colours'],
-        hue       = 'precHue',
-        y         = 'precision',
-        yLabel    = 'Precision',
-        condition = succeeded(agg))
+    keepIndices = [i for i,_ in enumerate(agg['size']) if succeeded(agg)(i)]
+    keepers     = lambda key: [agg[key][i] for i in keepIndices]
 
-    drawPoints(
-        agg,
-        ax        = recAx,
-        colours   = agg['wanted colours'],
-        hue       = 'recHue',
-        y         = 'recall',
-        yLabel    = 'Recall',
-        condition = succeeded(agg))
+    def doPlot(y=None, yLabel=None, ax=None):
+        newAx = sns.swarmplot(data      = { 'size' : keepers('size'),
+                                            y      : keepers(y) },
+                              x         = 'size',
+                              y         = y,
+                              size      = 2,  # Marker size
+                              marker    = '+',
+                              color     = 'k',
+                              linewidth = 0.3,
+                              ax        = ax)
+
+        if newAx.legend_: newAx.legend_.remove()
+        newAx.set_xlabel('Sample size')
+        newAx.set_ylabel(yLabel)
+
+        [newAx.spines[edge].set_linewidth(0.3) \
+         for edge in ['top', 'bottom', 'left', 'right']]
+
+    doPlot(ax     = precAx,
+           y      = 'precision',
+           yLabel = 'Precision')
+
+    doPlot(ax     = recAx,
+           y      = 'recall',
+           yLabel = 'Recall')
 
     [(ax.set_ylim(0, 1), ax.plot(xs, ms)) \
      for ax, xs, ms in [(precAx, precXs, precMeans),
