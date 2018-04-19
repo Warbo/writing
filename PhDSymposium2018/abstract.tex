@@ -3,6 +3,7 @@
 \usepackage{listings}
 \usepackage{amssymb,amsmath}
 \usepackage{paralist}
+\usepackage{tikz}
 \usepackage{ifxetex,ifluatex}
 \usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
@@ -35,7 +36,7 @@
 \hypersetup{breaklinks=true,
             bookmarks=true,
             pdfauthor={},
-            pdftitle={Exploring Software with Symbolic and Statistical Algorithms},
+            pdftitle={Quantitative Benchmarking for Conjecture Generation},
             colorlinks=true,
             citecolor=blue,
             urlcolor=blue,
@@ -46,9 +47,10 @@
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 \setlength{\emergencystretch}{3em}  % prevent overfull lines
 \setcounter{secnumdepth}{5}
+\usepackage{subcaption}
+\newcommand{\etal}{{\em et al.}}
 
-
-\title{Exploring Software with Symbolic and Statistical Algorithms}
+\title{Quantitative Benchmarking for Conjecture Generation}
   \author{
           Chris Warburton \\
       University of Dundee \\
@@ -60,55 +62,195 @@
 \maketitle
 \begin{abstract}
   We propose a benchmarking methodology to evaluate the efficiency and quality
-  of \emph{conjecture generation} by automated tools for \emph{mathematical
-    theory exploration}. Our approach uses widely available theorem proving
-  tasks as a \emph{ground-truth} corpus, and we demonstrate its use on the
-  QuickSpec and IsaCoSy tools, finding that the former takes significantly less
-  time to produce significantly more ``interesting'' output. By providing a
-  standard, cross-tool evaluation technique we allow the disparate approaches
-  currently being pursued to be more directly compared. Our hope is to encourage
-  innovation and improvements similar to those seen in fields like automated
-  theorem proving, where the availability of benchmarks encourages healthy
-  competition.
+  of \emph{automated conjecture generation}. Our approach uses widely available
+  theorem proving tasks as a \emph{ground-truth} corpus, and we demonstrate its
+  use on the \textsc{QuickSpec} and \textsc{IsaCoSy} tools, finding that the
+  former takes significantly less time to produce significantly more
+  ``interesting'' output. By providing a standard, cross-tool evaluation
+  technique we allow the disparate approaches currently being pursued to be more
+  directly compared. Our hope is to encourage innovation and improvements
+  similar to those seen in fields like automated theorem proving, where the
+  availability of benchmarks encourages healthy competition.
 \end{abstract}
 
 \section{Introduction}\label{introduction}
 
-\emph{Conjecture generation} (CG) is the open-ended task of producing
-conjectures about a given logical theory (such as a software library) which are
-somehow ``interesting'', and is studied as a sub-field of \emph{mathematical
-  theory exploration}. CG tools can discover formal specifications for software,
-and complement theorem provers by spotting crucial lemmas needed in verification
-tasks~\cite{Claessen.Johansson.Rosen.ea:2013}. Increasing the automation of
-formal methods in this way can reduce their cost and difficulty, which have
-historically limited their use to mission- or life-critical domains like
-aerospace and microprocessor design. Promising applications which would benefit
-from more practical automated reasoning include correctness proofs for software
-engineering~\cite{McKinna:2006,chlipala2011certified,Xi2003}, automated
-``assistants'' for STEM
-research~\cite{McCarthy_Programs59,lenat:77,benzmuller1997omegamega} and more
-powerful education software~\cite{conf/ijcai/TrybulecB85,hendriks2010teaching}.
+\emph{Conjecture generation} (CG) is the open-ended task of conjecturing
+``interesting'' properties of a given logical theory (such as a software
+library), and is studied as a sub-field of \emph{mathematical theory
+  exploration}. Such conjectures can be sent to automated theorem provers (ATP),
+have helped prove software correctness by finding key
+lemmas~\cite{Claessen.Johansson.Rosen.ea:2013}. Automating formal methods this
+way can reduce the cost and difficulty which have historically limited their use
+to mission- or life-critical domains. More practical automated reasoning shows
+promise in software
+engineering~\cite{McKinna:2006,chlipala2011certified,Xi2003}, automated research
+``assistants''~\cite{McCarthy_Programs59,lenat:77,benzmuller1997omegamega} and
+educational software~\cite{conf/ijcai/TrybulecB85,hendriks2010teaching}.
 
-Progress in this field is hard to ascertain, since there is no standard measure
-of ``success'' which we can compare across different approaches. This is
-partially due to the inherent ambiguity of the task, i.e. what counts as
-``interesting''? Different researchers may have different goals, and a variety
-of evaluation methods are employed. We attempt to solve this discrepancy, at
-least for the foreseeable future, by defining a standard, unambiguous
-benchmarking approach with which to compare conjecture generation tools. Our
-contributions include:
+CG progress is hard to ascertain since there is no standard measure of
+``success'', partially due to the ambiguity of the task, i.e. what counts as
+``interesting''? Researchers may have different goals, and a variety of
+evaluation methods appear in the literature. We attempt to solve this
+discrepancy (in the short-term) by defining a standard, unambiguous, extensible
+benchmarking approach for CG tools. Our contributions include:
 
 \begin{itemize}
-\item A general methodology for benchmarking conjecture generation.
-\item Resolving the issue of ``interestingness'' through the use of
-  theorem-proving benchmarks as a ground-truth.
-\item A specific instantiation of this methodology, using the Tons of Inductive
-  Problems benchmark as a corpus.
-\item Automated tooling to perform this benchmarking.
-\item Application of our methodology to the QuickSpec and IsaCoSy MTE tools,
-  and a comparison and discussion of the results.
+\item A benchmarking methodology for CG tools.
+\item Resolving the ``interestingness'' question by adapting ATP benchmarks into
+  ground-truth input/output examples.
+\item Benchmarking and comparing the \textsc{QuickSpec} and \textsc{IsaCoSy}
+  tools.
 \end{itemize}
 
+\begin{figure}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \input{quickspectime.pgf}
+    \caption{\textsc{QuickSpec}}
+  \end{subfigure}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \input{isacosytime.pgf}
+    \caption{\textsc{IsaCoSy}}
+  \end{subfigure}
+
+  \caption{Time taken for CG on samples from TIP, with 300 second timeout. Lines
+    show medians and error bars show inter-quartile range, with 31 samples of
+    each size except 1 (14) and 2 (30). }
+  \label{figure:quickspec_runtimes}
+\end{figure}
+
+\begin{figure*}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \input{quickspecprec.pgf}
+    \caption{\textsc{QuickSpec}}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \input{isacosyprec.pgf}
+    \caption{\textsc{IsaCoSy}}
+  \end{subfigure}
+
+  \caption{Precision and recall of successful runs. Lines show average
+    proportion, with sample standard deviation shaded.}
+  \label{figure:quickspec_precRec}
+\end{figure*}
+
+\section{Background}
+
+Consider a software library for inductive (i.e. singly-linked) lists, containing
+simple functions like \texttt{append}, more complex ones like \texttt{mergesort}
+and even higher-order functions like \texttt{map} and \texttt{reduce}. The large
+input space of these functions limits \emph{testing} to a tiny fraction of the
+possible executions, whilst higher-order functions and induction makes
+\emph{proving} correctness properties undecidable (requiring significant user
+guidance). We may also \emph{miss} key properties (especially if the same person
+writes the spec and the code), e.g. that calling \texttt{mergesort} on something
+already sorted can be optimised away. Similar tasks arise in mathematics, and
+scientific models more generally, when exploring the consequences of axioms and
+definitions.
+
+The aim of CG is to read such definitions and produce a set of ``interesting''
+properties which they appear to satisfy. This can help formalise the
+``background knowledge'' required for proving, and present the user with ideas
+they hadn't considered.
+
+Crucial to CG is how we define ``interesting''. The literature gives many
+alternatives, for example Colton \etal{} survey existing
+tools~\cite{colton2000notion} and find six common qualities: empirical
+plausibility, novelty, surprisingness, applicability, comprehensibility and
+utility.
+
+\emph{Quantitative} evaluation has compared the
+\textsc{IsaCoSy}~\cite{Johansson.Dixon.Bundy:conjecture-generation},
+\textsc{IsaScheme}~\cite{Montano-Rivas.McCasland.Dixon.ea:2012} and
+\textsc{HipSpec}~\cite{claessen2013automating} tools, by selecting sets of
+definitions and properties from the standard library of the \textsc{Isabelle}
+proof assistant, and treating those as a \emph{ground-truth} corpus, i.e. using
+``membership in the corpus'' as a proxy for ``interesting''. The proportion of
+conjectures appearing in the corpus is the \emph{precision}, the proportion of
+the corpus appearing in the conjectures is the \emph{recall}.
+
+This is a pragmatic solution to the ambiguity, but only two datapoints were
+taken: one with 12 properties, the other with 9. This makes it hard to draw
+robust conclusions.
+
+\section{Methodology}
+
+Building on existing precision/recall work, we define a benchmarking methodology
+with a much larger ground-truth corpus, and provide a scalable, statistical
+approach to evaluation using this corpus. Inspired by the availability of large
+benchmarks for ATP tools~\cite{pelletier2002development}, we take those problem
+sets and automatically convert them into input/output examples for the CG task.
+
+We choose an ATP benchmark relevant to our domain. For our demonstration we
+chose Tons of Inductive Problems (TIP)~\cite{claessen2015tip}, which is relevant
+to software verification due to using higher-order logic, inductive definitions
+and relevant problems (arithmetic, sorting, etc.). TIP 0.2 contains 343 theorem
+proving problems, each defining the types and functions involved and stating a
+single property of those definitions. A total of 618 datatypes and 1498
+functions are defined, but most of these are duplicates (e.g. every problem
+involving \texttt{multiply} will include its own definitions of
+\texttt{multiply}, \texttt{add}, \texttt{successor}, \texttt{Natural}, etc.).
+Removing these redundancies, normalising the definitions and only selecting
+those which appear in at least one property leaves 182 functions for use in our
+corpus.
+
+We could, in theory, send these de-duplicated definitions straight into a CG
+tool and use the 343 properties as the ground truth for analysis. However, this
+number of definitions is too large to be feasible for current tools, and we
+would only get a single datapoint this way. Instead we \emph{sample} a subset of
+definitions, and form the ground truth by selecting those properties which only
+reference the sampled definitions. To avoid undefined precisions, we only use
+samples with at least one ground-truth property.
+
+We translate the function definitions into each tool's input language (Isabelle
+for \textsc{IsaCoSy} and Haskell for \textsc{QuickSpec}), run the tools with a
+timeout (5 minutes, based on preliminary experiments) and translate the outputs
+into a standard form for comparison with the ground-truths.
+
+\section{Demonstration}
+
+We applied our methodology to two existing CG tools:
+\textsc{QuickSpec}~\cite{QuickSpec} (a component of
+\textsc{HipSpec}~\cite{Claessen_hipspec:automating} and
+\textsc{Hipster}~\cite{Hipster}) enumerates expressions in
+Haskell~\cite{marlow2010haskell}, conjecturing that they're all equal unless
+proven otherwise by a counter-example finder;
+\textsc{IsaCoSy}~\cite{johansson2009isacosy} enumerates equations in
+\textsc{Isabelle}~\cite{nipkow2002isabelle}, using a constraint solver to avoid
+repeating itself.
+
+Their running times are shown in Figure~\ref{figure:quickspec_runtimes}, for
+sample of up to 20 functions. The measurements are paired, and we followed the
+Speedup-Test protocol of Touati, Worms and Briais~\cite{touati2013speedup} to
+find that \textsc{QuickSpec} was faster for $67\%-98\%$ of sizes (with 95\%
+confidence). Only sizes 1 and 2 weren't significantly faster, due to too few
+samples. Timeouts bounding the difference make this a conservative estimate.
+
+Precision and recall are shown in Figure~\ref{figure:quickspec_precRec},
+although few \textsc{IsaCoSy} runs succeeded. Recalls remain roughly flat, as
+the algorithms are monotonic (adding definitions can't prevent conjectures),
+whilst precisions decrease due to the buildup of ``uninteresting''
+relationships. We pooled all successful samples together and compared: McNemar's
+test~\cite{mcnemar1947note} found \textsc{QuickSpec}'s recall significantly
+higher ($p = 0.0026$), and Boschloo's test~\cite{lydersen2009recommended} found
+no significant difference between the precisions ($p = 0.111$).
+
+\section{Conclusion}
+
+``Interestingness'' remains a difficult philosophical question, but we work
+around this to provide a practical benchmark which researchers can use for the
+foreseeable future to characterise and, importantly, \emph{compare} their
+solutions to the CG task. Although it does not capture every facet of the CG
+goal, our methodology builds on existing work and is easily extended to other
+corpora, tools and analyses.
+
+We have demonstrated that \textsc{QuickSpec} significantly out-performs
+\textsc{IsaCoSy}, and hope that such healthy competition will accelerate future
+developments, as has been seen in the field of ATP.
 
 \bibliographystyle{plain}
 \bibliography{../Bibtex}
