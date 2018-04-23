@@ -79,12 +79,12 @@
 ``interesting'' properties of a given logical theory (such as a software
 library), and is studied as a sub-field of \emph{mathematical theory
   exploration}. Such conjectures can be sent to automated theorem provers (ATP),
-have helped prove software correctness by finding key
+and have helped software correctness proofs by finding key
 lemmas~\cite{Claessen.Johansson.Rosen.ea:2013}. Automating formal methods this
 way can reduce the cost and difficulty which have historically limited their use
 to mission- or life-critical domains. More practical automated reasoning shows
 promise in software
-engineering~\cite{McKinna:2006,chlipala2011certified,Xi2003}, automated research
+engineering~\cite{McKinna:2006,chlipala2011certified}, automated research
 ``assistants''~\cite{McCarthy_Programs59,lenat:77,benzmuller1997omegamega} and
 educational software~\cite{conf/ijcai/TrybulecB85,hendriks2010teaching}.
 
@@ -115,9 +115,9 @@ benchmarking approach for CG tools. Our contributions include:
     \caption{\textsc{IsaCoSy}}
   \end{subfigure}
 
-  \caption{Time taken for CG on samples from TIP, with 300 second timeout. Lines
-    show medians and error bars show inter-quartile range, with 31 samples of
-    each size except 1 (14) and 2 (30). }
+  \caption{CG running time on definitions sampled from TIP (31 of each size,
+    except 1 (14) and 2 (30)). Failures (out-of-memory or 300 second timeout)
+    shown in red. Lines show medians, error bars are inter-quartile range.}
   \label{figure:quickspec_runtimes}
 \end{figure}
 
@@ -154,8 +154,8 @@ definitions.
 
 The aim of CG is to read such definitions and produce a set of ``interesting''
 properties which they appear to satisfy. This can help formalise the
-``background knowledge'' required for proving, and present the user with ideas
-they hadn't considered.
+``background knowledge'' required for proving, and present users with novel
+ideas.
 
 Crucial to CG is how we define ``interesting''. The literature gives many
 alternatives, for example Colton \etal{} survey existing
@@ -224,11 +224,12 @@ proven otherwise by a counter-example finder;
 repeating itself.
 
 Their running times are shown in Figure~\ref{figure:quickspec_runtimes}, for
-sample of up to 20 functions. The measurements are paired, and we followed the
+samples of up to 20 functions. The measurements are paired, and we followed the
 Speedup-Test protocol of Touati, Worms and Briais~\cite{touati2013speedup} to
 find that \textsc{QuickSpec} was faster for $67\%-98\%$ of sizes (with 95\%
 confidence). Only sizes 1 and 2 weren't significantly faster, due to too few
-samples. Timeouts bounding the difference make this a conservative estimate.
+samples. This is also conservative, since the difference is bounded by the
+timeout.
 
 Precision and recall are shown in Figure~\ref{figure:quickspec_precRec},
 although few \textsc{IsaCoSy} runs succeeded. Recalls remain roughly flat, as

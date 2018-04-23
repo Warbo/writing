@@ -336,17 +336,11 @@ def plotTime(system, agg):
     plt.grid(color='grey', which='major', axis='y', linestyle='solid')
     plt.grid(axis='x', linestyle=' ', linewidth=0)
 
-    plt.xlim(0, 20 )
+    plt.xlim(1, 20 )
     plt.ylim(0, 300)
 
-    plt.xticks(range(0, 21))
+    plt.xticks(range(1, 21))
     plt.yticks([0, 100, 200, 300])
-
-    mean   = lambda l: sum(l) / len(l)
-
-    odd    = lambda n: (n // 2) == 1
-
-    median = lambda l: np.percentile(sorted(l), 50.0)
 
     sizes = sorted(list(set(agg['size'])))
 
@@ -360,40 +354,23 @@ def plotTime(system, agg):
 
     diff = lambda xs, ys: [xs[i] - ys[i] for i, _ in enumerate(xs)]
 
-    plt.errorbar(x=sizes, y=p50, yerr=(diff(p50, p25), diff(p75, p50)),
-                 #marker='+',
-                 elinewidth=0.5,# width of error bar line
-                 ecolor='k',    # color of error bar
-                 capsize=1.5,     # cap length for error bar
-                 capthick=0.5)   # cap thickness for error bar
-
-    # Filter data, if asked
-    newAgg = agg
-
-    keepIndices = [i for i,_ in enumerate(agg['size']) if succeeded(agg)(i)]
-    keepers     = lambda key: [agg[key][i] for i in keepIndices]
-    newAgg = {
-        'size'    : keepers('size'),
-        'time'    : keepers('time'),
-        'timeHue' : keepers('timeHue')
+    newAgg      = {
+        'size' : agg['size'],
+        'time' : agg['time'],
+        'hue'  : [0 if s else 1 for s in agg['success']]
     }
-
-    #plt.xlim((0, 21))
-    #plt.ylim((0, 300))
-    #newAx.set_xlim((0, 21))
-    #plt.xticks(range(1, 21))
 
     # Alternatively, we could use stripplot with jitter
     newAx = sns.swarmplot(data      = newAgg,
                           x         = 'size',
                           y         = 'time',
-                          size      = 2,  # Marker size
-                          marker    = '+',
-                          #edgecolor = 'k',
-                          color     = 'k',
+                          size      = 3,  # Marker size
+                          marker    = 'x',
+                          palette   = ['k', 'r'],
                           linewidth = 0.3,
-                          #hue       = 'timeHue',
+                          hue       = 'hue',
                           ax        = None)
+
     if newAx.legend_: newAx.legend_.remove()
     newAx.set_xlabel('Sample size')
     newAx.set_ylabel('Runtime (seconds)')
@@ -402,20 +379,28 @@ def plotTime(system, agg):
      for edge in ['top', 'bottom', 'left', 'right']]
 
     # Plot failures as red crosses
-    failed = lambda key: [agg[key][i] \
-                          for i, s in enumerate(agg['success']) if not s]
-    failAgg = {
-        'x' : failed('size'),
-        'y' : failed('time')
-    }
+    #failed = lambda key: [agg[key][i] \
+    #                      for i, s in enumerate(agg['success']) if not s]
+    #failAgg = {
+    #    'x' : failed('size'),
+    #    'y' : failed('time')
+    #}
 
-    ax = sns.swarmplot(data=failAgg, x='x', y='y', color='r',
-                       marker='x', s=2, ax=newAx)
+    #ax = sns.swarmplot(data=failAgg, x='x', y='y', color='r',
+    #                   marker='x', s=2, ax=newAx)
 
-    #ax = plt.gca()
-    if ax.legend_: ax.legend_.remove()
-    ax.set_xlabel('Number of functions sampled')
-    ax.set_ylabel('Time taken')
+    msg(repr(dict(x=sizes, y=p50, yerr=(diff(p50, p25), diff(p75, p50)))))
+
+    plt.errorbar([s - 1 for s in sizes], p50, yerr=(diff(p50, p25), diff(p75, p50)),
+                   #marker='+',
+                   elinewidth=0.5,# width of error bar line
+                   ecolor='k',    # color of error bar
+                   capsize=1.5,     # cap length for error bar
+                   capthick=0.5)   # cap thickness for error bar
+
+    #if ax.legend_: ax.legend_.remove()
+    #newAx.set_xlabel('Number of functions sampled')
+    #newAx.set_ylabel('Time taken')
 
     savePlot(system + 'time')
 
@@ -589,8 +574,8 @@ def plotPrecRec(system, agg):
                                             y      : keepers(y) },
                               x         = 'size',
                               y         = y,
-                              size      = 2,  # Marker size
-                              marker    = '+',
+                              size      = 3,  # Marker size
+                              marker    = 'x',
                               color     = 'k',
                               linewidth = 0.3,
                               ax        = ax)
