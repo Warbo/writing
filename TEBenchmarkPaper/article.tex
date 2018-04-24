@@ -187,9 +187,9 @@ expensive, which has historically limited their use to high-assurance domains
 such as aerospace and microprocessor design.
 
 One path to reducing these barriers is to increase the level of automation.
-Tools for automated theorem proving (ATP) have been shown to benefit from the
-addition of a conjecture generator, improving their ability to prove properties
-relevant to software verification~\cite{Claessen.Johansson.Rosen.ea:2013}.
+Software verification tools have been shown to benefit from the addition of a
+conjecture generation step for finding ``background lemmas'', which are useful
+when proving user-provided statements~\cite{Claessen.Johansson.Rosen.ea:2013}.
 Another path is to tailor the division of labour between humans and machines
 such that each is playing to their strengths, which has been referred to as
 ``centaur teams''~\cite{harari2017reboot,davenport2015beyond}. Machines can
@@ -287,30 +287,29 @@ literature; and concluding remarks are given in $\S$\ref{sec:conclusion}.
 % and use that as motivation for conjecturing and proving?
 
 Given a logical theory, such as the theory of lists shown in
-Figure~\ref{figure:list_theory}, we may want to find theorems which describe its
-behaviour. This could be for mathematical curiosity, or due to the theory's
-importance in some domain. In particular, for theories which capture the
-semantics of some software library, we may want to verify that certain
-(un)desirable properties do (not) hold. We might also want to \emph{optimise}
-programs using this library, rewriting expressions into a form which requires
-less time, memory, network usage, etc. To avoid altering a program's result,
-such rewrites should come with theorems proving their correctness, such as the
-following theorem for our theory of lists:
+Figure~\ref{figure:list_theory}, we may want to find properties (such as
+invariants) describing its behaviour. This could be for mathematical curiosity,
+or due to the theory's importance in some domain. In particular, when dealing
+with definitions in a software library, we may regard a set of such properties
+as the code's \emph{specification}. Even those properties which only hold by
+coincidence, rather than by design, may still be useful for \emph{optimising}
+uses of this library, for example by rewriting expressions into equivalent forms
+which require less time, memory, network usage, etc. For example, our theory of
+lists turns out to satisfy the following invariant:
 
 \begin{equation} \label{eq:mapreduce}
   \forall f. \forall xs. \forall ys.
     \Map(f, \Append(xs, ys)) = \Append(\Map(f, xs), \Map(f, ys))
 \end{equation}
 
-Equation~\ref{eq:mapreduce} justifies a rewrite rule for splitting a single
-$\Map$ call into multiple independent calls dealing with different sections of a
-list. Such rules can be useful optimisations, for example in a distributed
-context where each call can be evaluated in parallel (this is the basis of the
-``map/reduce'' programming paradigm).
-
-All of these example use cases require the ability to discover theorems about
-some particular definitions. This is a hard problem in general, but presents
-opportunities for automation due to the precise, symbolic nature of the domain.
+Whilst these two expressions produce equivalent results, the form on the right
+can execute both calls to $\Map$ in parallel (in a pure functional language, at
+least), giving rise to the ``map/reduce'' paradigm for parallel programming.
+Such use cases require the ability to \emph{discover} properties about some
+particular definitions; this requires not only \emph{proving} their correctness,
+but also \emph{posing} them as conjectures in the first place. This is a hard
+problem in general, but presents opportunities for automation due to the
+precise, symbolic nature of the domain.
 
 \subsection{Automating Construction and Exploration of Theories}
 \label{sec:te}
@@ -517,7 +516,7 @@ The analyses in~\cite{claessen2013automating} took their definitions and ground
 truths from the standard library of the Isabelle proof assistant: since the
 library authors have gone to the effort of stating, proving and including these
 theorems in every copy of their software, this is a good indication that they
-are interesting.
+are interesting properties of those definitions.
 
 Tests were performed with a theory of natural numbers and a theory of lists (the
 definitions shown in figure~\ref{figure:list_theory}), %FIXME: add page ref
@@ -587,13 +586,13 @@ suitable are those which have the following properties:
 Once such a problem set has been chosen, we must separate the definitions
 referenced by the theorems from the theorem statements themselves. The former
 will be used as input to the tools, whilst the latter form a ground truth corpus
-against which to compare the output.
+of properties against which to compare the output.
 
 It is important to ensure that there are no duplicate definitions: we are only
 concerned with the \emph{logical} content of the input, not the more arbitrary
 aspects like the names of functions. For example, consider a problem set which
-includes a commutativity theorem for a \texttt{plus} function, and an
-associativity theorem for an \texttt{add} function, where the definitions of
+includes a statement of commutativity for a \texttt{plus} function, and of
+associativity for an \texttt{add} function, where the definitions of
 \texttt{plus} and \texttt{add} are $\alpha$-equivalent. We would expect an MTE
 tool to either conjecture commutativity and associativity for \emph{both}
 functions, or for \emph{neither} function, since they are logically equivalent.
@@ -604,14 +603,14 @@ they don't appear in the ground truth.
 For this reason, duplicates should be removed, and any references in the theorem
 statements updated to use the remaining definition (e.g. chosen based on
 lexicographic order). In the above example, the \texttt{plus} function would be
-removed, and the commutativity theorem updated to reference \texttt{add}
+removed, and the commutativity statement updated to reference \texttt{add}
 instead.
 
 \subsection{Sampling}
 
 We could, in theory, send these de-duplicated definitions straight into an MTE
-tool and use the updated theorem statements as the ground truth for analysis.
-However, this would cause two problems:
+tool and use the entire set of properties (taken from the theorem statements) as
+the ground truth for analysis. However, this would cause two problems:
 
 \begin{itemize}
 \item The result would be a single data point, which makes it difficult to
@@ -625,27 +624,27 @@ definitions.\footnote{This could be done randomly, but for reproducibility we
   use a deterministic order (based on cryptographic hashes, to discourage
   ``cheating'').} Given a sample size, we choose a subset of that many definitions,
 and provide only those as input to the tool. We generate a corresponding
-ground truth by selecting those theorems from the corpus which ``depend on''
+ground truth by selecting those properties from the corpus which ``depend on''
 (contain references to) \emph{only} the definitions in that sample. Transitive
-dependencies aren't required (e.g. a theorem which only references
-\texttt{times} does not depend on \texttt{plus}, even if \texttt{plus} occurs in
-the definition of \texttt{times}).
+dependencies aren't required (e.g. a property involving only a \texttt{times}
+function would not depend on a \texttt{plus} function, even if \texttt{plus}
+occurs in the definition of \texttt{times}).
 
 Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
 given sample size, increasing the size of the corpus (which provides better
 statistics) makes it less likely that a chosen sample will contain all of
-a theorem's dependencies. The majority of such samples would hence have an empty
+a property's dependencies. The majority of such samples would hence have an empty
 ground truth, and thus $0$ precision and undefined recall \emph{independent} of
 the tool's output! This is clearly undesirable as an evaluation method.
 
 Instead, we only allow a sample if it contains all dependencies of at least one
-theorem. We could do this using rejection sampling, but it is more efficient to
-pick a theorem, weighted in proportion to their number of dependencies and
-ignoring those with more dependencies than our sample size. That theorem's
+property. We could do this using rejection sampling, but it is more efficient to
+pick a property, weighted in proportion to their number of dependencies
+(ignoring those with more dependencies than our sample size). That property's
 dependencies become our sample, padded up to the required size with uniform
 choices from the remaining definitions.
 
-The ground truth for such samples is guaranteed to contain at least one theorem
+The ground truth for such samples is guaranteed to contain at least one property
 (the one we picked), and hence the precision and recall will depend meaningfully
 on the tool's output.
 
@@ -665,7 +664,7 @@ either there is enough memory, or there isn't; implementations shouldn't be
 penalised for making use of available resources.
 
 To calculate precision and recall, the conjectures generated by each tool, as
-well as the ground-truth theorems, need to be parsed into a common format and
+well as the ground-truth properties, need to be parsed into a common format and
 compared syntactically after normalising away ``irrelevant'' details. We
 consider variable naming to be irrelevant, which can be normalised by numbering
 free variables from left to right and using de Bruijn indices for bound
@@ -711,7 +710,7 @@ can sum their numerators and denominators to get the \emph{ratio of the
 precision and recall to be modelled as simple Bernoulli processes.
 
 We prefer the latter, where each generated conjecture (wanted or not) is like a
-coin toss whose bias is the precision; likewise, the ground truth theorems
+coin toss whose bias is the precision; likewise, the ground truth properties
 (found or not) are like coin tosses biased by the recall. Note that this simple
 model does not explain how many conjectures the tool decides to output for each
 run.
@@ -740,7 +739,7 @@ to the observable difference, which biases our results in a conservative way
 For simplicity, we suggest comparing quality by pooling together results from
 all samples where both tools finished successfully. Recall can be compared using
 the standard McNemar test for paired samples~\cite{mcnemar1947note}: each
-ground-truth theorem is categorised as either being found only by the first
+ground-truth property is categorised as either being found only by the first
 tool, only by the second, by both or by neither. Those found by both or neither
 are ignored, and the tool-specific numbers are tested for marginal homogeneity
 (i.e. whether their differences give rise to similar totals).
@@ -784,7 +783,7 @@ by design).
     \node (ref) [process, below right=1.5cm and -1cm of sep]{Update references};
 
     \node (thy)  [startstop, below=1cm of def]{Distinct Definitions};
-    \node (thm)  [startstop, below=1cm of ref]{Theorem Corpus};
+    \node (thm)  [startstop, below=1cm of ref]{Corpus of Properties};
 
     \draw [arrow] (in)  -- (sep);
     \draw [arrow] (def) -- (ref);
@@ -794,12 +793,12 @@ by design).
     % Arrows with labels
     \path[->]
         (sep) edge [arrow, sloped, above] node {definitions} (def)
-        (sep) edge [arrow, sloped, above] node {theorems}    (ref);
+        (sep) edge [arrow, sloped, above] node {properties}  (ref);
 
     % Sampling section
 
-    \node (choose) [process, below=of thm   ]{Choose a theorem};
-    \node (deps)   [process, below=of choose]{List theorem dependencies};
+    \node (choose) [process, below=of thm   ]{Choose a property};
+    \node (deps)   [process, below=of choose]{List property's dependencies};
 
     % Create dummy coordinate below deps, then use its y coordinate for pad
     \coordinate [below=of deps] (padDummy);
@@ -919,7 +918,7 @@ and 30 of size 2.
 \subsection{TIP} % FIXME: Expand acronym
 
 We chose TIP for our ground truth since it satisfies the desiderata of
-$\S$\ref{section:prep}: each problem has standalone type and function
+$\S$\ref{section:prep}: each benchmark problem has standalone type and function
 definitions, making their separation trivial; known examples from the software
 verification and inductive theorem proving literature are included, ensuring
 relevance to those fields; the format includes the higher-order functions and
@@ -929,13 +928,13 @@ format (an extension of SMT-Lib~\cite{BarFT-SMTLIB}) into a variety of
 languages, including Haskell and Isabelle.
 
 We use TIP version 0.2 which contains 343 problems, each stating a single
-theorem and together defining a total of 618 datatypes and 1498 functions. Most
+property and together defining a total of 618 datatypes and 1498 functions. Most
 of these are duplicates, since each problem (re\nobreakdash-)defines all of the
 datatypes and functions it involves.
 
 TIP datatypes can have several ``constructors'' (introduction forms) and
 ``destructors'' (elimination forms; field accessors). For example the type of
-lists from figure~\ref{figure:list_theory} can be defined in the TIP format as
+lists from Figure~\ref{figure:list_theory} can be defined in the TIP format as
 follows:
 
 \begin{samepage}
@@ -981,7 +980,7 @@ destructor (via pattern-matching) of the following form:
 \end{samepage}
 
 \begin{sloppypar}
-  We rewrite the TIP theorems (our ground truth) to reference these expanded
+  We rewrite the TIP properties (our ground truth) to reference these expanded
   forms instead of the raw constructors and destructors, and use these functions
   in our samples in lieu of the raw expressions. Note that these destructor
   wrappers are \emph{partial} functions (e.g. \texttt{destructor-head} and
@@ -1002,9 +1001,9 @@ mechanisms.~\footnote{\texttt{Boolean} has \texttt{true} and \texttt{false}
 
 When we add all of these generated types and functions to those in TIP, we get a
 total of 3598 definitions. Removing $\alpha$-equivalent duplicates leaves 269,
-and we choose to only sample from those 182 functions which occur in at least
-one theorem statement (this removes ambiguity about which \emph{definitions}
-count as interesting and which are just ``implementation details'' for other
+and we choose to only sample from those 182 functions which are referenced by at
+least one property (this removes ambiguity about which \emph{definitions} count
+as interesting and which are just ``implementation details'' for other
 definitions).
 
 TIP comes with software to translate its definitions into Haskell and Isabelle
@@ -1083,7 +1082,7 @@ supported by the relative flatness of the recall results. Rather, the number of
 conjectures generated is increasing at a higher rate than the size of the ground
 truth. These extra conjectures may involve those ``padding'' definitions in a
 sample which don't contribute to its ground truth, or may be ``uninteresting''
-relationships between the dependencies of different ground truth theorems.
+relationships between the dependencies of different ground truth properties.
 
 This indicates two potential improvements to the QuickSpec algorithm (as far as
 this benchmark is concerned). The deluge of generated conjectures could be
@@ -1100,9 +1099,9 @@ would also need to be ``generic'', to avoid over-fitting to this particular
 benchmark.
 
 QuickSpec's recall is limited by two factors: the algorithm is unable to
-synthesise some theorem statements, such as conditional equations, inequalities,
-terms larger than the search depth and those containing anonymous functions.
-The congruence closure algorithm used as a post-processor may also be removing
+synthesise some properties, such as conditional equations, inequalities, terms
+larger than the search depth and those containing anonymous functions. The
+congruence closure algorithm used as a post-processor may also be removing
 ``interesting'' results, for example if we found an ``uninteresting'' result
 which is more general.
 
@@ -1645,8 +1644,8 @@ and a pre-processing filter to ``focus'' on promising subsets of the input.
 
 Other promising directions for future work include the evaluation of other MTE
 tools, the use of other corpora more suited to different problem domains, and
-the extension of existing corpora with new definitions and theorems (which would
-also be of benefit to the original ATP benchmarks).
+the extension of existing corpora with new definitions and properties (which
+would also be of benefit to the original ATP benchmarks).
 
 We believe that a standard approach to benchmarking and comparison such as ours
 will ease the burden on researchers wanting to evaluate different potential
