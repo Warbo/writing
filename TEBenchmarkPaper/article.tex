@@ -172,43 +172,41 @@ grestore
 \label{intro}
 
 % Lay out the field of TE: motivation, tools, evaluation, problems...
-% FIXME: Strengthen motivation:
-%  - Automated Scientific Discovery (e.g. Dundee drug discovery "centaur" story)
-%  - "Mixed initiative" (social machine?); maybe Kasparov
 
 \emph{Conjecture generation} is the open-ended task of producing conjectures
-about a given logical theory which are somehow ``interesting'', and is studied
-as a sub-field of \emph{mathematical theory exploration} (MTE).
+concerning a given logical theory which are somehow ``interesting'', and is
+studied as a sub-field of \emph{mathematical theory exploration} (MTE). This has
+applications wherever we find uses for formal methods: in proof assistants and
+their libraries, in mathematics education and research, and in the specification
+and verification of software. Although formal methods, and automated reasoning
+more generally, have been advocated in mathematics (notably by
+Voevodsky~\cite{voevodsky2010univalent} and Gowers~\cite{ganesalingam2013fully})
+and software engineering (for example via dependently-typed
+programming~\cite{McKinna:2006}), they have a reputation for being difficult and
+expensive, which has historically limited their use to high-assurance domains
+such as aerospace and microprocessor design.
 
-This has applications wherever we find uses for formal methods: in proof
-assistants and their libraries, in mathematics education and research, and in
-the specification and verification of software. Although formal methods, and
-automated reasoning more generally, have been advocated in mathematics (notably
-by Voevodsky~\cite{voevodsky2010univalent} and
-Gowers~\cite{ganesalingam2013fully}) and software engineering (for example via
-dependently-typed
-programming~\cite{McKinna:2006, chlipala2011certified, Xi2003}), they have a
-reputation for being difficult and expensive, which has historically limited
-their use to high-assurance domains such as aerospace and microprocessor design.
-One way to reduce these hurdles is to increase automation, which in the case of
-software verification can benefit from the introduction of conjecture generation
-tools~\cite{Claessen.Johansson.Rosen.ea:2013}. Another approach is to tailor the
-division of labour between humans and machines such that each is playing to
-their strengths, which has been referred to as ``centaur
-teams''~\cite{harari2017reboot, davenport2015beyond}. In this respect a
-conjecture generating tool can search a much larger space of relationships than
-a human, whilst leaving the ultimate judgement of which to investigate in more
-detail to the user.
+One path to reducing these barriers is to increase the level of automation.
+Tools for automated theorem proving (ATP) have been shown to benefit from the
+addition of a conjecture generator, improving their ability to prove properties
+relevant to software verification~\cite{Claessen.Johansson.Rosen.ea:2013}.
+Another path is to tailor the division of labour between humans and machines
+such that each is playing to their strengths, which has been referred to as
+``centaur teams''~\cite{harari2017reboot,davenport2015beyond}. Machines can
+systematically search a much larger space of possible relationships than humans,
+potentially bringing to light novel and surprising connections, whilst allowing
+the user to make the ultimate judgement over which of the most promising results
+are worth investigating further.
 
 Similar tasks are also studied in the domain of Computational \emph{Scientific}
 Discovery~\cite{king2004functional,Williams20141289,schmidt2009distilling}, for
-example searching for new drugs. The major difference between scientific and
+example in the search for new drugs. The major difference between scientific and
 mathematical discovery is that inductive reasoning and experimental testing are,
 in principle, more important for the former, although we note that they are also
 core principles in the mathematical tools we have investigated (in particular
 for ensuring the \emph{plausibility} of conjectures).
 
-We limit ourselves to applications in mathematics, but even here it is difficult
+We limit ourselves to mathematical applications, but even here it is difficult
 to measure and compare the success of approaches and tools. This is partially
 due to their diversity, but also because of the inherent ambiguity of the task
 (what counts as ``interesting''?), the different goals emphasised by their
