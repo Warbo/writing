@@ -227,10 +227,11 @@ generation of MTE tools. Our contributions include:
 \end{itemize}
 
 We introduce the conjecture generation problem in more detail, along with the
-difficulty of comparing existing solutions, in $\S$\ref{sec:background}. We explain our proposal for a more general benchmark in
-$\S$\ref{sec:proposal} and demonstrate its application to existing MTE tools
-in $\S$\ref{sec:application}. Issues facing our approach, and the field in
-general, are discussed in $\S$\ref{sec:discussion}; related work is surveyed in
+difficulty of comparing existing solutions, in $\S$\ref{sec:background}. We
+explain our proposal for a more general benchmark in $\S$\ref{sec:proposal} and
+demonstrate its application to existing MTE tools in $\S$\ref{sec:application}.
+Issues facing our approach, and the field in general, are discussed in
+$\S$\ref{sec:discussion}; related work is surveyed in
 $\S$\ref{sec:related-work}, including the diverse terminology found in the
 literature; and concluding remarks are given in $\S$\ref{sec:conclusion}.
 
@@ -250,10 +251,6 @@ literature; and concluding remarks are given in $\S$\ref{sec:conclusion}.
 
 % more detail about evaluation, interestingness, etc. Reference Simon/Alan
 % interestingness, e.g. examples from textbooks, etc.
-
-% FIXME: Perhaps mention examples like "plus(x, 0) = 0" as motivating examples
-% of things which are "simple" but which proof assistants still don't do
-% automatically (reference Moa's use of TE for background lemma generation)
 
 \begin{figure}
   \begin{equation*}
@@ -282,20 +279,16 @@ literature; and concluding remarks are given in $\S$\ref{sec:conclusion}.
   \label{figure:list_theory}
 \end{figure}
 
-% FIXME: We jump from conjectures to theorems. Maybe to prevent confusion we
-% should talk more generally about "interesting properties" of a formal system,
-% and use that as motivation for conjecturing and proving?
-
 Given a logical theory, such as the theory of lists shown in
-Figure~\ref{figure:list_theory}, we may want to find properties (such as
+Figure~\ref{figure:list_theory}, we may want to find properties (e.g.
 invariants) describing its behaviour. This could be for mathematical curiosity,
 or due to the theory's importance in some domain. In particular, when dealing
 with definitions in a software library, we may regard a set of such properties
 as the code's \emph{specification}. Even those properties which only hold by
 coincidence, rather than by design, may still be useful for \emph{optimising}
-uses of this library, for example by rewriting expressions into equivalent forms
-which require less time, memory, network usage, etc. For example, our theory of
-lists turns out to satisfy the following invariant:
+uses of this library, by rewriting expressions into equivalent forms which
+require less time, memory, network usage, etc. For example, our theory of lists
+turns out to satisfy the following invariant:
 
 \begin{equation} \label{eq:mapreduce}
   \forall f. \forall xs. \forall ys.
@@ -304,12 +297,18 @@ lists turns out to satisfy the following invariant:
 
 Whilst these two expressions produce equivalent results, the form on the right
 can execute both calls to $\Map$ in parallel (in a pure functional language, at
-least), giving rise to the ``map/reduce'' paradigm for parallel programming.
-Such use cases require the ability to \emph{discover} properties about some
+least); a fact which is exploited by the ``map/reduce'' parallel programming
+paradigm.
+
+Such use cases require the ability to \emph{discover} true properties of some
 particular definitions; this requires not only \emph{proving} their correctness,
 but also \emph{posing} them as conjectures in the first place. This is a hard
 problem in general, but presents opportunities for automation due to the
-precise, symbolic nature of the domain.
+precise, symbolic nature of the domain. These processes can also feed into each
+other, since proven properties can be used as lemmas for subsequent proofs. As
+an example, proving Equation~\ref{eq:mapreduce} may require ``background
+knowledge'' which is tedious to produce by hand, such as
+$\forall x. \Append(x, \Nil) = x$.
 
 \subsection{Automating Construction and Exploration of Theories}
 \label{sec:te}
@@ -318,232 +317,144 @@ The task of automatically proving or disproving a \emph{given} conjecture has
 been studied extensively in the field of Automated Theorem Proving (ATP). Less
 attention has been paid to \emph{generating} such conjectures automatically,
 either from a given set of definitions (the task we will focus on) or where the
-definitions are also generated. The fields of Automated Theory Formation (ATF)
-and Mathematical Theory Exploration (MTE) both tackle these generation tasks,
-and we discuss their relationship in historical context in
-$\S$\ref{related-work}.
+definitions are also generated. This research has been pursued under the names
+of Automated Theory Formation (ATF) and Mathematical Theory Exploration (MTE);
+we will use the MTE terminology, and discuss their relationship further in
+$\S$\ref{sec:related-work}.
 
-A major challenge for both ATF and MTE is choosing how to narrow down
-the set of generated conjectures to those deemed ``interesting'', since this is
-an imprecise term with many different interpretations. For example, all existing
-approaches agree that simple tautologies are ``uninteresting'', but differ when
-it comes to more complex statements.  Colton \etal{} give a survey of tools for
-theory formation and exploration, and their associated notions of
+A major challenge when generating conjectures is choosing how to narrow down the
+resulting set to only those deemed ``interesting'', since this is an imprecise
+term with many different interpretations. For example, all existing approaches
+agree that simple tautologies are ``uninteresting'', but differ when it comes to
+more complex statements.  Colton \etal{} give a survey of tools for theory
+formation and exploration, and their associated notions of
 ``interestingness'' for concepts and conjectures~\cite{colton2000notion}. Six
-notions are identified, which are applied to conjectures as follows:
+notions are identified, which are applied to conjectured properties as follows:
 
 {\bf Empirical plausibility} checks whether a property holds across some
-specific examples. This is especially useful for avoiding false conjectures,
-without resorting to a full proof search.
+specific examples. This is especially useful for avoiding falsehoods, without
+resorting to a deductive proof search.
 
-{\bf Novelty} depends on whether a conjecture, or one isomorphic or more
+{\bf Novelty} depends on whether the property, or one isomorphic or more
 general, has already been seen.
 
-{\bf Surprisingness} of a conjecture is whether or not it is
-``obvious'', for example if it is an instance of a tautology.
+{\bf Surprisingness} of a property is whether or not it is ``obvious'', for
+example if it is an instance of a tautology.
 
 {\bf Applicability} depends on the number of models in which a
-conjecture holds. The tool of \Bagai{} conjectures the non-existence of
-objects, and hence favours statements with zero applicability. Other tools treat
-applicability as a positive aspect: the more applicable the statement, the more
-interesting it is.
+property holds. High applicability makes a property more interesting, but so
+does zero applicability (i.e. non-existence).
 
-{\bf Comprehensibility} depends on the complexity of a statement. Simpler
-statements are considered more interesting, hence many of the tools explore
-simpler/smaller statements before complex/larger ones, to more efficiently find
-those which are interesting.
+{\bf Comprehensibility} depends on the syntactic complexity of the property's
+statement. Simpler statements are considered more interesting (which favours
+tools adopting a small-to-large search order).
 
-{\bf Utility} is the relevance or usefulness of a conjecture to the
-user's particular task. For example, if we want to find optimising
-rewrite rules such as equation~\ref{eq:mapreduce}, then utility would include
-whether or not a conjecture justifies a rewrite rule, the difference in
-resource usage of the expressions involved, and how common those
-expressions are in real usage.
+{\bf Utility} is the relevance or usefulness of a property to the user's
+particular task. For example, if we want to find optimisations like
+Equation~\ref{eq:mapreduce}, then utility would include whether the property
+allows rewriting, the difference in resource usage of the expressions involved,
+and how common those expressions are in real usage.
 
-% FIXME: This is original work, so should be in a different section
-\begin{table}
-  \centering
-  \begin{tabular}{ |l|l|c|c|c|c|c|c| }
-    \hline
-    \multirow{2}{*}{\textbf{Program}}                      &
-    \multirow{2}{*}{\textbf{Conjecture Types}}             &
-    \multicolumn{6}{c|}{\textbf{Interestingness Measures}} \\ \hhline{~~------}
-    \tRow{          &                     & \iE & \iN & \iS & \iA & \iC & \iU}
-    \tRow{AM        & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
-    \tRow{GT        & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
-    \tRow{Graffiti  & \tINE               &   X &   X &   X &     &   X &   X}
-    \tRow{\Bagai{}  & \tNE                &     &   X &     &   X &   X &    }
-    \tRow{HR        & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
-    \tRow{QuickSpec & \tEQ                &   X &   X &     &   X &   X &    }
-    \tRow{Speculate & \tCON\ \tEQ / \tINE &   X &   X &     &   X &   X &    }
-    \tRow{IsaCoSy   & \tEQ                &   X &   X &     &   X &   X &   X}
-    \tRow{IsaScheme & \tEQ                &   X &   X &     &   X &   X &   X}
-  \end{tabular}
-  \caption{Classification of MTE tools from~\cite{colton2000notion}, extended
-    to include four more recent tools. The interestingness measures are
-    \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
-    \iA{}pplicability, \iC{}omprehensibility (low complexity) and \iU{}tility.}
-  \label{table:colton}
-\end{table}
-
-% JUSTIFICATIONS
-%
-% IsaCoSy uses counter-example checking; this ensures empirical plausibility
-% IsaCoSy uses constraints to avoid special-cases; this ensures novelty
-% IsaCoSy uses utility, since there are some hard-coded patterns which are
-% looked for
-%
-% Speculate uses a form of unification to ensure novelty, making sure one
-% equation is not a special-case of another
-% Speculate uses LeanCheck to enumerate values, looking for counterexamples
-% Speculate uses testing, to ensure Empirical Plausibility
-%
-% QuickSpec uses QuickCheck to ensure empirical plausibility
-% QuickSpec uses a congruence closure algorithm to ensure novelty
-%
-% IsaScheme uses utility, since it determines the "quality" of a definition
-% based on how many theorems it appears in?
-% IsaScheme uses novelty, using an equational rewrite system (Knuth-Bendix
-% completion) to remove redundancies
-% IsaScheme uses utility, since it focuses on the terms and definitions of a
-% user's theory. However, don't all of them?
-% IsaScheme uses counterexample checking for empirical plausibility.
-
-% ONLY APPLIES TO PRECONDITIONS
-% APPLICABILITY: ensure a conjecture holds in many models (or exactly zero, in
-% the case of Bagai et al). Does the testing-based approach of QuickSpec and
-% Speculate ensure that there's a model? After all, these are concrete values
-% rather than e.g. implications of some abstract specification.
-
-% FIXME: Give brief description and reference for each system in the text.
-% We could include the more lengthy descriptions of IsaCoSy and QuickSpec here?
-
-We summarise the criteria in Table 1 and state which were used in key
-ATF/MTE tools. The entries for AM, GT, Graffiti, \Bagai{} and HR are based
-on this survey (the latter is Colton's own tool). We extend this analysis to
-some more recent tools in the remaining rows (based on our understanding of
-their function): QuickSpec~\cite{QuickSpec},
-Speculate~\cite{braquehais2017speculate},
-IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}
-and IsaScheme~\cite{MontanoRivas2011}.
-
-The latter tools are described in more detail in $\S$\ref{section:mte},
-but all use testing to check for counterexamples, which ensures results are
-empirically plausible and applicable (conditions are satisfiable, types are
-inhabited, etc.). They also use a small-to-large search order, ensuring more
-easily-comprehensibile conjectures are explored first.
-
-IsaCoSy ensures novelty using a constraint system to prevent special-cases being
-generated, whilst the others use post-hoc filters based on unification and term
-rewriting to achieve the same result. IsaCoSy is able to look for commonly
-desirable patterns, such as commutativity and associativity, which increases the
-utility of its output, whilst IsaScheme is completely based around such
-pattern-instantiation.
-
-This diversity of approaches makes it difficult to compare the existing
-evaluations of these tools directly. In particular, evaluation methods created
-for one tool might not make sense for another, due to assumptions made about
-the algorithms' operation. For example, the novelty filters used by QuickSpec
-and Speculate are applied to the whole output set, guaranteeing that no
-special-cases will appear; yet we cannot assume this in the case of IsaCoSy,
-since its constraint solver allows special cases if they're found \emph{before}
-the general case (it does not go back and discard previous results).
-
-With such ambiguous and varied goals, approaches and assessment criteria it is
-difficult to compare MTE tools in a quantitative way, and hence to form some
-measure of ``progress'' for the field. Our proposed benchmarking methodology
-attempts to remedy this by setting a clear target, hopefully in line with the
-myriad goals of existing researchers, whilst being generally applicable to
-tools of this type.
-
-\subsection{Existing Evaluations}
-\label{sec:existing}
-
-There are three aspects to consider when evaluating a tool for conjecture
-generation:
-
-% FIXME: How are these referred to/considered in the paper?
-\begin{enumerate}
-\item The quality of each individual conjecture, which we will refer to as their
-  ``interestingness''.
-\item The quality of the \emph{set} of generated conjectures, which is important
-  for criteria like novelty, as well as to assess consistency.
-\item Resources used by the tool, to find the balance struck between output
-  quality and time taken.
-\end{enumerate}
-
-We make the assumption that each tool is intended to be \emph{general}, and
-hence isn't hard-coded or fine-tuned to only perform well in a narrow domain.
-Examples where this does \emph{not} hold include the natural number heuristics
-of AM discussed in $\S$\ref{section:atf}, as well as machine learning models
-trained on some specific dataset (such as the benchmark we describe).
-
-Evaluation of new tools and techniques for conjecture generation tends to be
-\emph{ad hoc} and hence difficult to compare, whilst comparative surveys (such
-as Colton's) are descriptive and qualitative rather than providing direct
-numerical measurements.
-
-One quantitative approach which has gained traction is \emph{precision/recall
-  analysis}. This has been applied to IsaCoSy, IsaScheme and HipSpec, the latter
-providing a direct comparison of these three
-tools~\cite{claessen2013automating}.\footnote{Unfortunately this comparison only
-  reports prior results from the other tools, rather than reproducing them.
-  This makes the numbers less comparable, since each tool was tested with
-  slightly different definitions (e.g. whether or not the exponential and
-  maximum functions were included).} To measure precision and recall we first
-choose a set of definitions (such as those in figure \ref{figure:list_theory})
-and a \emph{ground truth} to treat as the ``ideal'' set of conjectures we would
-like a tool to produce for those definitions (e.g. this might include
-equation~\ref{eq:mapreduce}). Each tool is run and their outputs are compared to
-the ground truth. To score 100\% on precision and recall, all of the conjectures
-which appear in the ground truth must be generated, and nothing else:
+Attempting to \emph{measure} such qualities is difficult, and having too many
+measures complicates comparisons. System developers have employed a more
+practical alternative in their evaluations, which is to perform
+\emph{precision/recall} analysis against a \emph{ground-truth}. This requires
+choosing a set of definitions (such as those in Figure~\ref{figure:list_theory})
+and a set of properties (the ground truth) which represent the ``ideal'' result
+of conjecture generation for those definitions (e.g. this might include
+Equation~\ref{eq:mapreduce}). To analyse the quality of a tool's conjectures, we
+run it on these chosen definitions and compare its output to the ground truth:
 
 \begin{itemize}
 \item \emph{Precision} is the proportion of a tool's output which appears in
-  the ground truth. This penalises overly-liberal tools which output large
-  numbers of conjectures in the hope that some turn out to be ``good''.
+  the ground truth. This penalises overly-liberal tools which output a large
+  number of properties in the hope that some turn out to be ``good''.
 \item \emph{Recall} is the proportion of the ground truth which appears in the
   tool's output. This penalises overly-conservative tools which generate very
-  few conjectures as a way to avoid ``bad'' ones.
+  few properties as a way to avoid ``bad'' ones.
 \end{itemize}
 
-Precision and recall act as quality tests for sets of conjectures, fulfilling
-one of our requirements. They also provide a coarse quality assessment for
-individual conjectures: either a conjecture appears in the ground truth set or
-it doesn't.
+To score 100\% on precision and recall, all of the properties which appear in
+the ground truth must have been conjectured, and nothing else. This gives us a
+simple method to evaluate and compare tools without requiring a general solution
+to the question of what is ``interesting''; although we must still decide what
+to put in the ground truth set, and what to leave out, for each measured set of
+definitions.
 
-The analyses in~\cite{claessen2013automating} took their definitions and ground
-truths from the standard library of the Isabelle proof assistant: since the
-library authors have gone to the effort of stating, proving and including these
-theorems in every copy of their software, this is a good indication that they
-are interesting properties of those definitions.
+The precision and recall of three MTE tools are compared
+in~\cite{claessen2013automating}:
+IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation},
+IsaScheme~\cite{MontanoRivas2011} and
+HipSpec~\cite{Claessen_hipspec:automating}.\footnote{Unfortunately this
+  comparison only reports prior results for each tool, rather than reproducing
+  them. This makes the numbers less comparable, since each tool was tested with
+  slightly different definitions (e.g. whether or not the exponential and
+  maximum functions were included).} The definitions and ground truths for all
+three were taken from the standard library of the Isabelle proof assistant:
+since the library authors have gone to the effort of stating and proving these
+properties, and including them with every copy of their software, this is a good
+indication that they are interesting. Two sets of definitions were used: a
+theory of natural numbers and of lists (which we show in
+Figure~\ref{figure:list_theory} on page~\pageref{figure:list_theory}). With only
+two datapoints containing only a few definitions and properties (e.g. the
+natural number theory contained 4 functions with 12 properties), it is difficult
+to draw general conclusions; yet despite these limitations we believe that this
+is a viable method to performing meaningful, objective analyses and comparisons
+for such tools. It is only with larger data sets that we can judge performance
+in different, especially \emph{novel}, domains (which, after all, is the purpose
+of MTE tools). In addition, we might be concerned that such ``popular'' theories
+as the natural numbers may be unrepresentative of typical usage. For example, we
+would not expect the library functions in a typical verification problem to be
+as mathematically rich as number theory.
 
-Tests were performed with a theory of natural numbers and a theory of lists (the
-definitions shown in figure~\ref{figure:list_theory}), %FIXME: add page ref
-but it is difficult to
-draw general conclusions from only two datapoints. These theories were also
-quite small, the natural number theory
-from~\cite{Johansson.Dixon.Bundy:conjecture-generation} only containing 4
-definitions and 12 theorems.
+\subsection{Existing Tools}
+\label{sec:existing-tools}
 
-Despite these limitations we believe that this is a viable approach to drawing
-meaningful, objective conclusions about such tools; but only with larger data
-sets can we judge performance in different, especially \emph{novel}, domains
-(which, after all, is the purpose of such tools). In addition, we might be
-concerned that such ``popular'' theories may be unrepresentative of typical
-usage. For example, we would not expect the library functions in a typical
-verification problem to be as mathematically rich as number theory.
+Since our benchmarking methodology builds on the precision/recall analysis
+described in $\S$\ref{sec:te}, we decided to use two of the same tools, IsaCoSy
+and QuickSpec (the conjecture generating component of HipSpec), as our
+demonstration. Other notable tools, including IsaScheme, are described under
+related work in $\S$\ref{sec:related-work}.
+
+IsaCoSy (Isabelle Conjecture Synthesis) is written for the Isabelle proof
+assistant, mostly in Standard
+ML~\cite{Johansson.Dixon.Bundy:conjecture-generation}. It conjectures equations
+by enumerating expressions involving a given set of (typed) constants and free
+variables (a \emph{signature}). A constraint solver forbids certain
+(sub)expressions from being synthesised, and these constraints are extended
+whenever a new property is conjectured, to avoid generating any special-cases of
+this property in the future. Conjectures are tested by looking for
+counterexamples and, if none are found, sent to IsaPlanner which attempts to
+prove them.
+
+QuickSpec emerged from work on the QuickCheck software testing framework for the
+Haskell programming language~\cite{claessen2011quickcheck}. As well as
+generating conjectures for HipSpec (also a Haskell tool) it has also been
+applied to Isabelle via the Hipster tool~\cite{Hipster}. Like IsaCoSy, QuickSpec
+takes a signature and enumerates well-typed terms, collecting together those of
+the same type into equivalence classes, assuming them to be equal. QuickCheck is
+then used to find counterexamples to this assumption, which it does by randomly
+instantiating the variables and comparing the resulting closed expressions. Any
+equivalence class whose elements don't compare equal are split up, and the
+process is repeated with new random values.
+
+After 500 rounds of testing, any expressions still sharing the same equivalence
+class are conjectured to be equal for all values of their variables. Rather than
+using a constraint system to prevent redundancies (such as special-cases of
+other properties), QuickSpec instead passes its output through a congruence
+closure algorithm to achieve the same effect.
 
 \section{Theory Exploration Benchmark}
 \label{sec:proposal}
 
-Our main contribution is a benchmarking methodology, shown in figure
-\ref{figure:flow_chart}, which both generates a large definition/ground-truth
-corpus, and provides a scalable, statistical approach to evaluating MTE tools
-using this corpus. We follow a precision/recall approach similar to prior work,
-with the main difference being the source of definitions and ground truths: we
-take existing problem sets designed for automated theorem proving, and adapt
-their content for use in the conjecture generation setting.
+Our main contribution is a benchmarking methodology, shown in
+Figure~\ref{figure:flow_chart} on page~\pageref{figure:flow_chart}, which both
+generates a large definition/ground-truth corpus, and provides a scalable,
+statistical approach to evaluating MTE tools using this corpus. We follow a
+precision/recall approach similar to prior work, with the main difference being
+the source of definitions and ground truths: we take existing problem sets
+designed for automated theorem proving, and adapt their content for use in the
+conjecture generation setting.
 
 \subsection{Preparation}
 \label{section:prep}
@@ -572,15 +483,13 @@ suitable are those which have the following properties:
   functional programming requires higher-order functions and inductively defined
   datatypes, which rules out first-order languages/logics (such as
   TPTP~\cite{sutcliffe2009tptp}).
-\item Since it will act as our ground truth, the problem set should
-  \emph{ideally} contain every ``interesting'' conjecture involving its included
-  definitions. More \emph{realistically}, we should aim for each definition to
-  appear in \emph{many} theorem statements; rather than each problem having
-  unique definitions. % FIXME: Reword: make clear that non-membership means
-  % uninteresting, and hence the things we *don't* include are just as important
-  % as the things we do
-\item The problem set should be as large as possible, for robustness of the
-  resulting statistics. % FIXME: Prioritising quantity over quality?
+\item The problem set should ideally contain \emph{every} ``interesting''
+  property involving its included definitions, since non-membership in the
+  ground truth will be treated as being ``uninteresting''. More realistically,
+  we should at least aim for each definition to have \emph{multiple} properties;
+  rather than a mixture of mostly unrelated properties.
+\item Larger problem sets are preferable, all else being equal, as they give
+  more robust statistics.
 \end{itemize}
 
 Once such a problem set has been chosen, we must separate the definitions
@@ -607,6 +516,7 @@ removed, and the commutativity statement updated to reference \texttt{add}
 instead.
 
 \subsection{Sampling}
+\label{section:sampling}
 
 We could, in theory, send these de-duplicated definitions straight into an MTE
 tool and use the entire set of properties (taken from the theorem statements) as
@@ -649,6 +559,7 @@ The ground truth for such samples is guaranteed to contain at least one property
 on the tool's output.
 
 \subsection{Evaluation}
+\label{section:evaluation}
 
 Given a sample of definitions and a corresponding ground truth, the actual
 execution of the MTE tool proceeds as in prior work. We must translate the
@@ -843,7 +754,6 @@ by design).
     \draw [arrow] (pr)     -- (rec);
     \draw [arrow] (pr)     -- (time);
 
-
     % Awkward arrow
     \draw [arrow] (thm) -| ([shift={(7mm,-7mm)}]thm.east) |- (sthm);
 
@@ -856,7 +766,8 @@ by design).
           \p{rec} = (rec.south east)
        in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
        (\x{rec}, \y{in}) -- (\x{rec}, \y{thm})
-         node [black, midway, right, xshift=0.3cm] {Preparation};
+         node [black, midway, right, xshift=0.3cm]
+              {Preparation $\S$\ref{section:prep}};
 
     % Sampling
     \draw
@@ -865,7 +776,8 @@ by design).
           \p{rec} = (rec.south east)
        in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
        (\x{rec}, \y{thm}) -- (\x{rec}, \y{gt})
-         node [black, midway, right, xshift=0.3cm] {Sampling};
+         node [black, midway, right, xshift=0.3cm]
+              {Sampling $\S$\ref{section:sampling}};
 
     % Evaluation
     \draw
@@ -873,7 +785,9 @@ by design).
           \p{rec}  = (rec.south east)
        in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
        (\x{rec}, \y{sthm}) -- (\x{rec}, \y{rec})
-         node [black, midway, right, xshift=0.3cm] {Evaluation};
+         node [black, midway, right, xshift=0.3cm]
+              {Evaluation $\S$\ref{section:evaluation}};
+
   \end{tikzpicture}
   \caption[]{High-level view of our benchmarking methodology, showing
     \begin{tikzpicture}
@@ -1107,8 +1021,7 @@ which is more general.
 
 \subsection{IsaCoSy}
 
-IsaCoSy is a tool for the Isabelle proof assistant, mostly written in Standard
-ML. We took IsaCoSy from version 2015.0.3 of the IsaPlanner project, and ran it
+We took IsaCoSy from version 2015.0.3 of the IsaPlanner project, and ran it
 with the 2015 version of Isabelle. The following issues had to be overcome to
 make our benchmark applicable to IsaCoSy:
 
@@ -1530,35 +1443,6 @@ $\sigma_1 = \{g \mapsto \Zero, h \mapsto (\lambda x.\Zero), i \mapsto \Succ, j
 The new multiplication function $f$ can itself be used to instantiate
 variables in the same scheme, resulting in the invention of the
 exponentiation concept (these examples are taken from~\cite{MontanoRivas2011}).
-
-%IsaCoSy
-The IsaCoSy system (Isabelle Conjecture Synthesis) conjectures equations by
-enumerating expressions involving a given set of (typed) constants and free
-variables (a \emph{signature}). A constraint solver forbids certain
-(sub)expressions from being synthesised, and these constraints are extended
-whenever a new conjecture is generated, to avoid generating any special-cases of
-this conjecture in the future. Conjectures are tested by looking for
-counterexamples and, if none are found, sent to IsaPlanner which attempts to
-prove them.
-
-%QuickSpec
-QuickSpec emerged from work on the QuickCheck software testing framework for the
-Haskell programming language~\cite{claessen2011quickcheck}, and has been used to
-generate conjectures for the subsequent
-HipSpec~\cite{Claessen_hipspec:automating} and Hipster~\cite{Hipster} MTE
-systems. Like IsaCoSy, a signature is provided and terms are enumerated. Rather
-than a constraint system, QuickSpec version 1 collects expressions of the same
-type into equivalence classes, assuming them to be equal. QuickCheck is used to
-test this assumption by instantiating each variable with a randomly chosen
-value, evaluating the resulting expressions and comparing them. Any equivalence
-class whose elements don't compare equal are split up to separate those
-observably-different expressions, and the process is repeated with new random
-values.
-
-After 500 rounds of testing, any expressions still sharing the same equivalence
-class are conjectured to be equal for all values of their variables. Finally, a
-congruence closure algorithm is applied to these equations, to remove
-redundancies and special-cases.
 
 % FIXME: CITE
 QuickSpec version 2 replaces this two-step process with a single, iterative
