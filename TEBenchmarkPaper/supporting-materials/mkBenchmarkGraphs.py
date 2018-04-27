@@ -538,6 +538,19 @@ def aggProp(system, sizes=None, agg=None, key=None, total=None):
 
     return means, low, high
 
+def drawLineWithErrorBars(xs=None, ys=None, lows=None, highs=None, ax=None):
+    assert ax is not None, 'drawLineWithErrorBars needs ax argument'
+    assert len(set(map(len, [xs, ys, lows, highs]))) == 1, repr({
+        'error': 'All data given to drawLineWithErrorBars need same length',
+        'xs': xs, 'ys': ys, 'lows': lows, 'highs': highs
+    })
+    ax.errorbar(x=xs, y=ys, yerr=([h - y for h, y in zip(highs, ys)],
+                                  [y - l for l, y in zip(lows,  ys)]),
+                elinewidth=0.5,  # width of error bar line
+                ecolor='k',      # color of error bar
+                capsize=1.5,     # cap length for error bar
+                capthick=0.5)    # cap thickness for error bar)
+
 def plotPrecRec(system, agg):
     sizes = sorted(list(set(agg['size'])))
 
@@ -545,37 +558,37 @@ def plotPrecRec(system, agg):
     # need to shift and scale the points
     xs = map(lambda x: (x - min(sizes)) / (sizes[1] - sizes[0]), sizes)
 
-    precData = aggProp(system, sizes, agg, 'precision', 'found' )
-    recData  = aggProp(system, sizes, agg, 'recall',    'wanted')
+    pData = aggProp(system, sizes, agg, 'precision', 'found' )
+    rData = aggProp(system, sizes, agg, 'recall',    'wanted')
 
     # Since there might be sizes missing (when e.g. all runs die), we need to
     # skip those data points
     stripNones = lambda l: filter(lambda elem: elem is not None, l)
 
-    precXs = [x for x, m in zip(xs, precData[0]) if m is not None]
-    recXs  = [x for x, m in zip(xs,  recData[0]) if m is not None]
+    pXs = [x for x, m in zip(xs, pData[0]) if m is not None]
+    rXs = [x for x, m in zip(xs,  rData[0]) if m is not None]
 
-    precMeans, precLows, precHighs = map(stripNones, precData)
-    recMeans,  recLows,  recHighs  = map(stripNones,  recData)
+    pMeans, pLows, pHighs = map(stripNones, pData)
+    rMeans, rLows, rHighs = map(stripNones, rData)
 
     newFigure('precRec')
-    gs            = mpl.gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
-    precAx, recAx = (plt.subplot(gs[0]), plt.subplot(gs[1]))
+    gs       = mpl.gridspec.GridSpec(3, 1, height_ratios=[5, 5, 1])
+    pAx, rAx = (plt.subplot(gs[0]), plt.subplot(gs[1]))
+    [ax.set_ylim(0, 1) for ax in [pAx, rAx]]
 
-    map(lambda args: args['ax'].fill_between(args['xs'],
-                                             args['lows'],
-                                             args['highs'],
-                                             #alpha     = 0.5,
-                                             facecolor = '#CCCCCC',
-                                             edgecolor = 'face'),
-        [{'ax': precAx, 'xs': precXs, 'lows': precLows, 'highs': precHighs},
-         {'ax':  recAx, 'xs':  recXs, 'lows':  recLows, 'highs':  recHighs}])
+    map(lambda args: drawLineWithErrorBars(xs    = args['xs'],
+                                           ys    = args['ys'],
+                                           lows  = args['lows'],
+                                           highs = args['highs'],
+                                           ax    = args['ax']),
+        [{'ax': pAx, 'xs': pXs, 'ys': pMeans, 'lows': pLows, 'highs': pHighs},
+         {'ax': rAx, 'xs': rXs, 'ys': rMeans, 'lows': rLows, 'highs': rHighs}])
 
     succeeded = lambda i: agg['success'][i]
 
     drawPoints(
         agg,
-        ax        = precAx,
+        ax        = pAx,
         colours   = agg['wanted colours'],
         hue       = 'precHue',
         y         = 'precision',
@@ -584,16 +597,12 @@ def plotPrecRec(system, agg):
 
     drawPoints(
         agg,
-        ax        = recAx,
+        ax        = rAx,
         colours   = agg['wanted colours'],
         hue       = 'recHue',
         y         = 'recall',
         yLabel    = 'Recall',
         condition = succeeded)
-
-    [(ax.set_ylim(0, 1), ax.plot(xs, ms)) \
-     for ax, xs, ms in [(precAx, precXs, precMeans),
-                        ( recAx,  recXs,  recMeans)]]
 
     drawColourBar(
         cax     = plt.subplot(gs[2]),
