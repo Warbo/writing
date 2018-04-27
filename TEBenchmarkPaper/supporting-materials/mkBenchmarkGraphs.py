@@ -407,6 +407,9 @@ def plotTime(system, agg):
     drawColourBar(ax      = ax,
                   colours = agg['found colours'],
                   label   = 'Conjectures found')
+    #drawColourBar(ax      = ax,
+    #              colours = agg['found colours'],
+    #              label   = 'Conjectures found')
     savePlot(system + 'time')
 
 def aggProp(system, sizes=None, agg=None, key=None, total=None):
@@ -546,10 +549,11 @@ def drawLineWithErrorBars(xs=None, ys=None, lows=None, highs=None, ax=None):
     })
     ax.errorbar(x=xs, y=ys, yerr=([h - y for h, y in zip(highs, ys)],
                                   [y - l for l, y in zip(lows,  ys)]),
-                elinewidth=0.5,  # width of error bar line
+                elinewidth=0.7,  # width of error bar line
                 ecolor='k',      # color of error bar
                 capsize=1.5,     # cap length for error bar
-                capthick=0.5)    # cap thickness for error bar)
+                capthick=0.7,    # cap thickness for error bar)
+                zorder = 100)    # Draw above points
 
 def plotPrecRec(system, agg):
     sizes = sorted(list(set(agg['size'])))
@@ -576,39 +580,51 @@ def plotPrecRec(system, agg):
     pAx, rAx = (plt.subplot(gs[0]), plt.subplot(gs[1]))
     [ax.set_ylim(0, 1) for ax in [pAx, rAx]]
 
-    map(lambda args: drawLineWithErrorBars(xs    = args['xs'],
-                                           ys    = args['ys'],
-                                           lows  = args['lows'],
-                                           highs = args['highs'],
-                                           ax    = args['ax']),
+    succeeded = lambda i: agg['success'][i]
+
+    for args in [{'ax'     : pAx,
+                  'hue'    : 'precHue',
+                  'y'      : 'precision',
+                  'yLabel' : 'Precision'},
+                 {'ax'     : rAx,
+                  'hue'    : 'recHue',
+                  'y'      : 'recall',
+                  'yLabel' : 'Recall'}]:
+        keepIndices = filter(succeeded, [i for i, s in enumerate(agg['size'])])
+        keepers     = lambda key: [agg[key][i] for i in keepIndices]
+        newAgg = {
+            'size'      : keepers('size'),
+            args['y']   : keepers(args['y']),
+        }
+
+        # Alternatively, we could use stripplot with jitter
+        newAx = sns.swarmplot(data      = newAgg,
+                              x         = 'size',
+                              y         = args['y'],
+                              size      = 4,  # Marker size
+                              edgecolor = 'k',
+                              linewidth = 0.35,
+                              marker    = 'x',
+                              color     = 'k',
+                              ax        = args['ax'])
+        if newAx.legend_: newAx.legend_.remove()
+        newAx.set_xlabel('Sample size')
+        newAx.set_ylabel(args['yLabel'])
+
+    map(lambda args: drawLineWithErrorBars(xs     = args['xs'],
+                                           ys     = args['ys'],
+                                           lows   = args['lows'],
+                                           highs  = args['highs'],
+                                           ax     = args['ax']),
         [{'ax': pAx, 'xs': pXs, 'ys': pMeans, 'lows': pLows, 'highs': pHighs},
          {'ax': rAx, 'xs': rXs, 'ys': rMeans, 'lows': rLows, 'highs': rHighs}])
 
-    succeeded = lambda i: agg['success'][i]
 
-    drawPoints(
-        agg,
-        ax        = pAx,
-        colours   = agg['wanted colours'],
-        hue       = 'precHue',
-        y         = 'precision',
-        yLabel    = 'Precision',
-        condition = succeeded)
-
-    drawPoints(
-        agg,
-        ax        = rAx,
-        colours   = agg['wanted colours'],
-        hue       = 'recHue',
-        y         = 'recall',
-        yLabel    = 'Recall',
-        condition = succeeded)
-
-    drawColourBar(
-        cax     = plt.subplot(gs[2]),
-        colours = agg['wanted colours'],
-        kw      = {'orientation': 'horizontal'},
-        label   = 'Ground truth theorems')
+    #drawColourBar(
+    #    cax     = plt.subplot(gs[2]),
+    #    colours = agg['wanted colours'],
+    #    kw      = {'orientation': 'horizontal'},
+    #    label   = 'Ground truth theorems')
 
     savePlot(system + 'prec')
 
