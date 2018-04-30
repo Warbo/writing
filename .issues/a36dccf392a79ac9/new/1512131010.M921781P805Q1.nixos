@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 01 Dec 2017 12:22:35 +0000
-State: new
+State: resolved
 Subject: Colour bar for ground truth theorems has fractions
 Message-Id: <a36dccf392a79ac9-0-artemis@nixos>
+resolution: fixed
 
 The precision/recall graph for QuickSpec has 0.0, 0.25, etc. which is
 meaningless since this is an integer-valued quantity.

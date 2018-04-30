@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Fri, 13 Apr 2018 16:46:51 +0100
-State: new
+State: resolved
 Subject: TEB: Crosses for failures
 Message-Id: <c07811b844f95e89-0-artemis@nixos>
+resolution: fixed
 
 Since red isn't visible in greyscale

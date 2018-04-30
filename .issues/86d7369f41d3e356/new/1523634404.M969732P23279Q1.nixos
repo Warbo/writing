@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Fri, 13 Apr 2018 16:46:19 +0100
-State: new
+State: resolved
 Subject: TEB: Error bars for std. dev. rather than shading
 Message-Id: <86d7369f41d3e356-0-artemis@nixos>
+resolution: fixed
 
 Suggested by Jianguo
