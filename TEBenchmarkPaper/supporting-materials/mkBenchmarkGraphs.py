@@ -362,10 +362,10 @@ def plotTime(system, agg):
                                                       for s in agg['success']]),
                        x         = 'size',
                        y         = 'time',
-                       size      = 4,  # Marker size
+                       size      = 2.5,  # Marker size
                        edgecolor = 'k',
                        linewidth = 0.35,
-                       marker    = 'x',
+                       marker    = 'o',
                        palette   = ['k', 'r'],
                        hue       = 'timeHue')
     if ax.legend_: ax.legend_.remove()
@@ -566,10 +566,10 @@ def plotPrecRec(system, agg):
         newAx = sns.swarmplot(data      = newAgg,
                               x         = 'size',
                               y         = args['y'],
-                              size      = 4,  # Marker size
+                              size      = 2.5,  # Marker size
                               edgecolor = 'k',
                               linewidth = 0.35,
-                              marker    = 'x',
+                              marker    = 'o',
                               color     = 'k',
                               ax        = args['ax'])
         if newAx.legend_: newAx.legend_.remove()
