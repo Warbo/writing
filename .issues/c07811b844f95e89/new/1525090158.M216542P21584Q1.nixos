@@ -1,0 +1,9 @@
+From: Chris Warburton
+Date: Mon, 30 Apr 2018 13:08:31 +0100
+Subject: Re: TEB: Crosses for failures
+Message-Id: <c07811b844f95e89-90ff229ce586b9a9-artemis@nixos>
+References: <c07811b844f95e89-0-artemis@nixos>
+In-Reply-To: <c07811b844f95e89-0-artemis@nixos>
+
+Turns out using separate marker styles is really tricky (overlaying many
+plots), so it's easier to just use crosses for everything.

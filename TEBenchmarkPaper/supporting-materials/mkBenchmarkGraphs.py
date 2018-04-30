@@ -212,7 +212,7 @@ def aggregateData(data):
             r = r or 0
             assert num(r), 'Non-numeric rec %r' % type(r)
 
-            # Store in "wide format". We +1 the hues and use 0 for failure
+            # Store in "wide format"
             agg['correct'  ].append(correct)
             agg['found'    ].append(found)
             agg['precision'].append(p)
@@ -222,7 +222,7 @@ def aggregateData(data):
             agg['size'     ].append(size)
             agg['success'  ].append(rdata['success'])
             agg['time'     ].append(t)
-            agg['timeHue'  ].append(found + 1 if rdata['success'] else 0)
+            agg['timeHue'  ].append(found)
             agg['wanted'   ].append(wanted)
 
     return agg
@@ -295,8 +295,7 @@ def makeColours(agg):
         return {
             'cmap'    : ListedColormap(colourMap),
             'norm'    : mpl.colors.Normalize(vmin=0, vmax=maxVal),
-            'palette' : dict(enumerate(['#ff0000'] + colourMap \
-                                       if key == 'found' else colourMap))
+            'palette' : dict(enumerate(colourMap))
         }
     return go
 
@@ -320,45 +319,6 @@ def newFigure(name):
     sns.set_context('paper')
 
     return fig
-
-def drawPoints(agg, y=None, colours=None, hue=None, yLabel=None, ax=None,
-               condition=None):
-    '''Draw a scatter plot of agg[y][n] against agg['size'][n], for each point
-    n. Points will be spread out horizontally to avoid overlaps, and the colour
-    of each will be colours['palette'][agg[hue][n]].
-
-    If condition is given, we filter the data to only keep those where filter(n)
-    returns True, where n is the index as above.
-
-    The the x-axis will be labelled with "Sample size", the y-axis with yLabel.
-
-    The resulting plot (axes) are returned. To draw on existing axes, pass them
-    in as ax.'''
-
-    # Filter data, if asked
-    if condition is not None:
-        keepIndices = filter(condition, [i for i, s in enumerate(agg['size'])])
-        keepers     = lambda key: [agg[key][i] for i in keepIndices]
-        agg = {
-            'size' : keepers('size'),
-            y      : keepers(y),
-            hue    : keepers(hue)
-        }
-
-    # Alternatively, we could use stripplot with jitter
-    newAx = sns.swarmplot(data      = agg,
-                          x         = 'size',
-                          y         = y,
-                          size      = 2,  # Marker size
-                          edgecolor = 'k',
-                          linewidth = 0.3,
-                          palette   = colours['palette'],
-                          hue       = hue,
-                          ax        = ax)
-    newAx.legend_.remove()
-    newAx.set_xlabel('Sample size')
-    newAx.set_ylabel(yLabel)
-    return newAx
 
 def drawColourBar(ax=None, cax=None, colours=None, kw={}, label=None):
     '''Add a colour bar below ax or on cax.'''
@@ -397,16 +357,21 @@ def plotTime(system, agg):
                 color     = '0.95',
                 fliersize = 0)
 
-    ax = drawPoints(
-        agg,
-        colours = agg['found colours'],
-        hue     = 'timeHue',
-        y       = 'time',
-        yLabel  = 'Runtime (seconds)')
+    # Alternatively, we could use stripplot with jitter
+    ax = sns.swarmplot(data      = dict(agg, timeHue=[0 if s else 1
+                                                      for s in agg['success']]),
+                       x         = 'size',
+                       y         = 'time',
+                       size      = 4,  # Marker size
+                       edgecolor = 'k',
+                       linewidth = 0.35,
+                       marker    = 'x',
+                       palette   = ['k', 'r'],
+                       hue       = 'timeHue')
+    if ax.legend_: ax.legend_.remove()
+    ax.set_xlabel('Sample size')
+    ax.set_ylabel('Runtime (seconds)')
 
-    drawColourBar(ax      = ax,
-                  colours = agg['found colours'],
-                  label   = 'Conjectures found')
     #drawColourBar(ax      = ax,
     #              colours = agg['found colours'],
     #              label   = 'Conjectures found')

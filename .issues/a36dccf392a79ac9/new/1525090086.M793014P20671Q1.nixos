@@ -1,0 +1,8 @@
+From: Chris Warburton
+Date: Mon, 30 Apr 2018 13:07:51 +0100
+Subject: Re: Colour bar for ground truth theorems has fractions
+Message-Id: <a36dccf392a79ac9-f8f1faa84a2b9ea4-artemis@nixos>
+References: <a36dccf392a79ac9-0-artemis@nixos>
+In-Reply-To: <a36dccf392a79ac9-0-artemis@nixos>
+
+Removed colourbars, as they're a bit of an information overload
