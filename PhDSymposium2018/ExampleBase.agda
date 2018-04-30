@@ -9,23 +9,9 @@ one   = Succ Zero
 two   = Succ one
 three = Succ two
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- plus : Nat -> Nat -> Nat
--- plus x y = ?
+plus : Nat -> Nat -> Nat
+plus Zero     y = y
+plus (Succ x) y = Succ (plus x y)
 
 
 
@@ -77,8 +63,6 @@ data Equal : Nat -> Nat -> Set where
 
 
 
--- proof1 : Equal two (Succ (Succ Zero))
--- proof1 = ?
 
 
 
@@ -99,11 +83,8 @@ data Equal : Nat -> Nat -> Set where
 
 
 
-
-
-
--- proof2 : Equal (plus one two) three
--- proof2 = ?
+-- simpleProof : Equal (plus one two) three
+-- simpleProof = ?
 
 
 
