@@ -121,9 +121,7 @@ grestore
 
 \author{Chris Warburton \and
         Alison Pease    \and
-        Jianguo Zhang
-        % TODO: Invite Katya? Even if she only offers some help, can acknowledge
-}
+        Jianguo Zhang}
 
 % \authorrunning{Short form of author list} % if too long for running head
 
@@ -173,8 +171,8 @@ grestore
 
 % Lay out the field of TE: motivation, tools, evaluation, problems...
 
-\emph{Conjecture generation} is the open-ended task of producing conjectures
-concerning a given logical theory which are somehow ``interesting'', and is
+\emph{Conjecture generation} is the open-ended task of conjecturing properties
+of a given logical theory which are somehow ``interesting'', and is
 studied as a sub-field of \emph{mathematical theory exploration} (MTE). This has
 applications wherever we find uses for formal methods: in proof assistants and
 their libraries, in mathematics education and research, and in the specification
@@ -307,8 +305,8 @@ problem in general, but presents opportunities for automation due to the
 precise, symbolic nature of the domain. These processes can also feed into each
 other, since proven properties can be used as lemmas for subsequent proofs. As
 an example, proving Equation~\ref{eq:mapreduce} may require ``background
-knowledge'' which is tedious to produce by hand, such as
-$\forall x. \Append(x, \Nil) = x$.
+knowledge'', such as the property $\forall x. \Append(x, \Nil) = x$, which may
+be tedious to produce by hand but possible to discover automatically.
 
 \subsection{Automating Construction and Exploration of Theories}
 \label{sec:te}
@@ -326,10 +324,10 @@ A major challenge when generating conjectures is choosing how to narrow down the
 resulting set to only those deemed ``interesting'', since this is an imprecise
 term with many different interpretations. For example, all existing approaches
 agree that simple tautologies are ``uninteresting'', but differ when it comes to
-more complex statements.  Colton \etal{} give a survey of tools for theory
-formation and exploration, and their associated notions of
-``interestingness'' for concepts and conjectures~\cite{colton2000notion}. Six
-notions are identified, which are applied to conjectured properties as follows:
+more complex statements.  Colton \etal{} surveyed tools for theory formation
+and exploration, and their associated notions of ``interestingness'' for
+concepts and conjectures~\cite{colton2000notion}. Six qualities were identified,
+which are applied to conjectured properties as follows:
 
 {\bf Empirical plausibility} checks whether a property holds across some
 specific examples. This is especially useful for avoiding falsehoods, without
@@ -350,10 +348,11 @@ statement. Simpler statements are considered more interesting (which favours
 tools adopting a small-to-large search order).
 
 {\bf Utility} is the relevance or usefulness of a property to the user's
-particular task. For example, if we want to find optimisations like
-Equation~\ref{eq:mapreduce}, then utility would include whether the property
-allows rewriting, the difference in resource usage of the expressions involved,
-and how common those expressions are in real usage.
+particular task. For example, if we want to find properties which are useful for
+optimisation, like Equation~\ref{eq:mapreduce}, then utility would include
+whether the property justifies some rewrite rule, the difference in resource
+usage of the expressions involved, and how common those expressions are in real
+usage.
 
 Attempting to \emph{measure} such qualities is difficult, and having too many
 measures complicates comparisons. System developers have employed a more
@@ -394,18 +393,18 @@ three were taken from the standard library of the Isabelle proof assistant:
 since the library authors have gone to the effort of stating and proving these
 properties, and including them with every copy of their software, this is a good
 indication that they are interesting. Two sets of definitions were used: a
-theory of natural numbers and of lists (which we show in
+theory of natural numbers; and a theory of lists (which we show in
 Figure~\ref{figure:list_theory} on page~\pageref{figure:list_theory}). With only
-two datapoints containing only a few definitions and properties (e.g. the
-natural number theory contained 4 functions with 12 properties), it is difficult
+two datapoints, each containing only a few definitions and properties (4
+functions and 12 properties, in the natural number example), it is difficult
 to draw general conclusions; yet despite these limitations we believe that this
 is a viable method to performing meaningful, objective analyses and comparisons
-for such tools. It is only with larger data sets that we can judge performance
-in different, especially \emph{novel}, domains (which, after all, is the purpose
-of MTE tools). In addition, we might be concerned that such ``popular'' theories
-as the natural numbers may be unrepresentative of typical usage. For example, we
-would not expect the library functions in a typical verification problem to be
-as mathematically rich as number theory.
+for such tools. It is only with larger data sets that we can generalise the
+measured performance to different, especially \emph{novel}, domains (which,
+after all, is the purpose of MTE tools). In addition, we might be concerned that
+such ``popular'' theories as the natural numbers may be unrepresentative of
+typical usage. For example, we would not expect the library functions in a
+typical verification problem to be as mathematically rich as number theory.
 
 \subsection{Existing Tools}
 \label{sec:existing-tools}
@@ -413,8 +412,7 @@ as mathematically rich as number theory.
 Since our benchmarking methodology builds on the precision/recall analysis
 described in $\S$\ref{sec:te}, we decided to use two of the same tools, IsaCoSy
 and QuickSpec (the conjecture generating component of HipSpec), as our
-demonstration. Other notable tools, including IsaScheme, are described under
-related work in $\S$\ref{sec:related-work}.
+demonstration.
 
 IsaCoSy (Isabelle Conjecture Synthesis) is written for the Isabelle proof
 assistant, mostly in Standard
@@ -429,14 +427,14 @@ prove them.
 
 QuickSpec emerged from work on the QuickCheck software testing framework for the
 Haskell programming language~\cite{claessen2011quickcheck}. As well as
-generating conjectures for HipSpec (also a Haskell tool) it has also been
-applied to Isabelle via the Hipster tool~\cite{Hipster}. Like IsaCoSy, QuickSpec
-takes a signature and enumerates well-typed terms, collecting together those of
-the same type into equivalence classes, assuming them to be equal. QuickCheck is
-then used to find counterexamples to this assumption, which it does by randomly
-instantiating the variables and comparing the resulting closed expressions. Any
-equivalence class whose elements don't compare equal are split up, and the
-process is repeated with new random values.
+conjecturing properties of Haskell definitions for HipSpec, it has been applied
+to Isabelle definitions via the Hipster tool~\cite{Hipster}. Like IsaCoSy,
+QuickSpec takes a signature and enumerates well-typed terms, collecting together
+those of the same type into equivalence classes, assuming them to be
+equal. QuickCheck is then used to find counterexamples to this assumption, which
+it does by randomly instantiating the variables and comparing the resulting
+closed expressions. Any equivalence class whose elements don't compare equal are
+split up, and the process is repeated with new random values.
 
 After 500 rounds of testing, any expressions still sharing the same equivalence
 class are conjectured to be equal for all values of their variables. Rather than
@@ -466,12 +464,12 @@ for MTE, as their definitions and theorems can be used as a corpus in the same
 way that Isabelle libraries have been used in the past.
 
 Some problem sets are more amenable for this purpose than others. The most
-suitable are those which have the following properties:
+suitable are those meeting the following criteria:
 
 \begin{itemize}
-\item For each problem, there should be a clear distinction between the theorem
-  to be proved and the definitions involved, such that the two can be easily and
-  meaningfully separated. This rules out problem sets like those of
+\item For each problem, there should be a clear distinction between the
+  statement to be proved and the definitions involved, such that the two can be
+  easily and meaningfully separated. This rules out problem sets like those of
   SMT-COMP~\cite{barrett2005smt}, where many problems involve uninterpreted
   functions, whose behaviour is \emph{implicit} in the logical structure of the
   theorem statement but not separately \emph{defined}.
@@ -486,16 +484,16 @@ suitable are those which have the following properties:
 \item The problem set should ideally contain \emph{every} ``interesting''
   property involving its included definitions, since non-membership in the
   ground truth will be treated as being ``uninteresting''. More realistically,
-  we should at least aim for each definition to have \emph{multiple} properties;
-  rather than a mixture of mostly unrelated properties.
-\item Larger problem sets are preferable, all else being equal, as they give
-  more robust statistics.
+  we should aim for each definition to have \emph{multiple} properties; rather
+  than a mixture of unrelated problems, cherry-picked from different domains.
+\item Larger problem set are preferable as they give more robust statistics, all
+  else being equal (i.e. when this does not sacrifice quality).
 \end{itemize}
 
-Once such a problem set has been chosen, we must separate the definitions
-referenced by the theorems from the theorem statements themselves. The former
-will be used as input to the tools, whilst the latter form a ground truth corpus
-of properties against which to compare the output.
+Once such a problem set has been chosen, we must separate the theorem statements
+from the definitions they reference. The latter will be used as input to the
+MTE tools, whilst the former constitute the ground truth corpus of properties
+against which to compare the output.
 
 It is important to ensure that there are no duplicate definitions: we are only
 concerned with the \emph{logical} content of the input, not the more arbitrary
@@ -509,11 +507,10 @@ Yet a na\"ive precision/recall analysis would treat commutativity of
 \texttt{add} and associativity of \texttt{plus} as \emph{uninteresting}, since
 they don't appear in the ground truth.
 
-For this reason, duplicates should be removed, and any references in the theorem
-statements updated to use the remaining definition (e.g. chosen based on
-lexicographic order). In the above example, the \texttt{plus} function would be
-removed, and the commutativity statement updated to reference \texttt{add}
-instead.
+For this reason, duplicates should be removed, and any references to them
+updated to use the remaining definition (e.g. chosen based on lexicographic
+order). In the above example, the \texttt{plus} function would be removed, and
+the commutativity statement updated to reference \texttt{add} instead.
 
 \subsection{Sampling}
 \label{section:sampling}
@@ -786,7 +783,8 @@ by design).
               {Evaluation $\S$\ref{section:evaluation}};
 
   \end{tikzpicture}
-  \caption[]{High-level view of our benchmarking methodology, showing
+  \caption[]{High-level view of the benchmarking methodology described in
+    $\S$\ref{sec:proposal}, showing
     \begin{tikzpicture}
       \node [rectangle, text centered, draw=black]{processes};
     \end{tikzpicture},
@@ -1280,21 +1278,22 @@ on user-interaction and mathematical domains, in contrast to the full automation
 and more general applications targeted by ATF, are disappearing in recent
 implementations.
 
-An important historical implementation of ATF is Lenat's AM system. Unlike prior
-work, such as Meta-Dendral~\cite{buchanan:75} and those described
-in~\cite{winston}, AM aims to be a general purpose mathematical discovery
-system, designed to both construct new concepts and conjecture relationships
-between them. AM is a rule-based system which represents knowledge using a
-frame-like scheme, enlarges its knowledge base via a collection of heuristic
-rules, and controls the firing of these rules via an agenda
-mechanism. Evaluation of AM considered generality (performance in new domains)
-and how finely-tuned various aspects of the program are (the agenda, the
-interaction of the heuristics, etc). Most of this evaluation was qualitative,
-and has subsequently been criticised~\cite[chap.~13]{colton:book}. In their
-case study in methodology, Ritchie and Hanna found a large discrepancy between
-the theoretical claims made of AM and the implemented program~\cite{partridge};
-for example, AM ``invented'' natural numbers from sets, but did so using a
-heuristic specifically designed to make this connection.
+An important historical implementation of ATF is Lenat's AM (Automated
+Mathematician) system. Unlike prior work, such as
+Meta-Dendral~\cite{buchanan:75} and those described in~\cite{winston}, AM aims
+to be a general purpose mathematical discovery system, designed to both
+construct new concepts and conjecture relationships between them. AM is a
+rule-based system which represents knowledge using a frame-like scheme, enlarges
+its knowledge base via a collection of heuristic rules, and controls the firing
+of these rules via an agenda mechanism. Evaluation of AM considered generality
+(performance in new domains) and how finely-tuned various aspects of the program
+are (the agenda, the interaction of the heuristics, etc). Most of this
+evaluation was qualitative, and has subsequently been
+criticised~\cite[chap.~13]{colton:book}. In their case study in methodology,
+Ritchie and Hanna found a large discrepancy between the theoretical claims made
+of AM and the implemented program~\cite{partridge}; for example, AM ``invented''
+natural numbers from sets, but did so using a heuristic specifically designed to
+make this connection.
 
 The prototypical implementation of MTE is the Theorema system of Buchberger and
 colleagues~\cite{buchberger,buchberger2016theorema}, which also places a strong
@@ -1401,7 +1400,7 @@ healthy competition to improve the field.
   especially like to thank Koen Claessen, Lucas Dixon, Moa Johansson, Dan
   Ros\'{e}n and Nicholas Smallbone for useful discussions and help in adapting
   their software to our purposes.
-%  FIXME: EPSRC, Katya, Jianguo fundung, Alison funding
+  (FIXME: Funding details go here)
 \end{acknowledgements}
 
 \bibliographystyle{plain}
