@@ -580,12 +580,11 @@ variables. We also consider the left/right order of equations to be irrelevant,
 which we normalise by choosing whichever order results in the
 lexicographically-smallest expression.
 
-Other than $\alpha$-equivalence and equation symmetry, we specifically
-\emph{ignore} logical relationships between syntactically distinct statements,
-such as one equation being implied by another. Whilst logically sound,
-second-guessing the ground truth in this way would harm other aspects which
-influence interestingness (for example, a more general statement is more widely
-applicable, but it might also be harder to comprehend).
+We specifically \emph{ignore} other logical relationships between syntactically
+distinct statements, such as one equation being implied by another. Whilst
+logically sound, second-guessing the ground truth in this way would harm other
+aspects which influence interestingness (for example, a more general statement
+is more widely applicable, but it might also be harder to comprehend).
 
 This procedure gives us a single runtime, precision and recall value for each
 sample. We propose two methods for analysing this data: \emph{summarising}
@@ -597,12 +596,11 @@ tools.
 Each sample is only explored once by each tool, so that we cover as many
 independent samples as possible to better estimate how a tool's performance
 generalises to unseen inputs. How we combine these data into an aggregate
-summary depends on what we are interested in measuring.
-
-One general question we might ask is how a tool's performance scales with
-respect to the input size (the number of given definitions). This is
-straightforward to measure by varying the sample size, but we need some way to
-combine the results from samples of the same size.
+summary depends on what we are interested in measuring. One general question we
+might ask is how a tool's performance scales with respect to the input size (the
+number of given definitions). This is straightforward to measure by varying the
+sample size, but we need some way to combine the results from samples of the
+same size.
 
 We can summarise runtimes by choosing their median, as this is more robust than
 the mean against long-running outliers, and hence represents performance for a
@@ -683,7 +681,7 @@ by design).
     % Preparation section
 
     \node (in)  [io]{Theorem Proving Benchmark};
-    \node (sep) [process,       below=1cm of in         ]{Separate definitions from theorems};
+    \node (sep) [process,       below=1cm of in         ]{Separate definitions from property statements};
     \node (def) [process, below  left=1.5cm and -1cm of sep]{Remove duplicate definitions};
     \node (ref) [process, below right=1.5cm and -1cm of sep]{Update references};
 
@@ -820,15 +818,15 @@ so we pick 31 samples of each size in order to cross this (arbitrary)
 threshold. This gave a total of 1240 runs. To keep the benchmarking time down to
 a few days we chose a timeout of 300 seconds, since that covered most of the
 successful QuickSpec and IsaCoSy results we saw, and longer times gave rapidly
-diminishing returns. During analysis, duplicate samples (caused by our sampling
-restrictions) were found and discarded, so only 14 samples of size 1 were used
-and 30 of size 2.
+diminishing returns. During analysis, duplicate samples (caused by our
+requirement that samples have a non-empty ground truth) were found and
+discarded, so only 14 samples of size 1 were used and 30 of size 2.
 
 \subsection{Tons of Inductive Problems}
 \label{sec:tip}
 
 We chose the Tons of Inductive Problems (TIP) benchmark for our ground truth
-since it satisfies the desiderata of $\S$\ref{section:prep}: each benchmark
+since it satisfies the criteria of $\S$\ref{section:prep}: each benchmark
 problem has standalone type and function definitions, making their separation
 trivial; known examples from the software verification and inductive theorem
 proving literature are included, ensuring relevance to those fields; the format
@@ -927,8 +925,8 @@ appear in the current sample are included in the signature and explored.
 
 We benchmarked QuickSpec version 1 (0.9.6), a tool written in Haskell for
 conjecturing equations involving Haskell functions, described in more detail in
-$\S$\ref{section:mte}. In order to thoroughly benchmark QuickSpec, we need
-to automate some of the decisions which are normally left up to the user:
+$\S$\ref{sec:existing-tools}. In order to thoroughly benchmark QuickSpec, we
+need to automate some of the decisions which are normally left up to the user:
 
 \begin{sloppypar}
   \begin{itemize}
@@ -976,14 +974,14 @@ to automate some of the decisions which are normally left up to the user:
 \end{figure}
 
 The time taken to explore samples of different sizes is shown in
-figure~\ref{figure:quickspec_runtimes}. Runs which timed out are shown in red,
-and these occurred for all sample sizes but are more common for larger samples
-(over half the runs for sample size 20 timed out). Runs which succeeded mostly
-finished within 30 seconds, generating few or no conjectures; those taking
-longer generated more conjectures, with the most being 133 conjectures from a
-sample of size 19.
+Figure~\ref{figure:quickspec_runtimes}. Failed runs are shown in red: all
+failures were due to timing out, and these occurred for all sample sizes but are
+more common for larger samples (over half the runs for sample sizes 13 and 20
+timed out). Runs which succeeded mostly finished within 30 seconds, generating
+few or no conjectures; those taking longer generated more conjectures, with the
+most being 133 conjectures from a sample of size 19.
 
-Precision and recall are shown in figure~\ref{figure:quickspec_precRec}.
+Precision and recall are shown in Figure~\ref{figure:quickspec_precRec}.
 Since QuickSpec generates monotonically more conjectures as definitions are
 added to a signature (assuming sufficient testing), its decreasing precision
 can't be due to finding fewer wanted conjectures at larger sizes. This is
@@ -1002,7 +1000,7 @@ combinations are likely to lead to interesting conjectures; this would avoid
 both the ``padding'' and the cross-dependency relationships. Both of these
 methods could improve the precision, although care would be needed to avoid a
 large reduction in recall. The latter option could also improve the running
-time, since (based on figure~\ref{figure:quickspec_runtimes}) multiple smaller
+time, since (based on Figure~\ref{figure:quickspec_runtimes}) multiple smaller
 signatures may be faster to explore than a single large one. Such improvements
 would also need to be ``generic'', to avoid over-fitting to this particular
 benchmark.
@@ -1071,7 +1069,7 @@ make our benchmark applicable to IsaCoSy:
 \end{figure}
 
 The most striking result is how rapidly IsaCoSy's running time, shown in
-figure~\ref{figure:isacosy_runtimes}, increases with sample size: all runs above
+Figure~\ref{figure:isacosy_runtimes}, increases with sample size: all runs above
 size 6 failed, with most timing out and a few aborting early due to running out
 of memory. Like in our preliminary testing, this increase appears exponential,
 so even large increases to the timeout would not produce many more successful
@@ -1082,7 +1080,7 @@ across all sample sizes it does not affect our conclusions.
 
 With so few successful datapoints it is difficult to make strong claims about
 the precision/recall quality of IsaCoSy's output, shown in
-figure~\ref{figure:isacosy_precRec}. It is clear from the quantity of non-zero
+Figure~\ref{figure:isacosy_precRec}. It is clear from the quantity of non-zero
 proportions that IsaCoSy is capable of discovering interesting conjectures, and
 the graphs appear to follow the same shapes as those of QuickSpec (decreasing
 precision, flat recall), although the error margins are too wide to be
@@ -1305,9 +1303,9 @@ evaluated by illustrating the automated synthesis of Buchberger's own Gr\"obner
 bases algorithm~\cite{buchberger:04}.
 
 A similar ``layering'' approach is found in the IsaScheme system of
-Monta{\~n}o-Rivas \etal{}~\cite{MontanoRivas2011}, which is compared against
-IsaCoSy and HipSpec is compared using precision/recall
-in~\cite{claessen2013automating}. The name comes from its embedding in the
+Monta{\~n}o-Rivas \etal{}~\cite{MontanoRivas2011}, which has also been
+quantitatively compared against IsaCoSy and HipSpec using precision/recall
+analysis~\cite{claessen2013automating}. The name comes from its embedding in the
 Isabelle proof assistant and its use of ``schemes'': higher-order formulae which
 can be used to generate new concepts and conjectures. Variables within a scheme
 are instantiated automatically and this drives the invention process. For
@@ -1318,14 +1316,14 @@ new multiplication function to produce exponentiation.
 
 IsaCoSy and QuickSpec (the conjecture generation component of HipSpec) are
 described in more detail in $\S$\ref{sec:existing-tools}, since these are the
-tools we chose to evaluate and compare to demonstrate our benchmarking
-methodology. QuickSpec has since evolved to version 2~\cite{smallbone2017quick},
-which replaces the distinct enumeration and testing steps with a single,
-iterative algorithm similar to that of IsaCoSy. Generated conjectures are fed
-into a Knuth-Bendix completion algorithm to form a corresponding set of rewrite
-rules. As expressions are enumerated, they are simplified using these rules and
-discarded if equal to a known expression. If not, QuickCheck tests whether the
-new expression can be distinguished from the known expressions through random
+tools we chose to evaluate and compare for $\S$\ref{sec:application}. QuickSpec
+has since evolved to version 2~\cite{smallbone2017quick}, which replaces the
+distinct enumeration and testing steps with a single, iterative algorithm
+similar to that of IsaCoSy. Generated conjectures are fed into a Knuth-Bendix
+completion algorithm to form a corresponding set of rewrite rules. As
+expressions are enumerated, they are simplified using these rules and discarded
+if equal to a known expression. If not, QuickCheck tests whether the new
+expression can be distinguished from the known expressions through random
 testing: those which can are added to the set of known expressions. Those which
 cannot be distinguished are conjectured to be equal, and the rewrite rules are
 updated.
@@ -1337,29 +1335,28 @@ also makes use of the laws of total orders and Boolean algebra to conjecture
 
 Another notable MTE implementation, distinct from those based in Isabelle and
 Haskell, is the MATHsAiD project (Mechanically Ascertaining Theorems from
-Hypotheses, Axioms and Definitions)~\cite{roy}. The project's goal is to help
-mathematicians explore the consequences of a set of axioms or a particular
-concept definition by deducing, via the chosen logic, a set of theorems which
-they entail. Like other MTE approaches, one of its main challenges is to
-automatically evaluate interestingness: to distinguish important theorems from
-results which, although they follow from a set of axioms, are of little
-mathematical interest. Evaluation of these theorems was performed by the
-system's developer, which highlights the need for a general method of evaluation
-and comparison for these tools.
+Hypotheses, Axioms and Definitions)~\cite{roy}. Unlike the tools above, which
+generate \emph{conjectures} that may later be sent to automated provers,
+MATHsAiD directly generates \emph{theorems}, by making logically valid
+inferences from a given set of axioms and definitions. Evaluation of the
+interestingness of these theorems was performed qualitatively by the system's
+developer, which highlights how these tools could benefit from the availability
+of an objective, repeatable, quantitative method of evaluation and comparison
+such as ours.
 
 Whilst there are many reasonably objective benchmarks for mathematical tasks
 such as automated theorem proving, the precision/recall analysis shown
 in~\cite{claessen2013automating}, and described further in $\S$\ref{sec:te}, is
-the only quantitative comparison of these recent tools we have found in the
+the only quantitative comparison of these recent MTE tools we have found in the
 literature. Our work is essentially an extension of this approach, to a larger
 and more diverse set of examples. The suitability of the TIP theorem proving
 benchmark for our purposes, detailed in $\S$\ref{sec:tip}, is not coincidental,
 since its developers are also those of the IsaCoSy and QuickSpec tools we have
 tested. This goes some way to ensuring that our demonstration is a faithful
-representation of the task these tools were designed for, whilst our independent
-repurposing of the problem set reduces the risk that the benchmark is
-tailor-made for these tools; or, conversely, that the tools over-fit to these
-particular problems.
+representation of the task these tools were intended to solve; our independent
+repurposing of this problem set, in a way it was not designed for, reduces the
+risk that the benchmark is tailor-made for these tools (or that the tools
+over-fit to these particular problems).
 
 \section{Conclusion}
 \label{sec:conclusion}
