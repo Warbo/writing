@@ -1,0 +1,11 @@
+From: Chris Warburton
+Date: Fri, 04 May 2018 15:30:15 +0100
+State: new
+Subject: TEB: What "message" can we show?
+Message-Id: <bdc088e9d99eb9ad-0-artemis@nixos>
+
+What do our benchmark results show, which previous evaluations didn't?
+
+Point this out; maybe also in the abstract.
+
+One thing which comes to mind is how few inputs IsaCoSy succeeds on!

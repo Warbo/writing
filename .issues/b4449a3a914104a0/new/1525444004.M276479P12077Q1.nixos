@@ -1,0 +1,8 @@
+From: Chris Warburton
+Date: Fri, 04 May 2018 15:26:00 +0100
+State: new
+Subject: TEB: Make it clear that QuickSpec recall is better
+Message-Id: <b4449a3a914104a0-0-artemis@nixos>
+
+The text accompanying the table says that it is 'significantly
+different'. We should also say that it's better!

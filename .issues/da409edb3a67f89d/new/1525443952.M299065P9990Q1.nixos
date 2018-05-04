@@ -1,0 +1,13 @@
+From: Chris Warburton
+Date: Fri, 04 May 2018 15:23:25 +0100
+State: new
+Subject: Mention counting evaluations as an alternative to wall-clock time
+Message-Id: <da409edb3a67f89d-0-artemis@nixos>
+
+Wall-clock time has some drawbacks. For example, it depends on the
+machine being used, the programming language, etc.
+
+Jianguo mentioned that 'number of expressions evaluated' could be an
+alternative, which is less dependent on the implementation. We can
+mention this possibility, and the reason we avoided it (difficult to
+measure for existing tools; mostly IsaCoSy).

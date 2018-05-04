@@ -1,0 +1,8 @@
+From: Chris Warburton
+Date: Fri, 04 May 2018 15:28:15 +0100
+State: new
+Subject: TEB: Clarify "speedup" in table
+Message-Id: <9c11f668b48309ee-0-artemis@nixos>
+
+Provide the formula. I think it's just the ratio of the median runtimes,
+but we should check the SpeedupTest code to make sure.
