@@ -8,8 +8,7 @@ with { defs = rec {
     runCommand "phd-symp-2018-abstract.pdf"
       {
         inherit graphs src;
-        inherit (support.comparison) qualityComparison timeComparison;
-        inherit (resources)  bibtex;
+        inherit (resources) bibtex;
 
         buildInputs = [ tex ];
       }
@@ -18,8 +17,6 @@ with { defs = rec {
         cp -s "$src"/* ./src/
 
         [[ -z "$graphs"            ]] || cp -rs "$graphs"/*            src/.
-        [[ -z "$qualityComparison" ]] || cp -rs "$qualityComparison"/* src/.
-        [[ -z "$timeComparison"    ]] || cp -rs "$timeComparison"/*    src/.
 
         ln -s "$bibtex" Bibtex.bib
         pushd src
@@ -40,7 +37,19 @@ with { defs = rec {
 
   resources = import ../resources;
 
-  slides = pkgs.nothing;
+  slides = pkgs.runCommand "slides.pdf"
+    {
+      inherit (resources) bibtex;
+      buildInputs = [ pkgs.pandocPkgs tex ];
+      graphs      = ./graphs;
+      slides      = ./slides.md;
+    }
+    ''
+      ln -s "$bibtex" ./Bibtex.bib
+      ln -s "$graphs" ./graphs
+      pandoc -t beamer --filter pandoc-citeproc -o slides.pdf "$slides"
+      mv slides.pdf "$out"
+    '';
 
   src = pkgs.attrsToDirs {
     "abstract.tex"            = ./abstract.tex;

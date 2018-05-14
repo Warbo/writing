@@ -1,4 +1,4 @@
-module Example where
+ module Example where
 
 data Nat : Set where
   Zero : Nat
@@ -13,102 +13,14 @@ plus : Nat -> Nat -> Nat
 plus Zero     y = y
 plus (Succ x) y = Succ (plus x y)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 data Equal : Nat -> Nat -> Set where
-  Refl : (x : Nat) -> Equal x x
+  reflexivity : (x : Nat) -> Equal x x
 
+data And (a b : Set) : Set where
+  and : a -> b -> And a b
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- simpleProof : Equal (plus one two) three
--- simpleProof = ?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- commute : (x y : Nat) -> Equal (plus x y) (plus y x)
--- commute x y = ?
+commute : (x y : Nat) -> Equal (plus x y) (plus y x)
+commute x y = ?
 
 
 
@@ -222,7 +134,5 @@ data Equal : Nat -> Nat -> Set where
 
 
 
-
-
--- trans : {x y z : Nat} -> Equal x y -> Equal y z -> Equal x z
--- trans p1 p2 = ?
+-- trans : {x y z : Nat} -> And (Equal x y) (Equal y z) -> Equal x z
+-- trans p = ?
