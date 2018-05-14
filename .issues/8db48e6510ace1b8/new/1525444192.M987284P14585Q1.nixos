@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 04 May 2018 15:29:10 +0100
-State: new
+State: resolved
 Subject: TEB: Significance level
 Message-Id: <8db48e6510ace1b8-0-artemis@nixos>
+resolution: fixed
 
 \alpha = 0.05 is "conventional", not "arbitrary".
 

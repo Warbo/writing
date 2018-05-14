@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 04 May 2018 15:27:19 +0100
-State: new
+State: resolved
 Subject: TEB: Add funding info to acknowledgements
 Message-Id: <dece9bee74ebb3ac-0-artemis@nixos>
+resolution: fixed
 
 Alison will send hers. Ours is EPSRC (do we know grant number?).
 
