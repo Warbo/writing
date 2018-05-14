@@ -38,9 +38,7 @@ Problem:
  - Time consuming
  - Fragile (e.g. small changes break proofs)
 
-# Motivating Example: x + y = y + x #
-
-# Motivating Example: Fallback #
+# Motivating Example #
 
 Prove a relatively simple property: `plus x y = plus y x`
 
@@ -160,8 +158,8 @@ Tons of Inductive Problems theorem prover benchmark [@claessen2015tip]
 
 \begin{figure}
   \input{graphs/quickspecprec.pgf}
-  \caption{Precision (left) and recall (right) of QuickSpec on TIP samples.
-  Line shows ratio of averages, sample standard deviation is shaded.}
+  \caption{Precision and recall of QuickSpec on TIP samples. Line shows ratio of
+  averages, sample standard deviation is shaded.}
 \end{figure}
 
 # Application: IsaCoSy #
@@ -176,8 +174,8 @@ Tons of Inductive Problems theorem prover benchmark [@claessen2015tip]
 
 \begin{figure}
   \input{graphs/isacosyprec.pgf}
-  \caption{Precision (left) and recall (right) of IsaCoSy on TIP samples.
-  Line shows ratio of averages, sample standard deviation is shaded.}
+  \caption{Precision and recall of IsaCoSy on TIP samples. Line shows ratio of
+  averages, sample standard deviation is shaded.}
 \end{figure}
 
 # Application: Comparison #
