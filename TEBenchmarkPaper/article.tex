@@ -574,7 +574,12 @@ on the tool's output.
 Given a sample of definitions and a corresponding ground truth, the actual
 execution of the MTE tool proceeds as in prior work. We must translate the
 chosen definitions into the required input format, then we time the execution
-with a timeout (e.g. 5 minutes).
+with a timeout (e.g. 5 minutes). We use wall-clock time since this is most
+relevant to a user's experience, it has a straightforward interpretation and
+tracking it does not require intrusive alterations to a tool's implementation.
+The downside is that comparisons must take hardware performance into account,
+which would not be the case if time were measured by some proxy like number of
+expressions evaluated.
 
 In our experiments we have found that memory usage is also an important part of
 a tool's performance, but rather than complicating our analysis with an extra
@@ -1132,11 +1137,13 @@ tied.
     {\\\hline\csvcoli&\csvcolii} \\
     \hline
   \end{tabular}
-  \caption{Speed up from using QuickSpec compared to IsaCoSy, as reported by
-    Speedup-Test for a confidence level of 95\%. Sizes 1 and 2 were not
-    considered statistically significant due to having less than 30 samples.
+  \caption{Speedup from using QuickSpec compared to IsaCoSy, i.e. the median
+    time taken by IsaCoSy divided by that of QuickSpec. All were deemed
+    statistically significant QuickSpec was significantly faster
+    ($\alpha = 0.05$) for all sizes, except 1 and 2 due to too few samples.
     These are conservative estimates, since the 300 second time limit acts to
-    reduce the measured time difference.}
+    reduce the measured time difference (e.g. sizes 13 and 20, where the median
+    for both tools timed out).}
   \label{table:speedups}
 \end{table}
 
