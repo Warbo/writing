@@ -50,6 +50,7 @@ grestore
 \usepackage{float}
 \restylefloat{table}
 \usepackage{hhline}
+\usepackage{hyperref}
 \usepackage{mathtools}
 \usepackage{multirow}
 \usepackage{tikz}
@@ -219,7 +220,7 @@ generation of MTE tools. Our contributions include:
 \item Resolving the issue of ``interestingness'' through the use of
   theorem-proving benchmarks as a ground-truth.
 \item A specific instantiation of this methodology, using the Tons of Inductive
-  Problems benchmark as a corpus.
+  Problems (TIP) benchmark as a corpus.
 \item Automated tooling to perform this benchmarking.
 \item Application of our methodology to the QuickSpec and IsaCoSy MTE tools,
   and a comparison and discussion of the results.
@@ -233,6 +234,14 @@ Issues facing our approach, and the field in general, are discussed in
 $\S$\ref{sec:discussion}; related work is surveyed in
 $\S$\ref{sec:related-work}, including the diverse terminology found in the
 literature; and concluding remarks are given in $\S$\ref{sec:conclusion}.
+
+\begin{sloppypar}
+  Our benchmark, including the scripts used to generate it from the TIP problem
+  set, is available online at
+  \url{https://github.com/warbo/theory-exploration-benchmarks}. The application
+  to QuickSpec is at \url{https://github.com/warbo/haskell-te} and IsaCoSy at
+  \url{https://github.com/warbo/isaplanner-tip}.
+\end{sloppypar}
 
 %- Existing approaches are difficult to compare
 % - They want different things
@@ -381,31 +390,34 @@ to the question of what is ``interesting''; although we must still decide what
 to put in the ground truth set, and what to leave out, for each measured set of
 definitions.
 
-The precision and recall of three MTE tools are compared
-in~\cite{claessen2013automating}:
-IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation},
-IsaScheme~\cite{MontanoRivas2011} and
-HipSpec~\cite{Claessen_hipspec:automating}.\footnote{Unfortunately this
-  comparison only reports prior results for each tool, rather than reproducing
-  them. This makes the numbers less comparable, since each tool was tested with
-  slightly different definitions (e.g. whether or not the exponential and
-  maximum functions were included).} The definitions and ground truths for all
-three were taken from the standard library of the Isabelle proof assistant:
-since the library authors have gone to the effort of stating and proving these
-properties, and including them with every copy of their software, this is a good
-indication that they are interesting. Two sets of definitions were used: a
-theory of natural numbers; and a theory of lists (which we show in
-Figure~\ref{figure:list_theory} on page~\pageref{figure:list_theory}). With only
-two datapoints, each containing only a few definitions and properties (4
-functions and 12 properties, in the natural number example), it is difficult
-to draw general conclusions; yet despite these limitations we believe that this
-is a viable method to performing meaningful, objective analyses and comparisons
-for such tools. It is only with larger data sets that we can generalise the
-measured performance to different, especially \emph{novel}, domains (which,
-after all, is the purpose of MTE tools). In addition, we might be concerned that
-such ``popular'' theories as the natural numbers may be unrepresentative of
-typical usage. For example, we would not expect the library functions in a
-typical verification problem to be as mathematically rich as number theory.
+\begin{sloppypar}
+  The precision and recall of three MTE tools are compared
+  in~\cite{claessen2013automating}:
+  IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation},
+  IsaScheme~\cite{Montano-Rivas.McCasland.Dixon.ea:2012} and
+  HipSpec~\cite{Claessen_hipspec:automating}.\footnote{Unfortunately this
+    comparison only reports prior results for each tool, rather than reproducing
+    them. This makes the numbers less comparable, since each tool was tested
+    with slightly different definitions (e.g. whether or not the exponential and
+    maximum functions were included).} The definitions and ground truths for all
+  three were taken from the standard library of the Isabelle proof assistant:
+  since the library authors have gone to the effort of stating and proving these
+  properties, and including them with every copy of their software, this is a good
+  indication that they are interesting. Two sets of definitions were used: a
+  theory of natural numbers; and a theory of lists (which we show in
+  Figure~\ref{figure:list_theory} on page~\pageref{figure:list_theory}). With
+  only two datapoints, each containing only a few definitions and properties (4
+  functions and 12 properties, in the natural number example), it is difficult
+  to draw general conclusions; yet despite these limitations we believe that
+  this is a viable method to performing meaningful, objective analyses and
+  comparisons for such tools. It is only with larger data sets that we can
+  generalise the measured performance to different, especially \emph{novel},
+  domains (which, after all, is the purpose of MTE tools). In addition, we might
+  be concerned that such ``popular'' theories as the natural numbers may be
+  unrepresentative of typical usage. For example, we would not expect the
+  library functions in a typical verification problem to be as mathematically
+  rich as number theory.
+\end{sloppypar}
 
 \subsection{Existing Tools}
 \label{sec:existing-tools}
@@ -1276,7 +1288,7 @@ sometimes prefaced with ``Computer-Aided'', ``Automated'' or
 Buchberger~\cite{buchberger}; and Automated Theory Formation
 (ATF)~\cite{lenat:77,colton:book}, pursued by AI researchers including Lenat.
 Other related terms include ``Automated Mathematical
-Discovery''~\cite{epstein:91,colton:interestingness,esarm2008},
+Discovery''~\cite{epstein:91,colton2000notion,esarm2008},
 ``Concept Formation in Discovery Systems''~\cite{haase}, and
 ``Automated Theorem Discovery''~\cite{roy}.
 
@@ -1299,7 +1311,7 @@ are (the agenda, the interaction of the heuristics, etc). Most of this
 evaluation was qualitative, and has subsequently been
 criticised~\cite[chap.~13]{colton:book}. In their case study in methodology,
 Ritchie and Hanna found a large discrepancy between the theoretical claims made
-of AM and the implemented program~\cite{partridge}; for example, AM ``invented''
+of AM and the implemented program~\cite{ritchie1984case}; for example, AM ``invented''
 natural numbers from sets, but did so using a heuristic specifically designed to
 make this connection.
 
@@ -1313,16 +1325,16 @@ evaluated by illustrating the automated synthesis of Buchberger's own Gr\"obner
 bases algorithm~\cite{buchberger:04}.
 
 A similar ``layering'' approach is found in the IsaScheme system of
-Monta{\~n}o-Rivas \etal{}~\cite{MontanoRivas2011}, which has also been
-quantitatively compared against IsaCoSy and HipSpec using precision/recall
-analysis~\cite{claessen2013automating}. The name comes from its embedding in the
-Isabelle proof assistant and its use of ``schemes'': higher-order formulae which
-can be used to generate new concepts and conjectures. Variables within a scheme
-are instantiated automatically and this drives the invention process. For
-example, the concept of ``repetition'' can be encoded as a scheme, and
-instantiated with existing encodings of zero, successor and addition to produce
-a definition of multiplication. The same scheme can be instantiated with this
-new multiplication function to produce exponentiation.
+Monta{\~n}o-Rivas \etal{}~\cite{Montano-Rivas.McCasland.Dixon.ea:2012}, which
+has also been quantitatively compared against IsaCoSy and HipSpec using
+precision/recall analysis~\cite{claessen2013automating}. The name comes from its
+embedding in the Isabelle proof assistant and its use of ``schemes'':
+higher-order formulae which can be used to generate new concepts and
+conjectures. Variables within a scheme are instantiated automatically and this
+drives the invention process. For example, the concept of ``repetition'' can be
+encoded as a scheme, and instantiated with existing encodings of zero, successor
+and addition to produce a definition of multiplication. The same scheme can be
+instantiated with this new multiplication function to produce exponentiation.
 
 IsaCoSy and QuickSpec (the conjecture generation component of HipSpec) are
 described in more detail in $\S$\ref{sec:existing-tools}, since these are the

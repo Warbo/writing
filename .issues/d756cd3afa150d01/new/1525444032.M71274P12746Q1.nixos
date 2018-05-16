@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Fri, 04 May 2018 15:26:50 +0100
-State: new
+State: resolved
 Subject: TEB: Make prec/rec tables into floats, with numbers, etc.
 Message-Id: <d756cd3afa150d01-0-artemis@nixos>
+resolution: fixed
 
 Jianguo's suggestion.

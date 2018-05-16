@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Fri, 04 May 2018 15:22:45 +0100
-State: new
+State: resolved
 Subject: TEB: Mention that the tool is available online, give GitHub URL
 Message-Id: <fc205aabc1ccb8f2-0-artemis@nixos>
+resolution: fixed
 
 We want people to use the benchmark, so give them access to it!
