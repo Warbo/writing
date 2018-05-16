@@ -21,7 +21,6 @@ sig = signature [
   , fun2 "and"   (&&)
   , vars ["x", "y", "z"] (undefined :: Nat)
   , vars ["a", "b", "c"] (undefined :: Bool)
-  , withDepth 4
   ]
 
 
