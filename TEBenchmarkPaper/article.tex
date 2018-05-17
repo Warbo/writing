@@ -1122,11 +1122,11 @@ sample sizes except for 1 and 2 (due to the removed duplicates), and hence those
 two speedups were not deemed statistically significant. For all other sample
 sizes QuickSpec was found to be significantly faster with $\alpha = 0.05$,
 putting the proportion of sizes with faster median times between 66.9\% and
-98.2\% with 95\% confidence. The magnitude of each speedup is given in
-table~\ref{table:speedups}. We would predict the speedup to grow for larger
-sample sizes, but the increasing proportion of timeouts causes our estimates to
-become more conservative: by size 20 most runs are timing out, and hence are
-tied.
+98.2\% with 95\% confidence. The magnitude of each speedup (median IsaCoSy time
+divided by median QuickSpec time) is given in table~\ref{table:speedups}. We
+would predict the speedup to grow for larger sample sizes, but the increasing
+proportion of timeouts causes our estimates to become more conservative: by size
+20 most runs are timing out, and hence are tied.
 
 \begin{table}
   \centering
@@ -1138,12 +1138,11 @@ tied.
     \hline
   \end{tabular}
   \caption{Speedup from using QuickSpec compared to IsaCoSy, i.e. the median
-    time taken by IsaCoSy divided by that of QuickSpec. All were deemed
-    statistically significant QuickSpec was significantly faster
-    ($\alpha = 0.05$) for all sizes, except 1 and 2 due to too few samples.
-    These are conservative estimates, since the 300 second time limit acts to
-    reduce the measured time difference (e.g. sizes 13 and 20, where the median
-    for both tools timed out).}
+    time taken by IsaCoSy divided by that of QuickSpec. QuickSpec was found to
+    be significantly faster ($\alpha = 0.05$) for all sizes, except 1 and 2 due
+    to too few samples. These are conservative estimates, since the 300 second
+    time limit acts to reduce the measured time difference (e.g. sizes 13 and
+    20, where the median for both tools timed out).}
   \label{table:speedups}
 \end{table}
 
@@ -1173,7 +1172,8 @@ of 0.0026.
 McNemar's test is not applicable for comparing precision, since each tool
 generated different sets of conjectures. Instead, we add up the number of
 results which are ``interesting'' (appear in the ground truth) and those which
-are ``uninteresting'' (do not appear in the ground truth):
+are ``uninteresting'' (do not appear in the ground truth), with the results
+shown in table~\ref{table:precision}
 
 \begin{table}
   \centering
@@ -1192,7 +1192,7 @@ are ``uninteresting'' (do not appear in the ground truth):
   \label{table:precision}
 \end{table}
 
-We test these totals for independence using Boschloo's test and find a p-value
+We tested these totals for independence using Boschloo's test and find a p-value
 of 0.111, which exceeds our (conventional) significance threshold of
 $\alpha = 0.05$; hence we do not consider the difference between these
 proportions (14\% for QuickSpec, 19\% for IsaCoSy) to be significant.
