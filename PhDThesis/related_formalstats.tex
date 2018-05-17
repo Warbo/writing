@@ -221,22 +221,15 @@ since any learning we perform for feature extraction will interfere with the
 core learning algorithm that's consuming these features (this is why deep
 learning is often done greedily).
 
-\paragraph{Structured Data}
+\paragraph{Sequences}
 
-The task of dimension reduction changes when we consider \emph{structured}
-data. Recursive structures, like trees and lists, have \emph{fractal} dimension:
-adding layers to a recursive structure gives us more \emph{fine-grained}
-features, rather than \emph{orthogonal} features. For data mining context-free
-languages (e.g. those of programming and theorem-proving systems), we will
-mainly be concerned with tree structures of variable size.
-
-Any investigation of variable-size input would be incomplete without mentioning
-\emph{sequencing}. This is a lossless approach, which splits the input into
-fixed-size \emph{chunks}, which are fed into an appropriate ML algorithm one at
-a time. The sequence is terminated by a sentinel; an ``end-of-sequence'' marker
-which, by construction, is distinguishable from the data chunks. This technique
-allows us to trade \emph{space} (the size of our input) for \emph{time} (the
-number of chunks in a sequence).
+To handle input of \emph{variable} size, most attention has been given to the
+handling of \emph{sequences}. This is a lossless approach, which splits the
+input into fixed-size \emph{chunks}, which are fed into an appropriate ML
+algorithm one at a time. The sequence is terminated by a sentinel; an
+``end-of-sequence'' marker which, by construction, is distinguishable from the
+data chunks. This technique allows us to trade \emph{space} (the size of our
+input) for \emph{time} (the number of chunks in a sequence).
 
 Not all ML algorithms can be adapted to accept sequences. One notable approach
 is to use \emph{recurrent ANNs} (RANNs), which allow arbitrary connections
@@ -256,6 +249,14 @@ problem is the subject of current research, with countermeasures including
 ANN) and \emph{long short-term memory} (LSTM; introducing a few special,
 untrainable nodes to persist values for long time periods
 \cite{hochreiter1997long}).
+
+\paragraph{Recursive Structure}
+
+Recursive structures, like trees and lists, have \emph{fractal} dimension:
+adding layers to a recursive structure gives us more \emph{fine-grained}
+features, rather than \emph{orthogonal} features. For data mining context-free
+languages (e.g. those of programming and theorem-proving systems), we will
+mainly be concerned with tree and graph structures of variable size.
 
 Using sequences to represent recursive structures is also problematic: if we
 want our learning algorithm to exploit structure (such as the depth of a token),
@@ -289,8 +290,6 @@ models, of a fixed size suitable for learning. Many more applications of kernel
 methods to structured domains are given in \cite{bakir2007predicting}, which
 could be used to learn more subtle relations between expressions than recurrent
 clustering alone.
-
-
 
 % TODO
 \cite{Gartner2003}
