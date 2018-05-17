@@ -1,5 +1,8 @@
-\subsection{Relevance Filtering}
+\subsubsection{Relevance Filtering}
 \label{sec:relevance}
+
+% TODO
+\cite{kuhlwein2012overview}
 
 The combinatorial nature of formal systems causes many proof search methods,
 such as resolution, to have exponential complexity
@@ -13,47 +16,56 @@ can turn this difficulty around: a modest \emph{decrease} in size may turn an
 intractable problem into a solvable one. We can ensure that the solutions to
 these reduced problems coincide with the original if we only remove
 \emph{redundant} information. This leads to the idea of \emph{relevance
-  filtering} (or, \emph{premise selection}, when viewed as the \emph{addition}
-of relevant information to an initially-empty problem). This is the core idea
-behind our restriction of theory exploration to intelligently-selected clusters
-of symbols, rather than whole libraries at a time.
+  filtering}.
 
-Relevance filtering has mostly been used in automated proof search, where it
-simplifies problems by removing from consideration those clauses (axioms,
-definitions, lemmas, etc.) which are deemed \emph{irrelevant}. The technique is
-used in Isabelle's Sledgehammer tool, during its translation of Isabelle/HOL
-theories to statements in first order logic: rather than translating the entire
-theory, only a sub-set of relevant clauses are included. This reduces the size
-of the problem and speeds up the proof search, but it creates the new problem of
-determining when a clause is relevant: how do we know what will be required,
-before we have the proof?
+Relevance filtering simplifies a proof search problem by removing from
+consideration those clauses (axioms, definitions, lemmas, etc.) which are deemed
+\emph{irrelevant}. The technique is used in Sledgehammer during its translation
+of Isabelle/HOL theories to statements in first order logic: rather than
+translating the entire theory, only a sub-set of relevant clauses are
+included. This reduces the size of the problem and speeds up the proof search,
+but it creates the new problem of determining when a clause is relevant: how do
+we know what will be required, before we have the proof?
 
-The initial approach taken by Sledgehammer, known as \textsc{MePo} (from
-\emph{Meng-Paulson} \cite{meng2009lightweight}), gives each clause a score
-based on the proportion $\frac{m}{n}$ of its symbols which are ``relevant''
-(where $n$ is the number of symbols in the clause and $m$ is the number which
-are relevant). Initially, the relevant symbols are those which occur in the goal
-to be proved, but whenever a clause is found which scores more than a particular
-threshold, all of its symbols are then also considered relevant. There are other
-heuristics applied too, such as increasing the score of user-provided facts
-(e.g. given by keywords like \texttt{using}), locally-scoped facts, first-order
-facts and rarely-occuring facts. To choose $r$ relevant clauses for an ATP
-invocation, we simply order the clauses by decreasing score and take the first
-$r$ of them.
+The initial approach, known as \textsc{MePO} (from \emph{Meng-Paulson}
+\cite{meng2009lightweight}), gives each clause a score based on the proportion
+$m / n$ of its symbols which are ``relevant'' (where $n$ is the number of
+symbols in the clause and $m$ is the number which are relevant). Initially, the
+relevant symbols are those which occur in the goal, but whenever a clause is
+found which scores more than a particular threshold, all of its symbols are then
+also considered relevant. There are other heuristics applied too, such as
+increasing the score of user-provided facts (e.g. given by keywords like
+\texttt{using}), locally-scoped facts, first-order facts and rarely-occuring
+facts. To choose $r$ relevant clauses for an ATP invocation, we simply order the
+clauses by decreasing score and take the first $r$ of them.
 
-Recently, a variety of alternative algorithms have also been investigated, for
-example the \textsc{MaSH} algorithm (Machine Learning for SledgeHammer)
-\cite{kuhlwein2013mash} uses the ``visibility'' of one theorem from another to
-determine the relevance of clauses. Visibility is essentially a dependency graph
-of which theorems were used in the proofs of which other theorems (although the
-theorems are actually represented as abstract sets of features). To select
-relevant clauses for a goal, the set of clauses which are visible from the
-goal's components is generated; this is further reduced by (an efficient
-approximation of) a na\"{\i}ve Bayes algorithm.
+Recently, a variety of alternative algorithms have also been investigated,
+including:
 
-Another example is \emph{multi-output ranking} (MOR), which uses a support
-vector machine (SVM) approach for selecting relevant axioms from the Mizar
-Mathematical Library for use by the Vampire ATP system
-\cite{alama2014premise}. Many more approaches are described and evaluated in
-\cite{kuhlwein2012overview}, some of which may be directly applicable in the
-context of theory exploration.
+\begin{description}
+\item{\textsc{MaSH}}: Machine Learning for SledgeHammer
+  \cite{kuhlwein2013mash}. The distinguishing feature of \textsc{MaSH} is its
+  use of ``visibility'', which is essentially a dependency graph of which
+  theorems were used in the proofs of which other theorems; although theorems
+  are represented as abstract sets of features. To select relevant clauses for a
+  goal, the set of clauses which are visible from the goal's components is
+  generated; this is further reduced by (an efficient approximation of) a naive
+  Bayes algorithm.
+
+\item{\textsc{MOR}}: \emph{Multi-output ranking} uses a support vector machine
+  (SVM) approach for selecting relevant axioms from the Mizar Mathematical
+  Library for use by the Vampire ATP system \cite{alama2014premise}. \iffalse
+  TODO: describe the kernel, as that's the interesting bit \fi It compares
+  favourably to \textsc{SNoW} and \textsc{SInE}.
+
+  % TODO:
+\item{\textsc{SInE}}
+\item{\textsc{BliStr}}
+\item{\textsc{HOLyHammer}}
+\item{\textsc{MoMM}}
+\item{\textsc{SNoW}}
+\item{\textsc{MPTP 0.2}}
+\item{\textsc{MaLARea}}
+\item{\textsc{MaLARea SG1}}
+
+\end{description}
