@@ -1,0 +1,368 @@
+\subsection{Haskell}
+\label{sec:haskell}
+
+\newcommand{\CVar}{\texttt{Var}}
+\newcommand{\CLit}{\texttt{Lit}}
+\newcommand{\CApp}{\texttt{App}}
+\newcommand{\CLam}{\texttt{Lam}}
+\newcommand{\CLet}{\texttt{Let}}
+\newcommand{\CCase}{\texttt{Case}}
+\newcommand{\CType}{\texttt{Type}}
+\newcommand{\CLocal}{\texttt{Local}}
+\newcommand{\CGlobal}{\texttt{Global}}
+\newcommand{\CConstructor}{\texttt{Constructor}}
+\newcommand{\CLitNum}{\texttt{LitNum}}
+\newcommand{\CLitStr}{\texttt{LitStr}}
+\newcommand{\CAlt}{\texttt{Alt}}
+\newcommand{\CDataAlt}{\texttt{DataAlt}}
+\newcommand{\CLitAlt}{\texttt{LitAlt}}
+\newcommand{\CDefault}{\texttt{Default}}
+\newcommand{\CNonRec}{\texttt{NonRec}}
+\newcommand{\CRec}{\texttt{Rec}}
+\newcommand{\CBind}{\texttt{Bind}}
+
+\begin{figure}
+  \begin{equation*}
+    \begin{split}
+      expr\    \rightarrow\ & \CVar\ id                          \\
+                         |\ & \CLit\ literal                     \\
+                         |\ & \CApp\ expr\ expr                  \\
+                         |\ & \CLam\ \mathcal{L}\ expr           \\
+                         |\ & \CLet\ bind\ expr                  \\
+                         |\ & \CCase\ expr\ \mathcal{L}\ [alt]   \\
+                         |\ & \CType                             \\
+      id\      \rightarrow\ & \CLocal\       \mathcal{L}         \\
+                         |\ & \CGlobal\      \mathcal{G}         \\
+                         |\ & \CConstructor\ \mathcal{D}         \\
+      literal\ \rightarrow\ & \CLitNum\ \mathcal{N}              \\
+                         |\ & \CLitStr\ \mathcal{S}              \\
+      alt\     \rightarrow\ & \CAlt\ altcon\ expr\ [\mathcal{L}] \\
+      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{D}             \\
+                         |\ & \CLitAlt\ literal                  \\
+                         |\ & \CDefault                          \\
+      bind\    \rightarrow\ & \CNonRec\ binder                   \\
+                         |\ & \CRec\ [binder]                    \\
+      binder   \rightarrow\ & \CBind\ \mathcal{L}\ expr
+    \end{split}
+  \end{equation*}
+  Where:
+  \begin{tabular}[t]{l @{ $=$ } l}
+    $\mathcal{S}$ & string literals    \\
+    $\mathcal{N}$ & numeric literals   \\
+    $\mathcal{L}$ & local identifiers  \\
+    $\mathcal{G}$ & global identifiers \\
+    $\mathcal{D}$ & constructor identifiers
+  \end{tabular}
+
+  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
+  \label{fig:coresyntax}
+\end{figure}
+
+We decided to focus on theory exploration in the Haskell programming language as
+it has mature, state-of-the-art implementations (\qspec{} \cite{QuickSpec} and
+\hspec{} \cite{claessen2013automating}). This is evident from the fact that the
+state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster}
+\cite{Hipster} system, is actually implemented by translating to Haskell and
+invoking \hspec{}.
+
+Haskell is well-suited to programming language research; indeed, this was a goal
+of the language's creators \cite{marlow2010haskell}. Like most
+\emph{functional} programming languages, Haskell builds upon $\lambda$-calculus,
+with extra features such as a strong type system and ``syntactic sugar'' to
+improve readability. For simplicity, we will focus on an intermediate
+representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather
+than the relatively large and complex syntax of Haskell proper. Core is based on
+\fc{}, but for our machine learning purposes we are mostly interested in its
+syntax; for a more thorough treatment of \fc{} and its use in GHC, see
+\cite[Appendix C]{sulzmann2007system}.
+
+The sub-set of Core we consider is shown in Figure \ref{fig:coresyntax};
+compared to the full language \footnote{As of GHC version 7.10.2, the latest at
+  the time of writing.} our major restriction is to ignore type hints (such as
+explicit casts, and differences between types/kinds/coercions). For brevity, we
+also omit several other forms of literal (machine words of various sizes,
+individual characters, etc.), as their treatment is similar to those of strings
+and numerals. We will use quoted strings to denote names and literals,
+e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"},
+\texttt{LitStr "quux"} and \texttt{LitNum "42"}, and require only that they can
+be compared for equality.
+
+\begin{figure}
+  \begin{haskell}
+    data Nat = Z
+             | S Nat
+
+    plus :: Nat -> Nat -> Nat
+    plus    Z  y = y
+    plus (S x) y = S (plus x y)
+
+    mult :: Nat -> Nat -> Nat
+    mult    Z  y = Z
+    mult (S x) y = plus y (mult x y)
+
+    odd :: Nat -> Bool
+    odd    Z  = False
+    odd (S n) = even n
+
+    even :: Nat -> Bool
+    even    Z  = True
+    even (S n) = odd n
+  \end{haskell}
+  \caption{A Haskell datatype for Peano numerals with some simple arithmetic
+    functions, including mutually-recursive definitions for \hs{odd} and
+    \hs{even}. \hs{Bool} is Haskell's built in boolean type, which can be
+    regarded as \hs{data Bool \equal{} True | False}.}
+  \label{fig:haskellexample}
+\end{figure}
+
+\begin{figure}
+  \begin{subfigure}[plus]{\textwidth}
+    \begin{small}
+      \underline{\texttt{plus}}
+      \begin{verbatim}
+Lam "a" (Lam "y" (Case (Var (Local "a"))
+                       "b"
+                       (Alt (DataAlt "Z") (Var (Local "y")))
+                       (Alt (DataAlt "S") (App (Var (Constructor "S"))
+                                               (App (App (Var (Global "plus"))
+                                                         (Var (Local  "x")))
+                                                    (Var (Local "y"))))
+                                          "x")))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[mult]{\textwidth}
+    \begin{small}
+      \underline{\texttt{mult}}
+      \begin{verbatim}
+Lam "a" (Lam "y" (Case (Var (Local "a"))
+                       "b"
+                       (Alt (DataAlt "Z") (Var (Constructor "Z")))
+                       (Alt (DataAlt "S") (App (App (Var (Global "plus"))
+                                                    (Var (Local  "y")))
+                                               (App (App (Var (Global "mult"))
+                                                         (Var (Local  "x")))
+                                                    (Var (Local  "y"))))
+                                          "x")))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[odd]{\textwidth}
+    \begin{small}
+      \underline{\texttt{odd}}
+      \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              (Alt (DataAlt "Z") (Var (Constructor "False")))
+              (Alt (DataAlt "S") (App (Var (Global "even"))
+                                      (Var (Local  "n")))
+                                 "n"))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[even]{\textwidth}
+    \begin{small}
+      \underline{\texttt{even}}
+      \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              (Alt (DataAlt "Z") (Var (Constructor "True")))
+              (Alt (DataAlt "S") (App (Var (Global "odd"))
+                                      (Var (Local  "n")))
+                                 "n"))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \caption{Translations of functions in Figure \ref{fig:haskellexample} into the
+    Core syntax of Figure \ref{fig:coresyntax}. Notice the introduction of
+    explicit $\lambda$ abstractions (\texttt{Lam}) and the use of \texttt{Case}
+    to represent piecewise definitions. Fresh variables are chosen arbitrarily
+    as \texttt{"a"}, \texttt{"b"}, etc.}
+  \label{fig:coreexample}
+\end{figure}
+
+Figure \ref{fig:haskellexample} shows some simple Haskell function definitions,
+along with a custom datatype for Peano numerals. The translation to our Core
+syntax is routine, and shown in Figure \ref{fig:coreexample}. Although the Core
+is more verbose, we can see that similar structure in the Haskell definitions
+gives rise to similar structure in the Core; for example, the definitions of
+\hs{odd} and \hs{even} are identical in both languages, except for the
+particular identifiers used. It is this close correspondence which allows us to
+analyse Core expressions in place of their more complicated Haskell source.
+
+Note that we exclude representations for type-level entities, including datatype
+definitions like that of \hs{Nat}. GHC can represent these, but in this work we
+only consider reducible expressions (i.e. value-level bindings of the form
+\mbox{\hs{f a b ... = ...}}).
+
+%% FIXME: MERGE THE FOLLOWING WITH THE ABOVE
+
+Whilst \S \ref{sec:haskell} gave some brief background on Haskell, little
+explanation was given for why we chose this language rather than, for example
+Coq or ACL2 (for which recurrent clustering algorithms already exist), or a more
+widely used language like Java. Here we discuss the relevant language features
+from a high-level, which motivated our choice:
+
+\begin{description}
+
+\item{Functional}: All control flow in Haskell is performed by function
+  abstraction and application, which we can reason about using standard rules of
+  inference such as \emph{modus ponens}.
+
+\item{Pure}: Execution of actions (e.g. reading files) is separate to evaluation
+  of expressions; hence our reasoning can safely ignore complicated external and
+  non-local interactions.
+
+\item{Statically Typed}: Expression are constrained by \emph{types}, which can
+  be used to eliminate unwanted combinations of values, and hence reduce search
+  spaces; \emph{static} types can be deduced syntactically, without having to
+  execute the code.
+
+\item{Non-strict}: If an evaluation strategy exists for $\beta$-normalising an
+  expression (i.e. performing function calls) without diverging, then a
+  non-strict evaluation strategy will not diverge when evaluating that
+  expression. This is rather technical, but in simple terms it allows us to
+  reason effectively about a Turing-complete language, where evaluation may not
+  terminate. For example, when reasoning about \emph{pairs} of values \hs{(x,
+    y)} and projection functions \hs{fst} and \hs{snd}, we might want to use an
+  ``obvious'' rule such as
+  $\forall \text{\hs{x y}}, \text{\hs{x}} = \text{\hs{fst (x, y)}}$. Haskell's
+  non-strict semantics makes this equation valid; whilst it would \emph{not} be
+  valid in the strict setting common to most other languages, where the
+  expression \hs{fst (x, y)} will diverge if \hs{y} diverges (and hence alter
+  the semantics, if \hs{x} doesn't diverge).
+
+\item{Algebraic Data Types}: These provide a rich grammar for building up
+  user-defined data representations, and an inverse mechanism to inspect these
+  data by \emph{pattern-matching}. For our purposes, the useful consequences of
+  ADTs and pattern-matching include their amenability for inductive proofs and
+  the fact they are \emph{closed}; i.e. an ADT's declaration specifies all of
+  the normal forms for that type. This makes exhaustive case analysis trivial,
+  which would be impossible for \emph{open} types (for example, consider classes
+  in an object oriented language, where new subclasses can be introduced at any
+  time).
+
+\item{Parametricity}: This allows Haskell \emph{values} to be parameterised over
+  \emph{type-level} objects; provided those objects are never inspected. This
+  has the \emph{practical} benefit of enabling \emph{polymorphism}: for example,
+  we can write a polymorphic identity function \hs{id :: forall t. t ->
+    t}. \footnote{Read ``\hs{a :: b}'' as ``\hs{a} has type \hs{b}'' and ``\hs{a
+      -> b}'' as ``the type of functions from \hs{a} to \hs{b}''.} Conceptually,
+  this function takes \emph{two} parameters: a type \hs{t} \emph{and} a value of
+  type \hs{t}; yet only the latter is available in the function body,
+  e.g. \hs{id x = x}. This inability to inspect type-level arguments gives us
+  the \emph{theoretical} benefit of being able to characterise the behaviour of
+  polymorphic functions from their type alone, a technique known as
+  \emph{theorems for free} \cite{wadler1989theorems}.
+
+\item{Type classes}: Along with their various extensions, type classes are
+  interfaces which specify a set of operations over a type (or other type-level
+  object, such as a \emph{type constructor}). Many type classes also specify a
+  set of \emph{laws} which their operations should obey but, lacking a simple
+  mechanism to enforce this, laws are usually considered as documentation. As a
+  simple example, we can define a type class \hs{Semigroup} with the following
+  operation and associativity law:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+op :: forall t. Semigroup t => t -> t -> t
+\end{lstlisting}
+
+$$\forall \text{\hs{x y z}}, \text{\hs{op x (op y z)}} = \text{\hs{op (op x y) z}}$$
+
+The notation \hs{Semigroup t =>} is a \emph{type class constraint}, which
+restricts the possible types \hs{t} to only those which implement
+\hs{Semigroup}. \footnote{Alternatively, we can consider \hs{Semigroup t} as the
+  type of ``implementations of \hs{Semigroup} for \hs{t}'', in which case
+  \hs{=>} has a similar role to \hs{->} and we can consider \hs{op} to take
+  \emph{four} parameters: a type \hs{t}, an implementation of \hs{Semigroup t}
+  and two values of type \hs{t}. As with parameteric polymorphism, this extra
+  \hs{Semigroup t} parameter is not available at the value level. Even if it
+  were, we could not alter our behaviour by inspecting it, since Haskell only
+  allows types to implement each type class in at most one way, so there would
+  be no information to branch on.} There are many \emph{instances} of
+\hs{Semigroup} (types which may be substituted for \hs{t}), e.g. \hs{Integer}
+with \hs{op} performing addition. Many more examples can be found in the
+\emph{typeclassopedia} \cite{yorgey2009typeclassopedia}. This ability to
+constrain types, and the existence of laws, helps us reason about code
+generically, rather than repeating the same arguments for each particular pair
+of \hs{t} and \hs{op}.
+
+\item{Equational}: Haskell uses equations at the value level, for definitions;
+  at the type level, for coercions; at the documentation level, for typeclass
+  laws; and at the compiler level, for ad-hoc rewrite rules. This provides us
+  with many \emph{sources} of equations, as well as many possible \emph{uses}
+  for any equations we might discover. Along with their support in existing
+  tools such as SMT solvers, this makes equational conjectures a natural target
+  for theory exploration.
+
+\item{Modularity}: Haskell has a module system, where each module may specify an
+  \emph{export list} containing the names which should be made available for
+  other modules to import. When such a list is given, any expressions \emph{not}
+  on the list are considered \emph{private} to that module, and are hence
+  inaccessible from elsewhere. This mechanism allows modules to provide more
+  guarantees than are available just in their types. For example, a module may
+  represent email addresses in the following way:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth, upquote=true]
+module Email (Email(), at, render) where
+
+data Email = E String String
+
+render :: Email -> String
+render (E u h) = u ++ "@" ++ h
+
+at :: String -> String -> Maybe Email
+at "" h  = Nothing
+at u  "" = Nothing
+at u  h  = Just (E u h)
+\end{lstlisting}
+
+The \hs{Email} type guarantees that its elements have both a user part and a
+host part (modulo divergence), but it does not provide any guarantees about
+those parts. We also define the \hs{at} function, a so-called ``smart
+constructor'', which has the additional guarantee that the \hs{Email}s it
+returns contain non-empty \hs{String}s. By ommitting the \hs{E} constructor from
+the export list on the first line \footnote{The syntax \hs{Email()} means we're
+  exporting the \hs{Email} type, but not any of its constructors.}, the only way
+\emph{other} modules can create an \hs{Email} is by using \hs{at}, which forces
+the non-empty guarantee to hold globally.
+
+\end{description}
+
+Together, these features make Haskell code highly structured, amenable to
+logical analysis and subject to many algebraic laws. However, as mentioned with
+regards to type classes, Haskell itself is incapable of expressing or enforcing
+these laws (at least, without difficulty \cite{lindley2014hasochism}). This
+reduces the incentive to manually discover, state and prove theorems about
+Haskell code, e.g. in the style of interactive theorem proving, as these results
+may be invalidated by seemingly innocuous code changes. This puts Haskell in a
+rather special position with regards to the discovery of interesting theorems;
+namely that many discoveries may be available with very little work, simply
+because the code's authors are focused on \emph{software} development rather
+than \emph{proof} development. The same cannot be said, for example, of ITP
+systems; although our reasoning capabilities may be stronger in an ITP setting,
+much of the ``low hanging fruit'' will have already been found through the
+user's dedicated efforts, and hence theory exploration would be unlikely to
+discover unexpected properties.
+
+Other empirical advantages to studying Haskell, compared to other programming
+languages or theorem proving systems, include:
+
+\begin{itemize}
+\item The large amount of Haskell code which is freely available online, e.g. in
+  repositories like \href{http://hackage.haskell.org}{Hackage}, with which we
+  can experiment.
+
+\item The existence of theory exploration systems such as \hspec{}, and related
+  tools which we may be able to re-use, including conjecture generators like
+  \qspec{}; counterexample finders like \qcheck{}, \textsc{SmallCheck} and
+  \textsc{SmartCheck}; theorem provers like \textsc{Hip}
+  \cite{rosen2012proving}; and other related testing and term-generating
+  systems like \textsc{MuCheck} \cite{le2014mucheck}, \textsc{MagicHaskeller}
+  \cite{katayama2011magichaskeller} and \textsc{Djinn}
+  \cite{augustsson2005djinn}.
+
+\item The remarkable amount of infrastructure which exists for working with
+  Haskell code, including package managers, compilers, interpreters, parsers,
+  static analysers, etc.
+\end{itemize}

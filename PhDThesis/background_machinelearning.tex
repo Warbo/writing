@@ -1,0 +1,30 @@
+\section{Machine Learning}
+
+Machine learning (ML) is a sub-field of artificial intelligence (AI) which
+emphasises the use of statistical methods to find patterns and optimise
+functions, in contrast with symbolic reasoning approaches like automated theorem
+proving (commonly referred to as ``Good Old-Fashioned AI'').
+
+The machine learning umbrella spans many techniques and applications, but one
+common distinction is between \emph{supervised} and \emph{unsupervised} tasks.
+In supervised learning we allow the system to perform some behaviour, then an
+external process assesses whether it behaved well or poorly (akin to Justice
+Potter Stewart's test for obscenity: ``I know it when I see it''). The system's
+parameters are optimised to try and score highly on the test. Common supervised
+learning tasks include function approximation using input/output examples (e.g.
+classifying scanned images of numerals) where the test is the proportion of
+example inputs which got the correct output, and reinforcement learning where
+the system chooses from a set of ``actions'', receives a pair of ``observation''
+and ``reward'' (test score) in response, and must accumulate the most reward.
+
+Unsupervised learning does not have the same testable ``success'' criteria as
+supervised learning. Instead, the goal is to find patterns and form models of
+the target domain, which is more ambitious and open-ended than supervised
+learning but also much harder to define, measure and optimise. Examples of this
+are prediction and compression tasks such as auto-encoders
+(learned compressor/decompressor pairs, rewarded by how well they preserve data
+through a round-trip) and adversarial or co-evolution tasks (coupled systems
+where each is rewarded by exploiting mis-prediction in the others).
+
+\input{background_clustering.tex}
+\input{background_featureextraction.tex}

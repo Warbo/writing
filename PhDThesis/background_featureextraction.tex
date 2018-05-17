@@ -1,0 +1,131 @@
+One major difficulty when applying statistical machine learning algorithms to
+\emph{languages}, such as Haskell, is the appearance of recursive
+structures. This can lead to nested expressions of arbitrary depth, which are
+difficult to compare in numerical ways. One solution, as described in \S
+\ref{sec:featureextraction}, is to use \emph{feature extraction}; however, our
+method is not the only possible way to encode recursive structures as fixed-size
+features.
+
+The simplest way to encode such inputs is to simply choose a desired size, then
+pad anything smaller and truncate anything larger. We use this to make our
+matrices a uniform size, borrowing the idea from ML4PG. Care must be taken to
+ensure that we are not discarding too much information, that we are not
+producing features with too many dimensions to be practical, and that there is a
+uniform ``meaning'' to each feature across different feature vectors. In our
+case, we avoid many of these problems by transforming the recursive structure of
+expressions into matrices first; this gives each feature a stable meaning such
+as ``the $i$th token from the left at the $j$th level of nesting''.
+
+Truncation works best when the input data is arranged with the most significant
+data first (in a sense, it is ``big-endian''). This is the case for Haskell
+expressions, since the higher levels of the syntax tree are the most
+semantically significant; for example, the lower levels may never even be
+evaluated due to laziness. This allows us to truncate more aggressively than if
+the leaves were most significant.
+
+By modelling our inputs as points in high-dimensional spaces, we can consider
+feature extraction as projection into a lower-dimensional space (known as
+\emph{dimension reduction}). Truncation is a trivial dimension reduction
+technique; more sophisticated projection functions consider the
+\emph{distribution} of the input points, and project with the hyperplane which
+preserves as much of the variance as possible (or, equivalently, reduces the
+\emph{mutual information} between the points).
+
+Techniques such as \emph{principle component analysis} (PCA) can be used to find
+these hyperplanes, but unfortunately require their inputs to already have a
+fixed, integer number of dimensions. In the case of our recursive expressions
+(which we may consider to have \emph{fractal} dimension), we would need another
+pre-processing stage to satisfy this requirement.
+
+There are machine learning algorithms which can handle variable-size input, but
+these are often \emph{supervised} algorithms which require an
+externally-provided error function to minimise. Error functions can be given for
+clustering, for example k-means implicitly minimises the function given in
+equation \ref{eq:kmeansobjective}, but unsupervised algorithms may be preferred
+for efficiency as they are more direct.
+
+One example of learning from variable-size input is to use \emph{recurrent
+  neural networks} (RNNs). These contain cyclic connections between neurons,
+unlike the traditional acyclic ``feed-forward'' NNs, allowing state to persist
+between observations. In this way, each data point can be divided into a
+sequence of arbitrary length, for example an s-expression, and fed into an RNN
+one token at a time for processing.
+
+Unfortunately RNNs are difficult to train. The standard way to train NNs is the
+back-propagation algorithm; when this is extended to handle cycles we get the
+\emph{backpropagation through time} algorithm
+\cite{werbos1990backpropagation}. However, this suffers a problem known as the
+\emph{vanishing} (or \emph{exploding}) \emph{gradient}: error values change
+exponentially as they propagate back through the cycles, which prevents
+effective learning of correlations across a sequence, undermining the main
+advantage of RNNs. The vanishing gradient problem is the subject of current
+research, with countermeasures including \emph{neuroevolution} (using
+evolutionary computation techniques rather than back-propagation) and \emph{long
+  short-term memory} (LSTM; introducing special nodes to ``store'' state, rather
+than having them loop around a cycle \cite{hochreiter1997long}).
+
+Using sequences to represent recursive structures is also problematic: if we
+want our learning algorithm to exploit structure (such as the depth of a token),
+it will have to discover how to parse the sequences for itself, which seems
+wasteful. The \emph{back-propagation through structure} approach
+\cite{goller1996learning} is a more direct solution to this problem, using a
+feed-forward NN to learn recursive distributed representations
+\cite{pollack1990recursive} which correspond to the recursive structure of the
+inputs. Such distributed representations can also be used for sequences, which
+we can use to encode sub-trees when the branching factor of nodes is not uniform
+\cite{kwasny1995tail}. More recent work has investigated storing recursive
+structures inside LSTM cells \cite{zhu2015long}.
+
+A simpler alternative for generating recursive distributed representations is to
+use circular convolution \cite{conf/ijcai/Plate91}. Although promising results
+are shown for its use in \emph{distributed tree kernels}
+\cite{zanzotto2012distributed}, our preliminary experiments in applying
+circular convolution to functional programming expressions found most of the
+information to be lost in the process; presumably as the expressions are too
+small.
+
+\emph{Kernel methods} have also been applied to structured information, for
+example in \cite{Gartner2003} the input data (including sequences, trees and
+graphs) are represented using \emph{generative models}, such as hidden Markov
+models, of a fixed size suitable for learning. Many more applications of kernel
+methods to structured domains are given in \cite{bakir2007predicting}, which
+could be used to learn more subtle relations between expressions than recurrent
+clustering alone.
+
+%% FIXME: MERGE THE FOLLOWING INTO THE ABOVE
+
+\subsubsection{Feature Extraction}
+\label{sec:featureextraction}
+
+Before describing clustering in detail, we must introduce the idea of
+\emph{feature extraction}. This is the conversion of ``raw'' input data, such as
+audio, images or (in our case) Core expressions, into a form more suited to
+machine learning algorithms. By pre-processing our data in this way, we can
+re-use the same ``off-the-shelf'' machine learning algorithms in a variety of
+domains.
+
+We use a standard representation of features as a \emph{feature vector} of
+numbers $\vect{x} = (x_1, \dots, x_d)$ where $x_i \in \mathbb{R}$ (we use
+\textbf{bold face} to represent vectors, including feature
+vectors). \footnote{In fact, practical implementations will use an approximate
+  format such as IEEE 754 floating point numbers.} For learning purposes this
+has some important advantages over raw expressions:
+
+\begin{itemize}
+\item All of our feature vectors will be the same size, i.e. they will all have
+  length (or \emph{dimension}) $d$. Many machine learning algorithms only work
+  with inputs of a uniform size; feature extraction allows us to use these
+  algorithms in domains where the size of each input is not known, may vary or
+  may even be unbounded. For example, element-wise comparison of feature vectors
+  is trivial (compare the $i$th elements for $1 \leq i \leq d$); for expressions
+  this is not so straightforward, as their nesting may give rise to very
+  different shapes.
+\item Unlike our expressions, which are discrete, we can continuously transform
+  one feature vector into another. This enables many powerful machine learning
+  algorithms to be used, such as those based on \emph{gradient descent} or, in
+  our case, arithmetic means.
+\item Feature vectors can be chosen to represent the relevant information in a
+  more compressed form than the raw data; for example, we might replace verbose,
+  descriptive identifiers with sequential numbers. This reduces the input size
+  of the machine learning problem, improving efficiency.
+\end{itemize}

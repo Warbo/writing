@@ -1,0 +1,105 @@
+\subsection{QuickCheck}
+\label{sec:quickcheck}
+
+Although unit testing is the de facto industry standard for quality assurance in
+non-critical systems, the level of confidence it provides is rather low, and
+totally inadequate for many (e.g. life-) critical systems. To see why, consider
+the following Haskell function, along with some unit tests:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+factorial 0 = 1
+factorial n = n * factorial (n-1)
+
+fact_base      = factorial 0 == factorial 1
+fact_increases = factorial 3 <= factorial 4
+fact_div       = factorial 4 == factorial 5 `div` 5
+\end{lstlisting}
+
+The intent of the function is to map an input $n$ to an output $n!$. The tests
+check a few properties of the implementation, including the base case, that the
+function is monotonically increasing, and a relationship between adjacent
+outputs. However, these tests will \emph{not} expose a serious problem with the
+implementation: it diverges on half of its possible inputs!
+
+All of Haskell's built-in numeric types allow negative numbers, which this
+implementation doesn't take into account. Whilst this is a rather trivial
+example, it highlights a common problem: unit tests are insufficient to expose
+incorrect assumptions. In this case, our assumption that numbers are positive
+has caused a bug in the implementation \emph{and} limited the tests we've
+written.
+
+If we do manage to spot this error, we might capture it in a \emph{regression
+  test} and update the definition of \hs{factorial} to handle negative numbers,
+e.g. by taking their absolute value:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+factorial 0 = 1
+factorial n = let nPos = abs n
+               in nPos * factorial (nPos - 1)
+
+fact_neg = factorial 1 == factorial (-1)
+\end{lstlisting}
+
+However, this is \emph{still} not enough, since this function will also accept
+fractional values\footnote{Since we only use generic numeric operations, the
+  function will be polymorphic with a type of the form \hs{forall t. Num t => t
+    -> t}, where \hs{Num t} constrains the type variable \hs{t} to be
+  numeric. In fact, Haskell will infer extra constraints such as \hs{Eq t} since
+  we have used \hs{==} in the unit tests.}, which will also cause it to
+diverge. Clearly, by choosing what to test we are biasing the test suite towards
+those cases we've already taken into account, whilst neglecting the problems we
+did not expect.
+
+Haskell offers a partial solution to this problem in the form of \emph{property
+  checking}. Tools such as \qcheck{} separate tests into three components: a
+\emph{property} to check, which unlike a unit test may contain \emph{free
+  variables}; a source of values to instantiate these free variables; and a
+stopping criterion. Here is how we might restate our unit tests as properties:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+fact_base        = factorial 0 == factorial 1
+fact_increases n = factorial n <= factorial (n+1)
+fact_div       n = factorial n == factorial (n+1) `div` (n+1)
+fact_neg       n = factorial n == factorial (-n)
+\end{lstlisting}
+
+The free variables (all called \hs{n} in this case) are abstracted as function
+parameters; these parameters are implicitly \emph{universally quantified},
+i.e. we've gone from a unit test asserting $factorial(3) \leq factorial(4)$ to a
+property asserting $\forall n, factorial(n) \leq factorial(n+1)$. Notice that
+unit tests like \hs{fact\_base} are valid properties; they just assert rather
+weak statements.
+
+To check these properties, \qcheck{} treats closed terms (like \hs{fact\_base})
+just like unit tests: pass if they evaluate to \hs{True}, fail otherwise. For
+open terms, a random selection of values are generated and passed in via the
+function parameter; the results are then treated in the same way as closed
+terms. The default stopping criterion for \qcheck{} (for each test) is when a
+single generated test fails, or when 100 generated tests pass.
+
+The ability to state \emph{universal} properties in this way avoids some of the
+bias we encountered with unit tests. In the \hs{factorial} example, this
+manifests in two ways:
+
+\begin{itemize}
+\item \qcheck{} cannot test polymorphic functions; they must be
+  \emph{monomorphised} first (instantiated to a particular concrete type). This
+  is a technical limitation, since \qcheck{} must know which type of values to
+  generate, but in our example it would bring the issue with fractional values
+  to our attention.
+
+\item The generators used by \qcheck{} depend only on the \emph{type} of value
+  they are generating: since \hs{Int} includes positive and negative values, the
+  \hs{Int} generator will output both. This will expose the problem with
+  negative numbers, which we weren't expecting.
+\end{itemize}
+
+Property checking is certainly an improvement over unit testing, but the problem
+of tests being biased towards expected cases remains, since we are manually
+specifying the properties to be checked.
+
+We can reduce this bias further through the use of \emph{theory exploration}
+tools, such as \qspec{} and \hspec{}. These programs \emph{discover} properties
+of a ``theory'' (e.g. a library), through a combination of brute-force
+enumeration, random testing and (in the case of \hspec{}) automated theorem
+proving.

@@ -7,7 +7,7 @@ with { defs = rec {
 
   tex = (texlive.combine {
     inherit (texlive)
-      scheme-small tikzinclude;
+      scheme-small tikzinclude csquotes;
   });
 
   isTex = path: hasSuffix ".tex" (baseNameOf path);

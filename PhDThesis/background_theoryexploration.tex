@@ -1,0 +1,123 @@
+\subsection{Theory Exploration}
+\label{sec:theoryexploration}
+
+In this work we consider the problem of \emph{(automated) theory exploration},
+which includes the ability to \emph{generate} conjectures about code, to
+\emph{prove} those conjectures, and hence output \emph{novel} theorems without
+guidance from the user. The method of conjecture generation is a key
+characteristic of any theory exploration system, although all existing
+implementations rely on brute force enumeration to some degree.
+
+We focus on \qspec{} \cite{QuickSpec}, which conjectures equations about
+Haskell code (these may be fed into another tool, such as \hspec{}, for
+proving). These conjectures are arrived at through the following stages:
+
+\iffalse TODO: Make this more formal?
+ V \in Var
+ F \in Fun
+ T \in Term
+ T ::= V | F | T1 T2
+
+ Term ::= VAR | Const | Fun (Term)
+or
+ Term t ::= x | f | t t'
+\fi
+
+\begin{enumerate}
+\item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{}
+  generates a list $terms$ containing the constants (including functions) from
+  $\Sigma$, the variables from $V$ and type-correct function applications
+  $f(x)$, where $f$ and $x$ are elements of $terms$ \iffalse TODO: A little
+  awkward; maybe use the above notation? \fi. To ensure the list is finite,
+  function applications are only nested up to a specified depth (by default, 3).
+\item The elements of $terms$ are grouped into equivalence classes, based on
+  their type.
+\item Each variable is instantiated to a particular value, generated randomly by
+  \qcheck{}.
+\item For each class, the members are compared (using a pre-specified function,
+  such as equality \hs{==}) to see if these instantiations have caused an
+  observable difference between members. If so, the class is split up to
+  separate such distinguishable members.
+\item The previous steps of variable instantiation and comparison are repeated
+  until the classes stabilise (i.e. no differences have been observed for some
+  specified number of repetitions).
+\item A set of equations are then conjectured, relating each class's members.
+\end{enumerate}
+
+Such $conjectures$ can be used in several ways: they can be simplified for
+direct presentation to the user (by removing any equation which can be derived
+from the others by rewriting), sent to a more rigorous system like \hspec{} or
+\textsc{Hipster} for proving, or even serve as a background theory for an
+automated theorem prover \cite{claessen2013automating}.
+
+As an example, we can consider a simple signature containing the expressions
+from Figure \ref{fig:haskellexample}:
+
+\begin{align*}
+  \Sigma_{\texttt{Nat}} = \{\texttt{Z}, \texttt{S}, \texttt{plus}, \texttt{mult}, \texttt{odd}, \texttt{even}\}
+\end{align*}
+
+Together with a set of variables, say $V_{\texttt{Nat}} = \{a, b, c\}$,
+\qspec{}'s enumeration will resemble the following:
+
+\begin{align*}
+  terms_{\texttt{Nat}} = [& \texttt{Z},\ \texttt{S},\ \texttt{plus},\ \texttt{mult},\ \texttt{odd},\ \texttt{even},\ a,\ b,\ c,\ \texttt{S Z},\ \texttt{S}\ a,\ \texttt{S}\ b, \\
+                     & \texttt{S}\ c,\ \texttt{plus Z},\ \texttt{plus}\ a,\ \dots ]
+\end{align*}
+
+Notice that functions such as \hs{plus} and \hs{mult} are valid terms, despite
+not being applied to any arguments. In addition, Haskell curries functions, so
+these binary functions will be treated as unary functions which return unary
+functions. This is required as the construction of $terms$ applies functions to
+one argument at a time.
+
+\begin{figure}
+  % To reproduce, run 'quickSpec nat' in haskell_example/src/QuickSpecExample.hs
+  \begin{haskell}
+                  plus a b = plus b a
+                  plus a Z = a
+         plus a (plus b c) = plus b (plus a c)
+                  mult a b = mult b a
+                  mult a Z = Z
+         mult a (mult b c) = mult b (mult a c)
+              plus a (S b) = S (plus a b)
+              mult a (S b) = plus a (mult a b)
+         mult a (plus b b) = mult b (plus a a)
+                 odd (S a) = even a
+            odd (plus a a) = odd Z
+           odd (times a a) = odd a
+                even (S a) = odd a
+           even (plus a a) = even Z
+          even (times a a) = even a
+plus (mult a b) (mult a c) = mult a (plus b c)
+  \end{haskell}
+  \caption{Equations conjectured by \qspec{} for the functions in Figure \ref{fig:haskellexample}; after simplification.}
+  \label{fig:qspecresult}
+\end{figure}
+
+These terms will be grouped into five classes, one each for \hs{Nat},
+\hs{Nat -> Nat}, \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool} and \hs{Bool}. As the
+variables $a$, $b$ and $c$ are instantiated to various randomly-generated
+numbers, these equivalence classes will be divided, until eventually the
+equations in Figure \ref{fig:qspecresult} are conjectured.
+
+Although complete, this enumeration approach is wasteful: many terms are
+unlikely to appear in theorems, which requires careful choice by the user of
+what to include in the signature. Here we know that addition and multiplication
+are closely related, and hence obey many algebraic laws. Our machine learning
+technique aims to predict these kinds of relations between functions, so we can
+create small signatures which nevertheless have the potential to give rise to
+many equations.
+
+\qspec{} (and \hspec{}) is also compatible with Haskell's existing testing
+infrastructure, such that an invocation of \texttt{cabal test} can run these
+tools alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and
+\textsc{Criterion}.
+
+In fact, there are similarities between the way a TE system like \qspec{} can
+generalise from checking \emph{particular} properties to \emph{inventing} new
+ones, and the way counterexample finders like \qcheck{} can generalise from
+testing \emph{particular} expressions to \emph{inventing} expressions to
+test. One of our aims is to understand the implications of this generalisation,
+the lessons that each can learn from the other's approach to term generation,
+and the consequences for testing and QA in general.
