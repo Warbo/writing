@@ -81,6 +81,22 @@ two benefits:
 \item We avoid learning irrelevant details such as the encoding system used,
   improving \emph{data} efficiency (the number of samples required to spot a
   pattern).
+\item All of our feature vectors will be the same size, i.e. they will all have
+  length (or \emph{dimension}) $d$. Many machine learning algorithms only work
+  with inputs of a uniform size; feature extraction allows us to use these
+  algorithms in domains where the size of each input is not known, may vary or
+  may even be unbounded. For example, element-wise comparison of feature vectors
+  is trivial (compare the $i$th elements for $1 \leq i \leq d$); for expressions
+  this is not so straightforward, as their nesting may give rise to very
+  different shapes.
+\item Unlike our expressions, which are discrete, we can continuously transform
+  one feature vector into another. This enables many powerful machine learning
+  algorithms to be used, such as those based on \emph{gradient descent} or, in
+  our case, arithmetic means.
+\item Feature vectors can be chosen to represent the relevant information in a
+  more compressed form than the raw data; for example, we might replace verbose,
+  descriptive identifiers with sequential numbers. This reduces the input size
+  of the machine learning problem, improving efficiency.
 \end{itemize}
 
 Another benefit of feature extraction is to \emph{normalise} the input data to a
@@ -205,7 +221,7 @@ since any learning we perform for feature extraction will interfere with the
 core learning algorithm that's consuming these features (this is why deep
 learning is often done greedily).
 
-\paragraph{Sequencing}
+\paragraph{Structured Data}
 
 The task of dimension reduction changes when we consider \emph{structured}
 data. Recursive structures, like trees and lists, have \emph{fractal} dimension:
@@ -241,10 +257,40 @@ ANN) and \emph{long short-term memory} (LSTM; introducing a few special,
 untrainable nodes to persist values for long time periods
 \cite{hochreiter1997long}).
 
+Using sequences to represent recursive structures is also problematic: if we
+want our learning algorithm to exploit structure (such as the depth of a token),
+it will have to discover how to parse the sequences for itself, which seems
+wasteful. The \emph{back-propagation through structure} approach
+\cite{goller1996learning} is a more direct solution to this problem, using a
+feed-forward NN to learn recursive distributed representations
+\cite{pollack1990recursive} which correspond to the recursive structure of the
+inputs. Such distributed representations can also be used for sequences, which
+we can use to encode sub-trees when the branching factor of nodes is not uniform
+\cite{kwasny1995tail}. More recent work has investigated storing recursive
+structures inside LSTM cells \cite{zhu2015long}.
+
+A simpler alternative for generating recursive distributed representations is to
+use circular convolution \cite{conf/ijcai/Plate91}. Although promising results
+are shown for its use in \emph{distributed tree kernels}
+\cite{zanzotto2012distributed}, our preliminary experiments in applying
+circular convolution to functional programming expressions found most of the
+information to be lost in the process; presumably as the expressions are too
+small.
+
 The application of \emph{kernel methods} to structured information is discussed
 in \cite{Gartner2003}, where the input data (including sequences, trees and
 graphs) are represented using \emph{generative models}, such as hidden Markov
 models, of a fixed size.
+
+\emph{Kernel methods} have also been applied to structured information, for
+example in \cite{Gartner2003} the input data (including sequences, trees and
+graphs) are represented using \emph{generative models}, such as hidden Markov
+models, of a fixed size suitable for learning. Many more applications of kernel
+methods to structured domains are given in \cite{bakir2007predicting}, which
+could be used to learn more subtle relations between expressions than recurrent
+clustering alone.
+
+
 
 % TODO
 \cite{Gartner2003}
@@ -255,14 +301,3 @@ models, of a fixed size.
 \cite{kwasny1995tail}
 \cite{pollack1990recursive}
 \cite{zanzotto2012distributed}
-
-Machine learning over structured data:
-1D is common: parsing natural language
-2D is common; images
-Trees are fractal
-Backpropagation through structure
-LSTM with recursive structure
-Most work tries to identify structure; we already have it
-
-Recurrent neural networks
-Backpropagation through structure
