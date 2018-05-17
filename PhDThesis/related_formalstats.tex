@@ -1,0 +1,339 @@
+\subsection{Statistics of Formal Systems}
+
+The core problem of assigning ``interestingness'' to logical formulae is the
+application of statistical reasoning to the discrete, semantically-rich domain
+of formal systems. This problem has been tackled from various directions for a
+variety of reasons; here we summarise those contributions which seem of
+particular importance for theory exploration.
+
+\subsubsection{Relevance Filtering}
+\label{sec:relevance}
+
+% TODO
+\cite{kuhlwein2012overview}
+
+The combinatorial nature of formal systems causes many proof search methods,
+such as resolution, to have exponential complexity
+\cite{haken1985intractability}; hence even a modest size increase can turn a
+trivial problem into an intractable one. Finding efficient alternatives for such
+algorithms, especially those which are NP-complete (e.g. determining
+satisfiability) or co-NP-complete (e.g. determining tautologies), seems
+unlikely, as it would imply progress on the famously intractable open problems
+of $\text{P} = \text{NP}$ and $\text{NP} = \text{co-NP}$. On the other hand, we
+can turn this difficulty around: a modest \emph{decrease} in size may turn an
+intractable problem into a solvable one. We can ensure that the solutions to
+these reduced problems coincide with the original if we only remove
+\emph{redundant} information. This leads to the idea of \emph{relevance
+  filtering}.
+
+Relevance filtering simplifies a proof search problem by removing from
+consideration those clauses (axioms, definitions, lemmas, etc.) which are deemed
+\emph{irrelevant}. The technique is used in Sledgehammer during its translation
+of Isabelle/HOL theories to statements in first order logic: rather than
+translating the entire theory, only a sub-set of relevant clauses are
+included. This reduces the size of the problem and speeds up the proof search,
+but it creates the new problem of determining when a clause is relevant: how do
+we know what will be required, before we have the proof?
+
+The initial approach, known as \textsc{MePO} (from \emph{Meng-Paulson}
+\cite{meng2009lightweight}), gives each clause a score based on the proportion
+$m / n$ of its symbols which are ``relevant'' (where $n$ is the number of
+symbols in the clause and $m$ is the number which are relevant). Initially, the
+relevant symbols are those which occur in the goal, but whenever a clause is
+found which scores more than a particular threshold, all of its symbols are then
+also considered relevant. There are other heuristics applied too, such as
+increasing the score of user-provided facts (e.g. given by keywords like
+\texttt{using}), locally-scoped facts, first-order facts and rarely-occuring
+facts. To choose $r$ relevant clauses for an ATP invocation, we simply order the
+clauses by decreasing score and take the first $r$ of them.
+
+Recently, a variety of alternative algorithms have also been investigated,
+including:
+
+\begin{description}
+\item{\textsc{MaSH}}: Machine Learning for SledgeHammer
+  \cite{kuhlwein2013mash}. The distinguishing feature of \textsc{MaSH} is its
+  use of ``visibility'', which is essentially a dependency graph of which
+  theorems were used in the proofs of which other theorems; although theorems
+  are represented as abstract sets of features. To select relevant clauses for a
+  goal, the set of clauses which are visible from the goal's components is
+  generated; this is further reduced by (an efficient approximation of) a naive
+  Bayes algorithm.
+
+\item{\textsc{MOR}}: \emph{Multi-output ranking} uses a support vector machine
+  (SVM) approach for selecting relevant axioms from the Mizar Mathematical
+  Library for use by the Vampire ATP system \cite{alama2014premise}. \iffalse
+  TODO: describe the kernel, as that's the interesting bit \fi It compares
+  favourably to \textsc{SNoW} and \textsc{SInE}.
+
+  % TODO:
+\item{\textsc{SInE}}
+\item{\textsc{BliStr}}
+\item{\textsc{HOLyHammer}}
+\item{\textsc{MoMM}}
+\item{\textsc{SNoW}}
+\item{\textsc{MPTP 0.2}}
+\item{\textsc{MaLARea}}
+\item{\textsc{MaLARea SG1}}
+
+\end{description}
+
+\subsubsection{Clustering}
+\label{sec:clustering}
+
+% TODO: ML4PG
+\cite{journals/corr/abs-1212-3618}
+% TODO: ACL2(ml) (also examples section)
+\cite{heras2013proof}
+
+\subsubsection{Probability of Sentences}
+
+The most important property of a logical formula is its truth value. Although we
+may be able to determine some truth values exactly, e.g. using decision or
+semi-decision procedures, it may be more efficient to \emph{approximate} truth
+values. One straightforward extension of truth values is \emph{probabilities},
+where we can assign probability $1$ to formulae which are known to be true, $0$
+to formulae known to be false, and intermediate values to those which we do not
+yet know.
+
+% TODO
+\cite{Hutter.Lloyd.Ng.ea:2013}
+
+\subsubsection{Interestingness in Concept Formation}
+\label{sec:conceptformation}
+
+% TODO:
+\cite{Montano-Rivas.McCasland.Dixon.ea:2012}
+\cite{Piantadosi.Tenenbaum.Goodman:2012}
+\cite{Wille:2005}
+\cite{colton1999automatic}
+\cite{colton2000agent}
+\cite{colton2012automated}
+\cite{lenat1977automated}
+\cite{mullerunderstanding}
+\cite{Bundy.Cavallo.Dixon.ea:2015}
+\cite{johansson2009isacosy}
+\cite{spector2008genetic}
+\cite{colton2012automated}
+ \cite{geng2006interestingness}
+% TODO: How does https en.wikipedia.org/wiki/Discovery system relate?
+
+% However, this search space grows exponentially in the length of the proofs,
+% which is unfortunate since proof length has been proposed as an approximate
+% measure of how interesting a theorem is \cite[\S~10.2.1]{colton2012automated}.
+
+% Alan Bundy et al
+
+% Eurisko, AM, etc.?
+
+\subsubsection{Learning From Structured Data}
+
+One major difficulty with formal mathematics as a domain in which to apply
+statistical machine learning is the use of \emph{structure} to encode
+information in objects. In particular, \emph{trees} appear in many places: from
+inductive datatypes, to recursive function definitions; from theorem statements,
+to proof objects. Such nested structures may extend to arbitrary depth, which
+makes them difficult to represent with a fixed number of features, as is
+expected by most machine learning algorithms. Here we review a selection of
+solutions to this problem, and compare their distinguishing properties.
+
+\paragraph{Feature Extraction}\label{sec:featureextraction}
+
+\emph{Feature extraction} is a common pre-processing step for machine learning
+(ML). Rather than feeding ``raw'' data straight into our ML algorithm, we only
+learn a sample of \emph{relevant} details, known as \emph{features}. This has
+two benefits:
+
+\begin{itemize}
+\item \emph{Feature vectors} (ordered sets of features) are chosen to be more
+  compact than the data they're extracted from: feature extraction is
+  \emph{lossy compression}. This reduces the size of the ML problem, improving
+  efficiency (e.g. running time).
+\item We avoid learning irrelevant details such as the encoding system used,
+  improving \emph{data} efficiency (the number of samples required to spot a
+  pattern).
+\end{itemize}
+
+Another benefit of feature extraction is to \emph{normalise} the input data to a
+fixed-size representation. Many ML algorithms only work with fixed-size inputs;
+for example, the popular \emph{backpropagation} \cite{Russell:2003:AIM:773294}
+algorithm works on models with \emph{fixed} topology (e.g. \emph{artificial
+  neural networks} with fixed connections between nodes). This requires some
+form of pre-processing in domains where the size of each input is not known, may
+vary or may even be unbounded.
+
+For example, in the case of \emph{online} learning we must make
+predictions/decisions before seeing all of the inputs. Unbounded input appears
+in domains such as programming and theorem proving, where individual term may be
+trees of unbounded depth. In these situations we need a mapping from arbitrary
+inputs to a fixed representation which is amenable to learning.
+
+As an example, say we want to learn relationships between the following program
+fragments:
+
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+data Maybe a = Nothing | Just a
+
+data Either a b = Left a | Right b
+\end{lstlisting}
+
+We might hope our algorithm discovers relationships like:
+
+\begin{itemize}
+  \item Both are valid Haskell code.
+  \item Both describe datatypes.
+  \item Both datatypes have two constructors.
+  \item \hs{Either} is a generalisation of \hs{Maybe} (we can define \hs{Maybe a
+      = Either () a} and \hs{Nothing = Left ()}).
+  \item There is a symmetry in \hs{Either}: \hs{Either a b} is equivalent to
+    \hs{Either b a} if we swap occurences of \hs{Left} and \hs{Right}.
+  \item It is trivial to satisfy \hs{Maybe} (using \hs{Nothing}).
+  \item It is not trivial to satisfy \hs{Either}; we require an \hs{a} or a \hs{b}.
+\end{itemize}
+
+However, this is too optimistic. Without our domain-knowledge of Haskell, an ML
+algorithm cannot impose any structure on these fragments, and will treat them as
+strings of bits. Our high-level hopes are obscured by low-level details: the
+desirable patterns of Haskell types are mixed with undesirable patterns of ASCII
+bytes, of letter frequency in English words, and so on.
+
+In theory we could throw more computing resources and data at a problem, but
+available hardware and corpora are always limited. Instead, feature extraction
+lets us narrow the ML problem to what we, with our domain knowlege, consider
+important.
+
+There is no \emph{fundamental} difference between raw representations and
+features: the identity function is a valid feature extractor. Likewise, there is
+no crisp distinction between feature extraction and machine learning: a
+sufficiently-powerful learner doesn't require feature extraction, and a
+sufficiently-powerful feature extractor doesn't require any learning!
+\footnote{Consider a classification problem, to assign a label $l \in L$ to each
+  input. If we only extract a single feature $f \in L$, we have solved the
+  classification problem without using a separate learning step.}
+
+Rather, the terms are distinguished for purely \emph{practical} reasons: by
+separating feature extraction from learning, we can distinguish straightforward,
+fast data transformation (feature extraction) from complex, slow statistical
+analysis (learning). This allows for modularity, separation of concerns, and in
+particular allows ``off-the-shelf'' ML to be re-used across a variety of
+different domains.
+
+Even if we have no domain knowledge, we can still use a feature extraction phase
+to improve efficiency: first we learn a compact representation for our data, for
+example using \emph{autoencoding}; then we use that encoder as a feature
+extractor for our main learning task. This stacking of one learning algorithm on
+top of another, especially with greedy learning of each layer, has lead to the
+recent trend of \emph{deep learning}.
+
+\paragraph{Truncation and Padding}
+
+The simplest way to limit the size of our inputs is to truncate anything larger
+than a particular size (and pad anything smaller). This is the approach taken by
+ML4PG \cite{journals/corr/abs-1302-6421}, which limits itself to trees with at
+most 10 levels and 10 elements per level; each tree is converted to a
+$30 \times 10$ matrix (3 values per tree node) and learning takes place on these
+normalised representations.
+
+Truncation is unsatisfactory in the way it balances \emph{data} efficiency with
+\emph{time} efficiency. Specifically, truncation works best when the input data
+contains no redundancy and is arranged with the most significant data first (in
+a sense, it is ``big-endian''). The less these assumptions hold, the less we can
+truncate. Since many ML algorithms scale poorly with input size, we would prefer
+to eliminate the redundancy using a more aggressive algorithm, to keep the
+resulting feature size as low as possible.
+
+\paragraph{Dimension Reduction}
+
+A more sophisticated approach to the problem of reducing input size is to view
+it as a \emph{dimension reduction} technique: our inputs can be modelled as
+points in high-dimensional spaces, which we want to project into a
+lower-dimensional space ($\left\{ {0, 1} \right\}^N$ in the case of $N$-bit
+vectors).
+
+Truncation is a trivial dimension reduction technique: take the first $N$
+coordinates (bits). More sophisticated projection functions consider the
+\emph{distribution} of the points, and project with the hyperplane which
+preserves as much of the variance as possible (or, equivalently, reduces the
+\emph{mutual information} between the points).
+
+There are many techniques to find these hyperplanes, such as \emph{principle
+  component analysis} (PCA) and \emph{autoencoding}; however, since these
+techniques are effectively ML algorithms in their own right, they suffer some of
+the same constraints we're trying to avoid:
+
+\begin{itemize}
+  \item They operate \emph{offline}, requiring all input points up-front
+  \item All input points must have the same dimensionality
+\end{itemize}
+
+In particular, the second constraint is precisely what we're trying to
+avoid. Sophisticated dimension reduction is still useful for \emph{compressing}
+large, redundant features into smaller, information-dense representations, and
+as such provides a good complement to truncation.
+
+The requirement for offline ``batch'' processing is more difficult to overcome,
+since any learning we perform for feature extraction will interfere with the
+core learning algorithm that's consuming these features (this is why deep
+learning is often done greedily).
+
+\paragraph{Sequencing}
+
+The task of dimension reduction changes when we consider \emph{structured}
+data. Recursive structures, like trees and lists, have \emph{fractal} dimension:
+adding layers to a recursive structure gives us more \emph{fine-grained}
+features, rather than \emph{orthogonal} features. For data mining context-free
+languages (e.g. those of programming and theorem-proving systems), we will
+mainly be concerned with tree structures of variable size.
+
+Any investigation of variable-size input would be incomplete without mentioning
+\emph{sequencing}. This is a lossless approach, which splits the input into
+fixed-size \emph{chunks}, which are fed into an appropriate ML algorithm one at
+a time. The sequence is terminated by a sentinel; an ``end-of-sequence'' marker
+which, by construction, is distinguishable from the data chunks. This technique
+allows us to trade \emph{space} (the size of our input) for \emph{time} (the
+number of chunks in a sequence).
+
+Not all ML algorithms can be adapted to accept sequences. One notable approach
+is to use \emph{recurrent ANNs} (RANNs), which allow arbitrary connections
+between nodes, including cycles. Compared to \emph{feed-forward} ANNs (FFANNs),
+which are acyclic, the \emph{future output} of a RANN may depend arbitrarily on
+its \emph{past inputs} (in fact, RANNs are universal computers).
+
+The main problem with RANNs, compared to the more widely-used FFANNs, is the
+difficulty of training them. If we extend the standard backpropagation algorithm
+to handle cycles, we get the \emph{backpropagation through time} algorithm
+\cite{werbos1990backpropagation}. However, this suffers a problem known as the
+\emph{vanishing gradient}: error values decay exponentially as they propagate
+back through the cycles, which prevents effective learning of delayed
+dependencies, undermining the main advantage of RANNs. The vanishing gradient
+problem is the subject of current research, with countermeasures including
+\emph{neuroevolution} (using evolutionary computation techniques to train an
+ANN) and \emph{long short-term memory} (LSTM; introducing a few special,
+untrainable nodes to persist values for long time periods
+\cite{hochreiter1997long}).
+
+The application of \emph{kernel methods} to structured information is discussed
+in \cite{Gartner2003}, where the input data (including sequences, trees and
+graphs) are represented using \emph{generative models}, such as hidden Markov
+models, of a fixed size.
+
+% TODO
+\cite{Gartner2003}
+\cite{Oveisi.Oveisi.Erfanian.ea:2012}
+\cite{bakir2007predicting}
+\cite{conf/ijcai/Plate91}
+\cite{goller1996learning}
+\cite{kwasny1995tail}
+\cite{pollack1990recursive}
+\cite{zanzotto2012distributed}
+
+Machine learning over structured data:
+1D is common: parsing natural language
+2D is common; images
+Trees are fractal
+Backpropagation through structure
+LSTM with recursive structure
+Most work tries to identify structure; we already have it
+
+Recurrent neural networks
+Backpropagation through structure

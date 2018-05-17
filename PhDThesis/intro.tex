@@ -1,0 +1,51 @@
+As computers and software become more capable, and as our reliance on them
+increases, the importance of \emph{understanding}, \emph{predicting} and
+\emph{verifying} these systems grows; which is undermined by their
+ever-increasing complexity. Mathematics provides us with powerful, systematic
+methods of reasoning, which we can bring to bear on this challenge; in
+particular those of \emph{formal logic} and \emph{statistics}. By (partially)
+mechanising these approaches, in the fields of \emph{theorem proving} and
+\emph{machine learning}, respectively, we can leverage these increasing machine
+capabilities and direct them for the purpose of analysis. However, the question
+still remains: on what should we focus that analysis?
+
+In this work, we investigate the notion of \emph{interestingness} in the
+exploration of formal systems (an area known as \emph{theory exploration}) as a
+way to make productive use of resources in an often intractable domain. To keep
+things concrete, we focus our formal analysis on equational formulae describing
+programs in the Haskell language, for reasons elaborated in \S
+\ref{sec:haskell}. Conceptually, we maintain a broader view, and survey many
+related areas which may offer insights on the problem.
+
+Appeals to interestingness arise when more direct measures, such as utility, are
+not available. For example, the inclusion of particular statements in a program
+or proof development can be easily justified based on their contribution to the
+overall solution; however, in a \emph{library} there is no particular problem
+being solved, in which case we must judge statements on less direct criteria,
+such as how ``interesting'' they may be to our users. Appeals to interestingness
+abound in the history of computer-assisted reasoning; for example, in 1971
+Plotkin \cite{plotkin1971further} considered the task of \textquote{discovering
+  theorems $T$ from a system of axioms $Ax$}, and in particular the questions
+\textquote{Under what conditions is $T$ an interesting, possible theorem in the
+  system $Ax$?} and \textquote{Is there a way to generate (most) interesting
+  possible theorems?}. Despite such widespread use of the term, there is no
+standard definition of what makes a formal object, whether it is an axiom, a
+conjecture, a proof, etc., ``interesting''; although many ad-hoc heuristics have
+been proposed.
+
+We begin our undertaking in \S \ref{sec:background} by introducing the Haskell
+language, as well as the relevant fields of verification for context. We define
+a formal framework for our investigation, and show how it relates to the
+existing theorem proving landscape. A selection of theorem proving scenarios
+which \emph{require} exploration are discussed in \S \ref{sec:examples}, whilst
+related work, including existing defintions of interestingness, is surveyed in
+\S \ref{sec:related}. We also review the use of exploration in other fields of
+Artificial Intelligence and Machine Learning, where researchers are
+experimenting with replacing \emph{explicit} goals and rewards with
+\emph{implicit} alternatives such as interestingness. Recent efforts in this
+area have lead to the emergence of principled theories, mostly based around
+(algorithmic) information theory, which may be adapted to our theory exploration
+context.
+
+We discuss our present contributions in \S \ref{sec:current} and future research
+directions in \S \ref{sec:future}, before concluding in \S \ref{sec:conclusion}.
