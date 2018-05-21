@@ -69,7 +69,7 @@ rec {
   tex = (texlive.combine {
     inherit (texlive)
     csvsimple scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e
-    algorithms frankenstein csquotes multirow type1cm;
+    algorithms enumitem frankenstein csquotes multirow type1cm;
   });
 
   # Render a "dummy" version of the paper which has all of the same styling, but

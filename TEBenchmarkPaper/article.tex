@@ -47,6 +47,7 @@ grestore
 \usepackage{amssymb}
 \usepackage{array}
 \usepackage{csvsimple}
+\usepackage[inline, shortlabels]{enumitem}
 \usepackage{float}
 \restylefloat{table}
 \usepackage{hhline}
@@ -400,9 +401,9 @@ definitions.
     them. This makes the numbers less comparable, since each tool was tested
     with slightly different definitions (e.g. whether or not the exponential and
     maximum functions were included).} The definitions and ground truths for all
-  three were taken from the standard library of the Isabelle proof assistant:
-  since the library authors have gone to the effort of stating and proving these
-  properties, and including them with every copy of their software, this is a good
+  three were taken from the standard library of the Isabelle proof assistant.
+  The fact that the library authors expended the effort of stating, proving and
+  bundling these properties with every copy of their software is a good
   indication that they are interesting. Two sets of definitions were used: a
   theory of natural numbers; and a theory of lists (which we show in
   Figure~\ref{figure:list_theory} on page~\pageref{figure:list_theory}). With
@@ -503,10 +504,10 @@ suitable are those meeting the following criteria:
   else being equal (i.e. when this does not sacrifice quality).
 \end{itemize}
 
-Once such a problem set has been chosen, we must separate the theorem statements
-from the definitions they reference. The latter will be used as input to the
-MTE tools, whilst the former constitute the ground truth corpus of properties
-against which to compare the output.
+Once such a problem set has been chosen, we must separate the definitions from
+the theorem statements which reference those definitions. The definitions will
+be used as input to the MTE tools, whilst the theorem statements form the ground
+truth corpus of properties (which tool output will be compared against).
 
 It is important to ensure that there are no duplicate definitions: we are only
 concerned with the \emph{logical} content of the input, not the more arbitrary
@@ -535,8 +536,8 @@ the ground truth for analysis. However, this would cause two problems:
 \begin{itemize}
 \item The result would be a single data point, which makes it difficult to
   infer performance \emph{in general}.
-\item It is impractical to run existing MTE tools on ``large'' inputs,
-  containing more than a few dozen definitions.
+\item It is impractical to run existing MTE tools on inputs containing more
+  than a few dozen definitions.
 \end{itemize}
 
 To solve both of these problems we instead \emph{sample} a subset of
@@ -574,9 +575,13 @@ on the tool's output.
 Given a sample of definitions and a corresponding ground truth, the actual
 execution of the MTE tool proceeds as in prior work. We must translate the
 chosen definitions into the required input format, then we time the execution
-with a timeout (e.g. 5 minutes). We use wall-clock time since this is most
-relevant to a user's experience, it has a straightforward interpretation and
-tracking it does not require intrusive alterations to a tool's implementation.
+with a timeout (e.g. 5 minutes). We use wall-clock time since
+\begin {enumerate*} [i) ]%
+\item this is most relevant to a user's experience,
+\item it has a straightforward interpretation and
+\item measuring it does not require intrusive alterations to a tool's
+  implementation.
+\end {enumerate*}
 The downside is that comparisons must take hardware performance into account,
 which would not be the case if time were measured by some proxy like number of
 expressions evaluated.
