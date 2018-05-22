@@ -158,12 +158,10 @@ grestore
   tasks as a \emph{ground-truth} corpus, and we demonstrate its use on the
   QuickSpec and IsaCoSy tools. We found that both may fail, even for small
   inputs, but QuickSpec usually finishes in significantly less time than IsaCoSy
-  and produces significantly more ``interesting'' output. By providing a
-  standard, cross-tool evaluation technique we allow the disparate approaches
-  currently being pursued to be more directly compared. Our hope is to encourage
-  innovation and improvements similar to those seen in fields like automated
-  theorem proving, where the availability of benchmarks encourages healthy
-  competition.
+  and produces significantly more ``interesting'' output. By defining a standard
+  benchmark we provide a measure of progress for the field, encourage
+  innovation through healthy competition and allow direct comparisons to be made
+  between the disparate approaches currently being pursued for this task.
 %\keywords{First keyword \and Second keyword \and More}
 % \PACS{PACS code1 \and PACS code2 \and more}
 % \subclass{MSC code1 \and MSC code2 \and more}
@@ -543,20 +541,21 @@ the ground truth for analysis. However, this would cause two problems:
 To solve both of these problems we instead \emph{sample} a subset of
 definitions.\footnote{This could be done randomly, but for reproducibility we
   use a deterministic order (based on cryptographic hashes, to discourage
-  ``cheating'').} Given a sample size, we choose a subset of that many definitions,
-and provide only those as input to the tool. We generate a corresponding
-ground truth by selecting those properties from the corpus which ``depend on''
-(contain references to) \emph{only} the definitions in that sample. Transitive
-dependencies aren't required (e.g. a property involving only a \texttt{times}
-function would not depend on a \texttt{plus} function, even if \texttt{plus}
-occurs in the definition of \texttt{times}).
+  ``cheating'').} Given a sample size, we choose a subset of that many
+definitions, and provide only those as input to the tool. We generate a
+corresponding ground truth by selecting those properties from the corpus which
+``depend on'' (contain references to) \emph{only} the definitions in that
+sample. Transitive dependencies aren't required (e.g. a property involving only
+a \texttt{times} function would not depend on a \texttt{plus} function, even if
+\texttt{plus} occurs in the definition of \texttt{times}).
 
 Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
 given sample size, increasing the size of the corpus (which provides better
 statistics) makes it less likely that a chosen sample will contain all of
-a property's dependencies. The majority of such samples would hence have an empty
-ground truth, and thus $0$ precision and undefined recall \emph{independent} of
-the tool's output! This is clearly undesirable as an evaluation method.
+a property's dependencies. The majority of such samples would hence have an
+empty ground truth, and thus $0$ precision and undefined recall
+\emph{independent} of the tool's output! This is clearly undesirable as an
+evaluation method.
 
 Instead, we only allow a sample if it contains all dependencies of at least one
 property. We could do this using rejection sampling, but it is more efficient to
