@@ -1,6 +1,5 @@
 { fail, fetchgit, jq, lzip, mkBin, nixListToBashArray, perl, python, R, replace,
-  rPackages, runCommand, teBenchmark, tetex, tex, textWidth, which, wrap,
-  writeScript }:
+  rPackages, runCommand, tetex, tex, textWidth, which, wrap, writeScript }:
 
 with builtins;
 rec {

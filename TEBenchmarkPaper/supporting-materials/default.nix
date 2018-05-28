@@ -9,7 +9,7 @@ with nixpkgs.repo1609."00ef7f9";
 rec {
   article = ../article.tex;
 
-  graphs = callPackage ./graphs.nix { inherit teBenchmark tex textWidth; };
+  graphs = callPackage ./graphs.nix { inherit tex textWidth; };
 
   comparison = callPackage ./comparison.nix {
     inherit (graphs) isacosyData quickspecData;
