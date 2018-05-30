@@ -629,17 +629,18 @@ number of given definitions). This is straightforward to measure by varying the
 sample size, but we need some way to combine the results from samples of the
 same size.
 
-We can summarise runtimes by choosing their median, as this is more robust than
-the mean against long-running outliers, and hence represents performance for a
-``typical'' input of that size. Since our methodology measures performance over
-many samples, we can also compute the \emph{spread} of our data, for example the
-inter-quartile range. This is not possible using the one-off measurements common
-in prior evaluation methods.
+We can summarise a set of runtimes by choosing the median, as this is more
+robust than the mean against long-running outliers, and hence represents
+performance for a ``typical'' input of that size. Since our methodology measures
+performance over many samples, we can also compute the \emph{spread} of our
+data, for example the inter-quartile range. This is not possible using the
+one-off measurements common in prior evaluation methods.
 
-There are two ways to average the measured precision and (separately) recall for
-samples of a particular size. Since these quantities are ratios, their mean
-values are known as the \emph{average of the ratios} (AOR), which we can define
-for $S$ samples indexed by $1 \leq i \leq S$ as follows:
+Considering precision and recall separately, there are two ways to average these
+for a set of samples. Since both of these measurements are ratios, their means
+are known as the \emph{average of the ratios} (AOR). Using the definitions of
+precision and recall given in $\S$\ref{sec:te}, we can define the average of the
+ratios for $S$ samples indexed by $1 \leq i \leq S$ as follows:
 
 \begin{align*}
        \overline{\text{precision}}_{AOR}
@@ -654,14 +655,19 @@ for $S$ samples indexed by $1 \leq i \leq S$ as follows:
               {\#\text{groundtruth}_i}}
 \end{align*}
 
-We interpret these as the \emph{expected} values of precision and recall for
-samples of this size, i.e. the expected quality of the \emph{set} of conjectures
-that will be generated from such a sample.
+We interpret these mean values as the \emph{expected} precision and recall for
+samples of this size. In particular, these tell us the quality of the \emph{set}
+of conjectures that will be generated if we were to run the tool on such a
+sample, but they don't give us direct information about the individual
+conjectures themselves. Since these are mean values, they are the reference
+point for measures of spread such as the variance, standard deviation and mean
+absolute deviation.
 
 The alternative is to calculate \emph{pooled} averages, by combining the
-(multi)sets from each sample before taking the ratios. If we multiply the
-numerator and denominator by a factor $\frac{1}{S}$ we find that this is
-equivalent to using the mean set sizes, hence this is known as the
+(multi)sets from each sample before taking the ratios. The size of these pooled
+sets is simply the sum of the individual set sizes, and ratios of these sums are
+equal to ratios of the means (since the normalising factor $\frac{1}{S}$ appears
+in both numerator and denominator). Hence these values are known as the
 \emph{ratio of the averages} (ROA):
 
 \begin{align*}
@@ -682,16 +688,23 @@ equivalent to using the mean set sizes, hence this is known as the
 \end{align*}
 
 Larger sets contribute more to a ratio of averages, unlike the mean which treats
-each set equally. This weighting gives us expected values of \emph{conjectures}
-rather than sets: the ROA for precision is the expected chance of a generated
-conjecture being interesting; the ROA for recall is the expected chance that a
-ground truth property will be generated. Note that both of these averaging
-methods deal with \emph{fractions}: we may also want to know the \emph{absolute}
-number of conjectures to expect, which is the mean output size
-$\overline{\#\text{generated}}$.
+each set equally. This weighting gives us expected qualities of
+\emph{conjectures} rather than sets: the ROA for precision is the expected
+chance that some particular generated conjecture will appear in the ground
+truth; the ROA for recall is the expected chance that some particular ground
+truth property will appear in the generated output.
 
-If we instead want to combine precision values \emph{with} recall values (either
-individually or pooled) we can calculate their \emph{F-score}, defined as:
+These averages can differ when there is a large variation in set size. For
+example, if we generate a single, interesting conjecture for one sample and 99
+uninteresting conjectures for another sample, the AOR (mean) precision will be
+$\frac{1}{2}$ but the ROA precision will be $\frac{1}{100}$. This highlights the
+importance of knowing \emph{absolute} numbers of conjectures, such as the mean
+output size $\overline{\#\text{generated}}$ and its spread, alongside the
+proportions given by precision and recall.
+
+It is also possible to combine precision values \emph{with} recall values
+(either individually or aggregated) by calculating their \emph{F-score}, defined
+as:
 
 \begin{equation*}
   F = 2 \times \frac{\text{precision} \times \text{recall}}
