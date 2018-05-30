@@ -362,7 +362,7 @@ def plotTime(system, agg):
                                                       for s in agg['success']]),
                        x         = 'size',
                        y         = 'time',
-                       size      = 2.5,  # Marker size
+                       size      = 1.5,  # Marker size
                        edgecolor = 'k',
                        linewidth = 0.35,
                        marker    = 'o',
@@ -551,7 +551,7 @@ def plotPrecRec(system, agg):
         newAx = sns.swarmplot(data      = newAgg,
                               x         = 'size',
                               y         = args['y'],
-                              size      = 2.5,  # Marker size
+                              size      = 1.5,  # Marker size
                               edgecolor = 'k',
                               linewidth = 0.35,
                               marker    = 'o',
