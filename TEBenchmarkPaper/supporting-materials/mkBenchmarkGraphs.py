@@ -393,13 +393,8 @@ def aggProp(system, sizes=None, agg=None, key=None, total=None):
 
     noneToZero = lambda x: 0.0 if x is None else float(x)
 
-    def ratioOfAverages(size):
-        '''Assume that the measure of interest (precision or recall) is fixed
-        for this size, and each particular conjecture is a bernoulli trial with
-        this measure as its p parameter.
-        Under this assumption, the fact that conjectures come from different
-        runs is irrelevant, so we pool them all together into one binomial
-        experiment.'''
+    def averageOfRatios(size):
+        '''Mean value across samples of the given size.'''
 
         # Skip runs which timed out, since we'd rather keep the measurements of
         # running time separate to "quality"
@@ -415,11 +410,15 @@ def aggProp(system, sizes=None, agg=None, key=None, total=None):
         totals   = [agg[total    ][i] for i in indices]
         corrects = [agg['correct'][i] for i in indices]
 
+        ratios = [float(agg['correct'][i]) / float(agg[total][i]) \
+                  for i in indices]
+
         debug = lambda err: repr({
             'error'    : err,
             'key'      : key,
             'totals'   : totals,
             'corrects' : corrects,
+            'ratios'   : ratios,
             'indices'  : indices,
             'system'   : system
         })
@@ -433,15 +432,7 @@ def aggProp(system, sizes=None, agg=None, key=None, total=None):
                 'size'       : size
             }
 
-        count   = float(sum(totals))
-        correct = float(sum(corrects))
-
-        p       = correct / count
-
-        # Analytic values, calculated from our model
-        anVar     = (p * (1.0 - p)) / count
-        anStddev  = math.sqrt(anVar)
-        anStderr  = anStddev / math.sqrt(count)
+        p = sum(ratios) / len(ratios)
 
         # Sample variability, calculated from our data.
         if len(totals) == 1:
@@ -459,20 +450,14 @@ def aggProp(system, sizes=None, agg=None, key=None, total=None):
             sStddev = 1.0
         else:
             # Variance is the average squared difference between each run's
-            # actual correct proportion and the correct proportion we got from
-            # the model (p).
-            denom   = float(len(totals)) - 1.0
-            sVar    = (sum([((float(correct) / tot) - p)**2 \
-                            for tot, correct in zip(totals, corrects)])) / denom
+            # actual ratio and the mean ratio
+            sVar    = sum([(r - p)**2 for r in ratios]) / len(ratios)
             sStddev = math.sqrt(sVar)
 
         return {
             'bailed out'        : False,
             'size'              : size,
             'mean'              : p,
-            'analytic variance' : anVar,
-            'analytic stddev'   : anStddev,
-            'analytic stderr'   : anStderr,
             'sample variance'   : sVar,
             'sample stddev'     : sStddev
         }
@@ -481,7 +466,7 @@ def aggProp(system, sizes=None, agg=None, key=None, total=None):
 
     means   = []
     stdDevs = []
-    for result in map(ratioOfAverages, sizes):
+    for result in map(averageOfRatios, sizes):
         if result['bailed out']:
             # Report the missing data so we can mention it in the paper
             msg(repr({
