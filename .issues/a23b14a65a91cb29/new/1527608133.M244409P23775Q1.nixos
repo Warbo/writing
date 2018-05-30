@@ -1,0 +1,20 @@
+From: Chris Warburton
+Date: Tue, 29 May 2018 15:36:33 +0100
+Subject: Re: TEB: Explain average of ratios/ratio of averages better
+Message-Id: <a23b14a65a91cb29-ef659145c7a9486c-artemis@nixos>
+References: <a23b14a65a91cb29-0-artemis@nixos>
+In-Reply-To: <a23b14a65a91cb29-0-artemis@nixos>
+
+I've kept the terminology, but also:
+
+ - Mentioned that ratio of averages is a pooled average (accounting for
+   duplicates)
+ - Given equations for both forms of average
+ - Mentioned that the ratio of averages is the average numerator and
+   denominator
+ - Mentioned that neither tells us the absolute number of conjectures
+ - Mentioned that we can take the mean of the cardinalities to predict
+   this
+ - Included F-score, along with equation
+ - Added true/false positive terminology to precision/recall definition
+ - Added no negative examples as a limitation

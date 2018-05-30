@@ -1,0 +1,36 @@
+From: Chris Warburton
+Date: Tue, 29 May 2018 13:46:52 +0100
+State: resolved
+Subject: TEB: Explain average of ratios/ratio of averages better
+Message-Id: <a23b14a65a91cb29-0-artemis@nixos>
+resolution: fixed
+
+Terminology may not be widely known, so we should explain the
+difference. We should also include equations for each.
+
+Note that "ratio of averages" seems weird if we do:
+
+    p = (n1 + n2 + ...) / (d1 + d2 + ...)
+
+As Jianguo points out, we can instead write this as the average
+numerator over the average denominator:
+
+    p = (n1 + n2 + ... / N) / (d1 + d2 + ... / N)
+
+The 1/N factors cancel out, giving us the equation above, but putting
+them in explicitly makes it clearer where the terminology comes from.
+
+Also, get rid of 'Bernoulli process' stuff. It would require more
+explanation, but actually is completely irrelevant to the rest of the
+paper.
+
+The average of the ratios is quite straightforward: it's the average,
+and tells us the expected precision or recall. All *sets* are treated
+equally, regardless of how large they are.
+
+The ratio of the averages is slightly harder to explain: it's the pooled
+average, it treats all *conjectures* equally, regardless of the set they
+came from, and gives the expected wanted/not of a conjecture.
+
+Maybe useful to talk about wanted/not as being true positives vs false
+positives.

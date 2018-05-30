@@ -1,0 +1,13 @@
+From: Chris Warburton
+Date: Tue, 29 May 2018 13:54:26 +0100
+State: new
+Subject: TEB: Make graphs clearer
+Message-Id: <9dc9f2b0888e18c1-0-artemis@nixos>
+
+See if we can use crosses for failures.
+
+Make points a little smaller (now that their colour is irrelevant).
+
+Use average of ratios (i.e. the normal average) for the precision/recall
+graphs, since that's what's relevant for the standard deviation (it's
+the (root square) average deviation from the mean).
