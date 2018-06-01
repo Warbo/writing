@@ -279,33 +279,13 @@ mpl.rcParams.update({
     ]
 })
 
-msg('Setting colour scales')
+msg('Drawing plots')
 
 import matplotlib.pyplot as plt
 import seaborn           as sns
 
-def makeColours(agg):
-    def go(key):
-        from matplotlib.colors import ListedColormap
-        maxVal    = max([agg[key][i] for i,s in enumerate(agg['success']) if s])
-        colourMap = sns.color_palette('viridis', maxVal + 1).as_hex()
-        msg('Highest {0} count is {1}'.format(key, maxVal))
-        with open('highest_{0}_count'.format(key), 'w') as f:
-            f.write(str(maxVal))
-        return {
-            'cmap'    : ListedColormap(colourMap),
-            'norm'    : mpl.colors.Normalize(vmin=0, vmax=maxVal),
-            'palette' : dict(enumerate(colourMap))
-        }
-    return go
-
-for system in aggs:
-    aggs[system]['found colours'], aggs[system]['wanted colours'] = \
-        map(makeColours(aggs[system]), ['found', 'wanted'])
-
-del(makeColours)
-
-msg('Drawing plots')
+point = {'size': 1.5, 'linewidth': 0.35}
+cross = {'size': 3  , 'linewidth': 0.8 }
 
 def newFigure(name):
     '''Set up matplotlib/seaborn for a new figure. The name is used to look up
@@ -319,27 +299,6 @@ def newFigure(name):
     sns.set_context('paper')
 
     return fig
-
-def drawColourBar(ax=None, cax=None, colours=None, kw={}, label=None):
-    '''Add a colour bar below ax or on cax.'''
-    if cax is None:
-        cax, kw2 = mpl.colorbar.make_axes_gridspec(
-                       ax,
-                       orientation = 'horizontal',  # Keeps plot full width
-                       pad         = 0.18)          # 0.15 would cover x-label
-        kw = dict(kw.items() + kw2.items())
-
-    cbar = mpl.colorbar.ColorbarBase(
-               cax,
-               cmap = colours['cmap'],
-               norm = colours['norm'],
-               **kw)
-
-    cbar.set_label(label)
-
-    # Prevent problems with PDF output
-    # See http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.colorbar
-    cbar.solids.set_edgecolor('face')
 
 def savePlot(name):
     '''Write our the current figure as LaTeX.'''
@@ -358,23 +317,32 @@ def plotTime(system, agg):
                 fliersize = 0)
 
     # Alternatively, we could use stripplot with jitter
-    ax = sns.swarmplot(data      = dict(agg, timeHue=[0 if s else 1
-                                                      for s in agg['success']]),
+    successes = [i for i,s in enumerate(agg['success']) if     s]
+    failures  = [i for i,s in enumerate(agg['success']) if not s]
+    listAtIndices = lambda idc, lst: [x for i,x in enumerate(lst) if i in idc]
+    dictAtIndices = lambda idc: dict(agg,
+                                     size=listAtIndices(idc, agg['size']),
+                                     time=listAtIndices(idc, agg['time']))
+    ax = sns.swarmplot(data      = dictAtIndices(successes),
                        x         = 'size',
                        y         = 'time',
-                       size      = 1.5,  # Marker size
+                       size      = point['size'],
                        edgecolor = 'k',
-                       linewidth = 0.35,
+                       linewidth = point['linewidth'],
                        marker    = 'o',
-                       palette   = ['k', 'r'],
-                       hue       = 'timeHue')
+                       color     = 'k')
+    ax = sns.swarmplot(data      = dictAtIndices(failures),
+                       x         = 'size',
+                       y         = 'time',
+                       size      = cross['size'],
+                       edgecolor = 'k',
+                       linewidth = cross['linewidth'],
+                       marker    = 'x',
+                       color     = 'r')
     if ax.legend_: ax.legend_.remove()
     ax.set_xlabel('Sample size')
     ax.set_ylabel('Runtime (seconds)')
 
-    #drawColourBar(ax      = ax,
-    #              colours = agg['found colours'],
-    #              label   = 'Conjectures found')
     savePlot(system + 'time')
 
 def aggProp(system, sizes=None, agg=None, key=None, total=None):
@@ -551,9 +519,9 @@ def plotPrecRec(system, agg):
         newAx = sns.swarmplot(data      = newAgg,
                               x         = 'size',
                               y         = args['y'],
-                              size      = 1.5,  # Marker size
+                              size      = point['size'],
                               edgecolor = 'k',
-                              linewidth = 0.35,
+                              linewidth = point['linewidth'],
                               marker    = 'o',
                               color     = 'k',
                               ax        = args['ax'])
@@ -568,13 +536,6 @@ def plotPrecRec(system, agg):
                                            ax     = args['ax']),
         [{'ax': pAx, 'xs': pXs, 'ys': pMeans, 'lows': pLows, 'highs': pHighs},
          {'ax': rAx, 'xs': rXs, 'ys': rMeans, 'lows': rLows, 'highs': rHighs}])
-
-
-    #drawColourBar(
-    #    cax     = plt.subplot(gs[2]),
-    #    colours = agg['wanted colours'],
-    #    kw      = {'orientation': 'horizontal'},
-    #    label   = 'Ground truth theorems')
 
     savePlot(system + 'prec')
 
