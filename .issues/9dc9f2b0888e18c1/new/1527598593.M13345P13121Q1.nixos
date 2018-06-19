@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Tue, 29 May 2018 13:54:26 +0100
-State: new
+State: resolved
 Subject: TEB: Make graphs clearer
 Message-Id: <9dc9f2b0888e18c1-0-artemis@nixos>
+resolution: fixed
 
 See if we can use crosses for failures.
 

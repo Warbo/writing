@@ -1,0 +1,16 @@
+From: Chris Warburton
+Date: Fri, 01 Jun 2018 18:35:51 +0100
+State: resolved
+Subject: TEB: Time plots are wrong and misleading
+Message-Id: <e7baf02760c76dc5-0-artemis@nixos>
+resolution: fixed
+
+I've tried adding crosses for failures by overlaying 2 swarmplots on the
+same axes. Unfortunately seaborn/matplotlib is misaligning the plots and
+the x axis, so it's not showing data for 1-20 at the correct positions.
+
+This seems to be the same problem I encountered when adding errorbars,
+which the author closed with glib insults.
+
+There's no point switching the plotting software at this late stage, but
+we should certainly never again touch the toxic seaborn project.

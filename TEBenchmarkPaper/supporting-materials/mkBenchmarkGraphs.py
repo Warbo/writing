@@ -305,59 +305,12 @@ def savePlot(name):
     plt.tight_layout()
     plt.savefig(name + '.pgf', bbox_inches='tight', pad_inches=0.0)
 
-def plotTime(system, agg):
-    newFigure('time')
-
-    plt.ylim(0, 300)
-
-    sns.boxplot(data      = agg,
-                x         = 'size',
-                y         = 'time',
-                color     = '0.95',
-                fliersize = 0)
-
-    # Alternatively, we could use stripplot with jitter
-    successes = [i for i,s in enumerate(agg['success']) if     s]
-    failures  = [i for i,s in enumerate(agg['success']) if not s]
-    listAtIndices = lambda idc, lst: [x for i,x in enumerate(lst) if i in idc]
-    dictAtIndices = lambda idc: dict(agg,
-                                     size=listAtIndices(idc, agg['size']),
-                                     time=listAtIndices(idc, agg['time']))
-    ax = sns.swarmplot(data      = dictAtIndices(successes),
-                       x         = 'size',
-                       y         = 'time',
-                       size      = point['size'],
-                       edgecolor = 'k',
-                       linewidth = point['linewidth'],
-                       marker    = 'o',
-                       color     = 'k')
-    ax = sns.swarmplot(data      = dictAtIndices(failures),
-                       x         = 'size',
-                       y         = 'time',
-                       size      = cross['size'],
-                       edgecolor = 'k',
-                       linewidth = cross['linewidth'],
-                       marker    = 'x',
-                       color     = 'r')
-    if ax.legend_: ax.legend_.remove()
-    ax.set_xlabel('Sample size')
-    ax.set_ylabel('Runtime (seconds)')
-
-    savePlot(system + 'time')
-
 def aggProp(system, sizes=None, agg=None, key=None, total=None):
-    '''We assume the output conjectures from each run are bernoulli trials, i.e.
-    whether it's good or bad is modelled as a (biased) coin toss, where the bias
-    depends on the "quality" of the algorithm.'''
-
     import math
 
     sizeIndices   = lambda s: [i for i, x in enumerate(agg['size']) if x == s]
     entriesOfSize = lambda s, k: [agg[k][i] for i in sizeIndices(s)]
     runsOfSize    = lambda s: entriesOfSize(s, key)
-
-    # There are many analyses we could perform. We implement a few, so we can
-    # check that the results behave as we expect.
 
     noneToZero = lambda x: 0.0 if x is None else float(x)
 
@@ -488,7 +441,7 @@ def plotPrecRec(system, agg):
     stripNones = lambda l: filter(lambda elem: elem is not None, l)
 
     pXs = [x for x, m in zip(xs, pData[0]) if m is not None]
-    rXs = [x for x, m in zip(xs,  rData[0]) if m is not None]
+    rXs = [x for x, m in zip(xs, rData[0]) if m is not None]
 
     pMeans, pLows, pHighs = map(stripNones, pData)
     rMeans, rLows, rHighs = map(stripNones, rData)
@@ -539,6 +492,116 @@ def plotPrecRec(system, agg):
 
     savePlot(system + 'prec')
 
+def plotQSTime():
+    agg = aggs['quickspec']
+    newFigure('time')
+
+    plt.ylim(0, 300)
+    sns.plt.xlim(1, 20)
+
+    sns.boxplot(data      = agg,
+                x         = 'size',
+                y         = 'time',
+                color     = '0.95',
+                fliersize = 0)
+
+    # Alternatively, we could use stripplot with jitter
+    successes = [i for i,s in enumerate(agg['success']) if     s]
+    failures  = [i for i,s in enumerate(agg['success']) if not s]
+    listAtIndices = lambda idc, lst: [x for i,x in enumerate(lst) if i in idc]
+    dictAtIndices = lambda idc: dict(agg,
+                                     size=listAtIndices(idc, agg['size']),
+                                     time=listAtIndices(idc, agg['time']))
+    ax = plt.gca()
+    ax.set_xlim(1, 20)  # Force X limits in case success and fail differ
+    ax = sns.swarmplot(data      = dictAtIndices(failures),
+                       x         = 'size',
+                       y         = 'time',
+                       size      = cross['size'],
+                       edgecolor = 'k',
+                       linewidth = cross['linewidth'],
+                       marker    = 'x',
+                       color     = 'r',
+                       ax        = ax)
+    ax = sns.swarmplot(data      = dictAtIndices(successes),
+                       x         = 'size',
+                       y         = 'time',
+                       size      = point['size'],
+                       edgecolor = 'k',
+                       linewidth = point['linewidth'],
+                       marker    = 'o',
+                       color     = 'k',
+                       ax        = ax)
+    #ax.set_xlim(1, 20)  # Force X limits in case success and fail differ
+
+    #ax.set_xlim(1, 20)  # Force X limits in case success and fail differ
+    if ax.legend_: ax.legend_.remove()
+    ax.set_xlabel('Sample size')
+    ax.set_ylabel('Runtime (seconds)')
+
+    savePlot('quickspectime')
+plotQSTime()
+del(plotQSTime)
+
+def plotICSTime():
+    agg = aggs['isacosy']
+    fig = newFigure('time')
+    ax  = fig.gca()
+    plt.ylim(0, 300)
+    sns.plt.xlim(1, 20)
+
+    sns.boxplot(data      = agg,
+                     x         = 'size',
+                     y         = 'time',
+                     color     = '0.95',
+                     fliersize = 0,
+                     ax        = ax)
+
+    # Alternatively, we could use stripplot with jitter
+    successes = [i for i,s in enumerate(agg['success']) if     s]
+    failures  = [i for i,s in enumerate(agg['success']) if not s]
+    listAtIndices = lambda idc, lst: [x for i,x in enumerate(lst) if i in idc]
+    dictAtIndices = lambda idc, f=lambda x: x, g=lambda x: x: dict(agg,
+                                     size=map(f,listAtIndices(idc, agg['size'])),
+                                     time=map(g,listAtIndices(idc, agg['time'])))
+
+    ax = plt.gca()
+    ax.set_xlim(0, 19)  # Force X limits in case success and fail differ
+    ax = sns.swarmplot(data      = dictAtIndices(successes),
+                       x         = 'size',
+                       y         = 'time',
+                       size      = point['size'],
+                       edgecolor = 'k',
+                       linewidth = point['linewidth'],
+                       marker    = 'o',
+                       color     = 'k',
+                       ax        = ax)
+
+    # IsaCoSy had no failures for size 1, so seaborn (in its infinite wisdom)
+    # will end up plotting things offset from each other and lying about the
+    # x-axis. Urgh. To avoid this, we add a fake failure at x position 1, so
+    # that the failures span the whole 1-20 range. We hide the point by giving
+    # it a negative y position, so it drops off the bottom of the chart.
+    fails          = dictAtIndices(failures)
+    fails['size'] += [1]
+    fails['time'] += [-10]
+
+    ax = sns.swarmplot(data      = fails,
+                       x         = 'size',
+                       y         = 'time',
+                       size      = cross['size'],
+                       linewidth = cross['linewidth'],
+                       marker    = 'x',
+                       color     = 'r',
+                       ax        = ax)
+
+    if ax.legend_: ax.legend_.remove()
+    ax.set_xlabel('Sample size')
+    ax.set_ylabel('Runtime (seconds)')
+
+    savePlot('isacosytime')
+plotICSTime()
+del(plotICSTime)
+
 for system in aggs:
-    plotTime(   system, aggs[system])
     plotPrecRec(system, aggs[system])

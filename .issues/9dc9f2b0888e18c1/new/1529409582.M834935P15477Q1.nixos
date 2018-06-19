@@ -1,0 +1,9 @@
+From: Chris Warburton
+Date: Tue, 19 Jun 2018 12:59:18 +0100
+Subject: Re: TEB: Make graphs clearer
+Message-Id: <9dc9f2b0888e18c1-9eecc9eb80ef82d8-artemis@nixos>
+References: <9dc9f2b0888e18c1-0-artemis@nixos>
+In-Reply-To: <9dc9f2b0888e18c1-0-artemis@nixos>
+
+We now use crosses, I've made the points smaller and used the average of
+ratios.

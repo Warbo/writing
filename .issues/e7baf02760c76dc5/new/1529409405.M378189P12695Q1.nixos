@@ -1,0 +1,11 @@
+From: Chris Warburton
+Date: Tue, 19 Jun 2018 12:55:41 +0100
+Subject: Re: TEB: Time plots are wrong and misleading
+Message-Id: <e7baf02760c76dc5-a612a636a45c7f7b-artemis@nixos>
+References: <e7baf02760c76dc5-0-artemis@nixos>
+In-Reply-To: <e7baf02760c76dc5-0-artemis@nixos>
+
+I've "fixed" this by adding a dummy IsaCoSy failure at (1, -10). Since
+the y axis starts at 0, this doesn't appear on the graph; yet it's
+needed to ensure that the success data and failure data both start at
+the same x coordinate. Urgh.

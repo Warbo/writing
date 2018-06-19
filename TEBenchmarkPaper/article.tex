@@ -1057,10 +1057,12 @@ need to automate some of the decisions which are normally left up to the user:
   \centering
   \input{quickspectime.pgf}
   \caption{Running times of QuickSpec on theories sampled from TIP. Each point
-    is an individual run, with 31 per size except for 1 (14) and 2 (30). Failing
-    processes (timeouts or out-of-memory) are shown in red. Points are spread
-    out horizontally to reduce overlapping. Box plots show median and quartiles,
-    with whiskers showing points at 1.5$\times$~inter-quartile range.}
+    is a successful run (spread out horizontally to reduce overlaps). Red
+    crosses are failed runs (timeouts or out-of-memory). Each size has 31 runs
+    total, except for size 1 (14 runs) and size 2 (30 runs) due to sampling
+    restrictions. Box plots show inter-quartile range, with lines at the median
+    and whiskers at 1.5$\times$~inter-quartile range. Medians below size 10 are
+    near zero, whilst medians of size 13 and 20 timed out.}
   \label{figure:quickspec_runtimes}
 \end{figure}
 
@@ -1152,10 +1154,12 @@ make our benchmark applicable to IsaCoSy:
   \centering
   \input{isacosytime.pgf}
   \caption{Running times of IsaCoSy on theories sampled from TIP. Each point
-    is an individual run, with 31 per size except for 1 (14) and 2 (30). Failing
-    processes (timeouts and out of memory) are shown in red. Points are spread
-    out horizontally to reduce overlapping. Box plots show median and quartiles,
-    with whiskers showing points at 1.5$\times$~inter-quartile range.}
+    is a successful run (spread out horizontally to reduce overlaps). Red
+    crosses are failed runs (timeouts or out-of-memory). Each size has 31 runs
+    total, except for size 1 (14 runs) and size 2 (30 runs) due to sampling
+    restrictions. Box plots show inter-quartile range, with lines at the median
+    and whiskers at 1.5$\times$~inter-quartile range. All medians above size 4
+    timed out, and all runs above size 7 failed.}
   \label{figure:isacosy_runtimes}
 \end{figure}
 
