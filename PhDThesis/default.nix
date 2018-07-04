@@ -16,7 +16,7 @@ with { defs = rec {
   render = { env ? {}, file, label ? "default", src }:
     runCommand "${file}-${label}.pdf"
       (env // {
-        inherit bibtex file src;
+        inherit file src;
         buildInputs = [ tex ];
       })
       ''
@@ -25,12 +25,11 @@ with { defs = rec {
         }
 
         echo "SRC is '$src'" 1>&2
-        cp -s "$src"/*  ./
-        ln -s "$bibtex" ./Bibtex.bib
+        cp -s  "$src"/*  ./
         ${env.commands or ""}
 
         go     "$file"
-        #bibtex "$file"
+        [[ -e "Bibtex.bib" ]] && bibtex "$file"
         go     "$file"
         go     "$file"
 
@@ -53,12 +52,10 @@ with { defs = rec {
     ''
       cp -r "$real" ./src
       chmod +w -R   ./src
-      pushd ./src
-        PREAMBLE=$(grep -B 1000 '\\begin{document}' < thesis.tex)
-
-        echo "$PREAMBLE"                            >  ./thesis.tex
-        echo '\typeout{WIDTH \the\textwidth WIDTH}' >> ./thesis.tex
-        echo '\end{document}'                       >> ./thesis.tex
+      pushd ./src > /dev/null
+        cat "${./header}"                                  \
+            <(echo '\typeout{WIDTH \the\textwidth WIDTH}') \
+            "${./footer}"                                  > ./thesis.tex
 
         echo "THESIS CONTENT" 1>&2
         cat ./thesis.tex 1>&2
@@ -70,26 +67,37 @@ with { defs = rec {
         grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < ./out |
           sed -e 's/WIDTH//g'                      |
           tr -d 'pt ' > "$out"
-      popd
+      popd > /dev/null
     '';
+
+  renderSection = file:
+    assert pathExists (./. + "/${file}.tex") || abort "'${file}.tex' not found";
+    render {
+      inherit file;
+      src  = filterSource (path: type: isTex path) ./.;
+      env  = {
+        commands = with benchmarkSupport; with comparison; ''
+          for D in "${graphs.graphs}" "${qualityComparison}" "${timeComparison}"
+          do
+            echo "Putting '$D' in place" 1>&2
+            cp -rs "$D"/* ./
+          done
+
+          ln -sv "${bibtex}" ./Bibtex.bib
+
+          echo "Splicing header and footer into '$file'" 1>&2
+          cat "${./header}" "$file.tex" "${./footer}" > TEMP
+          mv TEMP "$file.tex"
+        '';
+      };
+    };
 
   outline = render {
     file = "outline";
     src  = attrsToDirs { outline = ./outline.tex; };
   };
 
-  thesis = withDeps [ outline ] (render {
-    file = "thesis";
-    src  = filterSource (path: type: isTex path) ./.;
-    env  = {
-      commands = with benchmarkSupport; with comparison; ''
-        for D in "${graphs.graphs}" "${qualityComparison}" "${timeComparison}"
-        do
-          cp -rs "$D"/* ./
-        done
-      '';
-    };
-  });
+  thesis = renderSection "thesis";
 
   pdfs = attrsToDirs {
     "outline.pdf" = outline;

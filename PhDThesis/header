@@ -1,0 +1,69 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{csquotes}
+\usepackage{csvsimple}
+\usepackage[inline, shortlabels]{enumitem}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{arrows, calc, decorations.pathreplacing, positioning,
+                shapes, shapes.geometric}
+
+\newcommand{\etal}{{\em et al.}}
+
+\newcommand{\fc}{System F\textsubscript{C}}
+
+\newcommand{\blank}{\cdot}
+\newcommand*\mean[1]{\overline{#1}}
+\newcommand*\vect[1]{\mathbf{#1}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\feature}[1]{\phi(#1)}
+\newcommand{\id}[1]{\texttt{"#1"}}
+\newcommand{\vlocal}[1]{\CVar\ (\CLocal\ \id{#1})}
+\newcommand{\vglobal}[1]{\CVar\ (\CGlobal\ \id{#1})}
+\newcommand{\cat}{\mbox{\ensuremath{+\!\!+\,}}}
+
+\newcommand{\qcheck}{\textsc{QuickCheck}}
+\newcommand{\qspec}{\textsc{QuickSpec}}
+\newcommand{\hspec}{\textsc{HipSpec}}
+\newcommand{\equal}{=}
+
+%% Language listings
+
+\usepackage{listings}
+\newcommand{\hs}[1]{\texttt{#1}}
+
+\lstset{
+  frame=none,
+  xleftmargin=2pt,
+  stepnumber=1,
+  numbers=none,
+  numbersep=5pt,
+  numberstyle=\ttfamily\tiny\color[gray]{0.3},
+  columns=flexible,
+  belowcaptionskip=\bigskipamount,
+  captionpos=b,
+  escapeinside={*'}{'*},
+  language=haskell,
+  tabsize=2,
+  emphstyle={\bf},
+  commentstyle=\it,
+  stringstyle=\mdseries\ttfamily,
+  showspaces=false,
+  keepspaces=true,
+  keywordstyle=\bfseries\ttfamily,
+  basicstyle=\small\ttfamily,
+  showstringspaces=false,
+  morecomment=[l]\%,
+}
+
+\lstnewenvironment{haskell}{%
+  \lstset{language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+
+\lstnewenvironment{coqblock}{%
+  \lstset{language=ML, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+
+\begin{document}
