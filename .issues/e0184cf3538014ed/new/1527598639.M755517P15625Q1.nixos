@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Tue, 29 May 2018 13:56:46 +0100
-State: new
+State: resolved
 Subject: TEB: Fix up small remarks from Jianguo
 Message-Id: <e0184cf3538014ed-0-artemis@nixos>
+resolution: fixed
 
 E.g. wording. Go through annotated paper.

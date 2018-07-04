@@ -1,0 +1,63 @@
+From: Chris Warburton
+Date: Fri, 29 Jun 2018 17:29:49 +0100
+State: new
+Subject: TEB: Check references
+Message-Id: <b8397680906aa438-0-artemis@nixos>
+
+Citation
+
+Reference citations in the text should be identified by numbers in
+square brackets. Some examples:
+
+1. Negotiation research spans many disciplines [3].
+2. This result was later contradicted by Becker and Seligman [5].
+3. This effect has been widely studied [1-3, 7].
+
+Reference list
+
+The list of references should only include works that are cited in the
+text and that have been published or accepted for publication. Personal
+communications and unpublished works should only be mentioned in the
+text. Do not use footnotes or endnotes as a substitute for a reference
+list.
+
+The entries in the list should be numbered consecutively.
+
+    Journal article
+
+    Hamburger, C.: Quasimonotonicity, regularity and duality for
+    nonlinear systems of partial differential equations. Ann. Mat. Pura
+    Appl. 169, 321–354 (1995)
+
+    Article by DOI
+
+    Sajti, C.L., Georgio, S., Khodorkovsky, V., Marine, W.: New
+    nanohybrid materials for biophotonics. Appl. Phys. A
+    (2007). https://doi.org/10.1007/s00339-007-4137-z
+
+    Book
+
+    Geddes, K.O., Czapor, S.R., Labahn, G.: Algorithms for Computer Algebra. Kluwer, Boston (1992)
+
+    Book chapter
+
+    Broy, M.: Software engineering — from auxiliary to key
+    technologies. In: Broy, M., Denert, E. (eds.) Software Pioneers,
+    pp. 10–13. Springer, Heidelberg (2002)
+
+    Online document
+
+    Cartwright, J.: Big stars have weather too. IOP Publishing
+    PhysicsWeb. http://physicsweb.org/articles/news/11/6/16/1
+    (2007). Accessed 26 June 2007
+
+Always use the standard abbreviation of a journal’s name according to
+the ISSN List of Title Word Abbreviations, see
+
+    http://www.issn.org/services/online-services/access-to-the-ltwa/
+
+If you are unsure, please use the full journal title.
+For authors using EndNote, Springer provides an output style that
+supports the formatting of in-text citations and reference list.
+
+    http://static.springer.com/sgw/documents/944938/application/zip/SpringerMathPhysNumber.zip

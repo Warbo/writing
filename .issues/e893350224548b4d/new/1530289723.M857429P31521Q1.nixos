@@ -1,0 +1,28 @@
+From: Chris Warburton
+Date: Fri, 29 Jun 2018 17:27:40 +0100
+State: new
+Subject: TEB: Title page
+Message-Id: <e893350224548b4d-0-artemis@nixos>
+
+The title page should include:
+
+    The name(s) of the author(s)
+    A concise and informative title
+    The affiliation(s) and address(es) of the author(s)
+    The e-mail address, and telephone number(s) of the corresponding author
+    If available, the 16-digit ORCID of the author(s)
+
+Abstract
+
+Please provide an abstract of 150 to 250 words. The abstract should not
+contain any undefined abbreviations or unspecified references.
+
+Keywords
+
+Please provide 4 to 6 keywords which can be used for indexing purposes.
+
+Acknowledgments
+
+Acknowledgments of people, grants, funds, etc. should be placed in a
+separate section on the title page. The names of funding organizations
+should be written in full.

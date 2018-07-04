@@ -1,0 +1,20 @@
+From: Chris Warburton
+Date: Fri, 29 Jun 2018 17:31:48 +0100
+State: resolved
+Subject: TEB: Check tables
+Message-Id: <9b4604fd536b3457-0-artemis@nixos>
+resolution: fixed
+
+All tables are to be numbered using Arabic numerals.
+
+Tables should always be cited in text in consecutive numerical order.
+
+For each table, please supply a table caption (title) explaining the
+components of the table.
+
+Identify any previously published material by giving the original source
+in the form of a reference at the end of the table caption.
+
+Footnotes to tables should be indicated by superscript lower-case
+letters (or asterisks for significance values and other statistical
+data) and included beneath the table body.

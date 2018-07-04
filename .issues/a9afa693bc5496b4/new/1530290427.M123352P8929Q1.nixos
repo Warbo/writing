@@ -1,0 +1,127 @@
+From: Chris Warburton
+Date: Fri, 29 Jun 2018 17:32:59 +0100
+State: new
+Subject: TEB: Figures guidelines
+Message-Id: <a9afa693bc5496b4-0-artemis@nixos>
+
+Electronic Figure Submission
+
+Supply all figures electronically.
+
+Indicate what graphics program was used to create the artwork.
+
+For vector graphics, the preferred format is EPS; for halftones, please
+use TIFF format. MSOffice files are also acceptable.
+
+Vector graphics containing fonts must have the fonts embedded in the
+files.
+
+Name your figure files with "Fig" and the figure number, e.g., Fig1.eps.
+
+NOTE: We can render a directory, rather than just a PDF, to ensure that
+we include everything, with appropriate names.
+
+Line Art (e.g. our flow chart)
+
+Definition: Black and white graphic with no shading.
+
+Do not use faint lines and/or lettering and check that all lines and
+lettering within the figures are legible at final size.
+
+All lines should be at least 0.1 mm (0.3 pt) wide.
+
+Scanned line drawings and line drawings in bitmap format should have a
+minimum resolution of 1200 dpi.
+
+Vector graphics containing fonts must have the fonts embedded in the
+files.
+
+Combination Art (I think our graphs qualify as this)
+
+Definition: a combination of halftone and line art, e.g., halftones
+containing line drawing, extensive lettering, color diagrams, etc.
+
+Combination artwork should have a minimum resolution of 600 dpi.
+
+Figure Lettering
+
+To add lettering, it is best to use Helvetica or Arial (sans serif
+fonts).
+
+Keep lettering consistently sized throughout your final-sized artwork,
+usually about 2–3 mm (8–12 pt).
+
+Variance of type size within an illustration should be minimal, e.g., do
+not use 8-pt type on an axis and 20-pt type for the axis label.
+
+Avoid effects such as shading, outline letters, etc.
+
+Do not include titles or captions within your illustrations.
+
+Figure Numbering
+
+All figures are to be numbered using Arabic numerals.
+
+Figures should always be cited in text in consecutive numerical order.
+
+Figure parts should be denoted by lowercase letters (a, b, c, etc.).
+
+If an appendix appears in your article and it contains one or more
+figures, continue the consecutive numbering of the main text. Do not
+number the appendix figures,
+
+"A1, A2, A3, etc." Figures in online appendices (Electronic
+Supplementary Material) should, however, be numbered separately.
+
+Figure Captions
+
+Each figure should have a concise caption describing accurately what the
+figure depicts. Include the captions in the text file of the manuscript,
+not in the figure file.
+
+Figure captions begin with the term Fig. in bold type, followed by the
+figure number, also in bold type.
+
+No punctuation is to be included after the number, nor is any
+punctuation to be placed at the end of the caption.
+
+Identify all elements found in the figure in the figure caption; and use
+boxes, circles, etc., as coordinate points in graphs.
+
+Identify previously published material by giving the original source in
+the form of a reference citation at the end of the figure caption.
+
+Figure Placement and Size
+
+Figures should be submitted separately from the text, if possible.
+
+When preparing your figures, size figures to fit in the column width.
+
+For most journals the figures should be 39 mm, 84 mm, 129 mm, or 174 mm
+wide and not higher than 234 mm.
+
+For books and book-sized journals, the figures should be 80 mm or 122 mm
+wide and not higher than 198 mm.
+
+Permissions
+
+If you include figures that have already been published elsewhere, you
+must obtain permission from the copyright owner(s) for both the print
+and online format. Please be aware that some publishers do not grant
+electronic rights for free and that Springer will not be able to refund
+any costs that may have occurred to receive these permissions. In such
+cases, material from other sources should be used.
+
+Accessibility
+
+In order to give people of all abilities and disabilities access to the
+content of your figures, please make sure that
+
+All figures have descriptive captions (blind users could then use a
+text-to-speech software or a text-to-Braille hardware)
+
+Patterns are used instead of or in addition to colors for conveying
+information (colorblind users would then be able to distinguish the
+visual elements)
+
+Any figure lettering has a contrast ratio of at least 4.5:1

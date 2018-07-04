@@ -1,0 +1,42 @@
+From: Chris Warburton
+Date: Fri, 29 Jun 2018 17:28:46 +0100
+State: new
+Subject: TEB: Check formatting
+Message-Id: <babcecbaf77d5ab7-0-artemis@nixos>
+
+Text Formatting
+
+Manuscripts should be submitted in LaTeX. Please use Springer’s LaTeX
+macro package and choose the formatting option “smallcondensed”.
+
+The submission should include the original source (including all style
+files and figures) and a PDF version of the compiled output.
+
+    LaTeX macro package (zip, 182 kB)
+
+Word files are also accepted.
+
+Headings
+
+Please use the decimal system of headings with no more than three
+levels.
+
+Abbreviations
+
+Abbreviations should be defined at first mention and used consistently
+thereafter.
+
+Footnotes
+
+Footnotes can be used to give additional information, which may include
+the citation of a reference included in the reference list. They should
+not consist solely of a reference citation, and they should never
+include the bibliographic details of a reference. They should also not
+contain any figures or tables.
+
+Footnotes to the text are numbered consecutively; those to tables should
+be indicated by superscript lower-case letters (or asterisks for
+significance values and other statistical data). Footnotes to the title
+or the authors of the article are not given reference symbols.
+
+Always use footnotes instead of endnotes.
