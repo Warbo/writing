@@ -20,7 +20,11 @@ rec {
   latex = ./LaTeX.zip;
 
   # The final paper, with all graphs, etc.
-  paper = render {
+  paper = attrsToDirs {
+    "article.pdf" = rendered;
+  };
+
+  rendered = render {
     inherit article;
     inherit (comparison) qualityComparison timeComparison;
     inherit (graphs    ) graphs;
