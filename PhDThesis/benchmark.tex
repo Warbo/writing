@@ -1,14 +1,16 @@
 \section{Theory Exploration Benchmark}
 \label{sec:proposal}
 
-Our main contribution is a benchmarking methodology, shown in
-Figure~\ref{figure:flow_chart} on page~\pageref{figure:flow_chart}, which both
-generates a large definition/ground-truth corpus, and provides a scalable,
-statistical approach to evaluating MTE tools using this corpus. We follow a
-precision/recall approach similar to prior work, with the main difference being
-the source of definitions and ground truths: we take existing problem sets
-designed for automated theorem proving, and adapt their content for use in the
-conjecture generation setting.
+If we wish to make measurable progress on the task of conjecture generation, we
+must quantify what it is we are trying to achieve. Various approaches can then
+be measured and compared to optimise toward our goal. To this end we define a
+benchmarking methodology, shown in Figure~\ref{figure:flow_chart} on
+page~\pageref{figure:flow_chart}, which both generates a large
+definition/ground-truth corpus, and provides a scalable, statistical approach to
+evaluating MTE tools using this corpus. We follow a precision/recall approach
+similar to prior work, with the main difference being the source of definitions
+and ground truths: we take existing problem sets designed for automated theorem
+proving, and adapt their content for use in the conjecture generation setting.
 
 \subsection{Preparation}
 \label{section:prep}
@@ -42,7 +44,7 @@ suitable are those meeting the following criteria:
   ground truth will be treated as being ``uninteresting''. More realistically,
   we should aim for each definition to have \emph{multiple} properties; rather
   than a mixture of unrelated problems, cherry-picked from different domains.
-\item Larger problem set are preferable as they give more robust statistics, all
+\item Larger problem sets are preferable as they give more robust statistics, all
   else being equal (i.e. when this does not sacrifice quality).
 \end{itemize}
 
@@ -53,13 +55,13 @@ truth corpus of properties (which tool output will be compared against).
 
 It is important to ensure that there are no duplicate definitions: we are only
 concerned with the \emph{logical} content of the input, not the more arbitrary
-aspects like the names of functions. For example, consider a problem set which
-includes a statement of commutativity for a \texttt{plus} function, and of
-associativity for an \texttt{add} function, where the definitions of
-\texttt{plus} and \texttt{add} are $\alpha$-equivalent. We would expect an MTE
-tool to either conjecture commutativity and associativity for \emph{both}
-functions, or for \emph{neither} function, since they are logically equivalent.
-Yet a na\"ive precision/recall analysis would treat commutativity of
+aspects of their presentation like the names of functions. For example, consider
+a problem set which includes a statement of commutativity for a \texttt{plus}
+function, and of associativity for an \texttt{add} function, where the
+definitions of \texttt{plus} and \texttt{add} are $\alpha$-equivalent. We would
+expect an MTE tool to either conjecture commutativity and associativity for
+\emph{both} functions, or for \emph{neither} function, since they are logically
+equivalent. Yet a na\"ive precision/recall analysis would treat commutativity of
 \texttt{add} and associativity of \texttt{plus} as \emph{uninteresting}, since
 they don't appear in the ground truth.
 
@@ -84,14 +86,14 @@ the ground truth for analysis. However, this would cause two problems:
 
 To solve both of these problems we instead \emph{sample} a subset of
 definitions.\footnote{This could be done randomly, but for reproducibility we
-  use a deterministic order (based on cryptographic hashes, to discourage
-  ``cheating'').} Given a sample size, we choose a subset of that many
-definitions, and provide only those as input to the tool. We generate a
-corresponding ground truth by selecting those properties from the corpus which
-``depend on'' (contain references to) \emph{only} the definitions in that
-sample. Transitive dependencies aren't required (e.g. a property involving only
-a \texttt{times} function would not depend on a \texttt{plus} function, even if
-\texttt{plus} occurs in the definition of \texttt{times}).
+  use a deterministic order based on cryptographic hashes.} Given a sample size,
+we choose a subset of that many definitions, and provide only those as input to
+the tool. We generate a corresponding ground truth by selecting those properties
+from the corpus which ``depend on'' (contain references to) \emph{only} the
+definitions in that sample. Transitive dependencies aren't required (e.g. a
+property involving only a \texttt{times} function would not depend on a
+\texttt{plus} function, even if \texttt{plus} occurs in the definition of
+\texttt{times}).
 
 Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
 given sample size, increasing the size of the corpus (which provides better
@@ -101,7 +103,8 @@ empty ground truth, and thus $0$ precision and undefined recall
 \emph{independent} of the tool's output! This is clearly undesirable as an
 evaluation method.
 
-Instead, we only allow a sample if it contains all dependencies of at least one
+Other measurements could be used for such cases, but our approach is to avoid
+them by only allowing a sample if it contains all dependencies of at least one
 property. We could do this using rejection sampling, but it is more efficient to
 pick a property, weighted in proportion to their number of dependencies
 (ignoring those with more dependencies than our sample size). That property's
@@ -110,7 +113,9 @@ choices from the remaining definitions.
 
 The ground truth for such samples is guaranteed to contain at least one property
 (the one we picked), and hence the precision and recall will depend meaningfully
-on the tool's output.
+on the tool's output. One downside of this restriction is that we limit the
+number of possible samples to measure; this is significant for sample sizes less
+than 3.
 
 \subsection{Evaluation}
 \label{section:evaluation}
@@ -168,60 +173,143 @@ number of given definitions). This is straightforward to measure by varying the
 sample size, but we need some way to combine the results from samples of the
 same size.
 
-We can summarise runtimes by choosing their median, as this is more robust than
-the mean against long-running outliers, and hence represents performance for a
-``typical'' input of that size. Unlike previous one-off evaluations, we can also
-compute the \emph{spread} of our data, for example with the inter-quartile
-range.
+We can summarise a set of runtimes by choosing the median, as this is more
+robust than the mean against long-running outliers, and hence represents
+performance for a ``typical'' input of that size. Since our methodology measures
+performance over many samples, we can also compute the \emph{spread} of our
+data, for example the inter-quartile range. This is not possible using the
+one-off measurements common in prior evaluation methods.
 
-The precision and recall for multiple samples can be combined in two ways. We
-can calculate their mean value, known as the \emph{average of the ratios}, to
-find the expected precision and recall for runs of this size. Alternatively, we
-can sum their numerators and denominators to get the \emph{ratio of the
-  averages}: this normalises the output and ground truth cardinalities, allowing
-precision and recall to be modelled as simple Bernoulli processes.
+Considering precision and recall separately, there are two ways to average these
+for a set of samples. Since both of these measurements are ratios, their means
+are known as the \emph{average of the ratios} (AOR). Using the definitions of
+precision and recall given in $\S$\ref{sec:te}, we can define the average of the
+ratios for $S$ samples indexed by $1 \leq i \leq S$ as follows:
 
-We prefer the latter, where each generated conjecture (wanted or not) is like a
-coin toss whose bias is the precision; likewise, the ground truth properties
-(found or not) are like coin tosses biased by the recall. Note that this simple
-model does not explain how many conjectures the tool decides to output for each
-run.
+\begin{align*}
+       \overline{\text{precision}}_{AOR}
+    &= \frac{1}{S} \sum_i{\text{precision}_i} \\
+    &= \frac{1}{S} \sum_i{
+         \frac{\#\text{interesting}_i}
+              {\#\text{generated}_i}}         \\[10pt]
+       \overline{\text{recall}}_{AOR}
+    &= \frac{1}{S} \sum_i{\text{recall}_i} \\
+    &= \frac{1}{S} \sum_i{
+         \frac{\#\text{interesting}_i}
+              {\#\text{groundtruth}_i}}
+\end{align*}
+
+We interpret these mean values as the \emph{expected} precision and recall for
+samples of this size. In particular, these tell us the quality of the \emph{set}
+of conjectures that will be generated if we were to run the tool on such a
+sample, but they don't give us direct information about the individual
+conjectures themselves. Since these are mean values, they are the reference
+point for measures of spread such as the variance, standard deviation and mean
+absolute deviation.
+
+The alternative is to calculate \emph{pooled} averages, by combining the
+(multi)sets from each sample before taking the ratios. The size of these pooled
+sets is simply the sum of the individual set sizes, and ratios of these sums are
+equal to ratios of the means (since the normalising factor $\frac{1}{S}$ appears
+in both numerator and denominator). Hence these values are known as the
+\emph{ratio of the averages} (ROA):
+
+\begin{align*}
+       \overline{\text{precision}}_{ROA}
+    &= \frac{\sum_i{\#\text{interesting}_i}}
+            {\sum_i{\#\text{generated}_i}}                              \\
+    &= \frac{\frac{1}{S} \sum_i{\#\text{interesting}_i}}
+            {\frac{1}{S} \sum_i{\#\text{generated}_i}}                  \\
+    &= \frac{\hspace{5pt} \overline{\#\text{interesting}} \hspace{5pt}}
+            {\hspace{5pt} \overline{\#\text{generated}}   \hspace{5pt}} \\[10pt]
+       \overline{\text{recall}}_{ROA}
+    &= \frac{\sum_i{\#\text{interesting}_i}}
+            {\sum_i{\#\text{groundtruth}_i}}                            \\
+    &= \frac{\frac{1}{S} \sum_i{\#\text{interesting}_i}}
+            {\frac{1}{S} \sum_i{\#\text{groundtruth}_i}}                \\
+    &= \frac{\hspace{5pt} \overline{\#\text{interesting}} \hspace{5pt}}
+            {\hspace{5pt} \overline{\#\text{groundtruth}} \hspace{5pt}}
+\end{align*}
+
+Larger sets contribute more to a ratio of averages, unlike the mean which treats
+each set equally. This weighting gives us expected qualities of
+\emph{conjectures} rather than sets: the ROA for precision is the expected
+chance that some particular generated conjecture will appear in the ground
+truth; the ROA for recall is the expected chance that some particular ground
+truth property will appear in the generated output.
+
+These averages can differ when there is a large variation in set size. For
+example, if we generate a single, interesting conjecture for one sample and 99
+uninteresting conjectures for another sample, the AOR (mean) precision will be
+$\frac{1}{2}$ but the ROA precision will be $\frac{1}{100}$. This highlights the
+importance of knowing \emph{absolute} numbers of conjectures, such as the mean
+output size $\overline{\#\text{generated}}$ and its spread, alongside the
+proportions given by precision and recall.
+
+It is also possible to combine precision values \emph{with} recall values
+(either individually or aggregated) by calculating their \emph{F-score}, defined
+as:
+
+\begin{equation*}
+  F = 2 \times \frac{\text{precision} \times \text{recall}}
+                    {\text{precision} +      \text{recall}}
+\end{equation*}
+
+This is the harmonic mean of precision and recall, ranging between 0 and 1. The
+F-score summarises performance into a single number, which is useful for
+purposes like ranking, but it obscures insights we might gain from looking at
+precision and recall separately (e.g. whether a tool is generating too much
+output or too little).
 
 \subsection{Comparison}
 
 To measure progress and encourage competition in the field, it is important to
 compare the relative performance of different tools on the same task. Since the
 aggregate statistics in the above summaries have obscured the details of
-specific runs, any comparison based on them (such as comparing average recall)
+specific runs, any comparison based on them (such as comparing mean recall)
 would have very low statistical power. More direct comparisons can be made using
 \emph{paired} tests, since for each individual sample we have measurements for
 \emph{both} tools.
 
-We propose that running times are compared using a Wilcoxon signed-rank
-test~\cite{wilcoxon1945individual}, since it does not require that the data be
-normally distributed. In $\S$\ref{sec:application} we follow a variant of the
-Speedup-Test protocol of Touati, Worms and Briais~\cite{touati2013speedup}; the
-differences are our use of the paired form of the Wilcoxon test, and the fact
-that each run was performed on a different sample (to reduce sampling bias, at
-the expense of accuracy). This paired difference test is also robust to the
-censoring caused by timeouts: upper-bounding the run time gives an upper-bound
-to the observable difference, which biases our results in a conservative way
-(\emph{towards} the null hypothesis of indistinguishable performance).
+Running times do not follow a normal distribution, in particular due to the
+lower bound at 0, which complicates any application of standard comparisons like
+the paired z-test. An alternative which does not assume normality is the
+Wilcoxon signed-rank test~\cite{wilcoxon1945individual}, which has been applied
+to software benchmarking in the Speedup-Test protocol of Touati, Worms and
+Briais~\cite{touati2013speedup}. Our methodology differs by measuring with a
+different sample each time, rather than repeatedly measuring one sample of each
+size; this also allows us to use the paired form of the Wilcoxon test.
 
-For simplicity, we suggest comparing quality by pooling together results from
-all samples where both tools finished successfully. Recall can be compared using
-the standard McNemar test for paired samples~\cite{mcnemar1947note}: each
-ground-truth property is categorised as either being found only by the first
-tool, only by the second, by both or by neither. Those found by both or neither
-are ignored, and the tool-specific numbers are tested for marginal homogeneity
-(i.e. whether their differences give rise to similar totals).
+Another complication with our time measurements is the censoring effect caused
+by timeouts. Paired difference tests are robust to this, since the upper-bound
+on total time imposes an upper-bound to the observable difference; this biases
+our results in a conservative way, \emph{towards} the null hypothesis of
+indistinguishable performance.
 
-We cannot use McNemar's test to compare precision, since each tool may generate
-different conjectures. Instead, we can use Boschloo's form of Barnard's
-test~\cite{lydersen2009recommended} to compare the proportions of wanted and
-unwanted conjectures generated by each tool, assuming a binomial distribution
-and conditioning on the number of generated conjectures (as if this were fixed
-by design).
+Quality can be compared using precision and recall, but we must choose how to
+handle samples where one tool succeeded and the other failed (e.g. timing out).
+One approach would be to consider failed runs as if they generated an empty set
+of conjectures; this conflates quality with failure, which may be desirable, but
+we prefer the more charitable approach of comparing only those samples where
+both tools finished successfully. We pool the results from such samples together
+(allowing duplicates) and compare the resulting proportions.
+
+Recall relies on a fixed set of properties, the ground truth, so we can compare
+tools using McNemar's test for paired samples~\cite{mcnemar1947note}. For each
+tool, we count how many of the ground-truth properties it found which were
+\emph{not} found by the other tool. McNemar's test determines whether we can
+reject the null hypothesis that both tools have the same count (i.e. both tools
+have a similar contribution to the symmetric difference of their interesting
+outputs).
+
+Comparing precision cannot be done in the same way as recall, since we do not
+have a fixed set of properties to divide up (there are an unlimited number of
+properties that may or may not appear in a tool's output). Instead, we can count
+how many conjectures were interesting and uninteresting for each tool and use
+Boschloo's form of Barnard's test~\cite{lydersen2009recommended} to determine if
+these proportions are independent. This assumes a binomial distribution and is
+conditioned on the number of generated conjectures (as if this were fixed by
+design).
 
 \begin{figure}
   \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm,
@@ -392,13 +480,13 @@ samples of size 1 were used and 30 of size 2.
 \label{sec:tip}
 
 We chose the Tons of Inductive Problems (TIP) benchmark for our ground truth
-since it satisfies the criteria of $\S$\ref{section:prep}: each benchmark
-problem has standalone type and function definitions, making their separation
-trivial; known examples from the software verification and inductive theorem
-proving literature are included, ensuring relevance to those fields; the format
-includes the higher-order functions and inductive datatypes we are interested
-in; it is large enough to pose a challenge to current MTE tools; plus it is
-accompanied by tooling to convert its custom format (an extension of
+since it satisfies the criteria specified in $\S$\ref{section:prep}: each
+benchmark problem has standalone type and function definitions, making their
+separation trivial; known examples from the software verification and inductive
+theorem proving literature are included, ensuring relevance to those fields; the
+format includes the higher-order functions and inductive datatypes we are
+interested in; it is large enough to pose a challenge to current MTE tools; plus
+it is accompanied by tooling to convert its custom format (an extension of
 SMT-Lib~\cite{BarFT-SMTLIB}) into a variety of languages, including Haskell and
 Isabelle.
 
@@ -485,11 +573,16 @@ TIP comes with software to translate its definitions into Haskell and Isabelle
 code, including comparison functions and random data generators suitable for
 QuickCheck. We translate all 269 unique definitions into a single module/theory
 which is imported on each run of the tools, although only those functions which
-appear in the current sample are included in the signature and explored.
+appear in the current sample are included in the signature and explored. We also
+encode all names in hexadecimal to avoid problems with language-specific naming
+rules, for example \texttt{add} becomes \texttt{global616464} (the prefix
+distinguishes these from local variables and prevents names from beginning with
+a digit). This ensures that the generated conjectures will be using the same
+names as the ground truth, rather than some language-specific variant.
 
 \subsection{QuickSpec}
 
-We benchmarked QuickSpec version 1 (0.9.6), a tool written in Haskell for
+We benchmarked QuickSpec version 0.9.6, a tool written in Haskell for
 conjecturing equations involving Haskell functions, described in more detail in
 $\S$\ref{sec:existing-tools}. In order to thoroughly benchmark QuickSpec, we
 need to automate some of the decisions which are normally left up to the user:
@@ -522,10 +615,13 @@ need to automate some of the decisions which are normally left up to the user:
   \centering
   \input{quickspectime.pgf}
   \caption{Running times of QuickSpec on theories sampled from TIP. Each point
-    is an individual run, with 31 per size except for 1 (14) and 2 (30). Failing
-    processes (timeouts or out-of-memory) are shown in red. Points are spread
-    out horizontally to reduce overlapping. Box plots show median and quartiles,
-    with whiskers showing points at 1.5$\times$~inter-quartile range.}
+    is a successful run (spread out horizontally to reduce overlaps). Red
+    crosses show runs which timed out, which occurred for every size. Each size
+    has 31 runs total, except for size 1 (14 runs) and size 2 (30 runs) due to
+    sampling restrictions. Box plots show inter-quartile range, which reaches
+    the timeout for sizes above 8. Medians are marked with a line and remain
+    near zero until size 10, with those of size 13 and 20 timing out. Whiskers
+    show 1.5$\times$~inter-quartile range.}
   \label{figure:quickspec_runtimes}
 \end{figure}
 
@@ -533,9 +629,11 @@ need to automate some of the decisions which are normally left up to the user:
   \centering
   \input{quickspecprec.pgf}
   \caption{Precision and recall of successful QuickSpec runs (spread
-    horizontally to reduce overlapping). Lines show the combined proportion for
-    each sample size (ratio of averages) and errorbars show the sample standard
-    deviation.}
+    horizontally to reduce overlapping). Lines show the mean proportion for each
+    sample size (average of the ratios) and errorbars show the sample standard
+    deviation. Mean precision steadily reduces from around $0.5$ at size 1 to
+    around $0.1$ for size 20, whilst mean recall remains roughly flat between
+    $0.2$ and $0.5$"}
   \label{figure:quickspec_precRec}
 \end{figure}
 
@@ -617,10 +715,14 @@ make our benchmark applicable to IsaCoSy:
   \centering
   \input{isacosytime.pgf}
   \caption{Running times of IsaCoSy on theories sampled from TIP. Each point
-    is an individual run, with 31 per size except for 1 (14) and 2 (30). Failing
-    processes (timeouts and out of memory) are shown in red. Points are spread
-    out horizontally to reduce overlapping. Box plots show median and quartiles,
-    with whiskers showing points at 1.5$\times$~inter-quartile range.}
+    is a successful run (spread out horizontally to reduce overlaps). Red
+    crosses are failed runs, caused by timeouts or out-of-memory. All runs of
+    size 1 succeeded, whilst nothing succeeded above size 6. Each size has 31
+    runs total, except for size 1 (14 runs) and size 2 (30 runs) due to sampling
+    restrictions. Box plots show inter-quartile range, which grows with size,
+    and lines mark the median time, which increases rapidly from around 100
+    seconds at size 1 to timing out at size 4 and above. Whiskers show
+    1.5$\times$~inter-quartile range.}
   \label{figure:isacosy_runtimes}
 \end{figure}
 
@@ -628,8 +730,10 @@ make our benchmark applicable to IsaCoSy:
   \centering
   \input{isacosyprec.pgf}
   \caption{Precision and recall of all successful IsaCoSy runs (spread
-    horizontally to reduce overlapping). Lines show the combined proportion for
-    each sample size (ratio of averages) and errorbars show the sample standard
+    horizontally to reduce overlapping; all runs above size 6 failed). Lines
+    show the mean proportion for each sample size (average of the ratios), which
+    trends downwards for precision and appears flat for recall, although there
+    are too few datapoints to be definitive. Errorbars show the sample standard
     deviation.}
   \label{figure:isacosy_precRec}
 \end{figure}
@@ -697,7 +801,7 @@ proportion of timeouts causes our estimates to become more conservative: by size
 We compare the recall proportions by applying McNemar's test to only those
 samples where both tools succeeded. We pooled these together from all sample
 sizes to produce table~\ref{table:recall}, and found that the recall of
-QuickSpec ($37\%$) is significantly higher than IsaCoSy ($25\%$) with a p value
+QuickSpec ($37\%$) is significantly higher than IsaCoSy ($25\%$) with a p-value
 of 0.0026.
 
 \begin{table}
@@ -711,7 +815,7 @@ of 0.0026.
     \bfseries Not found by QuickSpec & 4  & 75 \\
     \hline
   \end{tabular}
-  \caption{Contingency table for ground truth properties, combined from those
+  \caption{Contingency table for ground truth properties, pooled from those
     samples where both QuickSpec and IsaCoSy finished successfully. The combined
     recall for QuickSpec is $37\%$ and for IsaCoSy is $25\%$.}
   \label{table:recall}
@@ -735,7 +839,7 @@ shown in table~\ref{table:precision}
     \hline
   \end{tabular}
   \caption{Interesting and uninteresting conjectures generated by QuickSpec and
-    IsaCoSy, combined from those samples where both both finished successfully.
+    IsaCoSy, pooled from those samples where both both finished successfully.
     The combined precision for QuickSpec is $14\%$ and for IsaCoSy is $19\%$.}
   \label{table:precision}
 \end{table}
@@ -808,14 +912,18 @@ practicality, at least in the short term. Futhermore, since research is already
 on-going in these areas, we hope to at least improve on existing evaluation
 practices and offer a common ground for future endeavours.
 
-One notable weakness is that our methodology only makes sense in domains where
-existing human knowledge surpasses that discovered by the machine. Any
-\emph{truly novel} insights discovered during testing will not, by definition,
-appear in any existing corpus, and we would in fact \emph{penalise} tools for
-such output. We do not believe this to be a realistic problem for the time
-being, although it does emphasise the continued importance of testing these
-tools with real human users, rather than relying solely on artificial benchmarks
-such as ours.
+One notable weakness is that our methodology does not allow negative examples,
+such as particularly dull properties that tools should never produce. Everything
+outside the ground truth set is treated equally, whether it's genuinely
+uninteresting or was only left out due to oversight. In particular this limits
+the use of our approach to domains where existing human knowledge surpasses that
+discovered by the machine. Any \emph{truly novel} insights discovered during
+testing will not, by definition, appear in any existing corpus, and we would in
+fact \emph{penalise} tools for such output. We do not believe this to be a
+realistic problem for the time being, as long as evaluation is limited to
+well-studied domains and results can be generalised to real areas of
+application. This does emphasise the continued importance of testing these tools
+with real human users, rather than relying solely on artificial benchmarks.
 
 Another practical limitation of our benchmarking approach is that it only
 applies to tools which act in ``batch mode'', i.e. those which choose to halt
