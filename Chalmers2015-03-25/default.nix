@@ -1,5 +1,6 @@
-with { inherit (import ../resources) bibtex nixpkgs; };
-with nixpkgs.repo1709."809056c";
+with import ../resources;
+with nixpkgs.repo1709.configless;
+with warbo-packages."c2ea27d";
 runCommand "Chalmers-2015-03-25.pdf"
   {
     buildInputs = [ pandocPkgs texlive.combined.scheme-small ];
