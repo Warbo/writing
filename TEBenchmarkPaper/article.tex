@@ -92,21 +92,6 @@ grestore
 \newcommand{\Foldl}{\text{foldl}}
 \newcommand{\Foldr}{\text{foldr}}
 
-% For interestingness table
-\newcommand{\iE}{\textbf{E}}
-\newcommand{\iN}{\textbf{N}}
-\newcommand{\iS}{\textbf{S}}
-\newcommand{\iA}{\textbf{A}}
-\newcommand{\iC}{\textbf{C}}
-\newcommand{\iU}{\textbf{U}}
-\newcommand{\tIFF}{if-and-only-if}
-\newcommand{\tNE}{non-exists}
-\newcommand{\tIMP}{implies}
-\newcommand{\tEQ}{equations}
-\newcommand{\tINE}{inequalities}
-\newcommand{\tCON}{conditional}
-\newcommand{\tRow}[1]{#1 \\ \hline}
-
 % Insert the name of "your journal" with
 \journalname{Journal of Automated Reasoning}
 
@@ -146,11 +131,6 @@ grestore
 
 \maketitle
 
-% Look carefully at each tool's (paper's) eval section
-
-% Make it clear that methodology is the point (it's not just a detail, like in a
-% chemistry paper for example)
-
 \begin{abstract}
   We propose a benchmarking methodology to evaluate the efficiency and quality
   of \emph{conjecture generation} by automated tools for \emph{mathematical
@@ -169,8 +149,6 @@ grestore
 
 \section{Introduction}
 \label{intro}
-
-% Lay out the field of TE: motivation, tools, evaluation, problems...
 
 \emph{Conjecture generation} is the open-ended task of conjecturing properties
 of a given logical theory which are somehow ``interesting'', and is
@@ -242,22 +220,11 @@ literature; and concluding remarks are given in $\S$\ref{sec:conclusion}.
   \url{https://github.com/warbo/isaplanner-tip}.
 \end{sloppypar}
 
-%- Existing approaches are difficult to compare
-% - They want different things
-% - They're evaluated differently
-% - They're evaluated ``locally'' (as white boxen)
-
-% Look at phd symposium 2017, moa's conjecture synthesis paper, etc.
-% We can just jump straight in to automated conjecture generation
-
 \section{Background}
 \label{sec:background}
 
 \subsection{Motivation}
 \label{sec:motivation}
-
-% more detail about evaluation, interestingness, etc. Reference Simon/Alan
-% interestingness, e.g. examples from textbooks, etc.
 
 \begin{figure}
   \begin{equation*}
