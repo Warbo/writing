@@ -20,11 +20,7 @@ rec {
   latex = ./LaTeX.zip;
 
   # The final paper, with all graphs, etc.
-  paper = attrsToDirs {
-    "article.pdf" = rendered;
-  };
-
-  rendered = render {
+  paper = render {
     inherit article;
     inherit (comparison) qualityComparison timeComparison;
     inherit (graphs    ) graphs;
@@ -35,11 +31,31 @@ rec {
       [[ -z "$qualityComparison" ]] || cp -rs "$qualityComparison"/* ./.
       [[ -z "$timeComparison"    ]] || cp -rs "$timeComparison"/*    ./.
 
-      render
-      bibtex article
-      render
-      render
-      mv article.pdf "$out"
+      function go {
+        render 1> >(tee -a STDOUT.txt)
+        bibtex article
+        render 1> >(tee -a STDOUT.txt)
+        render 1> >(tee -a STDOUT.txt)
+      }
+
+      echo "Initial render to figure out bibliography" 1>&2
+      go
+
+      echo "Extracting relevant Bibtex entries" 1>&2
+      bibtool -x article.aux -o NewBib.bib
+      echo "CONTENTS OF NEWBIB:" 1>&2
+      cat NewBib.bib
+      echo "END CONTENTS OF NEWBIB" 1>&2
+      rm -v Bibtex.bib
+      mv -v NewBib.bib Bibtex.bib
+
+      go
+
+      mkdir "$out"
+      for F in article.tex article.pdf Bibtex.bib
+      do
+        mv -v "$F" "$out"/
+      done
     '';
   };
 
@@ -48,6 +64,7 @@ rec {
       {
         inherit article bibtex graphs latex qualityComparison timeComparison;
         buildInputs = [
+          bibtool
           tex
           unzip
           (mkBin {
