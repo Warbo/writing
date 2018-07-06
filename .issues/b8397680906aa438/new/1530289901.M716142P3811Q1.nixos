@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 29 Jun 2018 17:29:49 +0100
-State: new
+State: resolved
 Subject: TEB: Check references
 Message-Id: <b8397680906aa438-0-artemis@nixos>
+resolution: fixed
 
 Citation
 

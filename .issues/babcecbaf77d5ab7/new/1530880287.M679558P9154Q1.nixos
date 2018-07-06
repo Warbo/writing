@@ -1,0 +1,14 @@
+From: Chris Warburton
+Date: Fri, 06 Jul 2018 13:29:06 +0100
+Subject: Re: TEB: Check formatting
+Message-Id: <babcecbaf77d5ab7-f5349850c3e630de-artemis@nixos>
+References: <babcecbaf77d5ab7-0-artemis@nixos>
+In-Reply-To: <babcecbaf77d5ab7-0-artemis@nixos>
+
+All OK except the following:
+
+  The submission should include the original source (including all style
+  files and figures) and a PDF version of the compiled output.
+
+We how to handle "style files"? Do we have any? Are these LaTeX
+packages?

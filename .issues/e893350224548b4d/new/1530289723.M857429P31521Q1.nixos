@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 29 Jun 2018 17:27:40 +0100
-State: new
+State: resolved
 Subject: TEB: Title page
 Message-Id: <e893350224548b4d-0-artemis@nixos>
+resolution: fixed
 
 The title page should include:
 
