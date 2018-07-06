@@ -604,19 +604,19 @@ performance over many samples, we can also compute the \emph{spread} of our
 data, for example the inter-quartile range. This is not possible using the
 one-off measurements common in prior evaluation methods.
 
-Considering precision and recall separately, there are two ways to average these
-for a set of samples. Since both of these measurements are ratios, their means
-are known as the \emph{average of the ratios} (AOR). Using the definitions of
-precision and recall given in $\S$\ref{sec:te}, we can define the average of the
-ratios for $S$ samples indexed by $1 \leq i \leq S$ as follows:
+Precision and recall are ratios, which can be averaged (separately) in two ways,
+known as the \emph{Average of Ratios} (AoR) and the \emph{Ratio of Averages}
+(RoA)~\cite{egghe2012averages}. The Average of Ratios is the mean value. Using
+the definitions of precision and recall given in $\S$\ref{sec:te}, we can define
+their means for $S$ samples indexed by $1 \leq i \leq S$ as follows:
 
 \begin{align*}
-       \overline{\text{precision}}_{AOR}
+       \overline{\text{precision}}_{AoR}
     &= \frac{1}{S} \sum_i{\text{precision}_i} \\
     &= \frac{1}{S} \sum_i{
          \frac{\#\text{interesting}_i}
               {\#\text{generated}_i}}         \\[10pt]
-       \overline{\text{recall}}_{AOR}
+       \overline{\text{recall}}_{AoR}
     &= \frac{1}{S} \sum_i{\text{recall}_i} \\
     &= \frac{1}{S} \sum_i{
          \frac{\#\text{interesting}_i}
@@ -631,22 +631,21 @@ conjectures themselves. Since these are mean values, they are the reference
 point for measures of spread such as the variance, standard deviation and mean
 absolute deviation.
 
-The alternative is to calculate \emph{pooled} averages, by combining the
-(multi)sets from each sample before taking the ratios. The size of these pooled
-sets is simply the sum of the individual set sizes, and ratios of these sums are
-equal to ratios of the means (since the normalising factor $\frac{1}{S}$ appears
-in both numerator and denominator). Hence these values are known as the
-\emph{ratio of the averages} (ROA):
+The Ratio of Averages is \emph{pooled}, combining the (multi)sets from each
+sample before taking the ratios. The size of these pooled sets is simply the sum
+of the individual set sizes, and ratios of these sums are equal to ratios of the
+means (since the normalising factor $\frac{1}{S}$ appears in both numerator and
+denominator):
 
 \begin{align*}
-       \overline{\text{precision}}_{ROA}
+       \overline{\text{precision}}_{RoA}
     &= \frac{\sum_i{\#\text{interesting}_i}}
             {\sum_i{\#\text{generated}_i}}                              \\
     &= \frac{\frac{1}{S} \sum_i{\#\text{interesting}_i}}
             {\frac{1}{S} \sum_i{\#\text{generated}_i}}                  \\
     &= \frac{\hspace{5pt} \overline{\#\text{interesting}} \hspace{5pt}}
             {\hspace{5pt} \overline{\#\text{generated}}   \hspace{5pt}} \\[10pt]
-       \overline{\text{recall}}_{ROA}
+       \overline{\text{recall}}_{RoA}
     &= \frac{\sum_i{\#\text{interesting}_i}}
             {\sum_i{\#\text{groundtruth}_i}}                            \\
     &= \frac{\frac{1}{S} \sum_i{\#\text{interesting}_i}}
@@ -655,17 +654,17 @@ in both numerator and denominator). Hence these values are known as the
             {\hspace{5pt} \overline{\#\text{groundtruth}} \hspace{5pt}}
 \end{align*}
 
-Larger sets contribute more to a ratio of averages, unlike the mean which treats
+Larger sets contribute more to a Ratio of Averages, unlike the mean which treats
 each set equally. This weighting gives us expected qualities of
-\emph{conjectures} rather than sets: the ROA for precision is the expected
+\emph{conjectures} rather than sets: the RoA for precision is the expected
 chance that some particular generated conjecture will appear in the ground
-truth; the ROA for recall is the expected chance that some particular ground
+truth; the RoA for recall is the expected chance that some particular ground
 truth property will appear in the generated output.
 
 These averages can differ when there is a large variation in set size. For
 example, if we generate a single, interesting conjecture for one sample and 99
-uninteresting conjectures for another sample, the AOR (mean) precision will be
-$\frac{1}{2}$ but the ROA precision will be $\frac{1}{100}$. This highlights the
+uninteresting conjectures for another sample, the AoR (mean) precision will be
+$\frac{1}{2}$ but the RoA precision will be $\frac{1}{100}$. This highlights the
 importance of knowing \emph{absolute} numbers of conjectures, such as the mean
 output size $\overline{\#\text{generated}}$ and its spread, alongside the
 proportions given by precision and recall.
