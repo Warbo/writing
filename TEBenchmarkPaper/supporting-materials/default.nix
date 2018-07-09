@@ -19,8 +19,6 @@ rec {
   # http://www.springer.com/cda/content/document/cda_downloaddocument/?SGWID=0-0-45-468198-0
   latex = ./LaTeX.zip;
 
-  # The final paper, with all graphs, etc.
-  paper = render {
   styFinder = wrap {
     name   = "styfinder.py";
     paths  = [ python ];
@@ -38,6 +36,36 @@ rec {
     '';
   };
 
+  # The final paper, with all graphs, etc. built from the directory we're going
+  # to send to the publisher.
+  paper = runCommand "benchmark-paper"
+    {
+      inherit latex;
+      buildInputs = [
+        (texlive.combine { inherit (texlive) scheme-medium; })
+        unzip
+      ];
+      src = parallelConstruction;
+    }
+    ''
+      cp -r "$src" "$out"
+      cp -r "$src" ./src
+      chmod +w -R  ./src "$out"
+      cd src/
+      unzip "$latex"
+      pdflatex -interaction=nonstopmode -halt-on-error article
+      bibtex article
+      pdflatex -interaction=nonstopmode -halt-on-error article
+      pdflatex -interaction=nonstopmode -halt-on-error article
+      cp article.pdf "$out"/
+    '';
+
+  # Render the paper in a "sane" way (using a LaTeX installation with the
+  # required packages, generating fresh figures from the data, using
+  # semantically meaningful filenames, using a unified bibtex database, etc.).
+  # We then inspect the build logs to find style files, citations, etc. and
+  # construct a directory containing copies of those things.
+  parallelConstruction = render {
     inherit article;
     inherit (comparison) qualityComparison timeComparison;
     inherit (graphs    ) graphs;
