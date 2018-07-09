@@ -21,6 +21,23 @@ rec {
 
   # The final paper, with all graphs, etc.
   paper = render {
+  styFinder = wrap {
+    name   = "styfinder.py";
+    paths  = [ python ];
+    script = ''
+      #!/usr/bin/env python
+      import re
+      import sys
+      replace      = lambda old, new: lambda s: s.replace(old, new)
+      join_lines   = replace("/\ntex", "/tex")
+      strip_prefix = replace("(/nix/store", "/nix/store")
+
+      for m in re.finditer('/nix/store/[^ \n]*\.sty',
+                           strip_prefix(join_lines(sys.stdin.read()))):
+        print(m.group())
+    '';
+  };
+
     inherit article;
     inherit (comparison) qualityComparison timeComparison;
     inherit (graphs    ) graphs;
@@ -51,10 +68,17 @@ rec {
 
       go
 
+      echo "Looking for style files" 1>&2
+      STYLES=$("${styFinder}" < STDOUT.txt | sort -u)
+
       mkdir "$out"
       for F in article.tex article.pdf Bibtex.bib
       do
         mv -v "$F" "$out"/
+      done
+      echo "$STYLES" | while read -r STYLE
+      do
+        cp -v "$STYLE" "$out"/
       done
     '';
   };
@@ -65,6 +89,7 @@ rec {
         inherit article bibtex graphs latex qualityComparison timeComparison;
         buildInputs = [
           bibtool
+          replace
           tex
           unzip
           (mkBin {
