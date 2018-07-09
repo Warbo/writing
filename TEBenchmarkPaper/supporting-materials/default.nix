@@ -60,9 +60,6 @@ rec {
 
       echo "Extracting relevant Bibtex entries" 1>&2
       bibtool -x article.aux -o NewBib.bib
-      echo "CONTENTS OF NEWBIB:" 1>&2
-      cat NewBib.bib
-      echo "END CONTENTS OF NEWBIB" 1>&2
       rm -v Bibtex.bib
       mv -v NewBib.bib Bibtex.bib
 
@@ -71,8 +68,9 @@ rec {
       echo "Looking for style files" 1>&2
       STYLES=$("${styFinder}" < STDOUT.txt | sort -u)
 
+      # Create a directory of all the inputs needed for LaTeX rendering
       mkdir "$out"
-      for F in article.tex article.pdf Bibtex.bib
+      for F in article.tex Bibtex.bib *.pgf *.csv
       do
         mv -v "$F" "$out"/
       done
