@@ -104,6 +104,14 @@ rec {
 
       mkdir "$out"
 
+      PRE='\begin{filecontents*}{speedups.csv}'
+      POST='\end{filecontents*}'
+      DATA=$(cat speedups.csv)
+      SPEEDUPDATA=$(printf '%s\n%s\n%s' "$PRE" "$DATA" "$POST")
+
+      rm speedups.csv
+      replace "%INCLUDE SPEEDUP CSV HERE" "$SPEEDUPDATA" -- article.tex
+
       echo "Initial render to figure out bibliography and generate figures" 1>&2
       go || {
         for F in *.log
