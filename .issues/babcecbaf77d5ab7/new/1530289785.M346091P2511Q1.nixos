@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Fri, 29 Jun 2018 17:28:46 +0100
-State: new
+State: resolved
 Subject: TEB: Check formatting
 Message-Id: <babcecbaf77d5ab7-0-artemis@nixos>
+resolution: fixed
 
 Text Formatting
 
