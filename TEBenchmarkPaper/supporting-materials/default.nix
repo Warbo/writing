@@ -42,10 +42,24 @@ rec {
     {
       inherit latex;
       buildInputs = [
-        (texlive.combine { inherit (texlive) scheme-medium; })
+        ghostscript
+        (mkBin {
+          name   = "repstopdf";
+          paths  = [ bash ];
+          script = ''
+            #!/usr/bin/env bash
+            command -v epstopdf || {
+              echo "No epstopdf command found!" 1>&2
+              exit 1
+            }
+            epstopdf --restricted "$@"
+          '';
+        })
+        (texlive.combine { inherit (texlive) epstopdf scheme-medium; })
         unzip
       ];
-      src = parallelConstruction;
+      src     = finalMaterials;
+      article = "${finalMaterials}/article.tex";
     }
     ''
       cp -r "$src" "$out"
@@ -65,14 +79,19 @@ rec {
   # semantically meaningful filenames, using a unified bibtex database, etc.).
   # We then inspect the build logs to find style files, citations, etc. and
   # construct a directory containing copies of those things.
-  parallelConstruction = render {
+  finalMaterials = render {
     inherit article;
     inherit (comparison) qualityComparison timeComparison;
     inherit (graphs    ) graphs;
-    name   = "benchmark-article.pdf";
+    name   = "final-materials";
     script = ''
       ln -s "$bibtex" ./Bibtex.bib
-      [[ -z "$graphs"            ]] || cp -rs "$graphs"/*            ./.
+      [[ -z "$graphs"            ]] || {
+        cp "$graphs"/quickspectime.eps ./Fig3.eps
+        cp "$graphs"/quickspecprec.eps ./Fig4.eps
+        cp "$graphs"/isacosytime.eps   ./Fig5.eps
+        cp "$graphs"/isacosyprec.eps   ./Fig6.eps
+      }
       [[ -z "$qualityComparison" ]] || cp -rs "$qualityComparison"/* ./.
       [[ -z "$timeComparison"    ]] || cp -rs "$timeComparison"/*    ./.
 
@@ -83,29 +102,36 @@ rec {
         render 1> >(tee -a STDOUT.txt)
       }
 
-      echo "Initial render to figure out bibliography" 1>&2
-      go
+      mkdir "$out"
+
+      echo "Initial render to figure out bibliography and generate figures" 1>&2
+      go || {
+        for F in *.log
+        do
+          echo "CONTENTS OF $F" 1>&2
+          cat "$F" 1>&2
+        done
+        exit 1
+      }
 
       echo "Extracting relevant Bibtex entries" 1>&2
       bibtool -x article.aux -o NewBib.bib
-      rm -v Bibtex.bib
-      mv -v NewBib.bib Bibtex.bib
+      mv -v NewBib.bib "$out/Bibtex.bib"
 
-      go
+      echo "Copying EPS figures (non-TikZ)" 1>&2
+      cp -v Fig*.eps "$out"/
 
       echo "Looking for style files" 1>&2
       STYLES=$("${styFinder}" < STDOUT.txt | sort -u)
-
-      # Create a directory of all the inputs needed for LaTeX rendering
-      mkdir "$out"
-      for F in article.tex Bibtex.bib *.pgf *.csv
-      do
-        mv -v "$F" "$out"/
-      done
       echo "$STYLES" | while read -r STYLE
       do
         cp -v "$STYLE" "$out"/
       done
+
+      echo "Copying CSV data" 1>&2
+      cp -v *.csv "$out"/
+
+      cp -v article.tex "$out"/
     '';
   };
 
@@ -115,6 +141,8 @@ rec {
         inherit article bibtex graphs latex qualityComparison timeComparison;
         buildInputs = [
           bibtool
+          ghostscript
+          poppler_utils # For pdftops
           replace
           tex
           unzip
@@ -140,8 +168,9 @@ rec {
   # document and the matplotlib graphs
   tex = (texlive.combine {
     inherit (texlive)
-    csvsimple scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e
-    algorithms enumitem frankenstein csquotes multirow type1cm;
+      collection-binextra csvsimple scheme-small tikzinclude tikz-qtree
+      algorithmicx algorithm2e algorithms enumitem epstopdf frankenstein
+      csquotes multirow standalone type1cm;
   });
 
   # Render a "dummy" version of the paper which has all of the same styling, but

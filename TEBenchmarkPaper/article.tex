@@ -45,6 +45,7 @@ grestore
 % insert here the call for the packages your document requires
 \usepackage{csvsimple}
 \usepackage[inline, shortlabels]{enumitem}
+\usepackage{epstopdf}
 \usepackage{hyperref}
 \usepackage{mathtools}
 \usepackage{tikz}
@@ -1040,7 +1041,7 @@ need to automate some of the decisions which are normally left up to the user:
 
 \begin{figure}
   \centering
-  \input{quickspectime.pgf}
+  \includegraphics[scale=1]{Fig3}
   \caption{Running times of QuickSpec on theories sampled from TIP. Each point
     is a successful run (spread out horizontally to reduce overlaps). Red
     crosses show runs which timed out, which occurred for every size. Each size
@@ -1054,7 +1055,7 @@ need to automate some of the decisions which are normally left up to the user:
 
 \begin{figure}
   \centering
-  \input{quickspecprec.pgf}
+  \includegraphics[scale=1]{Fig4}
   \caption{Precision and recall of successful QuickSpec runs (spread
     horizontally to reduce overlaps). Lines show the mean proportion for each
     sample size (Average of Ratios) and errorbars show the sample standard
@@ -1140,7 +1141,7 @@ make our benchmark applicable to IsaCoSy:
 
 \begin{figure}
   \centering
-  \input{isacosytime.pgf}
+  \includegraphics[scale=1]{Fig5}
   \caption{Running times of IsaCoSy on theories sampled from TIP. Each point
     is a successful run (spread out horizontally to reduce overlaps). Red
     crosses are failed runs, caused by timeouts or out-of-memory. All runs of
@@ -1155,7 +1156,7 @@ make our benchmark applicable to IsaCoSy:
 
 \begin{figure}
   \centering
-  \input{isacosyprec.pgf}
+  \includegraphics[scale=1]{Fig6}
   \caption{Precision and recall of all successful IsaCoSy runs (spread
     horizontally to reduce overlaps); there were no successes above size 6.
     Lines show the mean proportion for each sample size (Average of Ratios),
