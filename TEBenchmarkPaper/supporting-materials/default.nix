@@ -74,6 +74,28 @@ rec {
       cp article.pdf "$out"/
     '';
 
+  embedFileAt = wrap {
+    name   = "embedFileAt";
+    script = ''
+      #!/usr/bin/env bash
+      set -e
+       TOKEN="$1"
+      SOURCE="$2"
+      INFILE="$3"
+
+      echo "Replacing '$TOKEN' with contents of '$SOURCE' in '$INFILE'" 1>&2
+
+      grep -B 999999 "$TOKEN" < "$INFILE"
+
+      NAME=$(basename "$SOURCE")
+      echo '\begin{filecontents*}{'"$NAME"'}'
+      cat "$SOURCE"
+      echo '\end{filecontents*}'
+
+      grep -A 999999 "$TOKEN" < "$INFILE" | tail -n+2
+    '';
+  };
+
   # Render the paper in a "sane" way (using a LaTeX installation with the
   # required packages, generating fresh figures from the data, using
   # semantically meaningful filenames, using a unified bibtex database, etc.).
@@ -104,41 +126,31 @@ rec {
 
       mkdir "$out"
 
-      PRE='\begin{filecontents*}{speedups.csv}'
-      POST='\end{filecontents*}'
-      DATA=$(cat speedups.csv)
-      SPEEDUPDATA=$(printf '%s\n%s\n%s' "$PRE" "$DATA" "$POST")
+      "${embedFileAt}" '%INCLUDE SPEEDUP CSV HERE' speedups.csv article.tex > temp
+      mv temp article.tex
+      replace '%INCLUDE SPEEDUP CSV HERE' "" -- article.tex
 
-      rm speedups.csv
-      replace "%INCLUDE SPEEDUP CSV HERE" "$SPEEDUPDATA" -- article.tex
-
-      echo "Initial render to figure out bibliography and generate figures" 1>&2
-      go || {
-        for F in *.log
-        do
-          echo "CONTENTS OF $F" 1>&2
-          cat "$F" 1>&2
-        done
-        exit 1
-      }
+      echo "Initial render to figure out bibliography" 1>&2
+      go
 
       echo "Extracting relevant Bibtex entries" 1>&2
       bibtool -x article.aux -o NewBib.bib
-      mv -v NewBib.bib "$out/Bibtex.bib"
-
-      echo "Copying EPS figures (non-TikZ)" 1>&2
-      cp -v Fig*.eps "$out"/
+      mv NewBib.bib Bibtex.bib
+      "${embedFileAt}" '%INCLUDE BIBTEX HERE' Bibtex.bib article.tex > temp
+      mv temp article.tex
+      replace "%INCLUDE BIBTEX HERE" "" -- article.tex
 
       echo "Looking for style files" 1>&2
       STYLES=$("${styFinder}" < STDOUT.txt | sort -u)
       echo "$STYLES" | while read -r STYLE
       do
-        cp -v "$STYLE" "$out"/
+        "${embedFileAt}" "%INCLUDE STYLES HERE" "$STYLE" article.tex > temp
+        mv temp article.tex
       done
+      replace "%INCLUDE STYLES HERE" "" -- article.tex
 
-      echo "Copying CSV data" 1>&2
-      cp -v *.csv "$out"/
-
+      echo "Copying LaTeX and figures" 1>&2
+      cp -v Fig*.eps    "$out"/
       cp -v article.tex "$out"/
     '';
   };
