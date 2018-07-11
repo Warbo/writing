@@ -12,10 +12,7 @@ stdenv.mkDerivation {
     pkgs.blockdiag
 
     # Document rendering
-    pkgs.haskellPackages.pandoc
-    pkgs.haskellPackages.pandocCiteproc
-    panpipe
-    panhandle
+    (import ../resources).warbo-packages."c2ea27d".pandocPkgs
 
     # Embedded code snippets
     #coq_mtac

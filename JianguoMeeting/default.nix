@@ -1,8 +1,8 @@
-with { inherit (import ../resources) nixpkgs; };
+with { inherit (import ../resources) nixpkgs warbo-packages; };
 with nixpkgs.repo1703."2cc683b";
 runCommand "render"
   {
-    buildInputs    = [ goat pandoc panpipe panhandle ];
+    buildInputs    = [ goat warbo-packages."c2ea27d".pandocPkgs ];
     src            = ./.;
     LANG           = "en_US.UTF-8";
     LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive";

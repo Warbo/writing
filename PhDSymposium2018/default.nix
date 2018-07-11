@@ -40,7 +40,7 @@ with { defs = rec {
   slides = pkgs.runCommand "slides.pdf"
     {
       inherit (resources) bibtex;
-      buildInputs = [ pkgs.pandocPkgs tex ];
+      buildInputs = [ resources.warbo-packages."c2ea27d".pandocPkgs tex ];
       graphs      = ./graphs;
       slides      = ./slides.md;
     }

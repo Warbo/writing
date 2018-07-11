@@ -1,7 +1,8 @@
 # Supporting materials shared by abstract/ and slides/
-{ callPackage, jq, latestGit, lib, pandocPkgs, racket, runCommand, writeScript }:
+{ callPackage, jq, latestGit, lib, racket, runCommand, writeScript }:
 with builtins;
 with lib;
+with { inherit ((import ../resources).warbo-packages."c2ea27d") pandocPkgs; };
 rec {
   tex = callPackage ./tex.nix {};
 

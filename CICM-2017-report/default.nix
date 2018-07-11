@@ -1,4 +1,4 @@
-with { inherit (import ../resources) nixpkgs; };
+with { inherit (import ../resources) nixpkgs warbo-packages; };
 with nixpkgs.repo1703."00ef7f9";
 
 {
@@ -6,7 +6,7 @@ with nixpkgs.repo1703."00ef7f9";
     {
       source      = ./report.md;
       buildInputs = [
-        pandocPkgs
+        warbo-packages."c2ea27d".pandocPkgs
         (texlive.combine {
           inherit (texlive)
             scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e

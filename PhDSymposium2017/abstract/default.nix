@@ -1,7 +1,7 @@
 with rec {
   inherit (import ../../resources)        bibtex nixpkgs;
   inherit (nixpkgs.repo1609."2cc683b")    callPackage runCommand;
-  inherit (callPackage ../support.nix { pandocPkgs = null; }) tex;
+  inherit (callPackage ../support.nix {}) tex;
 };
 
 runCommand "phd-symposium-2017-abstract.pdf"

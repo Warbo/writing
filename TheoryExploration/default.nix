@@ -1,7 +1,9 @@
 with builtins;
 with rec {
   inherit ((import ../resources).nixpkgs.repo1609."00ef7f9")
-    lib pandocPkgs runCommand texlive withNix;
+    lib runCommand texlive withNix;
+  inherit ((import ../resources).warbo-packages."c2ea27d")
+    pandocPkgs;
 };
 with lib;
 with rec {

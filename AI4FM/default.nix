@@ -1,4 +1,4 @@
-with { inherit (import ../resources) bibtex nixpkgs; };
+with { inherit (import ../resources) bibtex nixpkgs warbo-packages; };
 with nixpkgs.repo1609."00ef7f9";
 with rec {
   # Take TeX from 1703
@@ -12,7 +12,7 @@ runCommand "ai4fm"
   {
     inherit bibtex;
     src         = ./.;
-    buildInputs = [ ditaa pandocPkgs tex ];
+    buildInputs = [ ditaa warbo-packages."c2ea27d".pandocPkgs tex ];
   }
   ''
     set -e
