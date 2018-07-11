@@ -3,8 +3,7 @@ with nixpkgs.repo1709.configless;
 with warbo-packages."c2ea27d";
 runCommand "Chalmers-2015-03-25.pdf"
   {
-    buildInputs = [ warbo-packages."c2ea27d".pandocPkgs
-                    texlive.combined.scheme-small ];
+    buildInputs = [ pandocPkgs texlive.combined.scheme-small ];
     src         = ./.;
   }
   ''
