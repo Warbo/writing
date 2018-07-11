@@ -303,7 +303,7 @@ def newFigure(name):
 def savePlot(name):
     '''Write our the current figure as LaTeX.'''
     plt.tight_layout()
-    plt.savefig(name + '.pgf', bbox_inches='tight', pad_inches=0.0)
+    plt.savefig(name + '.eps', bbox_inches='tight', pad_inches=0.0)
 
 def aggProp(system, sizes=None, agg=None, key=None, total=None):
     import math
