@@ -52,8 +52,6 @@ grestore
   shapes.geometric}
 % etc.
 
-\graphicspath{ {support/} }
-
 % please place your own definitions here and don't use \def but
 % \newcommand{}{}
 
@@ -250,7 +248,7 @@ literature; and concluding remarks are given in $\S$\ref{sec:conclusion}.
   \end{equation*}
   \caption{A simple theory defining a $\List$ type and some associated
     operations, taken from~\cite{Johansson.Dixon.Bundy:conjecture-generation}.
-    $\Zero$ and $\Succ$ are from a Peano encoding of the natural numbers.}
+    $\Zero$ and $\Succ$ are from a Peano encoding of the natural numbers}
   \label{figure:list_theory}
 \end{figure}
 
@@ -741,6 +739,7 @@ the test is conditioned on the number of generated conjectures (as if this were
 fixed by design, rather than determined by the tool).
 
 \begin{figure}
+  \centering
   \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm,
                            minimum height=1cm,text centered, draw=black]
 
@@ -758,7 +757,6 @@ fixed by design, rather than determined by the tool).
   % Avoids too much padding in io shapes
   \tikzset{trapezium stretches=true}
 
-  \centering
   \begin{tikzpicture}[node distance=1cm]
 
     % Preparation section
@@ -1050,7 +1048,7 @@ need to automate some of the decisions which are normally left up to the user:
     sampling restrictions. Box plots show inter-quartile range, which reaches
     the timeout for sizes above 8. Medians are marked with a line and remain
     near zero until size 10, with those of size 13 and 20 timing out. Whiskers
-    show 1.5$\times$~inter-quartile range.}
+    show 1.5$\times$~inter-quartile range}
   \label{figure:quickspec_runtimes}
 \end{figure}
 
@@ -1151,7 +1149,7 @@ make our benchmark applicable to IsaCoSy:
     restrictions. Box plots show inter-quartile range, which grows with size,
     and lines mark the median time, which increases rapidly from around 100
     seconds at size 1 to timing out at size 4 and above. Whiskers show
-    1.5$\times$~inter-quartile range.}
+    1.5$\times$~inter-quartile range}
   \label{figure:isacosy_runtimes}
 \end{figure}
 
@@ -1163,7 +1161,7 @@ make our benchmark applicable to IsaCoSy:
     Lines show the mean proportion for each sample size (Average of Ratios),
     which trends downwards for precision and appears flat for recall, although
     there are too few datapoints to be definitive. Errorbars show the sample
-    standard deviation.}
+    standard deviation}
   \label{figure:isacosy_precRec}
 \end{figure}
 
