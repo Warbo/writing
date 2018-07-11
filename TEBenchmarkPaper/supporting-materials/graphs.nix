@@ -1,5 +1,6 @@
-{ fail, fetchgit, jq, lzip, mkBin, nixListToBashArray, perl, python, R, replace,
-  rPackages, runCommand, tetex, tex, textWidth, which, wrap, writeScript }:
+{ fail, fetchgit, ghostscript, jq, lzip, mkBin, nixListToBashArray, perl,
+  python, R, replace, rPackages, runCommand, tetex, tex, textWidth, which, wrap,
+  writeScript }:
 
 with builtins;
 rec {
@@ -203,6 +204,7 @@ rec {
         file  = ./mkBenchmarkGraphs.py;
         vars  = graphDims // { inherit textWidth; };
         paths = [
+          ghostscript
           (python.withPackages (p: [ p.matplotlib p.numpy p.seaborn ]))
           tetex-hack
           tex
