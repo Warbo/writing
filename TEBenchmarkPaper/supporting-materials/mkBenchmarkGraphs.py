@@ -255,13 +255,13 @@ def figSize(widthFraction, height=None):
 # Taken from http://bkanuka.com/articles/native-latex-plots
 mpl.rcParams.update({
     'pgf.texsystem' : 'pdflatex',
-    'text.usetex'   : True,  # Use LaTeX to write all text
+    #'text.usetex'   : True,  # Use LaTeX to write all text
 
     # '[]' causes fonts to be inherited from document
     'font.family'     : 'serif',
-    'font.serif'      : [],
-    'font.sans-serif' : [],
-    'font.monospace'  : [],
+    #'font.serif'      : [],
+    #'font.sans-serif' : [],
+    #'font.monospace'  : [],
 
     # LaTeX default is 10pt font.
     'axes.labelsize'  : 10,
