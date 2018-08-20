@@ -1,22 +1,12 @@
-\subsubsection{Relevance Filtering}
+\subsection{Relevance Filtering}
 \label{sec:relevance}
 
 % TODO
 \cite{kuhlwein2012overview}
 
-The combinatorial nature of formal systems causes many proof search methods,
-such as resolution, to have exponential complexity
-\cite{haken1985intractability}; hence even a modest size increase can turn a
-trivial problem into an intractable one. Finding efficient alternatives for such
-algorithms, especially those which are NP-complete (e.g. determining
-satisfiability) or co-NP-complete (e.g. determining tautologies), seems
-unlikely, as it would imply progress on the famously intractable open problems
-of $\text{P} = \text{NP}$ and $\text{NP} = \text{co-NP}$. On the other hand, we
-can turn this difficulty around: a modest \emph{decrease} in size may turn an
-intractable problem into a solvable one. We can ensure that the solutions to
-these reduced problems coincide with the original if we only remove
-\emph{redundant} information. This leads to the idea of \emph{relevance
-  filtering}.
+One fruitful application of machine learning methods to formal mathematics is
+\emph{relevance filtering}, which is used for \emph{premise selection} in
+automated theorem provers.
 
 Relevance filtering simplifies a proof search problem by removing from
 consideration those clauses (axioms, definitions, lemmas, etc.) which are deemed
@@ -27,45 +17,48 @@ included. This reduces the size of the problem and speeds up the proof search,
 but it creates the new problem of determining when a clause is relevant: how do
 we know what will be required, before we have the proof?
 
-The initial approach, known as \textsc{MePO} (from \emph{Meng-Paulson}
-\cite{meng2009lightweight}), gives each clause a score based on the proportion
-$m / n$ of its symbols which are ``relevant'' (where $n$ is the number of
-symbols in the clause and $m$ is the number which are relevant). Initially, the
-relevant symbols are those which occur in the goal, but whenever a clause is
-found which scores more than a particular threshold, all of its symbols are then
-also considered relevant. There are other heuristics applied too, such as
-increasing the score of user-provided facts (e.g. given by keywords like
-\texttt{using}), locally-scoped facts, first-order facts and rarely-occuring
-facts. To choose $r$ relevant clauses for an ATP invocation, we simply order the
-clauses by decreasing score and take the first $r$ of them.
+Sledgehammer's initial approach, known as \textsc{MePO} (from
+\emph{Meng-Paulson} \cite{meng2009lightweight}), gives each clause a score based
+on the proportion $m / n$ of its symbols which are ``relevant'' (where $n$ is
+the number of symbols in the clause and $m$ is the number which are relevant).
+Initially, the relevant symbols are those which occur in the goal, but whenever
+a clause is found which scores more than a particular threshold, all of its
+symbols are then also considered relevant. There are other heuristics applied
+too, such as increasing the score of user-provided facts (e.g. given by keywords
+like \texttt{using}), locally-scoped facts, first-order facts and
+rarely-occuring facts. To choose $r$ relevant clauses for an ATP invocation, we
+simply order the clauses by decreasing score and take the first $r$ of them.
 
 Recently, a variety of alternative algorithms have also been investigated,
-including:
+dubbed \textsc{MaSH}, \textsc{SInE}, \textsc{BliStr}, \textsc{HOLyHammer},
+\textsc{MoMM}, \textsc{SNoW}, \textsc{MPTP 0.2}, \textsc{MaLARea} and
+\textsc{MaLARea SG1}. Each one combines an ``off the shelf'' machine learning
+algorithm with a custom feature extraction approach, is trained using a corpus
+of existing theorems and their proofs, and evaluated by trying to re-prove a
+selection of unseen theorems from the corpus (i.e. given only the theorem
+statement and possible lemmas, not the existing proof).
 
-\begin{description}
-\item{\textsc{MaSH}}: Machine Learning for SledgeHammer
-  \cite{kuhlwein2013mash}. The distinguishing feature of \textsc{MaSH} is its
-  use of ``visibility'', which is essentially a dependency graph of which
-  theorems were used in the proofs of which other theorems; although theorems
-  are represented as abstract sets of features. To select relevant clauses for a
-  goal, the set of clauses which are visible from the goal's components is
-  generated; this is further reduced by (an efficient approximation of) a naive
-  Bayes algorithm.
+For example the Machine Learning for SledgeHammer (\textsc{MaSH}) system
+defines a notion of ``visibility''~\cite{kuhlwein2013mash}. This is essentially
+a dependency graph of which theorems were used in the proofs of which other
+theorems (theorems are represented as abstract sets of features, rather than
+e.g. sentences or syntax trees). To select relevant clauses for a goal, the
+set of clauses which are ``visible'' from the goal's components is generated;
+this is further reduced by (an efficient approximation of) a naive Bayes
+algorithm.
 
-\item{\textsc{MOR}}: \emph{Multi-output ranking} uses a support vector machine
-  (SVM) approach for selecting relevant axioms from the Mizar Mathematical
-  Library for use by the Vampire ATP system \cite{alama2014premise}. \iffalse
-  TODO: describe the kernel, as that's the interesting bit \fi It compares
-  favourably to \textsc{SNoW} and \textsc{SInE}.
+The Multi-output ranking (\textsc{MOR}) implementation uses a support vector
+machine (SVM) to select relevant axioms from the Mizar Mathematical Library for
+use by the Vampire ATP system~\cite{alama2014premise}.
+%TODO: describe the kernel, as that's the interesting bit.
 
-  % TODO:
-\item{\textsc{SInE}}
-\item{\textsc{BliStr}}
-\item{\textsc{HOLyHammer}}
-\item{\textsc{MoMM}}
-\item{\textsc{SNoW}}
-\item{\textsc{MPTP 0.2}}
-\item{\textsc{MaLARea}}
-\item{\textsc{MaLARea SG1}}
-
-\end{description}
+The premise selection problem for theorem proving is related to the signature
+selection problem for theory exploration, in that both are trying to pick a
+small number of terms (depending on the speed of the subsequent algorithm and
+how long the user is willing to wait) from a large set, to optimise the
+outcome of that algorithm (e.g. finding a proof quickly; or finding many
+interesting relationships quickly). The major difference is that premise
+selection has a particular ``target'' theorem statement, against which to
+compare each term (e.g. for the ``relevance'' of their sub-terms). This is not
+the case for theory exploration, so we must consider the interactions of each
+term with all of the others when deciding what to select.
