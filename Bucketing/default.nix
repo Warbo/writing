@@ -33,9 +33,10 @@ runCommand "bucketing.pdf"
 
     $cmd
     echo "RUNNING bibtex"
-	  bibtex report
+    bibtex report
     $cmd
     $cmd
 
-    cp "report.pdf" "$out"
+    mkdir "$out"
+    cp "report.pdf" "$out"/
   ''
