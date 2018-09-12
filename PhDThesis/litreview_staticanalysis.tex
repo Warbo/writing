@@ -1,15 +1,16 @@
 \subsection{Automated Software Improvement}
 
 Software for analysing and improving code can be roughly divided into two
-categories. Those which contribute to the running of a program, such as
-(optimising) compilers, linkers and interpreters must produce correct,
-predictable, desirable results in a timely manner; for example, compiler
-optimisations should not alter program semantics, should provide improvements in
-the majority of cases (i.e. they should not be \emph{pessimisations}) and under
-which they apply should be predictable enough to prevent spurious performance
-regressions when making seemingly innocuous refactorings. Optimisations in
-ahead-of-time (AOT) compilers must be fast enough to run during every build, and
-should have a large enough impact on the generated code's performance that they
+categories. Some contribute to the running of a program, such as (optimising)
+compilers, linkers and interpreters. These must produce correct, predictable,
+desirable results in a timely manner. For example, compiler optimisations should
+not alter program semantics, should provide monotonic improvements in the
+majority of cases (i.e. they should not be \emph{pessimisations}) and conditions
+under which they apply should be predictable enough to prevent spurious
+performance regressions when making seemingly innocuous
+refactorings~\cite{robison2001impact}. Optimisations in ahead-of-time (AOT)
+compilers must be fast enough to run during every build, and should have a large
+enough impact on the generated code's performance that they
 ``pay for themselves''~\cite{Franz1994}; for just-in-time (JIT) compilers such
 ideals become hard requirements, since any runtime transformation which doesn't
 pay for itself is, by definition, a pessimisation.
@@ -19,7 +20,7 @@ building or executing the target code, and whose results do not contribute
 directly to the code's output. These include tools for testing, profiling,
 verification, standards compliance, etc. Our application of theory exploration
 to software libraries fits into this latter category, whose constraints are not
-as restricting as those applying to tools like compilers. The only real
+as stringent as those applying to tools like compilers. The only real
 restrictions on our tools are that their resource requirements are acceptable to
 users, and that output is sufficiently high quality to be worth waiting for and
 sifting through.
@@ -27,36 +28,38 @@ sifting through.
 Some of the simplest code improvement tools are known as \emph{linters}, after
 the \textsc{Lint} tool for the C programming language~\cite{Johnson78lint}.
 Linters are characterised by parsing the given code and looking for occurrences
-of certain syntax patterns, for example definitions which are never used or
+of certain syntax patterns, for example definitions which are never used, or
 ``no-op'' constructs (e.g. \texttt{(x < 0)} when \texttt{x} is of
 unsigned/non-negative type, making this comparison always false).
 
-A popular linter for Haskell code is \texttt{HLint}~\cite{mitchell2014hlint},
+A popular linter for Haskell code is \textsc{HLint}~\cite{mitchell2014hlint},
 which focuses mostly on simplifying code; for example by spotting use-cases for
-common library functions, e.g. replacing a pattern match \texttt{case A of \{
-  Nothing -> B; Just C -> D C; \}} with the function call \texttt{maybe B D A}.
+common library functions like \texttt{null x} instead of \texttt{length x == 0}.
 Linting can be seen as the inverse of theory exploration: rather than inferring
-general relationships from repeated patterns in the code, linting begins with
-known relationships and looks through the code for specific instances. Whilst
-linting is a useful programming aid, and fast enough to apply regularly (e.g. as
-a background process in a code editor), it is not an open-ended process: once
-the predetermined patterns are exhausted, no more improvements will be found.
+novel, general relationships from patterns found in the code, linting begins
+with known relationships and looks through the code for specific instances.
+Whilst linting is a useful programming aid, and fast enough to apply regularly
+(e.g. as a background process in a code editor), it is not an open-ended
+process: once the predetermined patterns are exhausted, no more improvements
+will be found.
 
 If fast but limited linters live at one end of a code improvement spectrum, at
 the other end we find \emph{superoptimisers}~\cite{massalin1987superoptimizer}.
-These treat the target program as a specification, and perform an open-ended
-search through the space of all programs (in some specific language, usually a
-subset of machine code which is free of branches and side-effects) to find all
-possible implementations. Superoptimisers need some way to check program
-equivalence, such as a test suite (to quickly eliminate incorrect programs) and
-a theorem prover. Proving equivalence of machine code programs is helped by the
-uniform, finite nature of their domain (e.g. a fixed set of 32bit registers).
-Programs in higher level languages, like Haskell, may have unlimited input
-domains (say, the natural numbers), which makes effective testing more difficult
-and proofs potentially undecidable. A decidable method of comparison is also
-required, to choose which of two equivalent programs is ``better''. This is
-typically a cost model for the language, with a trivial example being program
-length (i.e. assuming all instructions have the same cost).
+These treat the given code as a specification, and perform an open-ended search
+through the space of all programs (in some specific language, usually a subset
+of machine code which is free of branches and side-effects) to find the optimal
+implementation according to some quality measure or cost model, such as
+instruction count. Superoptimisers need some way to check program equivalence,
+such as a test suite (to quickly eliminate incorrect programs) and/or a theorem
+prover. Proving equivalence of machine code programs is helped by the uniform,
+finite nature of their domain (e.g. a fixed set of 32bit registers). Programs in
+higher level languages, like Haskell, may have unlimited input domains (say, the
+natural numbers), which makes effective testing more difficult and proofs
+potentially undecidable. Measuring and comparing efficiency of implementations
+is also more complicated in such languages, potentially requiring some form of
+cost semantics to derive an algebraic cost
+formulation~\cite{danner2015denotational} and empirical testing to determine the
+constants.
 
 The biggest hindrance to superoptimisation is how long it takes to search such a
 large space. Whilst pruning methods can help~\cite{phothilimthana2016scaling},

@@ -1,0 +1,120 @@
+\subsection{Property Checking}
+
+Automated testing is a common method of software quality assurance. In Haskell,
+some of the most popular testing frameworks go beyond the industry standard of
+\emph{unit testing} (asserting that components of a system behave as expected on
+a fixed set of inputs) to instead perform \emph{property checking}. A
+``property'', in this sense, is a statement about a program's components, which
+may include free variables. Such properties are typically encoded in Haskell as
+functions, accepting values for the free variables as arguments, and returning a
+boolean value (perhaps adorned with useful metadata). A property checker
+proceeds by
+\begin{enumerate*}
+\item generating suitable values for the function's arguments,
+\item calling the function with these values,
+\item inspecting the return value and
+\item repeating until some stop condition is satisfied
+\end{enumerate*}.
+
+Most frameworks will test each property a fixed number of times (e.g. 100), and
+stop early if the function returns a false value. The major difference between
+implementations is the way they instantiate free variables (or, in encoded form,
+how they generate arguments for the property functions).
+
+\textsc{QuickCheck}~\cite{claessen2011quickcheck} popularised the use of
+property checking in Haskell, and has subsequently been ported to many other
+programming languages. \textsc{QuickCheck} generates input data \emph{randomly},
+either using explicit generators (via a function called \texttt{forAll}), or by
+choosing a default generator for types implementing its \texttt{Arbitrary}
+typeclass (the recent \texttt{hedgehog} package works in a similar way).
+
+Random testing is effective at thoroughly exercising the branches of a program,
+since inputs may be quite large and cover many cases, especially for functions
+which recurse on each \emph{sub-}expressions of their input as well. The output
+of a random generator will also vary across runs, \emph{increasing} our
+confidence each time we check a property, rather than simply reiterating past
+results. However, there are two common problems with random property checking.
+Firstly we must be able to generate random values, which can be tricky for
+recursive datatypes. Consider a type of binary trees, with constructors
+\texttt{Leaf~::~Tree} and \texttt{Node~::~Tree~->~Tree~->~Tree}. We might
+generate a \texttt{Tree} by picking uniformly between these two constructors
+and, if a \texttt{Node} was picked, recursing to generate the two
+sub\texttt{Tree}s. Yet this simple scheme will generate \texttt{Tree}s whose
+expected size is \emph{unbounded}! This is due to the 50\% chance of generating
+a \texttt{Node}, which requires two recursive calls; hence we can expect each
+call to recurse $0.5~\times~2~=~1$ more time on average, and that call will also
+recurse once more on average, and so on; this can easily exhaust all available
+memory. Many automated data generators, such as those from Haskell's
+\texttt{derive} package, suffer from this problem. It can be avoided by biasing
+the generators (in the \texttt{Tree} example we would produce a \texttt{Leaf}
+more than half of the time), but this bias compounds at each level of recursion,
+limiting testing to very small values. More sophisticated solutions exist, such
+as the \texttt{boltzmann-sampling} package (see \cite{duchon2004boltzmann}) and
+even domain-specific languages~\cite{lampropoulos2017beginner}, but all of these
+add complications to the property checking process.
+
+The other problem with random generators is that it can be difficult to
+understand \emph{why} a randomly generated value violated some property.
+\textsc{QuickCheck} tackles this in two ways: generators have access to a
+``size'' parameter, with the intention that this be used to decide how large the
+output values should be (e.g. the expected length of a list, or number of nodes
+in a tree). The value of the size parameter begins low and increases as more
+tests pass, such that failures are likely to be triggered by small, more easily
+understood counterexamples. Additionally, a mechanism for ``shrinking'' is
+provided: users can supply a \texttt{shrink} function along with their
+generator, which is given any counterexample found during testing and returns a
+list of smaller values. In the above example we might shrink a \texttt{Node} by
+returning each sub-tree, and return an empty list when asked to shrink a
+\texttt{Leaf}. After a counterexample has been found, the same property is
+applied to each of the shrunk values in an attempt to narrow down the source of
+the problem. When a value cannot be shrunk any more, or if none of its shrunken
+versions are counterexamples, that value is presented to the user in the hope
+that it is simple enough to understand.
+
+The \textsc{SmallCheck} framework takes a different approach: \emph{enumerating}
+values (either using a user-provided enumerating function or using its
+\texttt{Serial} typeclass), rather than generating values
+randomly~\cite{runciman2008smallcheck} (a similar approach is also followed by
+the \texttt{testing-feat} package). In the \texttt{Tree} example this might
+check \texttt{Leaf}, then \texttt{Node Leaf Leaf}, then
+\texttt{Node (Node Leaf Leaf) Leaf}, and so on. This ensures that
+counterexamples are always small, that tests are not repeated with the same
+values and that memory is not exhausted (since the stopping condition will
+trigger long before the enumeration reaches such large values). The disadvantage
+is that large inputs (which exercise properties, especially recursive ones, the
+most) may occur so late in the enumeration that testing never reaches them.
+
+The \textsc{LazySmallCheck} framework is similar in spirit to
+\textsc{SmallCheck}, but utilises Haskell's lazy evaluation to avoid generating
+values up front~\cite{reich2013advances}. Instead, a partial value is generated
+which will trigger an exception if evaluated. Since catching a Haskell exception
+is an \texttt{IO} action, pure properties which inspect such values will always
+be aborted, handing control back to \textsc{LazySmallCheck} which checks the
+same property on refined versions of the previous value. For example, a lazily
+generated \texttt{Tree} may initially be equivalent to \texttt{undefined}. If
+the property aborts, it will be run again with inputs equivalent to
+\texttt{Leaf}
+and \texttt{Node undefined undefined}; if the latter aborts due to inpuecting
+the left sub-tree, then \texttt{Node Leaf undefined} and
+\texttt{Node (Node undefined undefined) undefined} will be tried (and likewise
+for the right sub-tree). This refinement continues until the property no longer
+aborts or until a predefined depth limit is reached. If the property returns a
+true value when given such partially-defined input then it must succeed for
+\emph{all} refinements of that input (since the output was determined without
+evaluating that sub-term). If the property returns a false value, the input is a
+\emph{minimal} counterexample, since it only specifies those sub-terms which are
+required to violate the property; any undefined subterms are irrelevant to the
+failure.
+
+\textsc{LazySmallCheck}'s automatic elaboration of free variables is similar in
+operation to the use of search procedures in logic programming languages like
+Kanren, Prolog (which has its own \textsc{QuickCheck} port) and Curry (a
+functional logic language, whose \textsc{EasyCheck} framework explicitly
+unifies the concepts of generators and logic
+variables~\cite{christiansen2008easycheck}). The use of uninterpreted symbols
+is also reminiscent of \emph{symbolic execution}~\cite{}, a form of
+\emph{abstract interpretation} where unknown runtime values are represented by
+opaque symbols, computation proceeds to arrive at a result, which may be a
+complicated expression involving many symbols. Importantly, we can  the in terms of the until the result is
+by accumulating
+combinations of these symbols. For example, we may not know the output of a function

@@ -1,3 +1,60 @@
+\subsection{Automated Mathematical Discovery and Invention}
+
+Automated logical and mathematical reasoning has been pursued since at least the
+time of mechanical calculators like the Pascaline~\cite{d'ocagne}. A
+recurring theme in these efforts is the separation between those undertaken by
+mathematicians like Pascal and Babbage~\cite{bowden}, and those of engineers
+such as M\"uller~\cite[p. 65]{lindgren}. This pattern continues today, with the
+tasks we are concerned with (automatically constructing and evaluating concepts,
+conjectures, theorems, axioms, examples, etc.) being divided into two main
+fields: Mathematical Theory Exploration (MTE)~\cite{buchberger:06} (also
+sometimes prefaced with ``Computer-Aided'', ``Automated'' or
+``Algorithm-Supported''), which is championed by mathematicians such as
+Buchberger~\cite{buchberger}; and Automated Theory Formation
+(ATF)~\cite{lenat:77,colton:book}, pursued by AI researchers including Lenat.
+Other related terms include ``Automated Mathematical
+Discovery''~\cite{epstein:91,colton2000notion,esarm2008},
+``Concept Formation in Discovery Systems''~\cite{haase}, and
+``Automated Theorem Discovery''~\cite{roy}.
+
+Such a plethora of terminology can mask similarities and shared goals between
+these fields. Even notable historical differences, such as the emphasis of MTE
+on user-interaction and mathematical domains, in contrast to the full automation
+and more general applications targeted by ATF, are disappearing in recent
+implementations.
+
+\subsection{Theory Formation}
+
+An important historical implementation of ATF is Lenat's AM (Automated
+Mathematician) system. Unlike prior work, such as
+Meta-Dendral~\cite{buchanan:75} and those described in~\cite{winston}, AM aims
+to be a general purpose mathematical discovery system, designed to both
+construct new concepts and conjecture relationships between them. AM is a
+rule-based system which represents knowledge using a frame-like scheme, enlarges
+its knowledge base via a collection of heuristic rules, and controls the firing
+of these rules via an agenda mechanism.
+
+The performance of AM was evaluated based on its generality (performance in new
+domains) and how finely-tuned various aspects of the program are (the agenda,
+the interaction of the heuristics, etc). Most of this evaluation was
+qualitative, and has subsequently been criticised~\cite[chap.~13]{colton:book}.
+In their case study in methodology, Ritchie and Hanna found a large discrepancy
+between the theoretical claims made of AM and the implemented
+program~\cite{ritchie1984case}; for example, AM ``invented'' natural numbers
+from sets, but did so using a heuristic specifically designed to make this
+connection.
+
+The successor of AM is Eurisko, a discovery system intended to be useful in more
+general domains than just mathematical theory formation. Despite claiming some
+early successes % FIXME Traveller TCS
+work on Eurisko was put on hold due to a lack of machine-readable data about
+real world systems for it to work with % FIXME Find something quotable
+. This lead to the Cyc project, in an attempt to encode such knowledge in a
+semantically rich and consistent form. Cyc is an ongoing project, with parts of
+its database made available via OpenCyc.
+
+\subsection{Theory Exploration}
+
 The prototypical implementation of MTE is the Theorema system of Buchberger and
 colleagues~\cite{buchberger,buchberger2016theorema}, which also places a strong
 emphasis on user interface and output presentation. Theory exploration in the
