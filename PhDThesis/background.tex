@@ -1,5 +1,18 @@
 \section{Background}
 
+% Background should cover approaches to automated reasoning about software, and
+% formal systems in general. We can highlight how the language/representation
+% imposes invariants and guarantees on what we can know, and how we can extend
+% those guarantees with features like purity (prevents behaviour depending on
+% ambient environment/state), lazy evaluation (prevents problems with
+% non-termination), sound type systems (limits the space of possible values for
+% each expression), etc. and therefore how Haskell is a natural vehicle for us to
+% use. Giving background on Haskell naturally leads to descendants like Agda and
+% Idris, which are also interactive theorem provers; which lets us discuss
+% Isabelle, Coq, HOL, etc., how they're difficult for existing reasoning
+% algorithms to handle (e.g. resolution, which works well in first-order logics),
+% approaches to helping
+
 \input{background_haskell.tex}
 \input{background_quickcheck.tex}
 \input{background_theoryexploration.tex}

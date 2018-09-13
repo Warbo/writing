@@ -1,15 +1,24 @@
 # Possible Contributions
 
+ In roughly decreasing order of significance:
+
  - Conjecture/property generation benchmarking methodology
  - Theory Exploration Benchmark, using TIP
- - Benchmarking and comparison of QuickSpec and IsaCoSy
- - Recurrent clustering for arbitrary tree structures
- - General purpose Haskell (Core) source code extraction (AstPlugin; maybe
-   obsolete due to GHC source plugins?)
- - General purpose feature extraction for tree structures (e.g. Haskell ASTs)
+ - Empirical benchmarking and comparison of QuickSpec and IsaCoSy
+ - Identification of the input selection problem for conjecture/property
+   generation (AKA "bucketing")
+ - Empirical analysis of recurrent clustering for bucketing, compared to a
+   (pseudo-)random control and non-learning approach (circular convolution).
+ - Recurrent clustering application to arbitrary tree structures (which we
+   apply to Haskell Core)
+
+The following are mostly implementation/engineering details, but might have some
+merit:
+
  - End-to-end QuickSpec runner (haskell-te)
  - End-to-end Isabelle/IsaPlanner/IsaCoSy runner (isaplanner-tip)
  - Runtime Haskell evaluation with dynamic dependencies (nix-eval)
- - Reproducible experiments (using Nix)
- - Generalisation of ASV benchmark framework (asv-nix)
- - Streaming JSON parsing
+ - General purpose Haskell source code extraction (AstPlugin; now made obsolete
+   by GHC "source plugins")
+ - Reproducible experimental environments (using Nix; not really "new")
+ - General benchmarking framework (asv-nix; tiny addition to existing work)

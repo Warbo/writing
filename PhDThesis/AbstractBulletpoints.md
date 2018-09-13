@@ -9,15 +9,15 @@
  - Large corpora of software present an opportunity for machine learning and
    data mining
  - Unit testing is industry standard; property checking is becoming mainstream;
-   property discovery is an emerging area of research
+   property discovery is still an emerging area of research
  - Property discovery tools exist (e.g. QuickSpec, Speculate), but brute-force
-   requires carefully selected inputs and output isn't quantified
+   requires carefully selected inputs, and their output isn't quantified
  - Opportunity to quantify and compare performance
  - Opportunity to improve/automate the selection process, using machine learning
-   (similar to premise selection/relevance filtering/similarity clustering)
- - Mathematical calculations are mostly automated; theorem proving is
-   increasingly automated; relatively little attention has been given to
-   automating conjecture generation (question asking rather than answering)
+   (similar task to premise selection/relevance filtering/similarity clustering)
+ - Mathematical calculation is automated; theorem proving is increasingly so;
+   relatively little progress on automating conjecture generation (question
+   asking rather than answering)
 
 ## Contributions
 
@@ -40,3 +40,24 @@
    anti-unification)
  - On-the-fly input selection, rather than up-front bucketing + brute force
  - Representation learning (e.g. adversarial networks, posing/proving)
+ - Integrating types into the reasoning (not sure quite how yet; other than just
+   annotating the trees with extra nodes).
+
+# "Narrative" options
+
+ - Focus on the mathematical side: conjecture generation, theorem proving, etc.
+   with applications to automated reasoning, and in particular (due to CUrry
+   Howard) software verification.
+
+ - Focus on the programming language theory side: property discovery, with
+   overlaps (due to Curry Howard) with mathematical modelling, theorem proving,
+   etc.
+
+Personally, I feel more familiar/comfortable with framing things from the
+software side. Whilst potentially narrower in scope, it's much more concrete and
+easier (for me) to justify and motivate. It also meshes with my own background,
+motivations and networks (e.g. across Scotland and elsewhere).
+
+Framing things in terms of the mathematics gives me less confidence, as I don't
+want to be yet another AI researcher telling mathematicians how to do their job
+;)
