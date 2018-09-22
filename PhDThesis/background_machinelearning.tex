@@ -26,4 +26,23 @@ are prediction and compression tasks such as auto-encoders
 through a round-trip) and adversarial or co-evolution tasks (coupled systems
 where each is rewarded by exploiting mis-prediction in the others).
 
+\subsection{Distributed Representations}
+
+A \emph{distributed representation} does not isolate each semantic feature (for
+example, presence of absence of some lexeme) to separate, independent
+``computing elements'' (e.g. memory locations, such as the elements of a feature
+vector). Instead, features are represented as \emph{patterns} across multiple
+elements: each feature uses many elements and each element contributes to many
+features~\cite{hinton1984distributed}. Such encodings provide simple mechanisms
+to represent \emph{combinations} of features (combining their patterns
+element-wise), \emph{partial} features (presence of the pattern across a subset
+of its elements) and \emph{generalisation} (patterns which are present as
+sub-patterns of multiple features).
+
+% Distributed representations may be learned from data, for example by
+% \emph{auto-encoding}; or they may be calculated ``from whole cloth'' using
+% techniques like hashing. We are particularly interested in distributed
+% representations for storing structured data (like syntax trees) in fixed-length
+% feature vectors.
+
 \input{background_clustering.tex}
