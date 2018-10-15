@@ -91,20 +91,20 @@ which will trigger an exception if evaluated. Since catching a Haskell exception
 is an \texttt{IO} action, pure properties which inspect such values will always
 be aborted, handing control back to \textsc{LazySmallCheck} which checks the
 same property on refined versions of the previous value. For example, a lazily
-generated \texttt{Tree} may initially be equivalent to \texttt{undefined}. If
-the property aborts, it will be run again with inputs equivalent to
-\texttt{Leaf}
-and \texttt{Node undefined undefined}; if the latter aborts due to inpuecting
-the left sub-tree, then \texttt{Node Leaf undefined} and
-\texttt{Node (Node undefined undefined) undefined} will be tried (and likewise
-for the right sub-tree). This refinement continues until the property no longer
+generated \texttt{Tree} may initially be equivalent to $\bot$. If the property
+aborts, it will be run again with each possible refinement of $\bot$: in this
+case inputs equivalent to \texttt{Leaf} and \texttt{Node~$\bot_1$~$\bot_2$}. If
+the latter aborts due to inspecting $\bot_1$, then $\bot_1$ will be refined to
+give inputs \texttt{Node~Leaf~$\bot_2$} and
+\texttt{Node~(Node~$\bot_3$~$\bot_4$)~$\bot_2$} (and likewise if $\bot_2$ had
+caused the exception). This refinement continues until the property no longer
 aborts or until a predefined depth limit is reached. If the property returns a
 true value when given such partially-defined input then it must succeed for
 \emph{all} refinements of that input (since the output was determined without
-evaluating that sub-term). If the property returns a false value, the input is a
-\emph{minimal} counterexample, since it only specifies those sub-terms which are
-required to violate the property; any undefined subterms are irrelevant to the
-failure.
+evaluating the undefined sub-terms). If the property returns a false value, the
+input is a \emph{minimal} counterexample, since it only specifies those
+sub-terms which are required to violate the property; any undefined sub-terms
+are irrelevant to the failure.
 
 \textsc{LazySmallCheck}'s automatic elaboration of free variables is similar in
 operation to the use of search procedures in logic programming languages like
@@ -112,9 +112,7 @@ Kanren, Prolog (which has its own \textsc{QuickCheck} port) and Curry (a
 functional logic language, whose \textsc{EasyCheck} framework explicitly
 unifies the concepts of generators and logic
 variables~\cite{christiansen2008easycheck}). The use of uninterpreted symbols
-is also reminiscent of \emph{symbolic execution}~\cite{}, a form of
-\emph{abstract interpretation} where unknown runtime values are represented by
-opaque symbols, computation proceeds to arrive at a result, which may be a
-complicated expression involving many symbols. Importantly, we can  the in terms of the until the result is
-by accumulating
-combinations of these symbols. For example, we may not know the output of a function
+is also reminiscent of \emph{symbolic execution}~\cite{king1976symbolic}, a form
+of \emph{abstract interpretation} where unknown runtime values are represented
+by opaque symbols and computation proceeds to arrive at a result, which may be a
+complicated expression involving many symbols.

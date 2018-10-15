@@ -1,12 +1,9 @@
 \subsection{Relevance Filtering}
 \label{sec:relevance}
 
-% TODO
-\cite{kuhlwein2012overview}
-
 One fruitful application of machine learning methods to formal mathematics is
 \emph{relevance filtering}, which is used for \emph{premise selection} in
-automated theorem provers.
+automated theorem provers~\cite{kuhlwein2012overview}.
 
 Relevance filtering simplifies a proof search problem by removing from
 consideration those clauses (axioms, definitions, lemmas, etc.) which are deemed
@@ -47,9 +44,10 @@ set of clauses which are ``visible'' from the goal's components is generated;
 this is further reduced by (an efficient approximation of) a naive Bayes
 algorithm.
 
-The Multi-output ranking (\textsc{MOR}) implementation uses a support vector
-machine (SVM) to select relevant axioms from the Mizar Mathematical Library for
-use by the Vampire ATP system~\cite{alama2014premise}.
+Premise selection has also been applied to the re-proving problem in other
+systems, such as the Multi-Output Ranking (\textsc{MOR}) tool, which uses a
+support vector machine (SVM) to select relevant axioms from the Mizar
+Mathematical Library for use by the Vampire ATP system~\cite{alama2014premise}.
 %TODO: describe the kernel, as that's the interesting bit.
 
 The premise selection problem for theorem proving is related to the signature

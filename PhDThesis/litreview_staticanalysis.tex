@@ -18,7 +18,7 @@ pay for itself is, by definition, a pessimisation.
 The other category is that of ``standalone'' tools, which are run separately to
 building or executing the target code, and whose results do not contribute
 directly to the code's output. These include tools for testing, profiling,
-verification, standards compliance, etc. Our application of theory exploration
+verification, standards compliance, etc. The application of theory exploration
 to software libraries fits into this latter category, whose constraints are not
 as stringent as those applying to tools like compilers. The only real
 restrictions on these tools are that their resource requirements are acceptable
@@ -29,12 +29,12 @@ Some of the simplest code improvement tools are known as \emph{linters}, after
 the \textsc{Lint} tool for the C programming language~\cite{Johnson78lint}.
 Linters are characterised by parsing the given code and looking for occurrences
 of certain syntax patterns, for example definitions which are never used, or
-``no-op'' constructs (e.g. \texttt{(x < 0)} when \texttt{x} is of
+``no-op'' constructs (e.g. \texttt{(x~<~0)} when \texttt{x} is of
 unsigned/non-negative type, making this comparison always false).
 
-A popular linter for Haskell code is \textsc{HLint}~\cite{mitchell2014hlint},
-which focuses mostly on simplifying code; for example by spotting use-cases for
-common library functions like \texttt{null x} instead of \texttt{length x == 0}.
+A popular linter for Haskell is \textsc{HLint}~\cite{mitchell2014hlint}, which
+focuses mostly on simplifying code; for example by spotting use-cases for common
+library functions like \texttt{null x} instead of \texttt{length x == 0}.
 Linting can be seen as the inverse of theory exploration: rather than inferring
 novel, general relationships from patterns found in the code, linting begins
 with known relationships and looks through the code for specific instances.
@@ -44,24 +44,28 @@ process: once the predetermined patterns are exhausted, no more improvements
 will be found.
 
 At the other end of the code improvement spectrum we find
-\emph{superoptimisers}~\cite{}, which can take an
+\emph{superoptimisers}~\cite{massalin1987superoptimizer}, which can take an
 arbitrarily long time to find improvements, but whose deductive power is only
-limited by the undecidability of the source language. Superoptimisers, like ,
-treat the given code as a specification, and perform an open-ended search
-through the space of all programs to find the optimal implementation according
-to some quality measure or cost model (often a branch- and effect-free subset of
-machine code is used, and measured by counting instructions or
-cycles~\cite{massalin1987superoptimizer}). Superoptimisers need some method to
-check whether a synthesised program implements the required specification, such
-as a test suite and/or a theorem prover.
+limited by the undecidability of the source language. Superoptimisers, such as
+\textsc{Souper}~\cite{sasnauskas2017souper} and \textsc{Aha!} (``A Hacker's
+Assistant'', developed to accompany \emph{Hacker's
+  Delight}~\cite{warren2013hacker}) treat the given code as a specification, and
+perform an open-ended search through the space of all programs to find the
+optimal implementation according to some quality measure or cost model (often a
+branch- and effect-free subset of machine code is used, and measured by counting
+instructions or cycles).  Superoptimisers need some method to check whether a
+synthesised program implements the required specification, such as a test suite
+and/or a theorem prover.
 
-Proving equivalence of machine code programs is helped by the uniform, finite
+Proving correctness of machine code programs is helped by the uniform, finite
 nature of their domain (e.g. a fixed set of instructions, operating on a fixed
-set of 32bit registers). Higher level languages, like Haskell, are more
+set of fixed-size registers). Higher level languages like Haskell are more
 difficult to reason about and measure, since their behaviour and efficiency may
-depend on unknown runtime parameters. For example, a higher-order function may
-choose to memoise its argument, which avoids repeated function calls but uses
-more memory and comparison checks; whether this is an optimisation or
+depend on unknown runtime parameters. For example, a higher-order function $f$
+accepting another function $g$ as an argument may choose to memoise calls to $g$
+in order to avoid evaluating identical calls multiple times; however, storing
+previous results requires more memory, and each input must be looked up in the
+memo table to see if it's been used before. Whether this is an optimisation or
 pessimisation depends on the runtime data at each call site, including the
 function argument (whether it's cheaper than performing a comparison) and the
 data it will be applied to (whether it actually contains any repeated values).
@@ -75,12 +79,19 @@ We can reduce the amount of unknown parameters in a concrete program by
 propagating statically-known values, for example using
 \emph{supercompilation}~\cite{Turchin:1986:CS:5956.5957}; however this can
 dramatically increase code size, as each function may be duplicated into
-multiple specialised instances. Efficiency can be calculated
-using techniques like cost semantics~\cite{danner2015denotational}, with
-constant factors determined through empirical testing. This cannot solve the
-problem of optimality depending on the characteristics of runtime data, but it
-can expose these dependencies as parameters allowing the user to select
-between pareto-optimal strategies.
+multiple specialised instances. Related techniques, like \emph{symbolic
+  execution} (a form of \emph{abstract interpretation}), allow approximate
+execution of code, where unknown runtime data is represented as opaque
+metavariables. Property- and model-checkers are similar, except they work
+empirically by performing multiple runs, instantiating metavariables with
+synthetic data (\emph{QuickCheck} does this randomly, \emph{SmallCheck}
+enumerates values, etc.).
+
+Efficiency can be calculated using techniques like cost
+semantics~\cite{danner2015denotational}, with constant factors determined
+through empirical testing. This cannot solve the problem of optimality depending
+on the characteristics of runtime data, but it can expose these dependencies as
+parameters allowing the user to select between pareto-optimal strategies.
 
 Even if these problems are mitigated, the biggest difficulty with
 superoptimisation remains: the length of time it takes to search such a

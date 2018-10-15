@@ -7,7 +7,11 @@ to explore. We choose Haskell since it combines formal, logical underpinnings
 which aid reasoning (compared to more popular languages like Java or C), yet it
 is still popular enough to sustain a rich ecosystem of tooling and a large
 corpus of existing code (compared to more formal languages like Coq or
-Isabelle).
+Isabelle). Haskell is well-suited to programming language research; indeed, this
+was a goal of the language's creators \cite{marlow2010haskell}. Like most
+\emph{functional} programming languages, Haskell builds upon $\lambda$-calculus,
+with extra features such as a strong type system and ``syntactic sugar'' to
+improve readability.
 
 The following features make Haskell especially useful for our purposes, although
 many are also present in other languages such as StandardML and Coq (which we
@@ -177,8 +181,6 @@ languages or theorem proving systems, include:
   static analysers, etc.
 \end{itemize}
 
-%% FIXME: MERGE THE FOLLOWING WITH THE ABOVE
-
 \newcommand{\CVar}{\texttt{Var}}
 \newcommand{\CLit}{\texttt{Lit}}
 \newcommand{\CApp}{\texttt{App}}
@@ -236,34 +238,26 @@ languages or theorem proving systems, include:
   \label{fig:coresyntax}
 \end{figure}
 
-We decided to focus on theory exploration in the Haskell programming language as
-it has mature, state-of-the-art implementations (\qspec{} \cite{QuickSpec} and
-\hspec{} \cite{claessen2013automating}). This is evident from the fact that the
-state-of-the-art equivalent for Isabelle/HOL, the \textsc{Hipster}
-\cite{Hipster} system, is actually implemented by translating to Haskell and
-invoking \hspec{}.
+Further evidence of Haskell's suitability for theory exploration is given by the
+fact that the state-of-the-art implementation for Isabelle/HOL, the
+\textsc{Hipster}~\cite{Hipster} system, is actually implemented by translating
+to Haskell and invoking \hspec{}~\cite{claessen2013automating}.
 
-Haskell is well-suited to programming language research; indeed, this was a goal
-of the language's creators \cite{marlow2010haskell}. Like most
-\emph{functional} programming languages, Haskell builds upon $\lambda$-calculus,
-with extra features such as a strong type system and ``syntactic sugar'' to
-improve readability. For simplicity, we will focus on an intermediate
-representation of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather
-than the relatively large and complex syntax of Haskell proper. Core is based on
-\fc{}, but for our machine learning purposes we are mostly interested in its
-syntax; for a more thorough treatment of \fc{} and its use in GHC, see
-\cite[Appendix C]{sulzmann2007system}.
+Whilst we will use normal Haskell code in this text and many of our examples,
+for simplicity we perform many of our analyses on an intermediate representation
+of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the
+relatively large and complex syntax of Haskell proper. Core is based on \fc{},
+which is described in detail in~\cite[Appendix C]{sulzmann2007system}.
 
-The sub-set of Core we consider is shown in Figure \ref{fig:coresyntax};
-compared to the full language \footnote{As of GHC version 7.10.2, the latest at
-  the time of writing.} our major restriction is to ignore type hints (such as
-explicit casts, and differences between types/kinds/coercions). For brevity, we
-also omit several other forms of literal (machine words of various sizes,
-individual characters, etc.), as their treatment is similar to those of strings
-and numerals. We will use quoted strings to denote names and literals,
-e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"},
-\texttt{LitStr "quux"} and \texttt{LitNum "42"}, and require only that they can
-be compared for equality.
+Core contains explicit type annotations and coercions, which we can omit as they
+have no effect on runtime behaviour. The resulting sub-set of Core\footnote{As
+  of GHC version 7.10.2, the latest at the time of writing.} is shown in
+Figure~\ref{fig:coresyntax}; for brevity, we also omit several other forms of
+literal (machine words of various sizes, individual characters, etc.), since
+their treatment is similar to those of strings and numerals. We use quoted
+strings to denote names and literals, e.g. \texttt{Local "foo"},
+\texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr "quux"} and
+\texttt{LitNum "42"}, and require only that they can be compared for equality.
 
 \begin{figure}
   \begin{haskell}
@@ -359,14 +353,14 @@ Lam "a" (Case (Var (Local "a"))
   \label{fig:coreexample}
 \end{figure}
 
-Figure \ref{fig:haskellexample} shows some simple Haskell function definitions,
-along with a custom datatype for Peano numerals. The translation to our Core
-syntax is routine, and shown in Figure \ref{fig:coreexample}. Although the Core
-is more verbose, we can see that similar structure in the Haskell definitions
-gives rise to similar structure in the Core; for example, the definitions of
-\hs{odd} and \hs{even} are identical in both languages, except for the
-particular identifiers used. It is this close correspondence which allows us to
-analyse Core expressions in place of their more complicated Haskell source.
+Figure~\ref{fig:haskellexample} shows some simple Haskell function definitions,
+along with a custom datatype for Peano numerals. The translation to Core syntax
+is routine, and shown in Figure~\ref{fig:coreexample}. Although the Core is more
+verbose, we can see that similar structure in the Haskell definitions gives rise
+to similar structure in the Core; for example, the definitions of \hs{odd} and
+\hs{even} are identical in both languages, except for the particular identifiers
+used. It is this close correspondence which allows us to analyse Core
+expressions in place of their more complicated Haskell source.
 
 Note that we exclude representations for type-level entities, including datatype
 definitions like that of \hs{Nat}. GHC can represent these, but in this work we
