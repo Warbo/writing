@@ -21,9 +21,9 @@ directly to the code's output. These include tools for testing, profiling,
 verification, standards compliance, etc. Our application of theory exploration
 to software libraries fits into this latter category, whose constraints are not
 as stringent as those applying to tools like compilers. The only real
-restrictions on our tools are that their resource requirements are acceptable to
-users, and that output is sufficiently high quality to be worth waiting for and
-sifting through.
+restrictions on these tools are that their resource requirements are acceptable
+to users, and that output is sufficiently high quality to be worth waiting for
+and sifting through.
 
 Some of the simplest code improvement tools are known as \emph{linters}, after
 the \textsc{Lint} tool for the C programming language~\cite{Johnson78lint}.
@@ -43,30 +43,67 @@ Whilst linting is a useful programming aid, and fast enough to apply regularly
 process: once the predetermined patterns are exhausted, no more improvements
 will be found.
 
-If fast but limited linters live at one end of a code improvement spectrum, at
-the other end we find \emph{superoptimisers}~\cite{massalin1987superoptimizer}.
-These treat the given code as a specification, and perform an open-ended search
-through the space of all programs (in some specific language, usually a subset
-of machine code which is free of branches and side-effects) to find the optimal
-implementation according to some quality measure or cost model, such as
-instruction count. Superoptimisers need some way to check program equivalence,
-such as a test suite (to quickly eliminate incorrect programs) and/or a theorem
-prover. Proving equivalence of machine code programs is helped by the uniform,
-finite nature of their domain (e.g. a fixed set of 32bit registers). Programs in
-higher level languages, like Haskell, may have unlimited input domains (say, the
-natural numbers), which makes effective testing more difficult and proofs
-potentially undecidable. Measuring and comparing efficiency of implementations
-is also more complicated in such languages, potentially requiring some form of
-cost semantics to derive an algebraic cost
-formulation~\cite{danner2015denotational} and empirical testing to determine the
-constants.
+At the other end of the code improvement spectrum we find
+\emph{superoptimisers}~\cite{}, which can take an
+arbitrarily long time to find improvements, but whose deductive power is only
+limited by the undecidability of the source language. Superoptimisers, like ,
+treat the given code as a specification, and perform an open-ended search
+through the space of all programs to find the optimal implementation according
+to some quality measure or cost model (often a branch- and effect-free subset of
+machine code is used, and measured by counting instructions or
+cycles~\cite{massalin1987superoptimizer}). Superoptimisers need some method to
+check whether a synthesised program implements the required specification, such
+as a test suite and/or a theorem prover.
 
-The biggest hindrance to superoptimisation is how long it takes to search such a
+Proving equivalence of machine code programs is helped by the uniform, finite
+nature of their domain (e.g. a fixed set of instructions, operating on a fixed
+set of 32bit registers). Higher level languages, like Haskell, are more
+difficult to reason about and measure, since their behaviour and efficiency may
+depend on unknown runtime parameters. For example, a higher-order function may
+choose to memoise its argument, which avoids repeated function calls but uses
+more memory and comparison checks; whether this is an optimisation or
+pessimisation depends on the runtime data at each call site, including the
+function argument (whether it's cheaper than performing a comparison) and the
+data it will be applied to (whether it actually contains any repeated values).
+In addition to this uncertainty, each function's input domain may be infinite
+(such as the natural numbers), and programs may use abstract interfaces and
+datatypes with a variety of possible implementations (such as lists or key/value
+mappings). All these factors makes effective testing more difficult, and proofs
+potentially undecidable.
+
+We can reduce the amount of unknown parameters in a concrete program by
+propagating statically-known values, for example using
+\emph{supercompilation}~\cite{Turchin:1986:CS:5956.5957}; however this can
+dramatically increase code size, as each function may be duplicated into
+multiple specialised instances. Efficiency can be calculated
+using techniques like cost semantics~\cite{danner2015denotational}, with
+constant factors determined through empirical testing. This cannot solve the
+problem of optimality depending on the characteristics of runtime data, but it
+can expose these dependencies as parameters allowing the user to select
+between pareto-optimal strategies.
+
+Even if these problems are mitigated, the biggest difficulty with
+superoptimisation remains: the length of time it takes to search such a
 large space. Whilst pruning methods can help~\cite{phothilimthana2016scaling},
 the power of superoptimisation comes from its ``bottom up'' nature, which makes
-no assumptions about the structure of the generated program. Maintaining this
-generality is expensive, and current superoptimisers typically scale to programs
-only a few dozen machine instructions long. Nevertheless, this still finds use
-in compiler construction, as it is an effective method for finding ``peephole
-optimisations'' (faster replacements for small, common patterns of generated
-machine code)~\cite{Bansal.Aiken:2006}.
+no assumptions about the structure of the generated program. This generality is
+expensive, with current superoptimisers typically scaling to code fragments only
+a few dozen machine instructions long. Contemporary research has focused on the
+use of stochastic search algorithms, such as Markov Chain Monte-Carlo (MCMC), to
+synthesise promising improvements more quickly, whilst still finding optimal
+implementations in the limit~\cite{schkufza2013stochastic}; guiding such
+algorithms with \emph{learned} policies is also a promising area of
+study~\cite{mudigonda2017learning}.
+
+The open-ended search process of such superoptimisers is similar to application
+of mathematical theory exploration to software property discovery, especially
+when exploration is limited to equality properties (which is the case for
+\textsc{IsaCoSy} and \textsc{QuickSpec}). Quality metrics like efficiency (e.g.
+relative instruction count) can be considered a subset of the interestingness
+criteria of theory exploration. The \emph{aims} of these analyses are in
+opposition, since theory exploration \emph{builds up} structure and abstraction
+latent in a set of definitions, whilst superoptimisation \emph{tears down} such
+layers to find minimal implementations; yet the practical necessity of
+superoptimising only small snippets at a time (e.g. to find ``peephole
+optimisations''~\cite{Bansal.Aiken:2006}) results in remarkably similar
+discovery processes.
