@@ -106,7 +106,8 @@ else
     WARNINGS=$(echo "$RENDER" | tail "-n$BIBSTART" | grep -ai "warning")
 
     # Citations take two passes, so double-check
-    CITES=$(echo "$WARNINGS" | grep 'Citation `'  | sed -e 's/.*`\(.*\)'"'.*/\1/g")
+    CITES=$(echo "$WARNINGS" | grep 'Citation `' |
+                               sed -e 's/.*`\(.*\)'"'.*/\\1/g")
     while read -r CITE
     do
         grep "^@[^{]*{$CITE,$" < ~/Writing/Bibtex.bib > /dev/null ||
