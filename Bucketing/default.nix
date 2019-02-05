@@ -1,42 +1,65 @@
-with builtins;
-with { inherit (import ../resources) bibtex nixpkgs styles; };
-with nixpkgs.repo1703."00ef7f9";
+{ nixpkgs ? (import <nixpkgs> {}) }:
 
-runCommand "bucketing.pdf"
-  {
-    inherit bibtex;
-    cmd = ''
-      pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
-    '';
-    buildInputs = [
-      bash
+with builtins;
+with nixpkgs;
+with lib;
+with rec {
+  inherit (import ../resources) bibtex styles;
+
+  render = wrap {
+    name  = "render-bucketing-paper";
+    paths = [
       gnumake
       (texlive.combine {
         inherit (texlive) scheme-small tikzinclude tikz-qtree algorithmicx
           algorithm2e algorithms;
       })
     ];
-    src    = ./.;
-    styles = attrValues styles;
-  }
-  ''
-    cp -r "$src"   ./src
-    chmod -R +w    ./src
-    cp "$bibtex"   ./Bibtex.bib
+    vars = {
+      inherit bibtex;
 
-    for STYLE in $styles
-    do
-      cp "$STYLE" ./src
-    done
+      go = wrap {
+        name   = "go";
+        script = ''
+          pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
+        '';
+      };
 
-    cd ./src
+      source = filterSource (path: _: hasSuffix ".tex" path ||
+                                      hasSuffix ".cls" path)
+                            ./.;
 
-    $cmd
-    echo "RUNNING bibtex"
-    bibtex report
-    $cmd
-    $cmd
+      styles = concatStringsSep " " (attrValues styles);
+    };
+    script = ''
+      #!/usr/bin/env bash
+      set -e
+      cp -r "$source" ./src
+      chmod -R +w     ./src
+      cp "$bibtex"    ./Bibtex.bib
 
+      for STYLE in $styles
+      do
+        cp "$STYLE" ./src
+      done
+
+      cd ./src
+      [[ -z "$FIDDLESOURCE" ]] || $FIDDLESOURCE
+
+      "$go"
+      echo "RUNNING bibtex"
+      bibtex report
+      "$go"
+      "$go"
+    '';
+  };
+};
+rec {
+  checks = callPackage ./check.nix { inherit bibtex render; };
+
+  paper = runCommand "bucketing.pdf" { inherit render; } ''
+    "$render"
     mkdir "$out"
-    cp "report.pdf" "$out"/
-  ''
+    mv src/report.pdf "$out"/
+  '';
+}
