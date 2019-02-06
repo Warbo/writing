@@ -1,0 +1,52 @@
+Reviewer #1: This paper presents a benchmarking method for theory exploration systems, and applies it to two systems, IsaCoSy and QuickSpec.
+
+The biggest problem with the paper is its lack of novelty and lack of scientific content.
+
+The paper introduces a benchmarking method that resembles what was already in the original IsaCosy paper (and papers about other theory exploration tools), namely a precision/recall analysis based on existing theories with human-written lemmas.
+
+There is no evaluation or comparison of the proposed benchmarking method against alternative methods. It is just proposed as the way to do things.
+
+The benchmarking method is only applied to two systems, which are both quite old now. QuickCheck 2 is much more modern than QuickSpec 1 (used in the paper and more than 4 years old), solves some of the more cumbersome issues mentioned in the paper, and should be part of any serious evaluation. There are also other newer systems such as Speculate (mentioned in the paper but not evaluated).
+
+A paper like this should really compare as many such systems as possible, with multiple benchmarking methods, in order to be interesting.
+
+-----
+
+Using TIP in this way is not a good choice. TIP benchmarks are not supposed to have a complete set of properties to definitions. They are just collections of example properties. As such, neither precision nor recall have any real meaning.
+
+This may explain why both precision and recall in the results are so bad?
+
+(Except for the TIP benchmarks that came originally from other sources, such as Isabelle theories.)
+
+-----
+
+There is one clear novelty in the paper:
+
+The paper identifies a problem with the approach; namely that there is only a single data point (precision and recall) for each theory. (It is unclear to me why this is a problem, this needs to be motivated better.)
+
+To alleviate this issue, a proposal is made to sample a given theory in a very specific way: take a property, find all definitions it depends on, pad this list of definitions with more definitions (to reach a certain size), and provide this as the input to the MTE tool.
+
+This seems like a very arbitrary choice to me. And nowhere in the paper is any investigation made as to whether this is a good idea or not, or even any alternative approach discussed let alone compared with. In fact, in the evaluation section, some speculation appears as to why certain results are the way they are (because of the padding).
+
+-----
+
+Some more details:
+
+2.2: This list is nice, but your precision/recall method has little to do with this list. For example, surprisingness is by definition not measured by your method.
+
+3.2: Why is the list of definitions padded with unrelated definitions?
+
+Why is this a good method of generating samples at all? Would a human ever use the tool in this way? You need human input anyway. Doesn't it make more sense if a human would prepare more samples?
+
+What properties do you give to a list of such definitions? Any property that only mentions functions in the list of definitions. This is the reasonble choice, but it is not explained in the paper.
+
+3.3: Syntactic equality check, how can you number the variables with deBruijn indices if equality is a symmetric relation? How about commutative functions? Or other trivial syntactic rewrites? This is actually an interesting problem in this context which is not addressed at all.
+
+One way would be to use logical implication w.r.t. a background theory of structural properties?
+
+Page 13: "... or not at all" -- how do you know this?
+
+4.2: "This indicates two potential improvements to QuickSpec":
+1. "could be filtered down" -- instead of speculation, how do you concretely propose to do this?
+2. "predicting which combinations are likely" -- again, how do you concretely propose to do this?
+These are important research questions for which the MTE community does not have any good answers.
