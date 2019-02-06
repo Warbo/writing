@@ -4,7 +4,9 @@ with builtins;
 with nixpkgs;
 with lib;
 with rec {
-  inherit (import ../resources) bibtex styles;
+  inherit (import ../resources) bibtex nix-helpers styles;
+
+  inherit (callPackage ./supporting-material {}) graphs;
 
   render = wrap {
     name  = "render-bucketing-paper";
@@ -55,6 +57,9 @@ with rec {
   };
 };
 rec {
+  #inherit graphs;
+  inherit nix-helpers;
+
   checks = callPackage ./check.nix { inherit bibtex render; };
 
   paper = runCommand "bucketing.pdf" { inherit render; } ''

@@ -70,10 +70,26 @@ with rec {
     }))
     {
       "c2ea27d" = "04aif1s3cxk27nybsxp571fmvswy5vbw0prq67y108sb49mm3288";
+
+    };
+
+  nix-helpers =
+    with rec {
+      wpkgs = unstable-nixpkgs.fetchgit {
+        url    = "${repoSouce}/warbo-packages.git";
+        rev    = "9f129aa";
+        sha256 = "1v35m8xxqav8cq4g1hjn8yhzhaf9g4jyrmz9a26g7hk04ybjwc7k";
+      };
+
+      src = (import "${wpkgs}/helpers.nix" {}).nix-helpers;
+    };
+    import nixpkgs-repos.repo1809 {
+      config   = {};
+      overlays = [ (import "${src}/overlay.nix") ];
     };
 };
 rec {
-  inherit nixpkgs warbo-packages;
+  inherit nix-helpers nixpkgs warbo-packages;
   bibtex = ../Bibtex.bib;
   styles = stable-configured.dirsToAttrs ./styles;
 }
