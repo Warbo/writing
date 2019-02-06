@@ -50,7 +50,7 @@ with rec {
 
   # Particular versions of nixpkgs
   nixpkgs-repos = {
-    inherit (stable-configured) repo1603 repo1609 repo1703 repo1709;
+    inherit (stable-configured) repo1603 repo1609 repo1703 repo1709 repo1809;
   };
 
   # All combinations of nixpkgs and nix-config versions
@@ -70,26 +70,26 @@ with rec {
     }))
     {
       "c2ea27d" = "04aif1s3cxk27nybsxp571fmvswy5vbw0prq67y108sb49mm3288";
-
     };
 
-  nix-helpers =
-    with rec {
-      wpkgs = unstable-nixpkgs.fetchgit {
-        url    = "${repoSouce}/warbo-packages.git";
-        rev    = "9f129aa";
-        sha256 = "1v35m8xxqav8cq4g1hjn8yhzhaf9g4jyrmz9a26g7hk04ybjwc7k";
-      };
+  warbo-packages-src = unstable-nixpkgs.fetchgit {
+    url    = "${repoSouce}/warbo-packages.git";
+    rev    = "9f129aa";
+    sha256 = "1v35m8xxqav8cq4g1hjn8yhzhaf9g4jyrmz9a26g7hk04ybjwc7k";
+  };
 
-      src = (import "${wpkgs}/helpers.nix" {}).nix-helpers;
-    };
-    import nixpkgs-repos.repo1809 {
-      config   = {};
-      overlays = [ (import "${src}/overlay.nix") ];
-    };
+  nix-helpers-src = (import "${warbo-packages-src}/helpers.nix" {}).nix-helpers;
+
+  nixpkgs-joined = import nixpkgs-repos.repo1809 {
+    config   = {};
+    overlays = [
+      (import "${nix-helpers-src}/overlay.nix")
+      (import "${warbo-packages-src}/overlay.nix")
+    ];
+  };
 };
 rec {
-  inherit nix-helpers nixpkgs warbo-packages;
+  inherit nix-helpers nixpkgs nixpkgs-joined warbo-packages;
   bibtex = ../Bibtex.bib;
   styles = stable-configured.dirsToAttrs ./styles;
 }
