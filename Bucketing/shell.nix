@@ -1,1 +1,1 @@
-(import <nixpkgs> {}).runCommand "dummy" {} "exit 1"
+(import ./release.nix).paper
