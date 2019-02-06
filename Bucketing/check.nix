@@ -33,25 +33,25 @@ with rec {
                                      mkdir "$out"
                                    '')) {
     checkLatexUndatedTodos = f: ''
-      if grep "TODO[^{]" "${f}" > /dev/null
+      if grep "TO""DO[^{]" "${f}" > /dev/null
       then
-        NUM=$(grep -c TODO < "${f}")
-        echo "Found $NUM undated TODOs in ${f}"
+        NUM=$(grep -c "TO""DO" < "${f}")
+        echo "Found $NUM undated TO""DOs in ${f}"
         exit 1
       fi
     '';
 
     checkLatexDatedTodos = f: ''
       NOW=$(date +%s)
-      while read -r TODO
+      while read -r TD
       do
-        D=$(echo "$TODO" | sed -e 's/.*{\(.*\)\}/\1/g')
+        D=$(echo "$TD" | sed -e 's/.*{\(.*\)\}/\1/g')
         S=$(date --date="$D" +%s)
         [[ "$S" -gt "$NOW" ]] || {
-          echo "Found TODO dated '$D' in '${f}'"
+          echo "Found TO""DO dated '$D' in '${f}'"
           ERR=1
         }
-      done < <(grep -o "TODO{[^}]*}" < "${f}")
+      done < <(grep -o "TO""DO{[^}]*}" < "${f}")
     '';
 
     checkLatexRefs = f: ''
