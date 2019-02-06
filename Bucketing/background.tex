@@ -110,7 +110,7 @@ We consider the problem of \emph{(automated) theory exploration}, which includes
 
 We focus on \qspec{} \cite{QuickSpec}, which conjectures equations about Haskell code. These may be fed into another tool, such as \hspec{}, for subsequent proving. These conjectures are arrived at through the following stages:
 
-\iffalse TODO: Make this more formal?
+\iffalse % TODO{2019-02-07}: Make this more formal?
  V \in Var
  F \in Fun
  T \in Term
@@ -122,7 +122,9 @@ or
 \fi
 
 \begin{enumerate}
-  \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the constants (including functions) from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$ \iffalse TODO: A little awkward; maybe use the above notation? \fi. To ensure the list is finite, function applications are only nested up to a specified depth (by default, 3).
+  \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the constants (including functions) from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$
+% TODO{2019-02-07}: A little awkward; maybe use the above notation?
+To ensure the list is finite, function applications are only nested up to a specified depth (by default, 3).
   \item The elements of $terms$ are grouped into equivalence classes, based on their type.
   \item The equivalence of terms in each class is tested using \qcheck{}: variables are instantiated to particular values, generated randomly, and the resulting closed expressions are evaluated and compared for equality.
   \item If a class is found to have non-equal members, it is split up to separate those members.
@@ -154,7 +156,7 @@ These terms will be grouped into four classes, one each for \hs{Nat}, \hs{Nat ->
 Although complete, this enumeration approach is wasteful: many terms are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. For example, we know that addition and multiplication are closely related, and hence obey many algebraic laws. Our machine learning technique aims to predict these kinds of relations between functions, so we can create small signatures which can be explored quickly, yet have the potential to give rise to many equations.
 
 \iffalse
-TODO
+TODO{2019-02-07}
 In fact, there are similarities between the way a TE system like \qspec{} can generalise from checking \emph{particular} properties to \emph{inventing} new ones, and the way counterexample finders like \qcheck{} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. One of our aims is to understand the implications of this generalisation, the lessons that each can learn from the other's approach to term generation, and the consequences for testing and QA in general.
 \fi
 
