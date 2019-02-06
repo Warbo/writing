@@ -1,18 +1,20 @@
-with { inherit (import ../resources) bibtex nixpkgs warbo-packages; };
-with nixpkgs.repo1609."00ef7f9";
+with { inherit (import ../resources) bibtex nixpkgs-joined; };
+with nixpkgs-joined;
 with rec {
-  # Take TeX from 1703
-  tex = with nixpkgs.repo1703."de1ceec"; texlive.combine {
+  tex = texlive.combine {
     inherit (texlive)
-      beamer collection-basic collection-genericrecommended collection-latex
-      collection-latexrecommended enumitem;
+      beamer collection-basic collection-latex
+      collection-latexrecommended enumitem
+
+      # These come from generic-recommended (maybe not all needed)
+      apnum epsf fontname genmisc kastrup multido path tex-ps ulem;
   };
 };
 runCommand "ai4fm"
   {
     inherit bibtex;
     src         = ./.;
-    buildInputs = [ ditaa warbo-packages."c2ea27d".pandocPkgs tex ];
+    buildInputs = [ ditaa pandocPkgs tex ];
   }
   ''
     set -e
