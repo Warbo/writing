@@ -1,7 +1,7 @@
 {
   AI4FM              = import ./AI4FM;
   Balmoral2015       = import ./Balmoral2015;
-  Bucketing          = import ./Bucketing;
+  Bucketing          = import ./Bucketing/release.nix;
   Chalmers2015-03-25 = import ./Chalmers2015-03-25;
   CICM-2017-report   = import ./CICM-2017-report;
   JianguoMeeting     = import ./JianguoMeeting;
