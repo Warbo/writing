@@ -1,0 +1,29 @@
+From: Chris Warburton
+Date: Fri, 08 Feb 2019 10:38:20 +0000
+State: new
+Subject: TEBenchmarkPaper: elaborate on proof for rejection sampling
+Message-Id: <88a4d40688f09cd6-0-artemis@nixos>
+
+From review 1:
+
+> ...a proposal is made to sample a given theory in a very specific way:
+> take a property, find all definitions it depends on, pad this list of
+> definitions with more definitions (to reach a certain size), and
+> provide this as the input to the MTE tool.
+
+> This seems like a very arbitrary choice to me. And nowhere in the
+> paper is any investigation made as to whether this is a good idea or
+> not, or even any alternative approach discussed let alone compared
+> with. In fact, in the evaluation section, some speculation appears as
+> to why certain results are the way they are (because of the padding).
+
+> 3.2: Why is the list of definitions padded with unrelated definitions?
+
+> Why is this a good method of generating samples at all? Would a human
+> ever use the tool in this way? You need human input anyway. Doesn't it
+> make more sense if a human would prepare more samples?
+
+I think the motivation has been missed here. All we are doing is running
+the tool on (pseudo-)random samples from the corpus. We should expand
+the motivation, and show why our method is equivalent to rejection
+sampling.

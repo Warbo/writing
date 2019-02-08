@@ -1,0 +1,10 @@
+From: Chris Warburton
+Date: Fri, 08 Feb 2019 14:34:42 +0000
+Subject: Re: TEBenchmarkPaper: elaborate on proof for rejection sampling
+Message-Id: <88a4d40688f09cd6-a9459f532e393291-artemis@nixos>
+References: <88a4d40688f09cd6-0-artemis@nixos>
+In-Reply-To: <88a4d40688f09cd6-0-artemis@nixos>
+
+I've tried to address this in commit 41bfdee
+
+I've sent it off to Alison and Jianguo to see what their opinion is.
