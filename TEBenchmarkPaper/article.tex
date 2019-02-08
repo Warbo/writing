@@ -515,36 +515,97 @@ the ground truth for analysis. However, this would cause two problems:
 
 To solve both of these problems we instead \emph{sample} a subset of
 definitions.\footnote{This could be done randomly, but for reproducibility we
-  use a deterministic order based on cryptographic hashes.} Given a sample size,
-we choose a subset of that many definitions, and provide only those as input to
-the tool. We generate a corresponding ground truth by selecting those properties
+  use a deterministic order based on cryptographic hashes.} The sample size is a
+free parameter so that users have some control over how long the runs will take
+($\S$\ref{sec:application} shows that larger samples take longer, but the
+correlation is very noisy). Given a sample size, we need to choose a subset of
+that many definitions from the corpus, and provide only those as input to the
+tool.
+
+We cannot expect an MTE tool to produce all of the properties found in the
+corpus, if it is only given a subset of definitions as input. Hence for each
+sample we generate a corresponding ground truth by selecting those properties
 from the corpus which ``depend on'' (contain references to) \emph{only} the
 definitions in that sample. Transitive dependencies aren't required (e.g. a
 property involving only a \texttt{times} function would not depend on a
 \texttt{plus} function, even if \texttt{plus} occurs in the definition of
 \texttt{times}).
 
-Unfortunately, uniform sampling of definitions gives rise to a lottery: for a
-given sample size, increasing the size of the corpus (which provides better
-statistics) makes it less likely that a chosen sample will contain all of
-a property's dependencies. The majority of such samples would hence have an
-empty ground truth, and thus $0$ precision and undefined recall
-\emph{independent} of the tool's output! This is clearly undesirable as an
-evaluation method.
+The question remains of how to pick definitions for each sample. One simple way
+is to choose uniformly without replacement, but this will give many samples
+whose corresponding ground truths are empty. The effect is similar to a lottery,
+where our sample is a ticket and must contain all of some property's
+dependencies in order to ``win'' (i.e. contain that property in its ground
+truth). In particular, if we choose a sample of size $S$ uniformly at random
+from a corpus containing $N$ definitions and $P$ properties which depend on an
+average of $D$ definitions each (assuming no properties have the exact same
+dependencies), then the probability that our sample contains the dependencies of
+some particular property $p$ follows a hypergeometric distribution (similar to
+the binomial distribution, but without replacement):
 
-Other measurements could be used for such cases, but our approach is to avoid
-them by only allowing a sample if it contains all dependencies of at least one
-property. We could do this using rejection sampling, but it is more efficient to
-pick a property, weighted in proportion to their number of dependencies
-(ignoring those with more dependencies than our sample size). That property's
-dependencies become our sample, padded up to the required size with uniform
-choices from the remaining definitions.
+\begin{equation*}
+  Pr(p) = \frac{\binom{S}{D} \binom{N - S}{S - D}}
+               {\binom{N}{S}}
+\end{equation*}
 
-The ground truth for such samples is guaranteed to contain at least one property
-(the one we picked), and hence the precision and recall will depend meaningfully
-on the tool's output. One downside of this restriction is that we limit the
-number of possible samples to measure; this is significant for sample sizes less
-than~3.
+Choosing at least one property's dependencies is a Bernoulli process with $P$
+repetitions, with probability $1 - (1 - Pr(p))^P$. This gets larger if we
+increase the sample size $S$ or the number of properties $P$, but it gets
+smaller if we increase the number of definitions $N$ or the average number of
+dependencies $D$. This is problematic because we would like large corpora for
+better statistics, but this would make empty ground truths more likely.
+
+Samples whose corresponding ground truth is empty are problematic because they
+have $0$ precision and undefined recall (due to division by $0$). Such samples
+are hence unsuitable for our benchmark, especially since these results would be
+\emph{independent} of the tool's output (all tools would fare the same, so no
+comparisons could be made). Other measurements could be used for such cases, but
+since our choice of analysis comes from existing work we would rather avoid such
+samples by only allowing those with a non-empty ground truth (i.e. containing
+all dependencies of at least one corpus property).
+
+We can achieve this by instead performing uniform sampling \emph{with
+  rejection}, where samples with empty ground truth are rejected and a different
+sample is drawn instead.
+
+One problem with performing rejection sampling is that it becomes very
+inefficient when the probability of rejection is high. In our case there is a
+more direct method of sampling, whose output is exactly equivalent to rejection
+sampling but is far more efficient.
+
+Since non-rejected samples must contain the dependencies of some property, we
+can consider each such sample to be the union of those dependencies and some
+other ``padding'' definitions. By choosing these two components separately and
+returning their union, we can obtain an identical distribution without having to
+perform any rejection.
+
+We first choose the set of dependencies by picking from those of all corpus
+properties, weighted according to the probability that they would appear under
+uniform sampling. To do this we first discard any dependency sets which are
+larger than the given sample size (since they cannot appear as subsets); we then
+discard any dependency set which is a superset of another (since only the subset
+is required to avoid rejection). Their probabilities under uniform sampling
+depend only on their size, so we assign weights by calculating the least
+common multiple (LCM) of their sizes, and dividing that by each set's size. For
+example, given dependency sets $X = \{a, b, c\}$, $Y = \{b, d\}$ and
+$Z = \{a, b, e, f\}$ the LCM of their lengths ($3$, $2$ and $4$) is 12, so the
+weighting will be:
+
+\begin{equation*}
+  w(X) = \frac{12}{3} = 4
+  w(Y) = \frac{12}{2} = 6
+  w(Z) = \frac{12}{4} = 3
+\end{equation*}
+
+Once we've chosen a dependency set, we know how much padding to choose (sample
+size minus dependency set size). The padding will be uniformly distributed,
+since it does not affect the rejection criterion.
+
+Using rejection sampling or, equivalently, our direct method, ensures that the
+analysis is well defined and depends meaningfully on the tool's output. One
+downside of applying this non-empty ground truth restriction is that we limit
+the number of possible samples to measure; this is significant for sample sizes
+less than~3.
 
 \subsection{Evaluation}
 \label{section:evaluation}
