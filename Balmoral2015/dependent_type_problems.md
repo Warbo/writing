@@ -10,21 +10,26 @@ author: Chris Warburton
 <div style="display: none">
 
 ```{pipe="cat > getBetween"}
-#!/bin/sh
+#!/usr/bin/env bash
 # Returns stdin between lines matching $1 and $2
-(grep -A 100 "$1" || (echo "'$1' NOT FOUND"; exit 1)) | tail -n +2 | \
+(grep -A 100 "$1" || (echo "'$1' NOT FOUND"; exit 1)) | tail -n +2 |
 (grep -B 100 "$2" || (echo "'$2' NOT FOUND"; exit 1)) | head -n -1
 ```
 
 ```{pipe="cat > getEx"}
 #!/bin/sh
+set -e
+
 # Look for a specific example in exercises.agda
-./getBetween "^-- START EX $1" "^-- END EX $1" < root/exercises.agda
+./getBetween "^-- START EX $1" "^-- END EX $1" < root/exercises.agda |
+    iconv -f UTF8 -t ASCII//TRANSLIT
 ```
 
-```{.unwrap pipe="sh"}
+```{pipe="sh"}
 # Type-check our Agda
-agda -c root/exercises.agda > /dev/stderr || exit 1
+cp root/exercises.agda .
+agda -c exercises.agda 1>&2 || exit 1
+
 chmod +x get*
 ```
 

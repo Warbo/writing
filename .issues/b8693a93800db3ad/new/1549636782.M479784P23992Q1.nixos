@@ -1,0 +1,11 @@
+From: Chris Warburton
+Date: Fri, 08 Feb 2019 14:37:42 +0000
+State: new
+Subject: TEBenchmark: Look for examples of rejected logically valid outputs
+Message-Id: <b8693a93800db3ad-0-artemis@nixos>
+
+A common complaint about the paper is that we're checking syntactic
+equality, whereas more logically-powerful alternatives could be used.
+
+We have the output data as JSON, so we should look to see whether this
+is actually a problem in reality.

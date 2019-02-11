@@ -1,12 +1,31 @@
-with import ../resources;
-with {
-  pkgs = nixpkgs.repo1609.configless;
-  ours = warbo-packages."c2ea27d";
-};
-pkgs.stdenv.mkDerivation {
-  name = "balmoral-2015";
-  buildInputs = [
-    pkgs.haskell.packages.ghc784.Agda
-    ours.md2pdf
-  ];
-}
+with builtins;
+with (import ../resources).nixpkgs-joined;
+with lib;
+
+runCommand "balmoral-2015"
+  {
+    buildInputs = [
+      glibc
+      graphviz
+      (nixpkgs1603.haskellPackages.ghcWithPackages (hs: [ hs.Agda ]))
+      pandocPkgs
+    ];
+
+    markdown = filterSource (path: type: hasSuffix ".md"   path ||
+                                         hasSuffix ".agda" path)
+                            ./.;
+  }
+  ''
+    mkdir "$out"
+    cd "$markdown"
+    for F in *.md
+    do
+      NAME=$(basename "$F" .md)
+      echo "Rendering $NAME" 1>&2
+      pandoc --filter panpipe   \
+             --filter panhandle \
+             -w dzslides        \
+             --standalone       \
+             -o "$out/$NAME.html" "$F"
+    done
+  ''
