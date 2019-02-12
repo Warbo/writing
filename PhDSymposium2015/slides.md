@@ -1,7 +1,7 @@
 ---
 title: Machine Learning for Theory Exploration
 author: Chris Warburton
-bibliography: /home/chris/Documents/ArchivedPapers/Bibtex.bib
+bibliography: Bibtex.bib
 ---
 
 # Software for Maths and Programming #

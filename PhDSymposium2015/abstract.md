@@ -7,9 +7,9 @@ author:
 - name: Ekaterina Komendantskaya
   affiliation: University of Dundee
   email: katya@dundee.ac.uk
-documentclass: default
+documentclass: sig-alternate
 citation-style: acm-sig-proceedings.csl
-bibliography: /home/chris/Documents/ArchivedPapers/Bibtex.bib
+bibliography: Bibtex.bib
 abstract: |
   **Theory Exploration** (TE) aims to automate the tedious yet necessary task of verifying Mathematicians' and programmers' work, but the blind search used by existing approaches limits them to small examples. Meanwhile, huge repositories of formal knowledge are being routinely data-mined for structure and correlation. We provide a method for guiding TE using these abundant statistics, and assess whether this hybrid approach is feasible for tackling problems of a realistic size.
 

@@ -1,40 +1,32 @@
-with import <nixpkgs> {};
+with { inherit (import ../resources) bibtex nixpkgs-joined; };
+with nixpkgs-joined;
 
 runCommand "phd-symposium-2015"
   {
-    buildInputs = [ (import ../resources).warbo-packages."c2ea27d".pandocPkgs ];
-    buildScript = writeScript "PhDSymposium2015-builder" ''
-      #!/usr/bin/env bash
-      set -e
-
-      # Build slides.md with Beamer
-      function slides {
-        pandoc -w dzslides --standalone --self-contained \
-               --filter pandoc-citeproc -o "$out/slides.html" "${./slides.md}"
-      }
-
-      # Build abstract.md
-      function abstract {
-        pandoc --template=./templates/default.latex -o "$out/abstract.pdf" \
-               -N "${./abstract.md}"
-      }
-
-      pids=()
-      trap 'kill "${"$"}{pids[@]}"' EXIT
-      slides &
-      pids+=("$!")
-      abstract &
-      pids+=("$!")
-
-      echo "Waiting for "${"$"}{pids[*]}"
-      wait
-    '';
+    buildInputs = [
+      pandocPkgs
+      (texlive.combine {
+        inherit (texlive) helvetic scheme-small;
+      })
+    ];
   }
   ''
-    mkdir "$out"
     ln -s "${./acm_proc_article-sp.cls}" ./acm_proc_article-sp.cls
     ln -s "${./acm-sig-proceedings.csl}" ./acm-sig-proceedings.csl
     ln -s "${./sig-alternate.cls}"       ./sig-alternate.cls
     ln -s "${./templates}"               ./templates
-    "$buildScript"
+    ln -s "${./resources}"               ./resources
+    ln -s "${bibtex}"                    ./Bibtex.bib
+
+    mkdir "$out"
+
+    echo "Rendering slides" 1>&2
+    pandoc -w dzslides --standalone --self-contained \
+           --filter pandoc-citeproc -o "$out/slides.html" "${./slides.md}"
+
+    echo "Rendering abstract" 1>&2
+    pandoc --data-dir="$PWD" \
+           --template=default.latex \
+           -o "$out/abstract.pdf" \
+           -N "${./abstract.md}"
   ''
