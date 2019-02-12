@@ -1,42 +1,45 @@
-with import <nixpkgs> {};
+with { inherit (import ../resources) bibtex nixpkgs-joined; };
+with nixpkgs-joined;
+with lib;
+with {
+  tex = (texlive.combine {
+    inherit (texlive) helvetic paralist scheme-small tikz-qtree;
+  });
+};
 
-runCommand "phd-symposium-2015"
-  {
-    buildInputs = [ (import ../resources).warbo-packages."c2ea27d".pandocPkgs ];
-    script      = writeScript "phdsymp16-builder" ''
-      #!/usr/bin/env bash
-      set -e
-
-      # Build slides.md with Beamer
-      function slides {
-        pandoc -t slidy --standalone --self-contained --filter pandoc-citeproc \
-               --filter panpipe --filter panhandle -o "$out/slides.html" \
-               "${./slides.md}"
-      }
-
-      # Build abstract.md
-      function abstract {
+attrsToDirs' "PhDSymposium2016" {
+  "abstract.pdf" = runCommand "phd-symposium-2016-abstract.pdf"
+    {
+      inherit bibtex;
+      buildInputs = [ pandocPkgs tex ];
+      render      = writeScript "render" ''
+        #!/usr/bin/env bash
+        set -e
         pdflatex -interaction=nonstopmode -halt-on-error --shell-escape abstract
-        bibtex abstract
-        pdflatex -interaction=nonstopmode -halt-on-error --shell-escape abstract
-        pdflatex -interaction=nonstopmode -halt-on-error --shell-escape abstract
-      }
-
-      pids=()
-      trap 'kill "${"$"}{pids[@]}"' EXIT
-      slides &
-      pids+=("$!")
-      #abstract &
-      #pids+=("$!")
-
-      echo "Waiting for ${"$"}{pids[*]}"
-      wait
-    '';
-  }
-  ''
-    mkdir "$out"
-    ${concatStringsSep "\n" (map (f: ''ln -s "${./. + f}" ./${f}'') [
+      '';
+    }
+    ''
+      ${concatStringsSep "\n" (map (f: ''ln -s "${./. + "/${f}"}" ./${f}'') [
         "abstract.tex" "sig-alternate.cls" "templates"
-    ])}
-    "$script"
-  ''
+      ])}
+
+      cp "$bibtex" Bibtex.bib
+
+      "$render"
+      bibtex abstract
+      "$render"
+      "$render"
+
+      mv abstract.pdf "$out"
+    '';
+
+  "slides.html" = runCommand "phd-symposium-2016-slides.html"
+    {
+      buildInputs = [ ditaa ghostscript imagemagick pandocPkgs tex ];
+      LANG        = "en_US.UTF-8";
+    }
+    ''
+      pandoc -t slidy --standalone --self-contained --filter pandoc-citeproc \
+             --filter panpipe --filter panhandle -o "$out" "${./slides.md}"
+    '';
+}

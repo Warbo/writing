@@ -11,11 +11,14 @@ bibliography: /home/chris/Writing/Bibtex.bib
 
 ```{pipe="tee renderPic.sh" style="display: none;"}
 #!/usr/bin/env bash
+set -e
+echo "Rendering '$1'" 1>&2
 
 cat > $1.dit
-nix-shell -p ditaa --run "ditaa '$1.dit' '$1.png' > /dev/null 2> /dev/null"
+ditaa "$1.dit" "$1.png" > /dev/null
 DATA=$(base64 -w 0 < "$1.png")
-echo "<img src='data:image/png;base64,$DATA' alt='$1' />" | pandoc -f html -t json
+echo "<img src='data:image/png;base64,$DATA' alt='$1' />" |
+  pandoc -f html -t json
 ```
 
  - Motivation and Aims `chmod +x renderPic.sh`{pipe="sh" style="display: none;"}
@@ -237,7 +240,6 @@ append = Lam a (Lam y (Case (Var (Local a))
     \usepackage{fontspec}
   \fi
   \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
-  \newcommand{\euro}{€}
 \fi
 % use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -341,7 +343,8 @@ set -e
 pdflatex out 1>&2
 convert -density 150 out.pdf -quality 90 out.png
 DATA=$(base64 -w 0 < "out.png")
-echo "<img width="100%" src='data:image/png;base64,$DATA' alt='Tree' />" | pandoc -f html -t json
+echo "<img width="100%" src='data:image/png;base64,$DATA' alt='Tree' />" |
+  pandoc -f html -t json
 ```
 
 # Recurrent Clustering: Flattening Expressions #
