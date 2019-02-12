@@ -1,9 +1,6 @@
-with rec {
-  inherit (import ../../resources)        bibtex nixpkgs;
-  inherit (nixpkgs.repo1609."00ef7f9")
-    callPackage ditaa ghostscript glibcLocales imagemagick jq runCommand;
-  inherit (callPackage ../support.nix {}) renderers tex;
-};
+with rec { inherit (import ../../resources) bibtex nixpkgs-joined; };
+with nixpkgs-joined;
+with { inherit (callPackage ../support.nix {}) renderers tex; };
 
 runCommand "phd-symposium-2017-slides.html"
   {

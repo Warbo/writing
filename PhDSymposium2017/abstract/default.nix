@@ -1,8 +1,6 @@
-with rec {
-  inherit (import ../../resources)        bibtex nixpkgs;
-  inherit (nixpkgs.repo1609."2cc683b")    callPackage runCommand;
-  inherit (callPackage ../support.nix {}) tex;
-};
+with rec { inherit (import ../../resources) bibtex nixpkgs-joined; };
+with nixpkgs-joined;
+with { inherit (callPackage ../support.nix {}) tex; };
 
 runCommand "phd-symposium-2017-abstract.pdf"
   {

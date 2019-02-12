@@ -1,22 +1,17 @@
 # Supporting materials shared by abstract/ and slides/
-{ callPackage, jq, latestGit, lib, racket, runCommand, writeScript }:
+{ callPackage, fetchgit, jq, lib, pandocPkgs, racket, runCommand, writeScript }:
 with builtins;
 with lib;
-with { inherit ((import ../resources).warbo-packages."c2ea27d") pandocPkgs; };
 rec {
   tex = callPackage ./tex.nix {};
 
   renderers = [ pandocPkgs tex ];
 
-  haskell-te =
-    with rec {
-      local = /home/chris/Programming/haskell-te;
-    };
-    import (if pathExists local
-               then local
-               else latestGit {
-                      url = "http://chriswarbo.net/git/haskell-te.git";
-                    });
+  haskell-te = import (fetchgit {
+    url    = "http://chriswarbo.net/git/haskell-te.git";
+    rev    = "75d4b50";
+    sha256 = "1ix03qxiif9cjxqa6v31ffzwi4cfbd5lp6axfxaidljmhrzycw4n";
+  });
 
   samples =
     with {
