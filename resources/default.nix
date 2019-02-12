@@ -89,7 +89,7 @@ with rec {
   };
 };
 rec {
-  inherit nix-helpers nixpkgs nixpkgs-joined warbo-packages;
+  inherit nixpkgs nixpkgs-joined warbo-packages;
   bibtex = ../Bibtex.bib;
   styles = stable-configured.dirsToAttrs ./styles;
 }
