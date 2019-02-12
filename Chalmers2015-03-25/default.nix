@@ -1,10 +1,14 @@
-with import ../resources;
-with nixpkgs.repo1709.configless;
-with warbo-packages."c2ea27d";
+with builtins;
+with (import ../resources).nixpkgs-joined;
+with lib;
+
 runCommand "Chalmers-2015-03-25.pdf"
   {
     buildInputs = [ pandocPkgs texlive.combined.scheme-small ];
-    src         = ./.;
+    src         = filterSource (path: type: any (x: hasSuffix x path) [
+                                 ".jpeg" ".jpg" ".md" ".png" ".svg"
+                               ])
+                               ./.;
   }
   ''
     cd "$src"

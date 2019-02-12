@@ -1,12 +1,11 @@
-with { inherit (import ../resources) nixpkgs warbo-packages; };
-with nixpkgs.repo1703."00ef7f9";
+with (import ../resources).nixpkgs-joined;
 
 {
   pdf = runCommand "CICM-2017-report.pdf"
     {
       source      = ./report.md;
       buildInputs = [
-        warbo-packages."c2ea27d".pandocPkgs
+        pandocPkgs
         (texlive.combine {
           inherit (texlive)
             scheme-small tikzinclude tikz-qtree algorithmicx algorithm2e
