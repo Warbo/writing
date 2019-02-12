@@ -1,16 +1,19 @@
-with rec {
-  inherit (import ../resources) bibtex nixpkgs styles;
-  inherit (nixpkgs.repo1609.configless) fetchurl runCommand texlive;
+with { inherit (import ../resources) bibtex nixpkgs-joined styles; };
+with nixpkgs-joined;
+with {
+  cmd = ''
+    pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
+  '';
 };
 
 runCommand "ml4hs-tech-report"
   {
     inherit bibtex;
-    src    = ./.;
-    styles = [ styles."mmm.sty" styles."psfig.sty" styles."mathpartir.sty" ];
-    cmd    = ''
-      pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
-    '';
+    src    = ./report.tex;
+    styles = attrsToDirs' "styles" {
+      inherit (styles) "mmm.sty" "psfig.sty" "mathpartir.sty";
+    };
+
 
     buildInputs = [ (texlive.combine {
                       inherit (texlive) collection-latexrecommended
@@ -20,27 +23,20 @@ runCommand "ml4hs-tech-report"
                     }) ];
   }
   ''
-    source $stdenv/setup
+    mkdir src
+    cd    src
 
-    cp -r "$src" ./src
-    chmod +w -R ./src
-    cd ./src
+    cp "$styles"/*.sty .
+    cp "$src"          report.tex
+    cp "$bibtex"       Bibtex.bib
 
-    for S in $styles
-    do
-      NAME=$(basename "$S" | sed -e 's/.*-//g')
-      cp "$S" ./"$NAME"
-    done
-
-    cp "$bibtex" ./Bibtex.bib
-
-    $cmd
+    ${cmd}
 
     echo "RUNNING bibtex"
     bibtex report
 
-    $cmd
-    $cmd
+    ${cmd}
+    ${cmd}
 
     cp report.pdf "$out"
   ''
