@@ -1,8 +1,8 @@
-with import <nixpkgs> {};
+with (import ../resources).nixpkgs-joined;
 
 runCommand "ml4hs-paper1"
   {
-    buildInputs = [ (import ../resources).warbo-packages."c2ea27d".pandocPkgs ];
+    buildInputs = [ pandocPkgs texlive.combined.scheme-small ];
     src         = ./ml4hs1.md;
   }
   ''
