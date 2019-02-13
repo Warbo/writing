@@ -1,7 +1,6 @@
-with rec {
-  inherit (import ../resources) bibtex nixpkgs styles;
-  inherit (nixpkgs.repo1609.configless) jq runCommand texlive;
-};
+with { inherit (import ../resources) bibtex nixpkgs-joined styles; };
+with nixpkgs-joined;
+
 runCommand "transfer-report.pdf"
   {
     inherit bibtex;
