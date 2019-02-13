@@ -2,10 +2,9 @@
 # files; here we select the high-level, "final results" which are used when
 # rendering.
 
-{ nixpkgs ? import <nixpkgs> {}, bibtex ? ../../Bibtex.bib }:
-
+with { inherit (import ../../resources) bibtex nixpkgs-joined; };
 with builtins;
-with nixpkgs.repo1609."00ef7f9";
+with nixpkgs-joined;
 rec {
   article = ../article.tex;
 
