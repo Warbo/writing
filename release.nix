@@ -12,7 +12,7 @@
   PhDSymposium2017   = import ./PhDSymposium2017;
   PhDSymposium2018   = import ./PhDSymposium2018;
   PhDThesis          = import ./PhDThesis;
-  TEBenchmarkPaper   = import ./TEBenchmarkPaper;
+  TEBenchmarkPaper   = import ./TEBenchmarkPaper/release.nix;
   TheoryExploration  = import ./TheoryExploration;
   TransferReport     = import ./TransferReport;
 }

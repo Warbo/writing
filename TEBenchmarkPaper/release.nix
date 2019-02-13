@@ -1,1 +1,1 @@
-{ inherit (import ./supporting-materials) paper; }
+{ inherit (import ./.) paper; }

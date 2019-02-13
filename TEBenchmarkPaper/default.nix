@@ -2,21 +2,25 @@
 # files; here we select the high-level, "final results" which are used when
 # rendering.
 
-with { inherit (import ../../resources) bibtex nixpkgs-joined; };
+with { inherit (import ../resources) bibtex nixpkgs-joined; };
 with builtins;
 with nixpkgs-joined;
 rec {
-  article = ../article.tex;
+  article = ./article.tex;
 
-  graphs = callPackage ./graphs.nix { inherit tex textWidth; };
+  graphs = callPackage supporting-materials/graphs.nix {
+    inherit tex textWidth;
+    inherit (nixpkgs1609) python;
+  };
 
-  comparison = callPackage ./comparison.nix {
+  comparison = callPackage supporting-materials/comparison.nix {
     inherit (graphs) isacosyData quickspecData;
+    inherit (nixpkgs1609) python3;
   };
 
   # Journal of Automated Reasoning LaTeX files, from
   # http://www.springer.com/cda/content/document/cda_downloaddocument/?SGWID=0-0-45-468198-0
-  latex = ./LaTeX.zip;
+  latex = supporting-materials/LaTeX.zip;
 
   styFinder = wrap {
     name   = "styfinder.py";

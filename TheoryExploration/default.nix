@@ -1,10 +1,6 @@
 with builtins;
-with rec {
-  inherit ((import ../resources).nixpkgs.repo1609."00ef7f9")
-    lib runCommand texlive withNix;
-  inherit ((import ../resources).warbo-packages."c2ea27d")
-    pandocPkgs;
-};
+with { inherit (import ../resources) nixpkgs-joined; };
+with nixpkgs-joined;
 with lib;
 with rec {
   notes  = map (removeSuffix ".md")
