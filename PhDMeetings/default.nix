@@ -1,29 +1,41 @@
-with import <nixpkgs> {};
+with (import ../resources).nixpkgs-joined;
+with lib;
+with {
+  renderAll = dir: runCommand "phd-meetings-${dir}"
+    {
+      dir         = ./. + "/${dir}";
+      buildInputs = [
+        # LaTeX
+        (texlive.combine { inherit (texlive) scheme-small; })
 
-stdenv.mkDerivation {
-  name = "phd-meetings";
-  src  = ./.;
-  buildInputs = [
-    # LaTeX
-    pkgs.texLiveFull
+        # Graph drawing
+        graphviz
+        blockdiag
 
-    # Graph drawing
-    pkgs.graphviz
-    pkgs.blockdiag
+        # Document rendering
+        pandocPkgs
 
-    # Document rendering
-    (import ../resources).warbo-packages."c2ea27d".pandocPkgs
+        # Embedded code snippets
+        #coq_mtac
+        #treefeatures
+        ditaa
+        ditaaeps
+        vim
+        haskellPackages.ghc
+        haskellPackages.QuickCheck
 
-    # Embedded code snippets
-    #coq_mtac
-    #treefeatures
-    ditaa
-    ditaaeps
-    vim
-    haskellPackages.ghc
-    haskellPackages.QuickCheck
-
-    # Automatic rendering
-    pkgs.inotifyTools
-  ];
-}
+        # Automatic rendering
+        inotifyTools
+      ];
+    }
+    ''
+      mkdir "$out"
+      for F in "$dir"/*.md
+      do
+        NAME=$(basename "$F" .md)
+        pandoc -o "$out/$NAME.pdf" "$F"
+      done
+    '';
+};
+genAttrs [ "2015-02-12" "2015-02-26" "2015-03-05" "2015-09-16" ]
+         renderAll

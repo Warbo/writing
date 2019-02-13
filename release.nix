@@ -7,6 +7,7 @@
   JianguoMeeting     = import ./JianguoMeeting;
   ML4HS1             = import ./ML4HS1;
   ML4HSTechReport    = import ./ML4HSTechReport;
+  PhDMeetings        = import ./PhDMeetings;
   PhDSymposium2015   = import ./PhDSymposium2015;
   PhDSymposium2016   = import ./PhDSymposium2016;
   PhDSymposium2017   = import ./PhDSymposium2017;
