@@ -1,7 +1,6 @@
 with builtins;
-with { inherit (import ../resources) bibtex nixpkgs; };
-with { chosenPkgs = nixpkgs.repo1609."00ef7f9"; };
-with chosenPkgs;
+with { inherit (import ../resources) bibtex nixpkgs-joined; };
+with nixpkgs-joined;
 with lib;
 with { defs = rec {
   inherit bibtex;
@@ -37,7 +36,7 @@ with { defs = rec {
       '';
 
   benchmarkSupport = callPackage ./support-for-benchmarks {
-    inherit bibtex chosenPkgs tex textWidth;
+    inherit bibtex tex textWidth;
   };
 
   # Render a "dummy" version of the thesis which has all of the same styling
@@ -102,6 +101,10 @@ with { defs = rec {
   pdfs = attrsToDirs {
     "outline.pdf" = outline;
     "thesis.pdf"  = thesis;
+
+    # Individual sections
+    "litreview.pdf"  = renderSection "litreview";
+    "background.pdf" = renderSection "background";
   };
 
 }; };

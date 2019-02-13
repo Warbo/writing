@@ -2,15 +2,19 @@
 # files; here we select the high-level, "final results" which are used when
 # rendering.
 
-{ chosenPkgs, bibtex, tex, textWidth }:
+{ callPackage, bibtex, nixpkgs1609, tex, textWidth }:
 
 with builtins;
 with chosenPkgs;
 rec {
-  graphs = callPackage ./graphs.nix { inherit tex textWidth; };
+  graphs = callPackage ./graphs.nix {
+    inherit tex textWidth;
+    inherit (nixpkgs1609) python;
+  };
 
   comparison = callPackage ./comparison.nix {
     inherit (graphs) isacosyData quickspecData;
+    inherit (nixpkgs1609) python3;
   };
 
   # Provides a pdflatex binary with all packages needed by template, our
