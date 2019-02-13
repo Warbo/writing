@@ -2,12 +2,14 @@
 # files; here we select the high-level, "final results" which are used when
 # rendering.
 
-{ src, bibtex, pkgs, tex }:
+{ callPackage, bibtex, jq, nixpkgs1609, runCommand, src, tex, unzip }:
 
 with builtins;
-with pkgs;
 rec {
-  graphs = callPackage ./graphs.nix { inherit teBenchmark tex textWidth; };
+  graphs = callPackage ./graphs.nix {
+    inherit teBenchmark tex textWidth;
+    inherit (nixpkgs1609) python;
+  };
 
   comparison = callPackage ./comparison.nix {
     inherit (graphs) isacosyData quickspecData;

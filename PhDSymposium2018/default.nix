@@ -1,46 +1,34 @@
-{ docsOnly ? true }:
+with { inherit (import ../resources) bibtex nixpkgs-joined; };
+with nixpkgs-joined;
+with rec {
+  abstract = graphs: runCommand "phd-symp-2018-abstract.pdf"
+    {
+      inherit bibtex graphs src;
+      buildInputs = [ tex ];
+      render      = writeScript "phdsymp18-render" ''
+        pdflatex -interaction=nonstopmode -halt-on-error abstract
+      '';
+    }
+    ''
+      mkdir src
+      cp -s "$src"/* ./src/
 
-with { defs = rec {
-  abstract = graphs:
-    with pkgs // {
-      render = "pdflatex -interaction=nonstopmode -halt-on-error abstract";
-    };
-    runCommand "phd-symp-2018-abstract.pdf"
-      {
-        inherit graphs src;
-        inherit (resources) bibtex;
+      [[ -z "$graphs" ]] || cp -rs "$graphs"/* src/
 
-        buildInputs = [ tex ];
-      }
-      ''
-        mkdir src
-        cp -s "$src"/* ./src/
-
-        [[ -z "$graphs"            ]] || cp -rs "$graphs"/*            src/.
-
-        ln -s "$bibtex" Bibtex.bib
-        pushd src
-          ${render}
-          bibtex abstract
-          ${render}
-          ${render}
-          mv abstract.pdf "$out"
-        popd
+      ln -s "$bibtex" Bibtex.bib
+      pushd src
+        "$render"
+        bibtex abstract
+        "$render"
+        "$render"
+        mv abstract.pdf "$out"
+      popd
     '';
 
-  both = pkgs.attrsToDirs {
-    "abstract.pdf" = abstract support.graphs.graphs;
-    "slides.pdf"   = slides;
-  };
-
-  pkgs = resources.nixpkgs.repo1609."00ef7f9";
-
-  resources = import ../resources;
-
-  slides = pkgs.runCommand "slides.pdf"
+  slides = runCommand "slides.pdf"
     {
-      inherit (resources) bibtex;
-      buildInputs = [ resources.warbo-packages."c2ea27d".pandocPkgs tex ];
+      inherit bibtex;
+      buildInputs = [ pandocPkgs tex ];
       graphs      = ./graphs;
       slides      = ./slides.md;
     }
@@ -51,7 +39,7 @@ with { defs = rec {
       mv slides.pdf "$out"
     '';
 
-  src = pkgs.attrsToDirs {
+  src = attrsToDirs {
     "abstract.tex"            = ./abstract.tex;
     "acm_proc_article-sp.cls" = ./acm_proc_article-sp.cls;
     "acm-sig-proceedings.csl" = ./acm-sig-proceedings.csl;
@@ -59,10 +47,7 @@ with { defs = rec {
     "sig-alternate.cls"       = ./sig-alternate.cls;
   };
 
-  support = import ./supporting-materials {
-    inherit pkgs tex src;
-    inherit (resources) bibtex;
-  };
+  support = callPackage ./supporting-materials { inherit bibtex src tex; };
 
   # Provides a pdflatex binary with all packages needed by template, our
   # document and the matplotlib graphs
@@ -73,8 +58,8 @@ with { defs = rec {
       latex-fonts multirow paralist psnfss scheme-small tikzinclude tikz-qtree
       type1cm;
   };
-}; };
-
-if docsOnly
-   then defs.both
-   else defs
+};
+attrsToDirs' "phdsymp2018" {
+  "abstract.pdf" = abstract support.graphs.graphs;
+  "slides.pdf"   = slides;
+}
