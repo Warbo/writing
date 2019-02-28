@@ -1,6 +1,27 @@
 with { resources = import ../resources; };
 with resources.nixpkgs-joined;
 with rec {
+  render = ''
+    echo "Running pdflates (1)" 1>&2
+    pdflatex article
+
+    echo "Running bibtex" 1>&2
+    bibtex   article
+
+    if [[ -e article.bbl ]]
+    then
+      echo "Generated 'article.bbl'" 1>&2
+    else
+      fail "No 'article.bbl' produced"
+    fi
+
+    echo "Running pdflates (2)" 1>&2
+    pdflatex article
+
+    echo "Running pdflates (3)" 1>&2
+    pdflatex article
+  '';
+
   tex = texlive.combine { inherit (texlive) scheme-small; };
 
   src = ./machinelearning.tex;
@@ -10,15 +31,21 @@ with rec {
     {
       inherit src;
       inherit (resources) bibtex;
-      buildInputs = [ bibtool tex ];
+      buildInputs = [ bibtool fail tex ];
     }
     ''
       ln -s "$src"    article.tex
       ln -s "$bibtex" bibtex.bib
 
-      pdflatex article
+      ${render}
 
       bibtool -x article.aux -o NewBib.bib
+
+      while read -r C
+      do
+        grep "$C" < bibtex.bib || fail "Didn't include '$C'"
+      done < <(grep -o 'cite{[^}]*}' < article.tex |
+               grep -o '{.*}' | grep -o '[^{}]*')
 
       mv NewBib.bib "$out"
     '';
@@ -33,16 +60,15 @@ with rec {
       ln -s "$src" article.tex
       ln -s "$bib" bibtex.bib
 
-      function go {
-        echo "Running pdflatex" 1>&2
-        pdflatex article
+      function check {
+        if grep 'LaTeX Warning: Citation'
+        then
+          fail "Missing citations"
+        fi
       }
 
-      go
-      go
-      #echo "Running bibtex" 1>&2
-      #bibtex article
-      go
+      ${render} 2>&1 | check
+
       mv article.pdf "$out"
     '';
 
