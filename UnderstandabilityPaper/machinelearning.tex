@@ -1,0 +1,147 @@
+I meant to send this earlier, in case it's useful. These are just some
+things that came to mind regarding "explainable" AI and machine
+learning. Lots of rambling, but hopefully some insight into current
+machine-learning thinking (as I understand it, as somewhat of an
+outsider!).
+
+I think a key idea is "differentiable programming", which captures the
+essence of how machine learning models like neural networks work, and
+precisely what makes them different from traditional computer programs
+(i.e. they're differentiable!), without ignoring the details ("black
+box") or using flimsy analogies ("brain-like"):
+
+https://fluxml.ai/2019/02/07/what-is-differentiable-programming.html
+
+When run on an input, a differentiable program doesn't just give an
+output, it also gives us the partial derivatives of that output
+w.r.t. each of the program's parameters. This tells us exactly how to
+adjust those parameters (via backpropagation) to reduce the output error
+for that particular input. Doing this enough times for enough inputs
+will hopefully find a general solution.
+
+A neural network is an example of a differentiable program, one which is
+just a big collection of identical expressions ("neurons") composed
+together. This is incredibly general (they are universal function
+approximators), but it doesn't have much "knowledge" or "structure"
+baked in: the behaviour of this program depends almost completely on the
+parameters, so everything it "learns" must come from input/output
+examples.
+
+The convolutional neural networks that have come to dominate image
+processing are also differentiable programs, but they contain more
+knowledge/structure. Instead of general-purpose 'neurons', these use
+'convolutional layers' which are also expressions that get composed
+together. The difference is that these expressions hard-code the 2D grid
+structure that we expect to find in raster images. This makes them less
+general than neural networks, since they assume the data fits this 2D
+grid structure, but they also don't have to learn that structure from
+examples. Hence they need fewer examples, but we can also be more
+confident that the input/output relationships they learn involve 2D
+patches of image content (like shapes or textures), rather than some
+arbitrary numerical relationship between pixels.
+
+Taking things much further, there are differentiable programs which do
+ray tracing ( https://people.csail.mit.edu/tzumao/diffrt/ ). These can
+be used to learn the position of 3D objects in an image, the camera
+position, illumination, etc. Again, this is less general since it
+assumes the input is an image of a 3D scene, but again it doesn't have
+to learn this knowledge from examples. The learned parameters are easily
+"explained", as they are the usual rendering parameters of camera
+position, rotation, etc.
+
+Another example is learning to recognise and generate hand-written
+characters by using a differentiable program for drawing lines:
+https://web.mit.edu/cocosci/Papers/Science-2015-Lake-1332-8.pdf‎
+
+In this way, there are two tradeoffs being made:
+
+ - By hard-coding our knowledge of the domain into a program, like using
+   a ray-tracer for images of the 3D world, or pen-based drawing for
+   images of hand-written characters, we don't need as much training
+   data for the system to 'learn' what's going on. Unfortunately, we end
+   up with less general systems, e.g. we might apply the same
+   neural-network architecture to all sorts of problems (with enough
+   data), but we can't apply the ray-tracer to e.g. audio data.
+
+ - This same tradeoff also has implications for understandability and
+   explainability: the parameters of a ray-tracer are directly
+   understandable, based on how they're used in the program, e.g. "how
+   bright is this light source" or "how big is this object". In
+   contrast, the parameters of something like a neural network make
+   little sense on their own, they just mean "how important is this
+   output for that neuron?".
+
+STUFF BELOW IS MORE TANGENTIAL
+
+There are probably parallels to be drawn w.r.t. feature engineering
+too. "Feature extraction" turns raw data into numbers for the learning
+algorithm. This used to be done by hand, so we knew what the numbers
+meant (e.g. average brightness, number of edges, etc. this is what
+Katya's 'recurrent clustering' algorithm does for symbolic expressions).
+With "deep nets", such features are figured out automatically, and we
+don't know what they mean. Hence we gain generality (automatically
+discovered features tend to out-perform hand-engineered ones), but we
+lose understanding/explainability, and we become more dependent on
+training data.
+
+Things like "deep dream" can try to demonstrate what these features
+seem to represent, but not much more. As far as I understand it, deep
+dream works by picking a particular neuron/feature, providing an
+arbitrary input image to the system, and iteratively tweaking that image
+so that feature increases. The "explanation" of that feature is the
+changes that were made to the image, e.g. if the changes look
+eye-shaped, then we say that feature is for detecting eyes. This is, of
+course, open to interpretation.
+
+Interestingly, exactly the same technique is used for generating
+adversarial inputs, where an input (usually to a classifier) is tweaked
+until it gets classified incorrectly:
+
+https://en.wikipedia.org/wiki/Adversarial_machine_learning
+
+Adversarial inputs show how limited this sort of "explanation" is, since
+these changes might look like random noise:
+https://blog.openai.com/adversarial-example-research/
+
+Or might even just be a single pixel:
+https://arxiv.org/abs/1710.08864
+
+Another nice example of "explaining" a machine learning model by
+demonstrating what its features represent is the variational
+autoencoder.
+
+Normal autoencoders 'compress' inputs down to a sequence of numbers
+representing their important features. Unfortunately these are hard to
+understand in isolation (sometimes called "holographic reduced
+representations", all of the components depend on all of the others).
+
+Variational autoencoders compress down to a multi-dimensional gaussian
+distribution instead. By randomly sampling from this gaussian, the
+representation is forced to be robust against small changes, and this
+imposes a meaningful structure on the space; such that adjusting the
+centre of the gaussian will alter the resulting data, e.g. by making a
+person's hair darker; or changing their gender; or giving them glasses;
+etc.
+
+https://towardsdatascience.com/intuitively-understanding-variational-autoencoders-1bfe67eb5daf
+(Especially the "Vector arithmetic" section)
+
+Although this property can't actually be relied upon!
+http://paulrubenstein.co.uk/variational-autoencoders-are-not-autoencoders/
+
+A similar effect to the structured "latent space" of the VAE has been
+found with word2vec:
+https://en.wikipedia.org/wiki/Word2vec#Preservation_of_semantic_and_syntactic_relationships
+
+word2vec turns words into vectors of numbers, based on co-occurrences of
+words in some training data. These vectors turn out to have some
+"meaning" in the sense that vector arithmetic can make semantic changes.
+For example if we do the sum:
+
+  vector("king") - vector("man") + vector("woman")
+
+The resulting vector is very close to vector("queen").
+
+These sorts of machine learning system are unsupervised, so they don't
+solve any particular problem. However, the representations they learn
+can be useful for other task-specific systems.
