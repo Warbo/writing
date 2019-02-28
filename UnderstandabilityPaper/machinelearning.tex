@@ -1,3 +1,11 @@
+% STRUCTURE:
+
+%  - Understandability in AI
+%  - Theorem proving as example:
+%   - Least informative
+
+\documentclass{article}
+\begin{document}
 I meant to send this earlier, in case it's useful. These are just some
 things that came to mind regarding "explainable" AI and machine
 learning. Lots of rambling, but hopefully some insight into current
@@ -51,7 +59,7 @@ position, rotation, etc.
 
 Another example is learning to recognise and generate hand-written
 characters by using a differentiable program for drawing lines:
-https://web.mit.edu/cocosci/Papers/Science-2015-Lake-1332-8.pdf‎
+https://web.mit.edu/cocosci/Papers/Science-2015-Lake-1332-8.pdf
 
 In this way, there are two tradeoffs being made:
 
@@ -97,7 +105,7 @@ Interestingly, exactly the same technique is used for generating
 adversarial inputs, where an input (usually to a classifier) is tweaked
 until it gets classified incorrectly:
 
-https://en.wikipedia.org/wiki/Adversarial_machine_learning
+% https://en.wikipedia.org/wiki/Adversarial_machine_learning
 
 Adversarial inputs show how limited this sort of "explanation" is, since
 these changes might look like random noise:
@@ -131,7 +139,8 @@ http://paulrubenstein.co.uk/variational-autoencoders-are-not-autoencoders/
 
 A similar effect to the structured "latent space" of the VAE has been
 found with word2vec:
-https://en.wikipedia.org/wiki/Word2vec#Preservation_of_semantic_and_syntactic_relationships
+
+% https://en.wikipedia.org/wiki/Word2vec#Preservation_of_semantic_and_syntactic_relationships
 
 word2vec turns words into vectors of numbers, based on co-occurrences of
 words in some training data. These vectors turn out to have some
@@ -145,3 +154,8 @@ The resulting vector is very close to vector("queen").
 These sorts of machine learning system are unsupervised, so they don't
 solve any particular problem. However, the representations they learn
 can be useful for other task-specific systems.
+
+\bibliographystyle{plain}
+\bibliography{./Bibtex}
+
+\end{document}
