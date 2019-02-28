@@ -2,10 +2,62 @@
 
 %  - Understandability in AI
 %  - Theorem proving as example:
-%   - Least informative
+%   - Least informative is a yes/no/unknown answer
+%   -
 
 \documentclass{article}
 \begin{document}
+The problem of making machine-generated artefacts more understandable to human
+users is quite clear in the field of automated theorem proving~CITE: the task of
+deciding whether a given formal statement follows from a given set of premeses.
+The least informative approaches, such as those based on the popular \emph{SLD
+  resolution} algorithm~CITE, produce nothing more than a ``yes'', ``no'' or
+``unknown'' response. Not only is this devoid of \emph{explanation}, but it also
+hides the effects of any bugs; requiring the user to either trust the results,
+or verify the implementation.
+
+Both of these issues can be mitigated by having the system instead generate a
+\emph{proof object}: a formal argument for \emph{why} a given statement follows
+or does not follow. Once generated, a proof object's validity can be checked
+without requiring any knowledge of how it was created, thus avoiding the need to
+trust or verify the (potentially complicated) search and generation
+procedures. The \emph{de Bruijn criterion}~CITE describes theorem provers which
+produce proof objects that are trivial to check by independent \emph{proof
+  checker} programs (which are themselves easily verified, due to their
+simplicity); examples are Coq~CITE and Isabelle~CITE.
+
+Proof objects are not a complete solution to understandability, since they can
+still be quite inscrutable to human users. This often depends on how closely
+the chosen formal system is able to encode the user's ideas: for example, the
+formal proof of Kepler's Conjecture was performed using a system of Higher Order
+Logic (HOL)~CITE whose proof objects (natural-deduction style derivations),
+whilst tedious, are in principle understandable to a user experienced with both
+the software and problem domain. The same cannot be said of the Boolean
+Pythagorean Triples problem, a statement of Ramsey theory involving the
+structure of the natural numbers. Rather than taking a high-level approach like
+HOL, the authors of~CITE analysed sets $\{0..n\}$ for larger and larger $n$,
+encoding these restrictions of the problem into the language of boolean
+satisfiability (SAT), and finding that the problem is unsatisfiable for
+$n= 7825$, and hence for the natural numbers as a whole. The proof object for
+$n = 7825$ contains 200 terabytes (compressable to 68 gigabytes) of
+propositional logic clauses, demonstrating the unsatisfiability of the encoded
+problem instance. Not only is this far too much for any human to comprehend, but
+the concepts used in the proof (boolean formulae) are several layers removed
+from the actual problem statement (natural numbers, subsets and pythagorean
+triples).
+
+Whilst ``low level'' formalisms like SAT are less understandable or explanatory
+for users, they are far more amenable to automation than more expressive logics.
+Despite the proof for the Boolean Pythagorean Triples problem being many orders
+of magnitude larger than that of the Kepler Conjecture, the latter is well
+beyond the ability of today's automated theorem provers due to its encoding in
+HOL. Instead, it took 22 collaborators 9 years just to formalise the proof
+(Hales had previously produced a less formal proof, hundreds of pages long and
+accompanied by unverified software).
+
+
+
+
 I meant to send this earlier, in case it's useful. These are just some
 things that came to mind regarding "explainable" AI and machine
 learning. Lots of rambling, but hopefully some insight into current
