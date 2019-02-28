@@ -1,0 +1,21 @@
+From: Chris Warburton
+Date: Wed, 13 Feb 2019 16:03:09 +0000
+State: new
+Subject: Bucketing: Plot min/max bounds
+Message-Id: <e8624fc1eff25648-0-artemis@nixos>
+
+We have plots for pseudorandom and recurrent-clustering performance; we
+should also plot the min and max bounds.
+
+These are currently fixed between sizes 1 to 10, since sizes 11+ are
+currently infeasible to run. It *might* be possible to improve that, but
+don't waste time trying to do it.
+
+We should first plot these bounds on their own, so we can see what they
+are.
+
+We should then incorporate them into the plot of pseudorandom and
+recurrent-clustering results.
+
+We need to figure out the most appropriate way to represent this: maybe
+just means?
