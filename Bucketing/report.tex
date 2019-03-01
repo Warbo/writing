@@ -73,7 +73,7 @@
 \mainmatter  % start of an individual contribution
 
 % first the title is needed
-\title{Improving Haskell Theory Exploration}
+\title{Scaling Theory Exploration Through Clustering}
 
 % a short form should be given in case it is too long for the running head
 \titlerunning{Improving Haskell Theory Exploration}
@@ -104,20 +104,25 @@
 %
 
 %\toctitle{Lecture Notes in Computer Science}
-\tocauthor{Improving Haskell Theory Exploration}
+\tocauthor{Scaling Theory Exploration Through Clustering}
 \maketitle
 
 \begin{abstract}
-  Mathematical Theory Exploration, a field of Artificial Intelligence, has
-  immediate applications to improving the quality and understanding of software.
-  It extends previously existing methods available through testing, in languages
-  which are amenable to formal analysis such as those based on pure functional
-  programming. Current MTE techniques are limited by their use of exponential
-  time algorithms, which although thorough are ultimately limited to finding
-  simple properties of small systems. We propose the use of machine learning
-  methods to intelligently choose which parts of a codebase to explore based on
-  their similarity, hence focusing computational effort on areas which are most
-  likely to lead to discoveries.
+  Mathematical Theory Exploration can discover novel, interesting properties of
+  formal definitions (such as a mathematical theory, scientific model or
+  computer program). In principle this is a fully automated process, but in
+  practice requires careful selection of definitions to avoid infeasible running
+  times when more than a few dozen definitions are provided.
+
+  We analyse this selection problem by exploring sets of definitions of
+  different sizes sampled from a theorem-proving corpus, finding median running
+  times remain low but variance increases severely with size. We measure the
+  effect of selection on the number of desirable theorems that remain possible
+  to discover, finding a large gap between best- and worst-case selections,
+  indicating the potential for smart strategies to narrow-down selections
+  without impacting exploration potential too severely. We evaluate a strategy
+  for clustering definitions based on similarity, but find it performs no better
+  than random; indicating the difficulty of this open problem.
 \end{abstract}
 
 \input{intro.tex}
