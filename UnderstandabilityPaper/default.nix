@@ -45,7 +45,7 @@ with rec {
       do
         grep "$C" < bibtex.bib || fail "Didn't include '$C'"
       done < <(grep -o 'cite{[^}]*}' < article.tex |
-               grep -o '{.*}' | grep -o '[^{}]*')
+               grep -o '{.*}' | grep -o '[^{}]*' | grep -v ',')
 
       mv NewBib.bib "$out"
     '';
