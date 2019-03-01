@@ -1,11 +1,52 @@
-{ gnuplot, jq, lzip, msgpack-tools, rpl, runCommand, writeScript }:
+{ fetchgit, gnuplot, jq, lzip, msgpack-tools, rpl, runCommand, writeScript }:
 
 with builtins;
 rec {
+  bucketing = fetchgit {
+    url    = http://chriswarbo.net/git/bucketing-algorithms.git;
+    rev    = "f9ae8a3";
+    sha256 = "0as828yshyc0k9q2sdm8lhvrsyb346gv32xp66b4vg3v2lxzcgrf";
+  };
+
+  property-stats = runCommand "property-stats"
+    {}
+    ''
+    '';
+
+  bounds =
+    with import "${bucketing}";
+    bucketBounds;
+
+  boundsGraph = runCommand "bounds-graph"
+    {
+      inherit bounds;
+      buildInputs = [ gnuplot jq ];
+      script = writeScript "bounds-graph.gnuplot" ''
+        set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 600, 400
+        set output 'hashed.png'
+        set title "Bucketing Cost, Recurrent vs Pseudorandom"
+        set xlabel "Number of Functions"
+        set ylabel "Available Proportion of Ground Truth"
+        set yrange [0:1]
+        set ytics scale 0.1
+        set xtics scale 1
+        unset mxtics
+        unset key
+
+        # The actual plotting. The comment is a sentinel value that will get
+        # replaced by our bash script.
+        plot #PLOTHERE
+    '';
+    }
+    ''
+
+    '';
+
   graphs = runCommand "bucketing-graphs"
     {
       buildInputs = [ gnuplot jq lzip msgpack-tools rpl ];
-      data        = ./SMALL_DATA/averageBucketProportions.msgpack.lz;
+      #data        = ./SMALL_DATA/averageBucketProportions.msgpack.lz;
+      data        = ./BIG_DATA/WITH_AVERAGES.msgpack.lzip;
       extract     = ''
         to_entries | .[] | .key as $size | .value |
           to_entries | .[] | .key as $method | .value |
