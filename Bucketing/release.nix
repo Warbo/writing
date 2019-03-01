@@ -1,8 +1,8 @@
 with rec {
-  nixpkgs = (import ../resources).nixpkgs.repo1703."00ef7f9";
+  nixpkgs = (import ../resources).nixpkgs-joined;
 
-  results = import ./default.nix { inherit nixpkgs; };
+  results = import ./default.nix;
 
-  inherit (results.nix-helpers) allDrvsIn withDeps;
+  inherit (nixpkgs) allDrvsIn withDeps;
 };
 withDeps (allDrvsIn results.checks) results.paper
