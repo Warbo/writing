@@ -1,11 +1,10 @@
-{ nixpkgs ? (import <nixpkgs> {}) }:
-
 with builtins;
-with nixpkgs;
+with {
+  inherit (import ../resources) bibtex nixpkgs-joined styles;
+};
+with nixpkgs-joined;
 with lib;
 with rec {
-  inherit (import ../resources) bibtex nix-helpers styles;
-
   inherit (callPackage ./supporting-material {}) graphs;
 
   render = wrap {
@@ -58,7 +57,6 @@ with rec {
 };
 rec {
   #inherit graphs;
-  inherit nix-helpers;
 
   checks = callPackage ./check.nix { inherit bibtex render; };
 
