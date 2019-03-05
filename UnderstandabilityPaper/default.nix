@@ -26,16 +26,19 @@ with rec {
 
   src = ./iccc-science.tex;
 
+  sty = ./iccc.sty;
+
   bib = ./biblio.bib;
 
   # The main rendered output
   pdf = runCommand "iccc-science.pdf"
     {
-      inherit bib src;
+      inherit bib src sty;
       buildInputs = [ tex ];
     }
     ''
       ln -s "$src" iccc-science.tex
+      ln -s "$sty" iccc.sty
       ln -s "$bib" biblio.bib
 
       function check {
