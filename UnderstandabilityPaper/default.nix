@@ -24,22 +24,25 @@ with rec {
 
   tex = texlive.combine { inherit (texlive) scheme-small; };
 
+  bib = ./biblio.bib;
+
+  bst = ./iccc.bst;
+
   src = ./iccc-science.tex;
 
   sty = ./iccc.sty;
 
-  bib = ./biblio.bib;
-
   # The main rendered output
   pdf = runCommand "iccc-science.pdf"
     {
-      inherit bib src sty;
+      inherit bib bst src sty;
       buildInputs = [ tex ];
     }
     ''
       ln -s "$src" iccc-science.tex
       ln -s "$sty" iccc.sty
       ln -s "$bib" biblio.bib
+      ln -s "$bst" iccc.bst
 
       function check {
         if grep 'LaTeX Warning: Citation'
@@ -84,7 +87,7 @@ with rec {
         fail "Didn't make 'submit' dir"
       }
 
-      for F in article.tex iccc-science.pdf biblio.bib
+      for F in iccc-science.tex iccc-science.pdf biblio.bib
       do
         [[ -f submit/"$F" ]] || {
           find .
