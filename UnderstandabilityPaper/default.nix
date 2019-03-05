@@ -26,29 +26,7 @@ with rec {
 
   src = ./machinelearning.tex;
 
-  # Narrow down our huge Bibtex file to just the things we reference
-  bib = runCommand "bibtex.bib"
-    {
-      inherit src;
-      inherit (resources) bibtex;
-      buildInputs = [ bibtool fail tex ];
-    }
-    ''
-      ln -s "$src"    article.tex
-      ln -s "$bibtex" bibtex.bib
-
-      ${render}
-
-      bibtool -x article.aux -o NewBib.bib
-
-      while read -r C
-      do
-        grep "$C" < bibtex.bib || fail "Didn't include '$C'"
-      done < <(grep -o 'cite{[^}]*}' < article.tex |
-               grep -o '{.*}' | grep -o '[^{}]*' | grep -v ',')
-
-      mv NewBib.bib "$out"
-    '';
+  bib = ./biblio.bib;
 
   # The main rendered output
   pdf = runCommand "article.pdf"
@@ -58,7 +36,7 @@ with rec {
     }
     ''
       ln -s "$src" article.tex
-      ln -s "$bib" bibtex.bib
+      ln -s "$bib" biblio.bib
 
       function check {
         if grep 'LaTeX Warning: Citation'
@@ -75,7 +53,7 @@ with rec {
   dir = {
     "article.tex" = src;
     "article.pdf" = pdf;
-    "bibtex.bib"  = bib;
+    "biblio.bib"  = bib;
   };
 
   archive = runCommand "article.zip"
@@ -103,7 +81,7 @@ with rec {
         fail "Didn't make 'article' dir"
       }
 
-      for F in article.tex article.pdf bibtex.bib
+      for F in article.tex article.pdf biblio.bib
       do
         [[ -f article/"$F" ]] || {
           find .
