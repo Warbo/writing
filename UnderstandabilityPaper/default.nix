@@ -3,39 +3,39 @@ with resources.nixpkgs-joined;
 with rec {
   render = ''
     echo "Running pdflates (1)" 1>&2
-    pdflatex article
+    pdflatex iccc-science
 
     echo "Running bibtex" 1>&2
-    bibtex   article
+    bibtex   iccc-science
 
-    if [[ -e article.bbl ]]
+    if [[ -e iccc-science.bbl ]]
     then
-      echo "Generated 'article.bbl'" 1>&2
+      echo "Generated 'iccc-science.bbl'" 1>&2
     else
-      fail "No 'article.bbl' produced"
+      fail "No 'iccc-science.bbl' produced"
     fi
 
     echo "Running pdflates (2)" 1>&2
-    pdflatex article
+    pdflatex iccc-science
 
     echo "Running pdflates (3)" 1>&2
-    pdflatex article
+    pdflatex iccc-science
   '';
 
   tex = texlive.combine { inherit (texlive) scheme-small; };
 
-  src = ./machinelearning.tex;
+  src = ./iccc-science.tex;
 
   bib = ./biblio.bib;
 
   # The main rendered output
-  pdf = runCommand "article.pdf"
+  pdf = runCommand "iccc-science.pdf"
     {
       inherit bib src;
       buildInputs = [ tex ];
     }
     ''
-      ln -s "$src" article.tex
+      ln -s "$src" iccc-science.tex
       ln -s "$bib" biblio.bib
 
       function check {
@@ -47,45 +47,45 @@ with rec {
 
       ${render} 2>&1 | check
 
-      mv article.pdf "$out"
+      mv iccc-science.pdf "$out"
     '';
 
   dir = {
-    "article.tex" = src;
-    "article.pdf" = pdf;
-    "biblio.bib"  = bib;
+    "iccc-science.tex" = src;
+    "iccc-science.pdf" = pdf;
+    "biblio.bib"       = bib;
   };
 
-  archive = runCommand "article.zip"
+  archive = runCommand "iccc-science.zip"
     {
-      content     = attrsToDirs' "article" dir;
+      content     = attrsToDirs' "iccc-science" dir;
       buildInputs = [ zip ];
     }
     ''
       # Chase down symlink targets
-      cp -rL "$content" article
+      cp -rL "$content" submit
 
       # Zip up the actual files, rather than symlinks
-      zip -r "$out" article
+      zip -r "$out" submit
     '';
 
-  check = runCommand "article-check"
+  check = runCommand "submit-check"
     {
       inherit archive;
       buildInputs = [ fail unzip ];
     }
     ''
       unzip "$archive"
-      [[ -d article ]] || {
+      [[ -d submit ]] || {
         find . 1>&2
-        fail "Didn't make 'article' dir"
+        fail "Didn't make 'submit' dir"
       }
 
-      for F in article.tex article.pdf biblio.bib
+      for F in article.tex iccc-science.pdf biblio.bib
       do
-        [[ -f article/"$F" ]] || {
+        [[ -f submit/"$F" ]] || {
           find .
-          fail "Didn't make 'article/$F'"
+          fail "Didn't make 'submit/$F'"
         }
       done
 
@@ -95,6 +95,6 @@ with rec {
   checked = withDeps [ check ] archive;
 };
 
-attrsToDirs' "machine-learning-section" (dir // {
-  "article.zip" = checked;
+attrsToDirs' "iccc-science" (dir // {
+  "submit.zip" = checked;
 })
