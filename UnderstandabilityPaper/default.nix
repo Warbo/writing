@@ -1,27 +1,6 @@
 with { resources = import ../resources; };
 with resources.nixpkgs-joined;
 with rec {
-  render = ''
-    echo "Running pdflates (1)" 1>&2
-    pdflatex iccc-science
-
-    echo "Running bibtex" 1>&2
-    bibtex   iccc-science
-
-    if [[ -e iccc-science.bbl ]]
-    then
-      echo "Generated 'iccc-science.bbl'" 1>&2
-    else
-      fail "No 'iccc-science.bbl' produced"
-    fi
-
-    echo "Running pdflates (2)" 1>&2
-    pdflatex iccc-science
-
-    echo "Running pdflates (3)" 1>&2
-    pdflatex iccc-science
-  '';
-
   tex = texlive.combine { inherit (texlive) scheme-small; };
 
   bib = ./biblio.bib;
@@ -51,7 +30,24 @@ with rec {
         fi
       }
 
-      ${render} 2>&1 | check
+      echo "Running pdflates (1)" 1>&2
+      pdflatex iccc-science
+
+      echo "Running bibtex" 1>&2
+      bibtex   iccc-science
+
+      if [[ -e iccc-science.bbl ]]
+      then
+      echo "Generated 'iccc-science.bbl'" 1>&2
+      else
+      fail "No 'iccc-science.bbl' produced"
+      fi
+
+      echo "Running pdflates (2)" 1>&2
+      pdflatex iccc-science
+
+      echo "Running pdflates (3)" 1>&2
+      pdflatex iccc-science 2>&1 | check
 
       mv iccc-science.pdf "$out"
     '';
