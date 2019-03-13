@@ -14,11 +14,11 @@ with rec {
     }
   '';
 
-  fileNames = attrNames (readDir ./.);
+  fileNames = attrNames (readDir ./..);
 
   texs = filter (hasSuffix ".tex") fileNames;
 
-  texFiles = map (f: ./. + "/${f}") (filter (hasSuffix ".tex") texs);
+  texFiles = map (f: ./.. + "/${f}") (filter (hasSuffix ".tex") texs);
 };
 {
   checkLatex = mapAttrs (n: f: genAttrs texs (t:
@@ -28,7 +28,7 @@ with rec {
                                    }
                                    ''
                                      ERR=0
-                                     ${f (./. + "/${t}")}
+                                     ${f (./.. + "/${t}")}
                                      [[ "$ERR" -eq 0 ]] || exit 1
                                      mkdir "$out"
                                    '')) {
