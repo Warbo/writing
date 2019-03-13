@@ -11,6 +11,8 @@ rec {
   property-stats = runCommand "property-stats"
     {}
     ''
+      echo "TODO"
+      exit 1
     '';
 
   bounds =
@@ -39,7 +41,8 @@ rec {
     '';
     }
     ''
-
+      echo "TODO"
+      exit 1
     '';
 
   graphs = runCommand "bucketing-graphs"
