@@ -1,8 +1,20 @@
-\section{Future Work}
-\label{sec:future}
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
 
-Our use of clustering to pre-process \qspec{} signatures has required many decisions and tradeoffs to be made. Hence our approach is just one possibility out of many alternatives which could be investigated to push this work further.
+Our use of clustering to pre-process \qspec{} signatures has required many
+decisions and tradeoffs to be made. Hence our approach is just one possibility
+out of many alternatives which could be investigated to push this work further.
 
-The most obvious next step is to incorporate types. Types contain valuable information about an expression, and would allow us to distinguish between constructors. Since our algorithm closely follows that of ML4PG, which \emph{does} support types, the only barrier is the practical issue of propagating annotations through all of the Core definitions.
+The most obvious next step is to incorporate types. Types contain valuable
+information about an expression, and would allow us to distinguish between
+constructors. Since our algorithm closely follows that of ML4PG, which
+\emph{does} support types, the only barrier is the practical issue of
+propagating annotations through all of the Core definitions.
 
-More speculative directions include the use of \emph{learned} representations, rather than our hand-crafted features \cite{bengio2013representation}. This would provide an interesting comparison, as well as being more robust in the face of language evolution. Another intriguing possibility is to extend the recurrent nature of our algorithm to make use of the discovered properties during clustering; for example, by treating the discovered equations as rewrite rules to reduce the ASTs prior to feature extraction.
+More speculative directions include the use of \emph{learned} representations,
+rather than our hand-crafted features \cite{bengio2013representation}. This
+would provide an interesting comparison, as well as being more robust in the
+face of language evolution. Another intriguing possibility is to extend the
+recurrent nature of our algorithm to make use of the discovered properties
+during clustering; for example, by treating the discovered equations as rewrite
+rules to reduce the ASTs prior to feature extraction.
