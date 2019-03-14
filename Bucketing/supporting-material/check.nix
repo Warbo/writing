@@ -94,7 +94,9 @@ with rec {
           echo "Citation '$CITE' in '${f}' wasn't found" 1>&2
           ERR=1
         }
-      done < <(grep -o '\\cite[^{]*{[^}]*' < "${f}" | sed -e 's/.*{//g')
+      done < <(grep -o '\\cite[^{]*{[^}]*' < "${f}" |
+               sed -e 's/.*{//g'                    |
+               tr ',' '\n')
     '';
 
     checkLatexCiteTodos = f: ''
