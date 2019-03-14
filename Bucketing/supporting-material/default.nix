@@ -42,7 +42,15 @@ rec {
       go = wrap {
         name   = "go";
         script = ''
-          pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report
+          #!/usr/bin/env bash
+          set -e
+          echo "Running pdflatex" 1>&2
+          pdflatex -interaction=nonstopmode \
+                   -halt-on-error \
+                   --shell-escape report || {
+            echo "ERROR: pdflatex gave error code $?" 1>&2
+            exit 1
+          }
         '';
       };
 
