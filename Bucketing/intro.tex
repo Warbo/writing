@@ -1,46 +1,49 @@
 \section{Introduction}
 
-Functional programming claims to be more ``mathematically tractable'' than other
-``conventional'' approaches, due to properties like \emph{referential
-transparency} and \emph{immutability}, which allow equational reasoning without
-many of the complications caused by side effects and strict evaluation
-order~\cite{hughes1989functional}. Languages such as Haskell combine these
-advantages with static type systems to restrict the possible values of every
-expression, making programs amenable to powerful analysis tools such as property
-checking~\cite{claessen2011quickcheck} and theorem
-proving~\cite{rosen2012proving}.
+\emph{Theory exploration} (TE) describes an open-ended search for
+interesting properties (conjectured or proven) of a given set of formal
+definitions, such as a mathematical theory, a scientific model or a software
+library. It has been applied to generating ``background lemmas'' in the
+interactive proof assistant \textsc{Isabelle/HOL}~TODO{CITE ISACOSY AND HIPSTER}
+and for automated theorem proving~TODO{CITE PAPER WHICH SHOWS IMPROVED PROVING},
+as well as for generating specifications for (pure functional) programming
+libraries~TODO{CITE QUICKSPEC 1, 2 AND SPECULATE}.
 
-Whilst such tools can support or refute user-provided properties, we are
-interested in the related problem of \emph{discovering} novel properties
-automatically; a task addressed by the field of \emph{Mathematical Theory
-  Exploration}. Whilst clever algorithms are used to guide their search,
-existing MTE tools, including those applied to Haskell, ultimately rely on
-enumerating all (well-typed) expressions. This limits their usefulness, as it is
-only feasible to explore a small collection of functions at a time, relying on
-the user to select promising combinations. We investigate the use of machine
-learning methods to perform this selection automatically, removing the need for
-user intervention whilst maintaining the ability to discover desirable
-properties.
+Despite the clever search strategies employed by these tools, they all rely on
+enumerating combinations of definitions in some way, which can cause infeasible
+running times on larger inputs (in our experience, a few dozen definitions). To
+avoid this, users of these systems must carefully select only small subsets of
+their definitions to explore at a time.
+
+We dub such selection the \emph{bucketing problem}, and analyse its effect on
+the running time of theory exploration tools on a particular problem set, and on
+the quality of the statements they are able to generate. An automated solution
+to the bucketing problem would accept arbitrarily many definitions, and
+efficiently select sub-sets which are small enough to reasonably explore whilst
+still enabling interesting properties to be discovered.
 
 Our contributions are:
 
 \begin{enumerate}
-  \item The application of machine learning algorithms to theory exploration,
-    for intelligently discovering interesting sub-sets of Haskell libraries,
-    which are more tractable to explore.
-  \item A novel feature extraction method for transforming Haskell expressions
-    into a form amenable to off-the-shelf learning algorithms.
-  \item An implementation of these feature extraction and theory exploration
-    approaches.
-  \item A comparison of our methods with existing approaches, both for theory
-    exploration in Haskell, and for machine learning in other languages.
+  \item Defining the \emph{bucketing problem} for theory exploration.
+  \item Statistical analysis of theory exploration performance on a large
+    problem set, derived from existing theorem proving problem sets.
+  \item Empirical analysis of the effect of bucketing on the quantity of
+    desirable properties attainable by theory exploration.
+  \item Experimental application of unsupervised machine learning to the
+    bucketing problem.
+  % \item A novel feature extraction method for transforming Haskell expressions
+  %   into a form amenable to off-the-shelf learning algorithms.
+  % \item An implementation of these feature extraction and theory exploration
+  %   approaches.
+  % \item A comparison of our methods with existing approaches, both for theory
+  %   exploration in Haskell, and for machine learning in other languages.
 \end{enumerate}
 
-We describe our treatment of Haskell expressions in \S~\ref{sec:haskell} and
-describe the \qspec{} theory exploration system we build upon in
-\S~\ref{sec:theoryexploration}. We discuss our contributions in more depth in
-\S~\ref{sec:contributions}, and provide implementation details in
-\S~\ref{sec:implementation}. A variety of related work is surveyed in
-\S~\ref{sec:related}, we briefly evaluate our implementations in
-\S~\ref{sec:evaluation} and give several potential directions for future
-research in \S~\ref{sec:future}.
+We describe theory exploration in more detail, as well as the \qspec{} tool we
+use in our experiments, in \S~\ref{sec:theoryexploration}. We introduce the
+bucketing problem in \S~\ref{sec:bucketing} and measure its effect on theory
+exploration systems in \S~\ref{sec:implementation}. We attempt (unsuccessfully)
+to apply machine learning to the bucketing problem in \S~\ref{sec:clustering}.
+A variety of related work is surveyed in \S~\ref{sec:related} and we conclude in
+\S~\ref{sec:conclusion} with potential directions for future research.

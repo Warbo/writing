@@ -1,13 +1,7 @@
-{ fetchgit, gnuplot, jq, lzip, msgpack-tools, rpl, runCommand, writeScript }:
+{ bucketing, gnuplot, jq, lzip, msgpack-tools, rpl, runCommand, writeScript }:
 
 with builtins;
 rec {
-  bucketing = fetchgit {
-    url    = http://chriswarbo.net/git/bucketing-algorithms.git;
-    rev    = "f9ae8a3";
-    sha256 = "0as828yshyc0k9q2sdm8lhvrsyb346gv32xp66b4vg3v2lxzcgrf";
-  };
-
   property-stats = runCommand "property-stats"
     {}
     ''
@@ -15,9 +9,7 @@ rec {
       exit 1
     '';
 
-  bounds =
-    with import "${bucketing}";
-    bucketBounds;
+  bounds = bucketing.bucketBounds;
 
   boundsGraph = runCommand "bounds-graph"
     {
