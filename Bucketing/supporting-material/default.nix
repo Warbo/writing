@@ -65,7 +65,7 @@ rec {
       set -e
       cp -r "$source" ./src
       chmod -R +w     ./src
-      cp "$bibtex"    ./Bibtex.bib
+      cp "$bibtex"    ./src/Bibtex.bib
 
       for STYLE in $styles
       do
