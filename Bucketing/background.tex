@@ -170,3 +170,8 @@ Relevance is determined by comparing clauses to the target theorem, but theory e
 A natural fit for this task is \emph{clustering}, which attempts to group similar inputs together in an unsupervised way. Based on their success in discovering relationships and patterns between expressions in Coq and ACL2 (in the ML4PG and ACL2(ml) tools respectively), we hypothesise that clustering methods can fulfil the role of relevance filters for theory exploration: intelligently breaking up large signatures into smaller ones more amenable to brute force enumeration, such that related expressions are explored together.
 
 Due to its use by ML4PG and ACL2(ml), we use \emph{k-means} clustering, implemented in the Weka tool \cite{Holmes.Donkin.Witten:1994} by Lloyd's algorithm \cite{lloyd1982least}, with randomly-selected input elements as the initial clusters. Rather than relying on the user to provide the number of clusters $k$, we use the ``rule of thumb'' given in \cite[pp. 365]{mardia1979multivariate} of clustering $n$ data points into $k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
+
+\subsection{The Bucketing Problem}
+\label{sec:bucketing}
+
+% TODO{2019-03-15}
