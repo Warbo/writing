@@ -179,7 +179,8 @@ with rec {
   checkBibtex = runCommand "check-bibtex" { inherit render; } ''
     ${getBibStart}
 
-    GOT=$("$render" | getBibStart)
+    ALL=$("$render" | tee >(cat 1>&2))
+    GOT=$(echo "$ALL" | getBibStart)
     if [[ -z "$GOT" ]]
     then
       echo "Bibtex didn't run?" 1>&2
