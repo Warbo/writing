@@ -1,0 +1,12 @@
+From: Chris Warburton
+Date: Mon, 08 Apr 2019 13:05:09 +0100
+State: new
+Subject: Bucketing: Add survival plot to paper
+Message-Id: <aa4666adc4e9de4f-0-artemis@nixos>
+
+It shows the shape, i.e. that there are lots of quick finishers and a
+heavy tail. This is informative on its own, but also lets us talk about:
+
+ - The height of the tails, as a way of quantifying the effect of size
+ - The fact that size 5 seems to be quicker than size 1 (possibly due to
+   the effect of a smaller pool of samples?)

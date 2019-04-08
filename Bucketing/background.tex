@@ -1,116 +1,71 @@
 \section{Background}
 \label{sec:background}
 
-\subsection{Haskell}
-\label{sec:haskell}
-
-\newcommand{\CVar}{\texttt{Var}}
-\newcommand{\CLit}{\texttt{Lit}}
-\newcommand{\CApp}{\texttt{App}}
-\newcommand{\CLam}{\texttt{Lam}}
-\newcommand{\CLet}{\texttt{Let}}
-\newcommand{\CCase}{\texttt{Case}}
-\newcommand{\CType}{\texttt{Type}}
-\newcommand{\CLocal}{\texttt{Local}}
-\newcommand{\CGlobal}{\texttt{Global}}
-\newcommand{\CConstructor}{\texttt{Constructor}}
-\newcommand{\CLitNum}{\texttt{LitNum}}
-\newcommand{\CLitStr}{\texttt{LitStr}}
-\newcommand{\CAlt}{\texttt{Alt}}
-\newcommand{\CDataAlt}{\texttt{DataAlt}}
-\newcommand{\CLitAlt}{\texttt{LitAlt}}
-\newcommand{\CDefault}{\texttt{Default}}
-\newcommand{\CNonRec}{\texttt{NonRec}}
-\newcommand{\CRec}{\texttt{Rec}}
-\newcommand{\CBind}{\texttt{Bind}}
-
-We decided to focus on the Haskell programming language since it has direct
-applications in industry, a large selection of library code for testing and
-mature, state-of-the-art MTE tools including \qspec{}~\cite{QuickSpec},
-\hspec{}~\cite{claessen2013automating} and
-\textsc{Speculate}~\cite{braquehais2017speculate}. Our overall approach is
-agnostic to the underlying system, so could also be applied to other targets
-such as the Isabelle/HOL, which has the
-\textsc{IsaCoSy}~\cite{johansson2009isacosy}, \textsc{IsaScheme}~\cite{omar} and
-more recent \textsc{Hipster}~\cite{Hipster} MTE tools. However, since
-\textsc{Hipster} works by translating to Haskell and invoking \hspec{}, it seems
-that improving the Haskell tools will give the most benefit.
-
-Like most functional programming languages, Haskell builds upon
-$\lambda$-calculus, with extra features such as a strong type system and
-``syntactic sugar'' to improve readability. To avoid the relatively large and
-complex syntax of Haskell proper, we will focus on an intermediate
-representation of the \textsc{GHC} compiler known as \emph{GHC Core}, described
-in Appendix \ref{sec:core}.
-
-We will use quoted strings to denote names and literals, e.g. \texttt{Local "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr "quux"} and \texttt{LitNum "42"}, and require only that they can be compared for equality.
-
-\begin{figure}
-  \begin{haskell}\begin{verbatim}
-data Bool = True | False
-
-data Nat = Z | S Nat
-
-not :: Bool -> Bool
-not True  = False
-not False = True
-
-odd :: Nat -> Bool
-odd    Z  = False
-odd (S n) = even n
-
-even :: Nat -> Bool
-even    Z  = True
-even (S n) = odd n\end{verbatim}
-  \end{haskell}
-  \caption{Haskell datatypes for booleans and natural numbers, followed by some simple function definitions. Note that \hs{odd} and \hs{even} are mutually recursive.}
-  \label{fig:haskellexample}
-\end{figure}
-
-\begin{figure}
-  \begin{small}
-    \underline{\texttt{not}}
-    \begin{verbatim}
-Lam "a" (Case (Var (Local "a"))
-              "b"
-              (Alt (DataAlt "True")  (Var (Constructor "False")))
-              (Alt (DataAlt "False") (Var (Constructor "True"))))
-    \end{verbatim}
-
-    \underline{\texttt{odd}}
-    \begin{verbatim}
-Lam "a" (Case (Var (Local "a"))
-              "b"
-              (Alt (DataAlt "Z") (Var (Constructor "False")))
-              (Alt (DataAlt "S") (App (Var (Global "even"))
-                                      (Var (Local  "n")))
-                                 "n"))
-    \end{verbatim}
-
-    \underline{\texttt{even}}
-    \begin{verbatim}
-Lam "a" (Case (Var (Local "a"))
-              "b"
-              (Alt (DataAlt "Z") (Var (Constructor "True")))
-              (Alt (DataAlt "S") (App (Var (Global "odd"))
-                                      (Var (Local  "n")))
-                                 "n"))
-    \end{verbatim}
-  \end{small}
-  \caption{Translations of functions in Figure \ref{fig:haskellexample} into our Core syntax, with fresh variables chosen arbitrarily as \texttt{"a"}, \texttt{"b"}, etc. Notice the introduction of explicit $\lambda$ abstractions (\texttt{Lam}) and the use of \texttt{Case} to represent piecewise definitions. The \texttt{"b"} variables are introduced to preserve sharing.}
-  \label{fig:coreexample}
-\end{figure}
-
-Figure \ref{fig:haskellexample} shows some simple Haskell function definitions, along with common definitions for boolean and natural number datatypes (analogous to those in Haskell's standard library). The translation to our Core syntax is routine, and shown in Figure \ref{fig:coreexample}. Although Core is more verbose, we can see that similar structure in the Haskell definitions gives rise to similar structure in the Core; for example, the definitions of \hs{odd} and \hs{even} are identical in both languages, except for the particular identifiers used. It is this close correspondence which allows us to analyse Core expressions in place of their more complicated Haskell source.
-
 \subsection{Theory Exploration}
 \label{sec:theoryexploration}
 
-We consider the problem of \emph{(automated) theory exploration}, which includes the ability to \emph{generate} conjectures about code, to \emph{prove} those conjectures, and hence output \emph{novel} theorems without guidance from the user. The method of conjecture generation is a key characteristic of any theory exploration system, although all existing implementations rely on brute force enumeration to some degree.
+Theory exploration is the task of taking a \emph{signature} of definitions in
+some formal system (for example a programming language) and automatically
+generating a set of formal statements (properties) involving those
+definitions. These may be conjectures or theorems (proven either by sending
+conjectures to an automated theorem prover, or by having the generating
+procedure proceed in logically sound steps); in either case, these statements
+must also be ``interesting'' in some way. It is beyond the scope of this paper
+to define what makes a mathematical statement ``interesting'', but this problem
+has been tackled extensively in the literature~\cite{colton2000notion}.
 
-We focus on \qspec{} \cite{QuickSpec}, which conjectures equations about Haskell code. These may be fed into another tool, such as \hspec{}, for subsequent proving. These conjectures are arrived at through the following stages:
+We will follow the tradition of prior practitioners and use an existing
+corpus of theorems as a \emph{ground truth} against which to compare results.
+Prior work has used libraries of the \textsc{Isabelle/HOL} proof assistant as a
+ground
+truth~\cite{Montano-Rivas.McCasland.Dixon.ea:2012,johansson2009isacosy,claessen2013automating},
+but these only contained a few definitions and theorems each. To analyse
+behaviour on a larger scale, as required to study the effects of clustering, we
+have chosen the \emph{Tons of Inductive Problems} (TIP) problem set for
+automated theorem provers~\cite{claessen2015tip}.  Reasons for choosing TIP
+include:
 
-\iffalse % TODO{2019-02-07}: Make this more formal?
+\begin{itemize}
+\item Each problem in TIP clearly distinguishes between the statement to be
+  proved and the definitions involved, such that the two can be easily and
+  meaningfully separated to act as inputs and desired outputs in a TE setting.
+  This would not be the case for problem sets like
+  SMT-COMP~\cite{barrett2005smt}, where many problems involve uninterpreted
+  functions whose behaviour is \emph{implicit} in the logical structure of the
+  theorem statement but not separately \emph{defined}.
+\item The TIP problem set includes a tool to translate from the language it
+  uses to define problems (a variant of SMTLIB) into various other languages
+  including Haskell and Isabelle, for which TE tools already exist.
+\item TIP problems are relevant to the domains we are interested in, including
+  pure functional programming, higher-order functions and inductively defined
+  datatypes. This makes TIP more attractive than problem sets for first-order
+  languages/logics such as TPTP~\cite{sutcliffe2009tptp}.
+\item Many of TIP's problem statements re-use the same definitions, which makes
+  it more useful as a ground-truth than a mixture of unrelated problems. This is
+  because non-membership in the ground truth will be treated as being
+  ``uninteresting''.
+\end{itemize}
+
+All existing theory exploration systems rely on brute force enumeration to some
+degree. We focus on \qspec{}~\cite{QuickSpec}, which conjectures equations about
+Haskell code. These may be fed into another tool, such as \hspec{}, for
+subsequent proving. We have used version 1 of \qspec{} in our experiments, due
+to its availability, stability and tooling integration, and we will drop the
+version number from now on. At the time of writing there is a \qspec{} version 2
+available, which has a much improved generation procedure that is significantly
+faster than its predecessor. However, it still scales poorly in our experience,
+and has less integration with the tooling we have used. We hence leave analysis
+of \qspec{} 2 as future work, pending the necessary infrastructure changes that
+would require.
+
+\qspec{} (version 1) is written in the Haskell programming language, and works
+with definitions which are also written in Haskell. Some simple Haskell
+definitions are shown in Figure~\ref{fig:haskellexample}. The following
+procedure is used to generate conjectures, which are both plausible (due to
+testing on many examples) and potentially interesting (due to being mutually
+irreducible):
+
+\iffalse % TODO{2019-03-15}: Make this more formal?
  V \in Var
  F \in Fun
  T \in Term
@@ -121,44 +76,102 @@ or
  Term t ::= x | f | t t'
 \fi
 
+
+\begin{figure}
+  \centering
+  \begin{minted}{haskell}
+    -- A datatype with two constructors
+    data Bool = True | False
+
+    -- A recursive datatype (S requires a Nat as argument)
+    data Nat = Z | S Nat
+
+    -- A function turning a Bool into a Bool
+    not :: Bool -> Bool
+    not True  = False
+    not False = True
+
+    -- A pair of mutually recursive functions
+
+    odd :: Nat -> Bool
+    odd    Z  = False
+    odd (S n) = even n
+
+    even :: Nat -> Bool
+    even    Z  = True
+    even (S n) = odd n
+  \end{minted}
+  \caption{Haskell datatypes for booleans and natural numbers, followed by some
+    simple function definitions (with type annotations).}
+  \label{fig:haskellexample}
+\end{figure}
+
 \begin{enumerate}
-  \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{} generates a list $terms$ containing the constants (including functions) from $\Sigma$, the variables from $V$ and type-correct function applications $f(x)$, where $f$ and $x$ are elements of $terms$
-% TODO{2019-02-07}: A little awkward; maybe use the above notation?
-To ensure the list is finite, function applications are only nested up to a specified depth (by default, 3).
-  \item The elements of $terms$ are grouped into equivalence classes, based on their type.
-  \item The equivalence of terms in each class is tested using \qcheck{}: variables are instantiated to particular values, generated randomly, and the resulting closed expressions are evaluated and compared for equality.
-  \item If a class is found to have non-equal members, it is split up to separate those members.
-  \item The previous steps of testing and splitting are repeated until the classes stabilise (i.e. no differences have been observed for some specified number of repetitions).
-  \item For each class, one member is selected and equations are conjectured that it is equal to each of the other members.
+\item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{}
+  generates a list $terms$ containing the constants (including functions) from
+  $\Sigma$, the variables from $V$ and type-correct function applications
+  \hs{f x}, where \hs{f} and \hs{x} are elements of $terms$. To ensure the list
+  is finite, function applications are only nested up to a specified depth (by
+  default, 3).
+\item The elements of $terms$ are grouped into equivalence classes, based on
+  their type.
+\item The equivalence of terms in each class is tested using \qcheck{}:
+  variables are instantiated to particular values, generated randomly, and the
+  resulting closed expressions are evaluated and compared for equality.
+\item If a class is found to have non-equal members, it is split up to separate
+  those members.
+\item The previous steps of testing and splitting are repeated until the classes
+  stabilise (i.e. no differences have been observed for some specified number of
+  repetitions).
+\item For each class, one member is selected and equations are conjectured that
+  it is equal to each of the other members.
+\item A congruence closure algorithm is applied to these equations, to discard
+  any which are implied by the others.
 \end{enumerate}
 
-Such conjectures can be used in several ways: they can be presented to the user, sent to a more rigorous system like \hspec{} for proving, or even serve as a background theory for an automated theorem prover \cite{claessen2013automating}. As an example, giving the definitions from Figure \ref{fig:haskellexample} to \qspec{}. along with some suitable \hs{Nat} and \hs{Bool} variables, produces equations including \hs{not (not a) == a} and \hs{not (odd x) == even x}.
+As an example, giving the definitions from Figure~\ref{fig:haskellexample} to
+\qspec{}, along with suitable comparison functions, random data generators and
+variables \hs{n :: Nat} and \hs{b :: Bool}, will give rise to an equivalence
+class for each type \hs{Nat}, \hs{Bool}, \hs{Nat -> Nat}, \hs{Nat -> Bool} and
+\hs{Bool -> Bool}. Testing will find unequal terms in some of these classes
+(such as the \hs{Bool} class containing \hs{True}, \hs{False}, \hs{b},
+\hs{not b}, \hs{odd n} and \hs{even n}, which are all mutually unequal), split
+them up, and repeat until no more splits are found. Equations are then generated
+between elements of non-singleton classes, such as $\{\text{\hs{odd n}},
+\text{\hs{not (even n)}}, \text{\hs{not (not (odd n))}}, \ldots\}$, and reduced
+to a minimal set (for example, discarding \hs{odd n == not (not (odd n))} as an
+instance of the more general \hs{b == not (not b)}). The remaining equations
+(including \hs{not (not b) == b} and \hs{not (odd n) == even n}, etc.) are
+output, either for the user to peruse or for another system to process, like the
+\textsc{HipSpec} automated theorem prover.
 
-\iffalse
-As an example, we can consider a simple signature containing the expressions from Figure \ref{fig:haskellexample}:
+Note that we must be able to generate values of a type in order to include
+variables of that type. Also, only equivalence classes whose element type can be
+compared are split and conjectured about in this way; in particular, functions
+(like \hs{odd} and \hs{even}) are first-class values, so they will be put in an
+equivalence class, but they will not be subject to testing and comparison since
+Haskell has no generic notion of function equality~\footnote{In
+  fact \qspec{} compares expressions using a total ordering rather than equality;
+  this is even more restrictive than requiring a notion of equality, but reduces
+  the number of required comparisons}. \qspec{} can hence conjecture that two
+functions are pointwise-equal (e.g. \hs{f x == g x}) but it cannot conjecture
+that the functions themselves are equal (e.g. \hs{f == g}).
 
-\begin{align*}
-  \Sigma_{\texttt{Nat}} = \{\texttt{Z}, \texttt{S}, \texttt{odd}, \texttt{even}\}
-\end{align*}
+Although complete, this enumeration approach is wasteful: many terms are
+unlikely to appear in theorems, which requires careful choice by the user of
+what to include in the signature. For example, we know that addition and
+multiplication are closely related, and hence obey many algebraic laws. Our
+machine learning technique aims to predict these kinds of relations between
+functions, so we can create small signatures which can be explored quickly, yet
+have the potential to give rise to many equations.
 
-Together with a set of variables, say $V_{\texttt{Nat}} = \{a, b, c\}$, \qspec{}'s enumeration will resemble the following:
-
-\begin{align*}
-  terms_{\texttt{Nat}} = [& \texttt{Z},\ \texttt{S},\ \texttt{odd},\ \texttt{even},\ a,\ b,\ c,\ \texttt{S Z},\ \texttt{S}\ a,\ \texttt{S}\ b, \\
-                     & \texttt{S}\ c,\ \texttt{odd Z},\ \texttt{odd}\ a,\ \dots ]
-\end{align*}
-
-Notice that functions such as \hs{odd} and \hs{even} are valid terms, despite not being applied to any arguments. In addition, Haskell curries multi-argument functions, allowing them to be applied to one argument at a time, as used in the construction of $terms$.
-
-These terms will be grouped into four classes, one each for \hs{Nat}, \hs{Nat -> Nat}, \hs{Nat -> Bool} and \hs{Bool}. As the variables $a$, $b$ and $c$ are instantiated to various randomly-generated numbers, these equivalence classes will be divided, until eventually the equations such as $odd (S a) = even a$ and $even (S a) = odd a$ are conjectured.
-\fi
-
-Although complete, this enumeration approach is wasteful: many terms are unlikely to appear in theorems, which requires careful choice by the user of what to include in the signature. For example, we know that addition and multiplication are closely related, and hence obey many algebraic laws. Our machine learning technique aims to predict these kinds of relations between functions, so we can create small signatures which can be explored quickly, yet have the potential to give rise to many equations.
-
-\iffalse
-TODO{2019-02-07}
-In fact, there are similarities between the way a TE system like \qspec{} can generalise from checking \emph{particular} properties to \emph{inventing} new ones, and the way counterexample finders like \qcheck{} can generalise from testing \emph{particular} expressions to \emph{inventing} expressions to test. One of our aims is to understand the implications of this generalisation, the lessons that each can learn from the other's approach to term generation, and the consequences for testing and QA in general.
-\fi
+\iffalse TODO{2019-03-15} In fact, there are similarities between the way a TE
+system like \qspec{} can generalise from checking \emph{particular} properties
+to \emph{inventing} new ones, and the way counterexample finders like \qcheck{}
+can generalise from testing \emph{particular} expressions to \emph{inventing}
+expressions to test. One of our aims is to understand the implications of this
+generalisation, the lessons that each can learn from the other's approach to
+term generation, and the consequences for testing and QA in general.  \fi
 
 \subsection{Clustering}
 \label{sec:clustering}
@@ -171,7 +184,7 @@ A natural fit for this task is \emph{clustering}, which attempts to group simila
 
 Due to its use by ML4PG and ACL2(ml), we use \emph{k-means} clustering, implemented in the Weka tool \cite{Holmes.Donkin.Witten:1994} by Lloyd's algorithm \cite{lloyd1982least}, with randomly-selected input elements as the initial clusters. Rather than relying on the user to provide the number of clusters $k$, we use the ``rule of thumb'' given in \cite[pp. 365]{mardia1979multivariate} of clustering $n$ data points into $k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
 
-\subsection{The Bucketing Problem}
-\label{sec:bucketing}
+\subsection{The Clustering Problem}
+\label{sec:clustering}
 
 % TODO{2019-03-15}

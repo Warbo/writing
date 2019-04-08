@@ -1,0 +1,76 @@
+\subsection{Haskell}
+\label{sec:haskell}
+
+We decided to focus on the Haskell programming language since it has direct
+applications in industry, a large selection of library code for testing and
+mature, state-of-the-art MTE tools including \qspec{}~\cite{QuickSpec},
+\hspec{}~\cite{claessen2013automating} and
+\textsc{Speculate}~\cite{braquehais2017speculate}. Our overall approach is
+agnostic to the underlying system, so could also be applied to other targets
+such as the Isabelle/HOL, which has the
+\textsc{IsaCoSy}~\cite{johansson2009isacosy}, \textsc{IsaScheme}~\cite{omar} and
+more recent \textsc{Hipster}~\cite{Hipster} MTE tools. However, since
+\textsc{Hipster} works by translating to Haskell and invoking \hspec{}, it seems
+that improving the Haskell tools will give the most benefit.
+
+Like most functional programming languages, Haskell builds upon
+$\lambda$-calculus, with extra features such as a strong type system and
+``syntactic sugar'' to improve readability. To avoid the relatively large and
+complex syntax of Haskell proper, we will focus on an intermediate
+representation of the \textsc{GHC} compiler known as \emph{GHC Core}, described
+in Appendix \ref{sec:core}.
+
+We will use quoted strings to denote names and literals, e.g. \texttt{Local
+  "foo"}, \texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr
+  "quux"} and \texttt{LitNum "42"}, and require only that they can be compared
+for equality.
+
+
+\begin{figure}
+  \begin{small}
+    \underline{\texttt{not}}
+    \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              (Alt (DataAlt "True")  (Var (Constructor "False")))
+              (Alt (DataAlt "False") (Var (Constructor "True"))))
+    \end{verbatim}
+
+    \underline{\texttt{odd}}
+    \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              (Alt (DataAlt "Z") (Var (Constructor "False")))
+              (Alt (DataAlt "S") (App (Var (Global "even"))
+                                      (Var (Local  "n")))
+                                 "n"))
+    \end{verbatim}
+
+    \underline{\texttt{even}}
+    \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              (Alt (DataAlt "Z") (Var (Constructor "True")))
+              (Alt (DataAlt "S") (App (Var (Global "odd"))
+                                      (Var (Local  "n")))
+                                 "n"))
+    \end{verbatim}
+  \end{small}
+  \caption{Translations of functions in Figure \ref{fig:haskellexample} into our
+    Core syntax, with fresh variables chosen arbitrarily as \texttt{"a"},
+    \texttt{"b"}, etc. Notice the introduction of explicit $\lambda$
+    abstractions (\texttt{Lam}) and the use of \texttt{Case} to represent
+    piecewise definitions. The \texttt{"b"} variables are introduced to preserve
+    sharing.}
+  \label{fig:coreexample}
+\end{figure}
+
+Figure \ref{fig:haskellexample} shows some simple Haskell function definitions,
+along with common definitions for boolean and natural number datatypes
+(analogous to those in Haskell's standard library). The translation to our Core
+syntax is routine, and shown in Figure \ref{fig:coreexample}. Although Core is
+more verbose, we can see that similar structure in the Haskell definitions gives
+rise to similar structure in the Core; for example, the definitions of \hs{odd}
+and \hs{even} are identical in both languages, except for the particular
+identifiers used. It is this close correspondence which allows us to analyse
+Core expressions in place of their more complicated Haskell source.

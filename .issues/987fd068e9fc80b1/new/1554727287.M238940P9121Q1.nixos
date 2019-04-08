@@ -1,0 +1,16 @@
+From: Chris Warburton
+Date: Mon, 08 Apr 2019 13:37:22 +0100
+State: new
+Subject: Bucketing: Look for commonalities amongst timeouts
+Message-Id: <987fd068e9fc80b1-0-artemis@nixos>
+
+One obvious thing to try is to plot the frequency of certain names
+amongst the total population of samples, and amongst the failing
+samples.
+
+We can then compare these distributions by eye, and possibly with some
+statistical test, to see if some names are more common. If some *do*
+turn out to be more common, we might look at their types to see if
+there's a pattern there (for example, I imagine that functions like
+'t -> t' or 't -> t -> t' might cause a blow-up in the number of
+combinations)

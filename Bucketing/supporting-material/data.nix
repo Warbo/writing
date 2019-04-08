@@ -44,24 +44,68 @@ rec {
                                abort { inherit xs ys; msg = "Reps overlap"; };
                         xs // ys;
 
-    err = msg: abort (toJSON { inherit msg resultUntested; });
+    err = msg: abort (toJSON {
+      inherit msg;
+      resultUntested = substring 0 500 (toJSON resultUntested);
+    });
 
-    resultUntested = fold mergeSizes {} pieces;
+    resultUntested = dedupeSamples (fold mergeSizes {} pieces);
+
+    dedupeSamples = mapAttrs (_: reps:
+                               fold (key: old:
+                                      with {
+                                        added = old // {
+                                          "${key}" = getAttr key reps;
+                                        };
+                                      };
+                                      if repsDistinct false added
+                                         then added
+                                         else old)
+                                    {}
+                                    (attrNames reps));
 
     allAttrs = f: a: all (n: f n (getAttr n a)) (attrNames a);
+
+    listEqual =
+      with { f = sort (x: y: x < y); };
+      s1: s2: f s1 == f s2;
+
+    sampleEqual = x: y: listEqual x.sample y.sample;
+
+    repDistinct = die: reps: key: rep:
+      all (key2: (key == key2) || !(sampleEqual rep (getAttr key2 reps)) ||
+                 (if die
+                     then abort (toJSON {
+                                  inherit key key2;
+                                  error = "Duplicate rep";
+                                })
+                     else false))
+          (attrNames reps);
+
+    repsDistinct = die: reps: allAttrs (repDistinct die reps) reps;
 
     result =
       assert all (s: with { size = toString s; };
                      hasAttr size resultUntested || err "No size ${size}")
                  (range 1 20) || err "Missing sizes";
       assert allAttrs (s: v: all (r: with { rep = toString r; };
-                                     hasAttr rep v ||
+                                     hasAttr rep v      ||
+                                     elem s [ "1" "2" ] ||  # These have dupes
                                      err "Size ${s} missing rep ${rep}")
                                  (range 0 30))
                       resultUntested || err "Missing reps";
       assert allAttrs (s: allAttrs (r: y: length y.sample == fromJSON s ||
                                           err "Size ${s} rep ${r} wrong size"))
                       resultUntested || err "Wrong size sample";
+      assert allAttrs (s: repsDistinct true) resultUntested;
       resultUntested;
     };
+
+  times = mapAttrs (_: mapAttrs (_: rep: {
+                                  inherit (rep) success;
+                                  time = if rep.success
+                                            then rep.time
+                                            else rep.timeout;
+                                }))
+                   data.result;
 }

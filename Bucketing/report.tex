@@ -8,7 +8,7 @@
 \usepackage{mathtools}
 \usepackage{amssymb}
 \usepackage[T1]{fontenc}
-%\usepackage{enumitem}
+% \usepackage{enumitem}
 \usepackage{paralist}
 \usepackage{csquotes}
 \usepackage[affil-it]{authblk}
@@ -34,6 +34,7 @@
 \usepackage{amssymb}
 \setcounter{tocdepth}{3}
 \usepackage{graphicx}
+\usepackage{minted}
 \usepackage[caption=false]{subfig}
 
 \usepackage{tikz-qtree}
@@ -58,6 +59,7 @@
 % Semantic markup
 \providecommand{\coq}[1]{\texttt{#1}}
 \newenvironment{haskell}{\ttfamily}{\par}
+\newenvironment{haskellblock}{\begin{minted}{haskell}}{\end{minted}}
 \newenvironment{coqblock}{\ttfamily}{\par}
 \newcommand{\hs}[1]{\texttt{#1}}
 \newcommand*\vect[1]{\mathbf{#1}}
@@ -68,6 +70,27 @@
 \newcommand{\vlocal}[1]{\CVar\ (\CLocal\ \id{#1})}
 \newcommand{\vglobal}[1]{\CVar\ (\CGlobal\ \id{#1})}
 \newcommand{\cat}{\mbox{\ensuremath{+\!\!+\,}}}
+
+% Shorthand for our diagrams
+\newcommand{\CVar}{\texttt{Var}}
+\newcommand{\CLit}{\texttt{Lit}}
+\newcommand{\CApp}{\texttt{App}}
+\newcommand{\CLam}{\texttt{Lam}}
+\newcommand{\CLet}{\texttt{Let}}
+\newcommand{\CCase}{\texttt{Case}}
+\newcommand{\CType}{\texttt{Type}}
+\newcommand{\CLocal}{\texttt{Local}}
+\newcommand{\CGlobal}{\texttt{Global}}
+\newcommand{\CConstructor}{\texttt{Constructor}}
+\newcommand{\CLitNum}{\texttt{LitNum}}
+\newcommand{\CLitStr}{\texttt{LitStr}}
+\newcommand{\CAlt}{\texttt{Alt}}
+\newcommand{\CDataAlt}{\texttt{DataAlt}}
+\newcommand{\CLitAlt}{\texttt{LitAlt}}
+\newcommand{\CDefault}{\texttt{Default}}
+\newcommand{\CNonRec}{\texttt{NonRec}}
+\newcommand{\CRec}{\texttt{Rec}}
+\newcommand{\CBind}{\texttt{Bind}}
 
 \begin{document}
 
@@ -132,8 +155,8 @@
 \input{implementation.tex}
 \input{evaluation.tex}
 \input{related.tex}
-% TODO{2019-02-07}: Section that brings back ML discussion to TE is missing
 \input{conclusion.tex}
+%  TODO{2019-03-15}: Section that brings back ML discussion to TE is missing
 
 \bibliographystyle{plain}
 \bibliography{Bibtex}

@@ -1,12 +1,12 @@
 \section{Introduction}
 
-\emph{Theory exploration} (TE) describes an open-ended search for
-interesting properties (conjectured or proven) of a given set of formal
-definitions, such as a mathematical theory, a scientific model or a software
-library. It has been applied to generating ``background lemmas'' in the
-interactive proof assistant
-\textsc{Isabelle/HOL}~\cite{johansson2009isacosy,Hipster} and for automated
-theorem proving~\cite{claessen2013automating}, as well as for generating
+\emph{(Mathematical) Theory Exploration} (TE) describes an open-ended search for
+interesting properties (proven or merely conjectured, depending on the approach)
+of a given set of formal definitions, such as a mathematical theory, a
+scientific model or a software library. It has been applied to generating
+``background lemmas'' for the interactive proof assistant
+\textsc{Isabelle/HOL}~\cite{johansson2009isacosy,Hipster} and automated
+theorem provers~\cite{claessen2013automating}, as well as for generating
 specifications for (pure functional) programming
 libraries~\cite{QuickSpec,smallbone2017quick,braquehais2017speculate}.
 
@@ -16,23 +16,24 @@ running times on larger inputs (in our experience, a few dozen definitions). To
 avoid this, users of these systems must carefully select only small subsets of
 their definitions to explore at a time.
 
-We dub such selection the \emph{bucketing problem}, and analyse its effect on
-the running time of theory exploration tools on a particular problem set, and on
-the quality of the statements they are able to generate. An automated solution
-to the bucketing problem would accept arbitrarily many definitions, and
-efficiently select sub-sets which are small enough to reasonably explore whilst
-still enabling interesting properties to be discovered.
+We dub such selection the \emph{clustering problem} for theory exploration and
+analyse its effect on the running time of theory exploration tools on a
+particular problem set, and on the quality of the statements they are able to
+generate. An automated solution to this clustering problem would accept a large
+number of definitions and efficiently select sub-sets which are both small
+enough to reasonably explore, whilst still enabling interesting properties to be
+discovered.
 
 Our contributions are:
 
 \begin{enumerate}
-  \item Defining the \emph{bucketing problem} for theory exploration.
+  \item Defining the \emph{clustering problem} for theory exploration.
   \item Statistical analysis of theory exploration performance on a large
     problem set, derived from existing theorem proving problem sets.
-  \item Empirical analysis of the effect of bucketing on the quantity of
+  \item Empirical analysis of the effect of clustering on the quantity of
     desirable properties attainable by theory exploration.
   \item Experimental application of unsupervised machine learning to the
-    bucketing problem.
+    clustering problem.
   % \item A novel feature extraction method for transforming Haskell expressions
   %   into a form amenable to off-the-shelf learning algorithms.
   % \item An implementation of these feature extraction and theory exploration
@@ -43,8 +44,9 @@ Our contributions are:
 
 We describe theory exploration in more detail, as well as the \qspec{} tool we
 use in our experiments, in \S~\ref{sec:theoryexploration}. We introduce the
-bucketing problem in \S~\ref{sec:bucketing} and measure its effect on theory
-exploration systems in \S~\ref{sec:implementation}. We attempt (unsuccessfully)
-to apply machine learning to the bucketing problem in \S~\ref{sec:clustering}.
-A variety of related work is surveyed in \S~\ref{sec:related} and we conclude in
-\S~\ref{sec:conclusion} with potential directions for future research.
+clustering problem more formally in \S~\ref{sec:clustering} and measure its
+effect on theory exploration systems in \S~\ref{sec:implementation}. We attempt
+(unsuccessfully) to apply machine learning to the clustering problem in
+\S~\ref{sec:clustering}.  A variety of related work is surveyed in
+\S~\ref{sec:related} and we conclude in \S~\ref{sec:conclusion} with potential
+directions for future research.

@@ -23,17 +23,30 @@ rec {
 
   data = callPackage ./data.nix { inherit haskellTESrc; };
 
-  survival = callPackage ./survival.nix { inherit (data) data; };
+  survival = callPackage ./survival.nix { inherit data; };
 
   graphs = callPackage ./graphs.nix {};
 
   render = wrap {
-    name  = "render-bucketing-paper";
+    name  = "render-clustering-paper";
     paths = [
       gnumake
+      pythonPackages.pygments  # For minted
+      which                    # For minted
       (texlive.combine {
-        inherit (texlive) scheme-small tikzinclude tikz-qtree algorithmicx
-          algorithm2e algorithms;
+        inherit (texlive)
+          algorithm2e
+          algorithmicx
+          algorithms
+          framed      # Required by minted
+          fvextra     # Required by minted
+          ifplatform  # Required by minted
+          minted      # Code listings
+          scheme-small
+          tikzinclude
+          tikz-qtree
+          xstring     # Required by minted
+          ;
       })
     ];
     vars = {
@@ -87,7 +100,7 @@ rec {
 
   checks = callPackage ./check.nix { inherit bibtex render; };
 
-  paperUntested = runCommand "bucketing-paper" { inherit render; } ''
+  paperUntested = runCommand "clustering-paper" { inherit render; } ''
     "$render"
     mkdir "$out"
     mv src/report.pdf "$out"/

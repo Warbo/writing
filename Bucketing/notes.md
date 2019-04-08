@@ -1,7 +1,7 @@
 Recurrent clustering doesn't work.
 We need to come up with a different narrative...
 
-Bucketing does seem to offer a tradeoff between time and available output.
+Clustering does seem to offer a tradeoff between time and available output.
 
 We could include the median running times for different sizes. What should we
 use for the variation? Median Absolute Deviation? Problem is, our cutoffs make
@@ -18,6 +18,24 @@ analysis. Some relevant-sounding topics:
  - If we're willing to make more assumptions, a proportional hazards model (e.g.
    Cox) or accelerated failure time model might be more powerful, if needed.
 
+Each of these models uses a different assumption:
+
+ - Cox is "proportional hazards" meaning that the probability P(N) of size N
+   halting each second is x*P(N+1) for some parameter x. This is similar to
+   having a shorter half-life, but other distributions can be used besides
+   exponential decay.
+
+ - In an "accelerated failure" model, the parameter scales the time variable.
+   For example the hazard or survival N(t) of size N at time t is (N+1)(x*t),
+   i.e. it's as if smaller sizes are following the same curve but faster
+   (squashed along the time axis).
+
+From looking at our survival plots, neither of these seem to fit our case very
+well. Instead, every size has a sharp drop-off at the start, leaving a roughly
+flat tail; the height of this tail varies with size (tending to get higher as
+the sample size increases).
+
+How about we plot the proportion of timeouts per size?
 
 Plot median time for different sizes, e.g. 1, 5, 10, 15, 20, with confidence
 intervals (use lifelines library)
