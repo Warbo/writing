@@ -225,7 +225,7 @@ with rec {
     mkdir "$out"
   '';
 
-  checkPageCount = runCommand "check-page-count"
+  /*checkPageCount = runCommand "check-page-count"
     {
       inherit render;
       buildInputs  = [ poppler_utils ];
@@ -276,5 +276,5 @@ with rec {
         echo "Page target is $ALLOWED, you have $PAGES (without appendices)!" 1>&2
       fi
       mkdir "$out"
-  '';
+  '';*/
 }
