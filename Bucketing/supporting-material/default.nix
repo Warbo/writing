@@ -23,9 +23,26 @@ rec {
 
   data = callPackage ./data.nix { inherit haskellTESrc; };
 
-  survival = callPackage ./survival.nix { inherit data; };
+  survival = callPackage ./survival.nix {
+    inherit data;
+    tex = texlive.combine { inherit (texlive) scheme-small; };
+  };
 
   graphs = callPackage ./graphs.nix {};
+
+  images = runCommand "bucketing-images"
+    { ds = [ survival.survivalGraph survival.timeoutGraph ]; }
+    ''
+      mkdir "$out"
+      for D in $ds
+      do
+        find "$D" -type f | while read -r F
+        do
+          NAME=$(basename "$F")
+          cp -v "$F" "$out/$NAME"
+        done
+      done
+    '';
 
   render = wrap {
     name  = "render-clustering-paper";
@@ -50,7 +67,7 @@ rec {
       })
     ];
     vars = {
-      inherit bibtex;
+      inherit bibtex images;
 
       go = wrap {
         name   = "go";
@@ -78,7 +95,8 @@ rec {
       set -e
       cp -r "$source" ./src
       chmod -R +w     ./src
-      cp "$bibtex"    ./src/Bibtex.bib
+      cp    "$bibtex" ./src/Bibtex.bib
+      cp -r "$images" ./src/images
 
       for STYLE in $styles
       do

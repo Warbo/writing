@@ -10,6 +10,10 @@ del(read_csv)
 from lifelines import KaplanMeierFitter
 import matplotlib.pyplot as plt
 
+def save(name, axes):
+    axes.get_figure().savefig(name + '.pdf')
+    axes.get_figure().savefig(name + '.pgf')
+
 axes = plt.subplot(111, label="stepped")
 kmf  = KaplanMeierFitter()
 for s, grouped_df in times.groupby('size'):
@@ -17,7 +21,7 @@ for s, grouped_df in times.groupby('size'):
         continue
     kmf.fit(grouped_df['time'], grouped_df['success'], label=str(s))
     axes = kmf.plot(ax=axes)
-axes.get_figure().savefig('stepped.pdf')
+save('stepped', axes)
 
 def crossValidate(name, fitter):
     from lifelines.utils import k_fold_cross_validation
@@ -32,7 +36,7 @@ cph.fit(times, duration_col='time', event_col='success', show_progress=True)
 
 cph.print_summary()
 
-cph.plot().get_figure().savefig('coxph.pdf')
+save('coxph', cph.plot())
 #cph.check_assumptions(times, show_plots=True)
 
 crossValidate('cox', cph)
@@ -49,7 +53,7 @@ for (name, fitter) in [("weibull"    , WeibullAFTFitter    ),
     aft.print_summary(3)
 
     #aft = WeibullAFTFitter().fit(times, 'time', 'success', ancillary_df=True)
-    aft.plot().get_figure().savefig(name + 'aft.pdf')
+    save(name + 'aft', aft.plot())
     fitters[name] = aft
     crossValidate(name, aft)
     print("END " + name)

@@ -7,6 +7,10 @@ def msg(x):
     stderr.write(repr(x))
     stderr.flush()
 
+def save(name, axes):
+    axes.get_figure().savefig(name + '.pdf')
+    axes.get_figure().savefig(name + '.pgf')
+
 with open(getenv('csv'), 'r') as f:
     times = DictReader(f)
     rows  = [row for row in times]
@@ -54,4 +58,5 @@ plt.xticks(xs)
 plt.xlabel('size')
 plt.ylabel('failure proportion')
 plt.title('Failures as size grows')
-plt.savefig('timeouts.pdf')
+save('timeouts', plt.gca())
+#plt.savefig('timeouts.pdf')
