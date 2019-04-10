@@ -1,0 +1,8 @@
+From: Chris Warburton
+Date: Tue, 09 Apr 2019 14:16:35 +0100
+Subject: Re: Bucketing: Add tail size graph to PDF (with straight line fit)
+Message-Id: <a9599e1ae7953929-93f8bb17d2a48c85-artemis@nixos>
+References: <a9599e1ae7953929-0-artemis@nixos>
+In-Reply-To: <a9599e1ae7953929-0-artemis@nixos>
+
+Added graph, but needs better labelling, etc.

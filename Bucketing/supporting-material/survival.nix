@@ -91,18 +91,13 @@ rec {
       preCheck = libgccFix;
     };
 
-  timingCsv = rec {
+  extractCsv = { entry, name }: rec {
+    inherit entry name;
+
     fromBool = b: if b then "1" else "0";
 
-    entry = size: rep: data: [
-      (size + "_" + rep)
-      size
-      (toString data.time)
-      (fromBool data.success)
-    ];
-
     processed =  mapAttrs (size: mapAttrs (entry size))
-                          data.times;
+      data.times;
 
     headers   = [ "id" "size" "time" "success" ];
 
@@ -114,7 +109,17 @@ rec {
 
     rows      = [ (commaSep headers) ] ++ map commaSep tabulated;
 
-    csv       = writeScript "qs-times.csv" (lineSep rows);
+    csv       = writeScript "qs-${name}.csv" (lineSep rows);
+  };
+
+  timingCsv = extractCsv {
+    name  = "times";
+    entry = size: rep: data: [
+      (size + "_" + rep)
+      size
+      (toString data.time)
+      (fromBool data.success)
+    ];
   };
 
   # Runs $script to put stuff in $out
@@ -149,4 +154,8 @@ rec {
       script      = ./timeoutGraph.py;
     }
     runner;
+
+  contents = callPackage ./contents.nix {
+    inherit data tex;
+  };
 }
