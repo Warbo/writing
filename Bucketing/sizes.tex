@@ -1,7 +1,15 @@
 \begin{figure}
   \input{images/stepped.pgf}
+  \caption{Survival plot % TODO: NAME OF PLOT
+    for running QuickSpec on inputs containing various numbers of definitions,
+    sampled from TIP. Most samples finished quickly, leaving a heavy tail which
+    didn't finish within the 300 second timeout.}
+  \label{fig:survival}
 \end{figure}
 
 \begin{figure}
   \input{images/timeouts.pgf}
+  \caption{Proportion of samples which timed out per size, with least-squares
+    linear regression.}
+  \label{fig:tailsize}
 \end{figure}

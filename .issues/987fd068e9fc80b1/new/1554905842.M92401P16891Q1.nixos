@@ -1,0 +1,22 @@
+From: Chris Warburton
+Date: Wed, 10 Apr 2019 15:11:54 +0100
+Subject: Re: Bucketing: Look for commonalities amongst timeouts
+Message-Id: <987fd068e9fc80b1-acfdd50ec0b0eab9-artemis@nixos>
+References: <987fd068e9fc80b1-0-artemis@nixos>
+In-Reply-To: <987fd068e9fc80b1-0-artemis@nixos>
+
+I initially plotted a bar chart, with each name getting a successes and
+failures bar side-by-side. Since the names have no inherent ordering, I
+sorted them by number of successes.
+
+The result was a steadily-decreasing number of successes (as we would
+expect from this sorting), each with a random-looking number of failures
+(as we would expect if number of successes and failures is uncorrelated)
+*except* for the very end of the graph, where there was a clear spike of
+names which had many failures and no successes.
+
+That graph didn't look like the best representation to me, so instead
+I've turned the successes and failures into percentages and plotted
+them on a stacked bar chart. This shows the gentle decrease we would
+expect, followed by a sharp drop in successes and a few completely
+unsuccessful names at the end.
