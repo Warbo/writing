@@ -21,8 +21,8 @@ with rec {
   stable-nixpkgs-src = fetchFromGitHub {
     owner  = "NixOS";
     repo   = "nixpkgs";
-    rev    = "f22817d";
-    sha256 = "1cx5cfsp4iiwq8921c15chn1mhjgzydvhdcmrvjmqzinxyz71bzh";
+    rev    = "6a3f5bc";
+    sha256 = "1ib96has10v5nr6bzf7v8kw7yzww8zanxgw2qi1ll1sbv6kj6zpd";
   };
 
   # A stable package set which includes some overrides, for when we need them
