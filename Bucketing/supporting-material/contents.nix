@@ -8,51 +8,49 @@ rec {
                                    init
                                    (attrNames attrs);
 
-  contentsCsv = rec {
-    names = foldAttrs (size: reps: got:
-                        foldAttrs (rep: data: got:
-                                    unique (got ++ data.sample))
-                                  got
-                                  reps)
-                      []
-                      data.data.result;
+  names = foldAttrs (size: reps: got:
+                      foldAttrs (rep: data: got:
+                                  unique (got ++ data.sample))
+                                got
+                                reps)
+                    []
+                    data.data.result;
 
-    count = name: foldAttrs (size: reps: got:
-                              foldAttrs (rep: data: got:
-                                          if elem name data.sample
-                                             then {
-                                               successes =
-                                                 if data.success
-                                                    then (got.successes + 1)
-                                                    else got.successes;
-                                               fails =
-                                                 if data.success
-                                                    then got.fails
-                                                    else (got.fails + 1);
-                                             }
-                                             else got)
-                                        got
-                                        reps)
-                            { successes = 0; fails = 0; }
-                            data.data.result;
+  count = name: foldAttrs (size: reps: got:
+                            foldAttrs (rep: data: got:
+                                        if elem name data.sample
+                                           then {
+                                             successes =
+                                               if data.success
+                                                  then (got.successes + 1)
+                                                  else got.successes;
+                                             fails =
+                                               if data.success
+                                                  then got.fails
+                                                  else (got.fails + 1);
+                                           }
+                                           else got)
+                                      got
+                                      reps)
+                          { successes = 0; fails = 0; }
+                          data.data.result;
 
-    counts = listToAttrs (map (name: { inherit name; value = count name; })
-                              names);
+  counts = listToAttrs (map (name: { inherit name; value = count name; })
+                            names);
 
-    tabulated = foldAttrs (name: { fails, successes }: got: got ++ [
-                            [ name (toString successes) (toString fails) ]
-                          ])
-                          [ [ "name" "successes" "failures" ] ]
-                          counts;
+  tabulated = foldAttrs (name: { fails, successes }: got: got ++ [
+                          [ name (toString successes) (toString fails) ]
+                        ])
+                        [ [ "name" "successes" "failures" ] ]
+                        counts;
 
-    csv = writeScript "qs-contents"
-                      (concatStringsSep "\n"
-                        (map (concatStringsSep ",") tabulated));
-  };
+  csv = writeScript "qs-contents"
+                    (concatStringsSep "\n"
+                      (map (concatStringsSep ",") tabulated));
 
-  overlayed = runCommand "overlayed-contents"
+  proportions = runCommand "content-failure-proportions"
     {
-      inherit (contentsCsv) csv;
+      inherit csv;
       buildInputs = [ (python3.withPackages (p: [ p.matplotlib ])) tex ];
       script      = ./contentsGraph.py;
     }
