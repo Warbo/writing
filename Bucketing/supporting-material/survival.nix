@@ -91,8 +91,13 @@ rec {
       preCheck = libgccFix;
     };
 
-  extractCsv = { entry, name }: rec {
-    inherit entry name;
+  timingCsv = rec {
+    entry = size: rep: data: [
+      (size + "_" + rep)
+      size
+      (toString data.time)
+      (fromBool data.success)
+    ];
 
     fromBool = b: if b then "1" else "0";
 
@@ -109,17 +114,7 @@ rec {
 
     rows      = [ (commaSep headers) ] ++ map commaSep tabulated;
 
-    csv       = writeScript "qs-${name}.csv" (lineSep rows);
-  };
-
-  timingCsv = extractCsv {
-    name  = "times";
-    entry = size: rep: data: [
-      (size + "_" + rep)
-      size
-      (toString data.time)
-      (fromBool data.success)
-    ];
+    csv       = writeScript "qs-times.csv" (lineSep rows);
   };
 
   # Runs $script to put stuff in $out
