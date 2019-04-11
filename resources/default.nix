@@ -10,19 +10,17 @@ with rec {
   nixpkgs-with-config = nixpkgs: config: import nixpkgs {
     config = import "${config}/config.nix";
   };
-  nixpkgs-without-config = version: nixpkgs:
-    import nixpkgs (if compareVersions version "repo1703" == -1
-                       then { config = {}; }
-                       else { config = {}; overlays = []; });
 
-  # Whichever nixpkgs the system is using. Only use this to get fixed output
-  # derivations, otherwise we risk breaking reproducibility.
-  unstable-nixpkgs = nixpkgs-without-config
-    "repo${(import <nixpkgs> {}).lib.nixpkgsVersion}"
-    <nixpkgs>;
+  # Use the system's nixpkgs to fetch git repos (since they're fixed-output,
+  # this shouldn't affect reproducibility).
+  inherit (with { unstableVersion = (import <nixpkgs> {}).lib.nixpkgsVersion; };
+           import <nixpkgs> (if compareVersions unstableVersion "1703" == -1
+                                then { config = {}; }
+                                else { config = {}; overlays = []; }))
+    fetchFromGitHub fetchgit;
 
-  # Arbitrary, but known, versions of nixpkgs and nix-config, used as a base
-  stable-nixpkgs-src = unstable-nixpkgs.fetchFromGitHub {
+  # Arbitrary, but known, version of nixpkgs to use as a base
+  stable-nixpkgs-src = fetchFromGitHub {
     owner  = "NixOS";
     repo   = "nixpkgs";
     rev    = "f22817d";
@@ -33,13 +31,13 @@ with rec {
   stable-configured = nixpkgs-with-config stable-nixpkgs-src nix-config;
 
   # Particular versions of our custom nix-config overrides
-  nix-config = unstable-nixpkgs.fetchgit {
+  nix-config = fetchgit {
     url    = "${repoSouce}/nix-config.git";
     rev    = "809056c";
     sha256 = "0gh6knckddy6l250qxp7v8nvwzfy24pasf8xl9gmpslx11s1ilpd";
   };
 
-  warbo-packages-src = unstable-nixpkgs.fetchgit {
+  warbo-packages-src = fetchgit {
     url    = "${repoSouce}/warbo-packages.git";
     rev    = "9f129aa";
     sha256 = "1v35m8xxqav8cq4g1hjn8yhzhaf9g4jyrmz9a26g7hk04ybjwc7k";
