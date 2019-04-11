@@ -25,26 +25,29 @@ with rec {
     sha256 = "1ib96has10v5nr6bzf7v8kw7yzww8zanxgw2qi1ll1sbv6kj6zpd";
   };
 
-  # A stable package set which includes some overrides, for when we need them
-  stable-configured = import stable-nixpkgs-src {
-    overlays = [ (import "${nix-helpers-src}/overlay.nix") ];
-  };
-
   warbo-packages-src = fetchgit {
     url    = "${repoSouce}/warbo-packages.git";
     rev    = "9f129aa";
     sha256 = "1v35m8xxqav8cq4g1hjn8yhzhaf9g4jyrmz9a26g7hk04ybjwc7k";
   };
 
-  nix-helpers-src = (import "${warbo-packages-src}/helpers.nix" {}).nix-helpers;
+  nix-helpers-overlays =
+    with { src = (import "${warbo-packages-src}/helpers.nix" {}).nix-helpers; };
+    [ (import "${src}/overlay.nix") ];
 
-  nixpkgs-joined = import stable-configured.repo1809 {
-    config   = {};
-    overlays = [
-      (import "${nix-helpers-src}/overlay.nix")
-      (import "${warbo-packages-src}/overlay.nix")
-    ];
-  };
+  nixpkgs-joined =
+    with {
+      # A stable package set which includes some overrides, for when we need them
+      stable-configured = import stable-nixpkgs-src {
+        overlays = nix-helpers-overlays;
+      };
+    };
+    import stable-configured.repo1809 {
+      config   = {};
+      overlays = nix-helpers-overlays ++ [
+        (import "${warbo-packages-src}/overlay.nix")
+      ];
+    };
 };
 rec {
   inherit nixpkgs-joined;
