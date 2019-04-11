@@ -30,19 +30,13 @@ with rec {
   };
 
   # A stable package set which includes some overrides, for when we need them
-  stable-configured = nixpkgs-with-config stable-nixpkgs-src
-                                          nix-configs."809056c";
-
-  inherit (unstable-nixpkgs.lib) mapAttrs;
+  stable-configured = nixpkgs-with-config stable-nixpkgs-src nix-config;
 
   # Particular versions of our custom nix-config overrides
-  nix-config-url = "${repoSouce}/nix-config.git";
-  nix-configs    = {
-    "809056c" = unstable-nixpkgs.fetchgit {
-      url    = nix-config-url;
-      rev    = "809056c";
-      sha256 = "0gh6knckddy6l250qxp7v8nvwzfy24pasf8xl9gmpslx11s1ilpd";
-    };
+  nix-config = unstable-nixpkgs.fetchgit {
+    url    = "${repoSouce}/nix-config.git";
+    rev    = "809056c";
+    sha256 = "0gh6knckddy6l250qxp7v8nvwzfy24pasf8xl9gmpslx11s1ilpd";
   };
 
   warbo-packages-src = unstable-nixpkgs.fetchgit {
