@@ -13,43 +13,41 @@ with rec {
                   then { config = {}; }
                   else { config = {}; overlays = []; };
 
-  # Fetch our custom package overlay. This repo also includes a pinned version
-  # of nix-helpers, so we use that (to avoid repeating ourselves).
-  warbo-packages-src =
-    with { repoSouce = http://chriswarbo.net/git; };
-    fetchgit {
-      url    = "${repoSouce}/warbo-packages.git";
-      rev    = "9f129aa";
-      sha256 = "1v35m8xxqav8cq4g1hjn8yhzhaf9g4jyrmz9a26g7hk04ybjwc7k";
+  # Adds our custom overlays to the given nixpkgs version
+  overlay = nixpkgs:
+    with rec {
+      # This overlay defines custom packages. The repo also includes a pinned
+      # version of nix-helpers (which saves having to repeat ourselves).
+      packages-src = fetchgit {
+        url    = http://chriswarbo.net/git/warbo-packages.git;
+        rev    = "9f129aa";
+        sha256 = "1v35m8xxqav8cq4g1hjn8yhzhaf9g4jyrmz9a26g7hk04ybjwc7k";
+      };
+
+      # This defines helper functions for Nix.
+      helpers-src = (import "${packages-src}/helpers.nix" {}).nix-helpers;
+    };
+    import nixpkgs {
+      config   = {};
+      overlays = [
+        (import "${helpers-src}/overlay.nix" )
+        (import "${packages-src}/overlay.nix")
+      ];
     };
 
-  # Loads an overlay of helper functions for Nix, from the pinned version we
-  # keep in warbo-packages.
-  nix-helpers-overlays =
-    with { src = (import "${warbo-packages-src}/helpers.nix" {}).nix-helpers; };
-    [ (import "${src}/overlay.nix") ];
-
-  # A pinned version of nixpkgs, with nix-helpers and warbo-packages overlays
+  # A pinned version of nixpkgs with our overlays
   nixpkgs-joined =
     with rec {
       # Arbitrary, but known, version of nixpkgs to use as a base
-      stable = fetchFromGitHub {
+      stable = overlay (fetchFromGitHub {
         owner  = "NixOS";
         repo   = "nixpkgs";
         rev    = "6a3f5bc";
         sha256 = "1ib96has10v5nr6bzf7v8kw7yzww8zanxgw2qi1ll1sbv6kj6zpd";
-      };
-
-      # Overlay with nix-helpers to make repoXXXX definitions available
-      stable-configured = import stable { overlays = nix-helpers-overlays; };
+      });
     };
     # Pick a version of nixpkgs and add both of our overlays to it
-    import stable-configured.repo1809 {
-      config   = {};
-      overlays = nix-helpers-overlays ++ [
-        (import "${warbo-packages-src}/overlay.nix")
-      ];
-    };
+    overlay stable.repo1809;
 };
 rec {
   inherit nixpkgs-joined;
