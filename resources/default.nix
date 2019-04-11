@@ -48,11 +48,6 @@ with rec {
     "809056c" = "0gh6knckddy6l250qxp7v8nvwzfy24pasf8xl9gmpslx11s1ilpd";
   };
 
-  # Particular versions of nixpkgs
-  nixpkgs-repos = {
-    inherit (stable-configured) repo1603 repo1609 repo1703 repo1709 repo1809;
-  };
-
   warbo-packages-src = unstable-nixpkgs.fetchgit {
     url    = "${repoSouce}/warbo-packages.git";
     rev    = "9f129aa";
@@ -61,7 +56,7 @@ with rec {
 
   nix-helpers-src = (import "${warbo-packages-src}/helpers.nix" {}).nix-helpers;
 
-  nixpkgs-joined = import nixpkgs-repos.repo1809 {
+  nixpkgs-joined = import stable-configured.repo1809 {
     config   = {};
     overlays = [
       (import "${nix-helpers-src}/overlay.nix")
