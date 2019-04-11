@@ -1,6 +1,6 @@
 \begin{figure}
   \input{images/stepped.pgf}
-  \caption{Survival plot % TODO: NAME OF PLOT
+  \caption{Survival plot % TODO{2019-04-15}: NAME OF PLOT
     for running QuickSpec on inputs containing various numbers of definitions,
     sampled from TIP. Most samples finished quickly, leaving a heavy tail which
     didn't finish within the 300 second timeout.}
@@ -12,4 +12,137 @@
   \caption{Proportion of samples which timed out per size, with least-squares
     linear regression.}
   \label{fig:tailsize}
+\end{figure}
+
+\begin{figure}
+  \input{images/proportions.pgf}
+  \caption{}
+  \label{fig:proportions}
+\end{figure}
+
+Five definitions appeared only in failing samples, these are named
+\texttt{mult2}, \texttt{qexp}, \texttt{op}, \texttt{mul3acc} and \texttt{mul3};
+their definitions appear in Figure~\ref{fig:faildefs}. All of these are
+functions of natural numbers (\texttt{Nat}). The \texttt{mul3} and
+\texttt{mul3acc} functions are rather pathological implementations of
+multiplication with an accumulator parameter, involving many (non-tail)
+recursive calls which can cause space leaks (or stack overflow, in languages
+with eager evaluation). This is likely the reason \textsc{QuickSpec} performs
+poorly with these definitions in the input.
+
+The \texttt{op}, \texttt{mult2} and \texttt{qexp} functions are less easily
+dismissed since they only recurse in tail position; the latter are in fact
+standard definitions of multiplication and exponentiation, respectively. One
+potential problem with these definitions, when translated into Haskell for
+\textsc{QuickSpec}, is that their accumulating parameter will be lazy by
+default, and hence cause space leaks.
+
+\begin{figure}
+  \texttt{
+    (define-fun-rec mult2 ((x Nat) (y Nat) (z Nat)) Nat
+      (match x
+        (case  Z z)
+        (case (S x2)
+          (mult2 x2 y (plus y z)))))
+  }
+
+  \texttt{
+    (define-fun-rec qexp ((x Nat) (y Nat) (z Nat)) Nat
+      (match y
+        (case  Z z)
+        (case (S n)
+          (qexp x n (mult x z)))))
+  }
+
+  \texttt{
+    (define-fun-rec op ((x Nat) (y Nat) (z Nat) (x2 Nat)) Nat
+      (match x
+        (case Z
+          (match z
+            (case  Z x2)
+            (case (S x3)
+              (op Z y x3 (S x2)))))
+        (case (S x4)
+          (match z
+            (case Z
+              (op x4 y y x2))
+            (case (S c)
+              (op x y c (S x2)))))))
+  }
+
+  \texttt{
+    (define-fun-rec mul3acc ((x Nat) (y Nat) (z Nat)) Nat
+      (match x
+        (case  Z Z)                         ;; Base case for 0 * y * z
+        (case (S x2)
+          (match y
+            (case  Z Z)                     ;; Base case for x * 0 * z
+            (case (S x3)
+              (match z
+                (case  Z Z)                 ;; Base case for x * y * 0
+                (case (S x4)
+                  (match x2
+                    (case Z
+                      (match x3
+                        (case Z
+                          (match x4
+                            (case Z (S Z))  ;; Base case for 1 * 1 * 1
+                            (case (S x5)
+                              (S (add3acc (mul3acc Z Z x4)
+                                          (add3acc (mul3acc (S Z) Z x4)
+                                                   (mul3acc Z (S Z) x4)
+                                                   (mul3acc Z Z (S Z)))
+                                          (add3acc Z Z x4))))))
+                        (case (S x6)
+                          (S (add3acc (mul3acc Z x3 x4)
+                                      (add3acc (mul3acc (S Z) x3 x4)
+                                               (mul3acc Z (S Z) x4)
+                                               (mul3acc Z x3 (S Z)))
+                                      (add3acc Z x3 x4))))))
+                    (case (S x7)
+                      (S (add3acc (mul3acc x2 x3 x4)
+                                  (add3acc (mul3acc (S Z) x3 x4)
+                                           (mul3acc x2 (S Z) x4)
+                                           (mul3acc x2 x3 (S Z)))
+                                  (add3acc x2 x3 x4))))))))))))
+  }
+
+  \texttt{
+    (define-fun-rec mul3 ((x Nat) (y Nat) (z Nat)) Nat
+      (match x
+        (case Z Z)                    ;; Base case for 0 * y * z
+        (case (S x2)
+          (match y
+            (case Z Z)                ;; Base case for x * 0 * z
+            (case (S x3)
+              (match z
+                (case Z Z)            ;; Base case for x * y * 0
+                (case (S x4)
+                  (match x2
+                    (case Z
+                      (match x3
+                        (case Z
+                          (match x4
+                            (case Z
+                              (S Z))  ;; Base case for 1 * 1 * 1
+                            (case (S x5)
+                              (S (add3 (mul3 Z Z x4)
+                                       (add3 (mul3 (S Z) Z x4)
+                                             (mul3 Z (S Z) x4)
+                                             (mul3 Z Z (S Z)))
+                                       (add3 Z Z x4))))))
+                        (case (S x6)
+                          (S (add3 (mul3 Z x3 x4)
+                                   (add3 (mul3 (S Z) x3 x4)
+                                         (mul3 Z (S Z) x4)
+                                         (mul3 Z x3 (S Z)))
+                                   (add3 Z x3 x4))))))
+                    (case (S x7)
+                      (S (add3 (mul3 x2 x3 x4)
+                               (add3 (mul3 (S Z) x3 x4)
+                                     (mul3 x2 (S Z) x4)
+                                     (mul3 x2 x3 (S Z)))
+                               (add3 x2 x3 x4))))))))))))
+  }
+  \label{fig:faildefs}
 \end{figure}
