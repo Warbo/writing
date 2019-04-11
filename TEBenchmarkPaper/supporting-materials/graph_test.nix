@@ -4,7 +4,7 @@
 # NOTE TO SELF: Never use Seaborn again: it's under-documented, dangerous
 # (produces incorrect plots with no indication that this has happened) and the
 # developer is actively hostile.
-with (import ../../resources).nixpkgs.repo1609.ffa6543;
+with (import ../../resources).nixpkgs-joined.nixpkgs1609;
 runCommand "graph_test"
   {
     buildInputs = [ (python.withPackages (p: [ p.matplotlib p.seaborn ])) ];
