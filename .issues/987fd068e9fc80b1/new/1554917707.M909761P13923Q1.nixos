@@ -1,0 +1,22 @@
+From: Chris Warburton
+Date: Wed, 10 Apr 2019 18:14:55 +0100
+Subject: Re: Bucketing: Look for commonalities amongst timeouts
+Message-Id: <987fd068e9fc80b1-e58da2c258429ab3-artemis@nixos>
+References: <987fd068e9fc80b1-0-artemis@nixos>
+In-Reply-To: <987fd068e9fc80b1-0-artemis@nixos>
+
+There are 5 definitions which always failed: mult2 qexp op mul3acc mul3
+
+mul3 and mul3acc call themselves multiple times in non-tail-recursive
+ways, so they look to perform pretty poorly in any case.
+
+op is a bit weird: it's tail-recursive, but non-strict, so this may
+build up thunks and leak space. It also has 4 arguments, which could
+cause really huge expressions to be generated.
+
+mult2 and qexp are standard tail-recursive definitions, which is
+worrying. However, this isn't really our problem: it's maybe a question
+for GHC's strictness analysis, etc.
+
+We should try writing strict versions of op, mult2 and qexp to see what
+happens when we explore them (individually) with QuickSpec.

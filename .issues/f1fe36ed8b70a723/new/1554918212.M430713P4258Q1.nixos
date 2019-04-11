@@ -1,0 +1,11 @@
+From: Chris Warburton
+Date: Wed, 10 Apr 2019 18:35:14 +0100
+State: new
+Subject: Run QuickSpec on strictly-accumulating mult2, op and qexp
+Message-Id: <f1fe36ed8b70a723-0-artemis@nixos>
+
+The functions mult2, op and qexp are tail-recursive, so should be pretty
+efficient (although qexp would presumably make huge Integers).
+
+We should write two versions of each: one with a strict accumulator and
+another without, and QuickSpec each individually (timing them).
