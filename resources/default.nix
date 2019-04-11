@@ -53,15 +53,6 @@ with rec {
     inherit (stable-configured) repo1603 repo1609 repo1703 repo1709 repo1809;
   };
 
-  warbo-packages = mapAttrs
-    (rev: sha256: import (unstable-nixpkgs.fetchgit {
-      inherit rev sha256;
-      url = "${repoSouce}/warbo-packages.git";
-    }))
-    {
-      "c2ea27d" = "04aif1s3cxk27nybsxp571fmvswy5vbw0prq67y108sb49mm3288";
-    };
-
   warbo-packages-src = unstable-nixpkgs.fetchgit {
     url    = "${repoSouce}/warbo-packages.git";
     rev    = "9f129aa";
@@ -79,7 +70,7 @@ with rec {
   };
 };
 rec {
-  inherit nixpkgs-joined warbo-packages;
+  inherit nixpkgs-joined;
   bibtex = ../Bibtex.bib;
   styles = stable-configured.dirsToAttrs ./styles;
 }
