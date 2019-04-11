@@ -30,6 +30,8 @@ rec {
 
   graphs = callPackage ./graphs.nix {};
 
+  strictAccumulators = haskellTE.callPackage ./StrictAccumulators {};
+
   images = runCommand "bucketing-images"
     { ds = [ survival.survivalGraph survival.timeoutGraph ]; }
     ''
