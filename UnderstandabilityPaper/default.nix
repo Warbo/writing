@@ -1,5 +1,5 @@
 with { resources = import ../resources; };
-with resources.nixpkgs-joined;
+with resources.nixpkgs;
 with rec {
   tex = texlive.combine { inherit (texlive) scheme-small; };
 

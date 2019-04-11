@@ -1,4 +1,4 @@
-with (import ../resources).nixpkgs-joined;
+with (import ../resources).nixpkgs;
 with lib;
 with {
   renderAll = dir: runCommand "phd-meetings-${dir}"

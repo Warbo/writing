@@ -14,7 +14,7 @@ with rec {
                   else { config = {}; overlays = []; };
 
   # Adds our custom overlays to the given nixpkgs version
-  overlay = nixpkgs:
+  overlay = path:
     with rec {
       # This overlay defines custom packages. The repo also includes a pinned
       # version of nix-helpers (which saves having to repeat ourselves).
@@ -27,7 +27,7 @@ with rec {
       # This defines helper functions for Nix.
       helpers-src = (import "${packages-src}/helpers.nix" {}).nix-helpers;
     };
-    import nixpkgs {
+    import path {
       config   = {};
       overlays = [
         (import "${helpers-src}/overlay.nix" )
@@ -36,7 +36,7 @@ with rec {
     };
 
   # A pinned version of nixpkgs with our overlays
-  nixpkgs-joined =
+  nixpkgs =
     with rec {
       # Arbitrary, but known, version of nixpkgs to use as a base
       stable = overlay (fetchFromGitHub {
@@ -50,7 +50,7 @@ with rec {
     overlay stable.repo1809;
 };
 rec {
-  inherit nixpkgs-joined;
+  inherit nixpkgs;
   bibtex = ../Bibtex.bib;
-  styles = nixpkgs-joined.dirsToAttrs ./styles;
+  styles = nixpkgs.dirsToAttrs ./styles;
 }

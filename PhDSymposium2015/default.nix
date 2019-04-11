@@ -1,5 +1,5 @@
-with { inherit (import ../resources) bibtex nixpkgs-joined; };
-with nixpkgs-joined;
+with { inherit (import ../resources) bibtex nixpkgs; };
+with nixpkgs;
 
 runCommand "phd-symposium-2015"
   {

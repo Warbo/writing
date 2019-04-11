@@ -1,6 +1,6 @@
 with builtins;
-with { inherit (import ../resources) bibtex nixpkgs-joined; };
-with nixpkgs-joined;
+with { inherit (import ../resources) bibtex nixpkgs; };
+with nixpkgs;
 with lib;
 with { defs = rec {
   inherit bibtex;

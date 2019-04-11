@@ -1,5 +1,5 @@
-with { inherit (import ../resources) bibtex nixpkgs-joined styles; };
-with nixpkgs-joined;
+with { inherit (import ../resources) bibtex nixpkgs styles; };
+with nixpkgs;
 with {
   cmd = ''
     pdflatex -interaction=nonstopmode -halt-on-error --shell-escape report

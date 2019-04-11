@@ -1,4 +1,4 @@
-with (import ../resources).nixpkgs-joined;
+with (import ../resources).nixpkgs;
 
 {
   pdf = runCommand "CICM-2017-report.pdf"

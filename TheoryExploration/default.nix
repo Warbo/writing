@@ -1,6 +1,6 @@
 with builtins;
-with { inherit (import ../resources) nixpkgs-joined; };
-with nixpkgs-joined;
+with { inherit (import ../resources) nixpkgs; };
+with nixpkgs;
 with lib;
 with rec {
   notes  = map (removeSuffix ".md")

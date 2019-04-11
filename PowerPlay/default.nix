@@ -1,6 +1,6 @@
 with import ../resources;
-with { inherit (nixpkgs-joined) mkBin; };
-with nixpkgs-joined.nixpkgs1703;
+with { inherit (nixpkgs) mkBin; };
+with nixpkgs.nixpkgs1703;
 with {
   tex = texlive.combine {
     inherit (texlive)

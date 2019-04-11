@@ -1,4 +1,4 @@
-with (import ../resources).nixpkgs-joined;
+with (import ../resources).nixpkgs;
 
 runCommand "render"
   {

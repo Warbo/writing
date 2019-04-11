@@ -1,5 +1,5 @@
 with builtins;
-with (import ../resources).nixpkgs-joined;
+with (import ../resources).nixpkgs;
 with lib;
 
 runCommand "Chalmers-2015-03-25.pdf"

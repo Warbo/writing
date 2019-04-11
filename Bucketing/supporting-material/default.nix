@@ -1,8 +1,8 @@
 with builtins;
 with {
-  inherit (import ../../resources) bibtex nixpkgs-joined styles;
+  inherit (import ../../resources) bibtex nixpkgs styles;
 };
-with nixpkgs-joined;
+with nixpkgs;
 with lib;
 rec {
   # External repos, which contain useful data
