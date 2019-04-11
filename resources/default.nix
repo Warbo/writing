@@ -53,16 +53,6 @@ with rec {
     inherit (stable-configured) repo1603 repo1609 repo1703 repo1709 repo1809;
   };
 
-  # All combinations of nixpkgs and nix-config versions
-  nixpkgs =
-    with unstable-nixpkgs.lib;
-    mapAttrs
-      (version: nixpkgs:
-        { configless = nixpkgs-without-config version nixpkgs; } //
-        mapAttrs (_: nixpkgs-with-config nixpkgs)
-                 nix-configs)
-      nixpkgs-repos;
-
   warbo-packages = mapAttrs
     (rev: sha256: import (unstable-nixpkgs.fetchgit {
       inherit rev sha256;
@@ -89,7 +79,7 @@ with rec {
   };
 };
 rec {
-  inherit nixpkgs nixpkgs-joined warbo-packages;
+  inherit nixpkgs-joined warbo-packages;
   bibtex = ../Bibtex.bib;
   styles = stable-configured.dirsToAttrs ./styles;
 }
