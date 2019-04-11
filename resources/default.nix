@@ -37,11 +37,12 @@ with rec {
 
   # Particular versions of our custom nix-config overrides
   nix-config-url = "${repoSouce}/nix-config.git";
-  nix-configs    = mapAttrs (rev: sha256: unstable-nixpkgs.fetchgit {
-                                            inherit rev sha256;
-                                            url = nix-config-url;
-                                          }) {
-    "809056c" = "0gh6knckddy6l250qxp7v8nvwzfy24pasf8xl9gmpslx11s1ilpd";
+  nix-configs    = {
+    "809056c" = unstable-nixpkgs.fetchgit {
+      url    = nix-config-url;
+      rev    = "809056c";
+      sha256 = "0gh6knckddy6l250qxp7v8nvwzfy24pasf8xl9gmpslx11s1ilpd";
+    };
   };
 
   warbo-packages-src = unstable-nixpkgs.fetchgit {
