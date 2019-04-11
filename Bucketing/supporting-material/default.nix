@@ -33,7 +33,13 @@ rec {
   strictAccumulators = haskellTE.callPackage ./StrictAccumulators {};
 
   images = runCommand "bucketing-images"
-    { ds = [ survival.survivalGraph survival.timeoutGraph ]; }
+    {
+      ds = [
+        survival.contents.proportions
+        survival.survivalGraph
+        survival.timeoutGraph
+      ];
+    }
     ''
       mkdir "$out"
       for D in $ds
