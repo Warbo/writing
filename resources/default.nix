@@ -27,14 +27,7 @@ with rec {
 
   # A stable package set which includes some overrides, for when we need them
   stable-configured = import stable-nixpkgs-src {
-    config = import "${nix-config}/config.nix";
-  };
-
-  # Particular versions of our custom nix-config overrides
-  nix-config = fetchgit {
-    url    = "${repoSouce}/nix-config.git";
-    rev    = "809056c";
-    sha256 = "0gh6knckddy6l250qxp7v8nvwzfy24pasf8xl9gmpslx11s1ilpd";
+    overlays = [ (import "${nix-helpers-src}/overlay.nix") ];
   };
 
   warbo-packages-src = fetchgit {
