@@ -43,7 +43,7 @@ rec {
           overrides = helf: huper: {
             quickspec =
               with rec {
-                nixed = helf.haskellSrc2nix {
+                nixed = nixpkgs1803.haskellPackages.haskellSrc2nix {
                   inherit src;
                   name = "quickspec";
                 };
