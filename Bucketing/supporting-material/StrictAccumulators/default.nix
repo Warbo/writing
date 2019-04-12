@@ -1,5 +1,6 @@
-{ attrsToDirs, buildEnv, collapseAttrs, dirsToAttrs, haskellPackages, lib,
-  runCommand, timeout, withDeps, writeScript }:
+{ attrsToDirs', buildEnv, collapseAttrs, die, dirsToAttrs, fetchFromGitHub,
+  haskellTE, haskellPackages, lib, nixpkgs1803, runCommand, timeout, withDeps,
+  writeScript }:
 
 with builtins;
 with lib;
@@ -14,14 +15,13 @@ rec {
 
   getVersion = version: getAttr (toString (checkVersion version));
 
-  env = version:
-    getVersion version {
-      "1" = buildEnv {
-        name  = "ghc-with-quickspec1";
-        paths = [
-          (haskellPackages.ghcWithPackages (h: [ h.quickspec ]))
-        ];
-      };
+  env = version: getVersion version {
+    "1" = buildEnv {
+      name  = "ghc-with-quickspec1";
+      paths = [
+        (haskellTE.haskellPackages.ghcWithPackages (h: [ h.quickspec ]))
+      ];
+    };
 
     "2" =
       with rec {
@@ -89,7 +89,7 @@ rec {
       MAX_KB   = "1000000";
 
       buildInputs = [ (env version) timeout ];
-      code        = attrsToDirs /*"quickspec-code-${name}"*/ {
+      code        = attrsToDirs' "quickspec-code-${name}" {
         "Defs.hs"    = ./Defs.hs;
         "Runners.hs" = getVersion version {
           "1" = ./QS1Runners.hs;

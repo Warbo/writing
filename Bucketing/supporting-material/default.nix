@@ -30,7 +30,7 @@ rec {
 
   graphs = callPackage ./graphs.nix {};
 
-  strictAccumulators = haskellTE.callPackage ./StrictAccumulators {};
+  strictAccumulators = callPackage ./StrictAccumulators { inherit haskellTE; };
 
   images = runCommand "bucketing-images"
     {
