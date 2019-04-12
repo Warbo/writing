@@ -64,11 +64,9 @@ rec {
               withDeps (attrValues runExamples) untested;
 
             # Needed for QuickSpec, but isn't in the 18.03 cabal snapshot
-            twee-lib =
-              with {
-                src = /*nixpkgs1809.*/haskellPackages.hackage2nix "twee-lib" "2.1.5";
-              };
-              helf.callPackage src {};
+            twee-lib = helf.callPackage
+              (nixpkgs1803.haskellPackages.hackage2nix "twee-lib" "2.1.5")
+              {};
           };
         });
       };
