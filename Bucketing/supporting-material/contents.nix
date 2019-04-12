@@ -102,4 +102,14 @@ rec {
       chars = map decode pairs;
     };
     concatStringsSep "" chars;
+
+  # Human-readable names of definitions which always failed. These names also
+  # contain the TIP filename they appear in, so we can look them up.
+  readableFailed = map deHex allFailed;
+
+  # Filters out samples containing allFailed, to see what the remains look like
+  samplesWithoutAllFailed =
+    with { containsFailure = rep: any (n: elem n rep.sample) allFailed; };
+    mapAttrs (_: filterAttrs (_: rep: !(containsFailure rep)))
+             data.data;
 }
