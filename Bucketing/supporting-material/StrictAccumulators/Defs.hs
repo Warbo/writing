@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+module Defs where
 
 import Test.QuickCheck
 import Test.QuickSpec
@@ -38,9 +39,3 @@ mult2_lazy x y z = case x of
 mult2_strict x y !z = case x of
                         Z    -> z
                         S x2 -> mult2_strict x2 y (plus y z)
-
-sig_mult2_lazy = fun3 "mult2_lazy" mult2_lazy :
-                map (gvars ["nat1", "nat2", "nat3"]) [g, g, g]
-  where g = arbitrary :: Gen Nat
-
-qs_mult2_lazy = quickSpec sig_mult2_lazy
