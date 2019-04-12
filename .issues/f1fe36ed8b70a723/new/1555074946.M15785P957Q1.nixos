@@ -1,0 +1,34 @@
+From: Chris Warburton
+Date: Fri, 12 Apr 2019 14:08:58 +0100
+Subject: Re: Run QuickSpec on strictly-accumulating mult2, op and qexp
+Message-Id: <f1fe36ed8b70a723-f1a3ef2a7b45c0a5-artemis@nixos>
+References: <f1fe36ed8b70a723-0-artemis@nixos>
+In-Reply-To: <f1fe36ed8b70a723-0-artemis@nixos>
+
+I've done this for mult2 and spotted a few things:
+
+ - They operate on Nat (doh!), which is a custom datatype of Peano
+   numerals. They *don't* operate on Integer.
+
+ - mult2 doesn't run out of memory, it runs out of time (at 100% CPU)
+
+ - Making the accumulator strict doesn't change things, other than using
+   slightly more memory
+
+ - Making *everything* strict makes things even slower (times out on
+   expressions of depth 2 rather than depth 3)
+
+I now think that the problem is one, or both, of the following:
+
+ - Throwing `arbitrary` Nats into these functions makes some really big
+   values. We avoid blowing up the memory thanks to laziness, but we
+   still end up traversing them for comparisons (hence 100% CPU).
+
+ - They have many arguments, which leads to a huge number of expressions
+
+Next steps are:
+
+ - Try sending them through QuickSpec2; its knuth-bendix algorithm may
+   perform better, which would be an empirical "win" for QS2.
+
+ - Try restricting the generators to tiny numbers.

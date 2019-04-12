@@ -1,0 +1,10 @@
+From: Chris Warburton
+Date: Fri, 12 Apr 2019 19:55:49 +0100
+Subject: Re: Run QuickSpec on strictly-accumulating mult2, op and qexp
+Message-Id: <f1fe36ed8b70a723-e2de7034a925aa4b-artemis@nixos>
+References: <f1fe36ed8b70a723-0-artemis@nixos>
+In-Reply-To: <f1fe36ed8b70a723-0-artemis@nixos>
+
+Using small generators doesn't seem to fix everything. I'm now making a
+Nix derivation containing runs for all "toxic" functions, with lazy and
+strict versions, on normal and small generators.

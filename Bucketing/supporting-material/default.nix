@@ -21,21 +21,22 @@ rec {
 
   # Data for graphs, etc.
 
-  data = callPackage ./data.nix { inherit haskellTESrc; };
+  # Just enough to render PDF graphs
+  basicTex = texlive.combine { inherit (texlive) scheme-small; };
 
-  survival = callPackage ./survival.nix {
-    inherit data;
-    tex = texlive.combine { inherit (texlive) scheme-small; };
+  data     = callPackage ./data.nix     { inherit haskellTESrc;  };
+  survival = callPackage ./survival.nix { inherit data basicTex; };
+  contents = callPackage ./contents.nix { inherit data basicTex; };
+  graphs   = callPackage ./graphs.nix   {                        };
+  toxic    = callPackage ./toxic        {
+    inherit haskellTE;
+    inherit (contents.all) readableToxic;
   };
-
-  graphs = callPackage ./graphs.nix {};
-
-  strictAccumulators = callPackage ./StrictAccumulators { inherit haskellTE; };
 
   images = runCommand "bucketing-images"
     {
       ds = [
-        survival.contents.proportions
+        contents.all.proportions
         survival.survivalGraph
         survival.timeoutGraph
       ];

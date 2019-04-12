@@ -1,4 +1,4 @@
-{ data, lib, python3, runCommand, tex, writeScript }:
+{ basicTex, data, lib, python3, runCommand, writeScript }:
 
 with builtins;
 with lib;
@@ -8,59 +8,75 @@ rec {
                                    init
                                    (attrNames attrs);
 
-  names = foldAttrs (size: reps: got:
-                      foldAttrs (rep: data: got:
-                                  unique (got ++ data.sample))
-                                got
-                                reps)
-                    []
-                    data.data.result;
+  processSamples = {name, samples}: rec {
+    names = foldAttrs (size: reps: got:
+                        foldAttrs (rep: data: got:
+                                    unique (got ++ data.sample))
+                                  got
+                                  reps)
+                      []
+                      samples;
 
-  count = name: foldAttrs (size: reps: got:
-                            foldAttrs (rep: data: got:
-                                        if elem name data.sample
-                                           then {
-                                             successes =
-                                               if data.success
-                                                  then (got.successes + 1)
-                                                  else got.successes;
-                                             fails =
-                                               if data.success
-                                                  then got.fails
-                                                  else (got.fails + 1);
-                                           }
-                                           else got)
-                                      got
-                                      reps)
-                          { successes = 0; fails = 0; }
-                          data.data.result;
+    count = name: foldAttrs (size: reps: got:
+                              foldAttrs (rep: data: got:
+                                          if elem name data.sample
+                                             then {
+                                               successes =
+                                                 if data.success
+                                                    then (got.successes + 1)
+                                                    else got.successes;
+                                               fails =
+                                                 if data.success
+                                                    then got.fails
+                                                    else (got.fails + 1);
+                                             }
+                                             else got)
+                                        got
+                                        reps)
+                            { successes = 0; fails = 0; }
+                            samples;
 
-  counts = listToAttrs (map (name: { inherit name; value = count name; })
-                            names);
+    counts = listToAttrs (map (name: { inherit name; value = count name; })
+                              names);
 
-  tabulated = foldAttrs (name: { fails, successes }: got: got ++ [
-                          [ name (toString successes) (toString fails) ]
-                        ])
-                        [ [ "name" "successes" "failures" ] ]
-                        counts;
+    # (Names of) definitions which only appear in failed samples
+    toxic = filter (name: (count name).successes == 0) names;
 
-  csv = writeScript "qs-contents"
-                    (concatStringsSep "\n"
-                      (map (concatStringsSep ",") tabulated));
+    # Decoded, human-readable version of the toxic names. These names also
+    # contain the TIP filename they appear in, so we can look up their
+    # definitions.
+    readableToxic = map deHex toxic;
 
-  proportions = runCommand "content-failure-proportions"
-    {
-      inherit csv;
-      buildInputs = [ (python3.withPackages (p: [ p.matplotlib ])) tex ];
-      script      = ./contentsGraph.py;
-    }
-    ''
-      mkdir "$out"
-      cd "$out"
-      "$script"
-    '';
+    tabulated = foldAttrs (name: { fails, successes }: got: got ++ [
+                            [ name (toString successes) (toString fails) ]
+                          ])
+                          [ [ "name" "successes" "failures" ] ]
+                          counts;
 
-  allFailed = filter (name: (count name).successes == 0) names;
+    csv = writeScript "qs-contents"
+                      (concatStringsSep "\n"
+                        (map (concatStringsSep ",") tabulated));
+
+    proportions = runCommand "content-failure-proportions"
+      {
+        inherit csv;
+        buildInputs = [ basicTex (python3.withPackages (p: [ p.matplotlib ])) ];
+        script      = ./contentsGraph.py;
+      }
+      ''
+        mkdir "$out"
+        cd "$out"
+        "$script"
+      '';
+  };
+
+  all = processSamples { name = "all"; samples = data.data.result; };
+
+  # Analyses only those samples which don't contain toxic definitions
+  nonToxic = processSamples {
+    name    = "nontoxic";
+    samples = detox all.toxic data.data.result;
+  };
 
   # Decodes a hex-encoded name like 'global0123456789abcdef'
   deHex = s:
@@ -103,13 +119,8 @@ rec {
     };
     concatStringsSep "" chars;
 
-  # Human-readable names of definitions which always failed. These names also
-  # contain the TIP filename they appear in, so we can look them up.
-  readableFailed = map deHex allFailed;
-
-  # Filters out samples containing allFailed, to see what the remains look like
-  samplesWithoutAllFailed =
-    with { containsFailure = rep: any (n: elem n rep.sample) allFailed; };
-    mapAttrs (_: filterAttrs (_: rep: !(containsFailure rep)))
-             data.data;
+  # Filters out samples containing toxic names
+  detox = toxic:
+    with { containsFailure = rep: any (n: elem n rep.sample) toxic; };
+    mapAttrs (_: filterAttrs (_: rep: !(containsFailure rep)));
 }

@@ -1,0 +1,16 @@
+From: Chris Warburton
+Date: Fri, 12 Apr 2019 14:32:39 +0100
+Subject: Re: Run QuickSpec on strictly-accumulating mult2, op and qexp
+Message-Id: <f1fe36ed8b70a723-d8adc470019a817c-artemis@nixos>
+References: <f1fe36ed8b70a723-0-artemis@nixos>
+In-Reply-To: <f1fe36ed8b70a723-0-artemis@nixos>
+
+I've added some extra signatures which use (exponentially) smaller Nat
+generators, where:
+
+ - 1/2 of the results are       Z
+ - 1/4 of the results are    (S Z)
+ - 1/8 of the results are (S (S Z))
+ - and so on
+
+Exploring the lazy mult2 finished quite quickly, with 66 equations.
