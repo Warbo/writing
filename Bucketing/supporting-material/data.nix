@@ -100,12 +100,4 @@ rec {
       assert allAttrs (s: repsDistinct true) resultUntested;
       resultUntested;
     };
-
-  times = mapAttrs (_: mapAttrs (_: rep: {
-                                  inherit (rep) success;
-                                  time = if rep.success
-                                            then rep.time
-                                            else rep.timeout;
-                                }))
-                   data.result;
 }

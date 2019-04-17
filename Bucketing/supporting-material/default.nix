@@ -19,26 +19,26 @@ rec {
   # Implements wrappers around QuickSpec 1 and contains runtime benchmarks
   inherit (bucketing) haskellTE haskellTESrc;
 
-  # Data for graphs, etc.
-
-  # Just enough to render PDF graphs
-  basicTex = texlive.combine { inherit (texlive) scheme-small; };
-
+  # Raw and analysed data
   data     = callPackage ./data.nix     { inherit haskellTESrc;  };
-  survival = callPackage ./survival.nix { inherit data basicTex; };
-  contents = callPackage ./contents.nix { inherit data basicTex; };
-  graphs   = callPackage ./graphs.nix   {                        };
+  contents = callPackage ./contents.nix { inherit basicTex data; };
   toxic    = callPackage ./toxic        {
     inherit haskellTE;
     inherit (contents.all) readableToxic;
   };
 
+  survivalAnalysis = callPackage ./survival.nix { inherit basicTex; };
+  allSurvival      = survivalAnalysis data.data.result;
+  toxicSurvival    = survivalAnalysis contents.all.nonToxic.samples;
+
+  # Extract graphs from the above analyses
+  graphs = callPackage ./graphs.nix   {};
   images = runCommand "bucketing-images"
     {
       ds = [
         contents.all.proportions
-        survival.survivalGraph
-        survival.timeoutGraph
+        allSurvival.survivalGraph
+        allSurvival.timeoutGraph
       ];
     }
     ''
@@ -53,10 +53,13 @@ rec {
       done
     '';
 
-  render = wrap {
-    name  = "render-clustering-paper";
+  # Just enough LaTeX packages to render PDF graphs
+  basicTex = texlive.combine { inherit (texlive) scheme-small; };
+
+  # All of the LaTeX and related tools for rendering the paper
+  fullTex  = buildEnv {
+    name = "bucketing-tex";
     paths = [
-      gnumake
       pythonPackages.pygments  # For minted
       which                    # For minted
       (texlive.combine {
@@ -75,7 +78,12 @@ rec {
           ;
       })
     ];
-    vars = {
+  };
+
+  render = wrap {
+    name  = "render-clustering-paper";
+    paths = [ fullTex gnumake ];
+    vars  = {
       inherit bibtex images;
 
       go = wrap {

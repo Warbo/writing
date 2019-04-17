@@ -1,10 +1,19 @@
 # Perform survival rate analysis for QuickCheck running times
-{ basicTex, callPackage, data, fetchurl, gcc, lib, nixpkgs1709, path, python3,
+{ basicTex, callPackage, fetchurl, gcc, lib, nixpkgs1709, path, python3,
   python3Packages, runCommand, stdenv, overrideCC, buildPackages, writeScript }:
 
 with builtins;
 with lib;
-rec {
+
+data: rec {
+  times = mapAttrs (_: mapAttrs (_: rep: {
+                     inherit (rep) success;
+                     time = if rep.success
+                               then rep.time
+                               else rep.timeout;
+                   }))
+                   data;
+
   # Pandas is marked as broken on i686, and the "bail out if marked as broken"
   # mechanism is so strict that this can't be overridden without causing a bail
   # out. To avoid this we make our own copy of the pandas derivation and patch
@@ -98,10 +107,9 @@ rec {
       (fromBool data.success)
     ];
 
-    fromBool = b: if b then "1" else "0";
+    fromBool  = b: if b then "1" else "0";
 
-    processed =  mapAttrs (size: mapAttrs (entry size))
-      data.times;
+    processed = mapAttrs (size: mapAttrs (entry size)) times;
 
     headers   = [ "id" "size" "time" "success" ];
 
@@ -136,16 +144,10 @@ rec {
     {
       inherit (timingCsv) csv;
       buildInputs = [
-        (python3.withPackages (p: [
-          p.matplotlib
-          p.scipy
-          #(python3Packages // { inherit pandas; }).pandas
-        #  lifelines
-        ]))
-        #(python3.withPackages (p: [ lifelines ]))
-        tex
+        basicTex
+        (python3.withPackages (p: [ p.matplotlib p.scipy ]))
       ];
-      script      = ./timeoutGraph.py;
+      script = ./timeoutGraph.py;
     }
     runner;
 }

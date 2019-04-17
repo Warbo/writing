@@ -9,6 +9,8 @@ rec {
                                    (attrNames attrs);
 
   processSamples = {name, samples}: rec {
+    inherit name samples;
+
     names = foldAttrs (size: reps: got:
                         foldAttrs (rep: data: got:
                                     unique (got ++ data.sample))
