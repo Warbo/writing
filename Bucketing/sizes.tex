@@ -1,11 +1,24 @@
 \begin{figure}
   \input{images/stepped.pgf}
-  \caption{Survival plot % TODO{2019-04-15}: NAME OF PLOT
-    for running QuickSpec on inputs containing various numbers of definitions,
-    sampled from TIP. Most samples finished quickly, leaving a heavy tail which
-    didn't finish within the 300 second timeout.}
+  \caption{Kaplan-Meier survival plot for running QuickSpec on inputs containing
+    various numbers of definitions, sampled from TIP. Most runs finished
+    quickly, leaving a heavy tail which didn't finish within the 300 second
+    timeout.}
   \label{fig:survival}
 \end{figure}
+
+Figure~\ref{fig:survival} shows a Kaplan-Meier plot of \qspec{} running
+times, when given inputs containing different numbers of definitions. There is a
+clear pattern, with many runs finishing quickly and the remainder occupying a
+``long tail'' which we cut off after 300 seconds (based on preliminary
+experiments, which showed little difference in survival between 300 seconds and
+1 hour).
+
+There is an overall trend for larger inputs to have more runs time-out, except
+for the very smallest inputs (which are more constrained by the sampling
+procedure). This relationship is linear, which can be explained if the presence
+of certain definitions is causing the exploration process to fail (since larger
+inputs have a higher chance of containing one of these definitions).
 
 \begin{figure}
   \input{images/timeouts.pgf}
@@ -20,44 +33,22 @@
   \label{fig:proportions}
 \end{figure}
 
-Five definitions appeared only in failing samples, these are named
-\texttt{mul3}, \texttt{mul3acc}, \texttt{mult2}, \texttt{op} and \texttt{qexp};
-their definitions appear in Figure~\ref{fig:faildefs}. All of these are
-functions of Peano-encoded natural numbers (\texttt{Nat}), and they cause
-exploration to time out by generating very large outputs.
-
-\texttt{mul3} and \texttt{mul3acc} are rather pathological implementations of
-multiplication with an accumulator parameter, with many (non-tail) recursive
-calls. \texttt{mult2} and \texttt{qexp} are standard tail-recursive definitions
-of multiplication and exponentiation, respectively. The \texttt{op} function
-seems to exist only for testing purposes, appearing in files named
-\texttt{weird_nat_op} which assert its commutativity and associativity.
-
-Exploring each of these functions on its own does not require much memory, since
-Haskell generates the output lazily. However, comparing such large numbers for
-equality takes a lot of CPU time as the \texttt{S} constructors are successively
-unwrapped from each side, and this is why the timeout is reached. We confirmed
-this hypothesis by exploring with a custom data generator which only generates
-the values \texttt{Z}, \texttt{S Z} and \texttt{S (S Z)} (0, 1 and 2); this
-caused the exploration to finish quickly. Other interventions, like making the
-accumulator arguments strict (to prevent space leaks), did not prevent timeouts.
-
 \begin{figure}
-  \texttt{
+  \begin{minted}{scheme}
     (define-fun-rec mult2 ((x Nat) (y Nat) (z Nat)) Nat
       (match x
         (case Z      z)
         (case (S x2) (mult2 x2 y (plus y z)))))
-  }
+  \end{minted}
 
-  \texttt{
+  \begin{minted}{scheme}
     (define-fun-rec qexp ((x Nat) (y Nat) (z Nat)) Nat
       (match y
         (case Z     z)
         (case (S n) (qexp x n (mult x z)))))
-  }
+  \end{minted}
 
-  \texttt{
+  \begin{minted}{scheme}
     (define-fun-rec op ((x Nat) (y Nat) (z Nat) (x2 Nat)) Nat
       (match x
         (case Z
@@ -68,9 +59,10 @@ accumulator arguments strict (to prevent space leaks), did not prevent timeouts.
           (match z
             (case Z      (op x4 y y  x2))
             (case (S c ) (op x  y c  (S x2)))))))
-  }
+  \end{minted}
 
-  \texttt{
+  \iffalse
+  \begin{minted}{scheme}
     (define-fun-rec mul3acc ((x Nat) (y Nat) (z Nat)) Nat
       (match x
         (case Z Z)                          ;; Base case for 0 * y * z
@@ -105,9 +97,11 @@ accumulator arguments strict (to prevent space leaks), did not prevent timeouts.
                                            (mul3acc x2 (S Z) x4)
                                            (mul3acc x2 x3 (S Z)))
                                   (add3acc x2 x3 x4))))))))))))
-  }
+  \end{minted}
+  \if
 
-  \texttt{
+  \iffalse
+  \begin{minted}{scheme}
     (define-fun-rec mul3 ((x Nat) (y Nat) (z Nat)) Nat
       (match x
         (case Z Z)                          ;; Base case for 0 * y * z
@@ -142,9 +136,36 @@ accumulator arguments strict (to prevent space leaks), did not prevent timeouts.
                                      (mul3 x2 (S Z) x4)
                                      (mul3 x2 x3 (S Z)))
                                (add3 x2 x3 x4))))))))))))
-  }
+  \end{minted}
+  \fi
+  \caption{Definitions which consistently cause \qspec{} to fail. Two other
+    definitions (\texttt{mul3} and \texttt{mul3acc}) are ommitted due to their
+    verbosity.}
   \label{fig:faildefs}
 \end{figure}
+
+This does appear to be the case, as Figure~\ref{fig:proportions} shows that five
+definitions appeared \emph{only} in failing inputs; these are named
+\texttt{mul3}, \texttt{mul3acc}, \texttt{mult2}, \texttt{op} and \texttt{qexp};
+their definitions appear in Figure~\ref{fig:faildefs}. All of these are
+functions of Peano-encoded natural numbers (\texttt{Nat}), and they cause
+exploration to time out by generating very large outputs.
+
+\texttt{mul3} and \texttt{mul3acc} are rather pathological implementations of
+multiplication with an accumulator parameter, with many (non-tail) recursive
+calls. The \texttt{op} function appears in files named \texttt{weird\_nat\_op},
+which assert its commutativity and associativity. Finally, the \texttt{mult2}
+and \texttt{qexp} functions are standard tail-recursive definitions of
+multiplication and exponentiation, respectively.
+
+Exploring each of these functions on its own does not require much memory, since
+Haskell generates the output lazily. However, comparing such large numbers for
+equality takes a lot of CPU time as the \texttt{S} constructors are successively
+unwrapped from each side, and this is why the timeout is reached. We confirmed
+this hypothesis by exploring with a custom data generator which only generates
+the values \texttt{Z}, \texttt{S Z} and \texttt{S (S Z)} (0, 1 and 2); this
+caused the exploration to finish quickly. Other interventions, like making the
+accumulator arguments strict (to prevent space leaks), did not prevent timeouts.
 
 To assess the impact of these problematic definitions, we removed any samples
 containing them and repeated our analysis.
