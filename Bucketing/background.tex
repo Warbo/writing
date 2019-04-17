@@ -65,18 +65,6 @@ procedure is used to generate conjectures, which are both plausible (due to
 testing on many examples) and potentially interesting (due to being mutually
 irreducible):
 
-\iffalse % TODO{2019-04-09}: Make this more formal?
- V \in Var
- F \in Fun
- T \in Term
- T ::= V | F | T1 T2
-
- Term ::= VAR | Const | Fun (Term)
-or
- Term t ::= x | f | t t'
-\fi
-
-
 \begin{figure}
   \centering
   \begin{minted}{haskell}
@@ -165,14 +153,6 @@ machine learning technique aims to predict these kinds of relations between
 functions, so we can create small signatures which can be explored quickly, yet
 have the potential to give rise to many equations.
 
-\iffalse TODO{2019-04-09} In fact, there are similarities between the way a TE
-system like \qspec{} can generalise from checking \emph{particular} properties
-to \emph{inventing} new ones, and the way counterexample finders like \qcheck{}
-can generalise from testing \emph{particular} expressions to \emph{inventing}
-expressions to test. One of our aims is to understand the implications of this
-generalisation, the lessons that each can learn from the other's approach to
-term generation, and the consequences for testing and QA in general.  \fi
-
 \subsection{Clustering}
 \label{sec:clustering}
 
@@ -187,4 +167,4 @@ Due to its use by ML4PG and ACL2(ml), we use \emph{k-means} clustering, implemen
 \subsection{The Clustering Problem}
 \label{sec:clustering}
 
-% TODO{2019-04-09}
+% TODO{2019-04-18}
