@@ -1,175 +1,66 @@
-\section{Introduction}
+\section{The Signature Selection Problem}
 
-\emph{(Mathematical) Theory Exploration} (TE) describes an open-ended search for
-interesting properties (proven or merely conjectured, depending on the approach)
-of a given set of formal definitions, such as a mathematical theory, a
-scientific model or a software library. It has been applied to generating
-``background lemmas'' for the interactive proof assistant
-\textsc{Isabelle/HOL}~\cite{johansson2009isacosy,Hipster} and automated
-theorem provers~\cite{claessen2013automating}, as well as for generating
-specifications for (pure functional) programming
-libraries~\cite{QuickSpec,smallbone2017quick,braquehais2017speculate}.
+Despite the clever search strategies employed by theory exploration tools, they
+all rely on enumerating combinations of definitions in some way, which can cause
+infeasible running times on larger inputs (in our experience, a few dozen
+definitions). To avoid this, users of these systems must carefully select only
+small subsets of their definitions to explore at a time.
 
-Despite the clever search strategies employed by these tools, they all rely on
-enumerating combinations of definitions in some way, which can cause infeasible
-running times on larger inputs (in our experience, a few dozen definitions). To
-avoid this, users of these systems must carefully select only small subsets of
-their definitions to explore at a time.
+We dub such selection the \emph{signature selection problem} for theory
+exploration, and we analyse its effect on the running time of theory exploration
+tools on the TIP particular problem set, and on the quality of the statements
+they are able to generate. An automated solution to this signature selection problem would
+accept a large number of definitions and efficiently select sub-sets which are
+both small enough to reasonably explore, whilst still enabling interesting
+properties to be discovered.
 
-We dub such selection the \emph{bucketing problem} for theory exploration and
-analyse its effect on the running time of theory exploration tools on a
-particular problem set, and on the quality of the statements they are able to
-generate. An automated solution to this bucketing problem would accept a large
-number of definitions and efficiently select sub-sets which are both small
-enough to reasonably explore, whilst still enabling interesting properties to be
-discovered.
-
-Our contributions are:
+In this chapter we will:
 
 \begin{enumerate}
-  \item Defining the \emph{bucketing problem} for theory exploration.
-  \item Statistical analysis of theory exploration performance on a large
-    problem set, derived from existing theorem proving problem sets.
-  \item Empirical analysis of the effect of bucketing on the quantity of
-    desirable properties attainable by theory exploration.
-  \item Experimental application of machine learning to the bucketing problem,
-    via unsupervised \emph{clustering}.
-  % \item A novel feature extraction method for transforming Haskell expressions
-  %   into a form amenable to off-the-shelf learning algorithms.
-  % \item An implementation of these feature extraction and theory exploration
-  %   approaches.
-  % \item A comparison of our methods with existing approaches, both for theory
-  %   exploration in Haskell, and for machine learning in other languages.
+  \item Define the \emph{signature selection problem} for theory exploration.
+  \item Analyse the performance of theory exploration on the TEBenchmark problem
+    set.
+  \item Analyse the effect of signature selection on the quantity of desirable properties
+    attainable by theory exploration on this problem set.
+  \item Demonstrate how the signature selection problem is distinct from the well-know
+    \emph{clustering problem} in machine learning, and how clustering algorithms
+    cannot be directly applied to signature selection.
 \end{enumerate}
 
+Some bespoke components required for these analyses and comparisons may also be
+useful on their own, or re-purposed for other tasks. These include:
+
+\begin{enumerate}
+\item A novel feature extraction method for transforming Haskell expressions
+  into a form amenable to off-the-shelf machine-learning algorithms, based on
+  the existing \emph{recurrent clustering} algorithm from other languages.
+\item An executable implementation of this feature extraction
+  approach\footnote{https://github.com/warbo/ml4hsfe}.
+\item End-to-end automation for exploration arbitrary, user-provided Haskell
+  packages\footnote{https://github.com/warbo/haskell-te}.
+\item Dynamic evaluation of Haskell code, with access to dynamically installed
+  Haskell packages\footnote{http://hackage.haskell.org/package/nix-eval}.
+\item Translation of the signature selection problem to the constrain-solving domain, and
+  executable oracles for optimal (and pessimal) signature selection, when the desired
+  properties are already known\footnote{Part of
+    https://github.com/warbo/bucketing-algorithms}.
+\end{enumerate}
+
+\iffalse
+% TODO: Do we need this?
 We describe theory exploration in more detail, as well as the \qspec{} tool we
 use in our experiments, in \S~\ref{sec:theoryexploration}. We introduce the
-bucketing problem more formally in \S~\ref{sec:bucketing} and measure its
+signature selection problem more formally in \S~\ref{sec:sigselect} and measure its
 effect on theory exploration systems in \S~\ref{sec:implementation}. In
-\S~\ref{sec:clustering} we highlight the difference betwee bucketing and the
+\S~\ref{sec:clustering} we highlight the difference between signature selection and the
 well-known \emph{clustering problem} from machine learning, by demonstrating
-that clustering algorithms perform poorly at bucketing.  A variety of related
+that clustering algorithms perform poorly at signature selection.  A variety of related
 work is surveyed in \S~\ref{sec:related} and we conclude in
 \S~\ref{sec:conclusion} with potential directions for future research.
+\fi
 
-\section{Background}
+\subsection{Background}
 \label{sec:background}
-
-\subsection{Theory Exploration}
-\label{sec:theoryexploration}
-
-Theory exploration is the task of taking a \emph{signature} of definitions in
-some formal system (for example a programming language) and automatically
-generating a set of formal statements (properties) involving those
-definitions. These may be conjectures or theorems (proven either by sending
-conjectures to an automated theorem prover, or by having the generating
-procedure proceed in logically sound steps); in either case, these statements
-must also be ``interesting'' in some way. It is beyond the scope of this paper
-to define what makes a mathematical statement ``interesting'', but this problem
-has been tackled extensively in the literature~\cite{colton2000notion}.
-
-We will follow the tradition of prior practitioners and use an existing
-corpus of theorems as a \emph{ground truth} against which to compare results.
-Existing work has used libraries of the \textsc{Isabelle/HOL} proof assistant as
-a ground
-truth~\cite{Montano-Rivas.McCasland.Dixon.ea:2012,johansson2009isacosy,claessen2013automating},
-but these only contained a few definitions and theorems each. To analyse
-behaviour on a larger scale, as required to study the effects of bucketing, we
-have chosen the \emph{Tons of Inductive Problems} (TIP) problem set for
-automated theorem provers~\cite{claessen2015tip}.  Reasons for choosing TIP
-include:
-
-\begin{itemize}
-\item Each problem in TIP clearly distinguishes between the statement to be
-  proved and the definitions involved, such that the two can be easily and
-  meaningfully separated to act as inputs and desired outputs in a TE setting.
-  This would not be the case for problem sets like
-  SMT-COMP~\cite{barrett2005smt}, where many problems involve uninterpreted
-  functions whose behaviour is \emph{implicit} in the logical structure of the
-  theorem statement but not separately \emph{defined}.
-\item The TIP problem set includes a tool to translate from the language it
-  uses to define problems (a variant of SMTLIB) into various other languages
-  including Haskell and Isabelle, for which TE tools already exist.
-\item TIP problems are relevant to the domains we are interested in, including
-  pure functional programming, higher-order functions and inductively defined
-  datatypes. This makes TIP more attractive than problem sets for first-order
-  languages/logics such as TPTP~\cite{sutcliffe2009tptp}.
-\item Many of TIP's problem statements re-use the same definitions, which makes
-  it more useful as a ground-truth than a mixture of unrelated problems. This is
-  because non-membership in the ground truth will be treated as being
-  ``uninteresting''.
-\end{itemize}
-
-All existing theory exploration systems rely on brute force enumeration to some
-degree. We focus on \qspec{}~\cite{QuickSpec}, which conjectures equations about
-Haskell code. These may be fed into another tool, such as \hspec{}, for
-subsequent proving. We have used version 1 of \qspec{} in our experiments, due
-to its availability, stability and tooling integration, and we will drop the
-version number from now on. At the time of writing there is a \qspec{} version 2
-available, which has a much improved generation procedure that is significantly
-faster than its predecessor. However, it still scales poorly in our experience,
-and has less integration with the tooling we have used. We hence leave analysis
-of \qspec{} 2 as future work, pending the necessary infrastructure changes that
-would require.
-
-\qspec{} (version 1) is written in the Haskell programming language, and works
-with definitions which are also written in Haskell. Some simple Haskell
-definitions are shown in Figure~\ref{fig:haskellexample}. The following
-procedure is used to generate conjectures, which are both plausible (due to
-testing on many examples) and potentially interesting (due to being mutually
-irreducible):
-
-\begin{figure}
-  \centering
-  \begin{minted}{haskell}
-    -- A datatype with two constructors
-    data Bool = True | False
-
-    -- A recursive datatype (S requires a Nat as argument)
-    data Nat = Z | S Nat
-
-    -- A function turning a Bool into a Bool
-    not :: Bool -> Bool
-    not True  = False
-    not False = True
-
-    -- A pair of mutually recursive functions
-
-    odd :: Nat -> Bool
-    odd    Z  = False
-    odd (S n) = even n
-
-    even :: Nat -> Bool
-    even    Z  = True
-    even (S n) = odd n
-  \end{minted}
-  \caption{Haskell datatypes for booleans and natural numbers, followed by some
-    simple function definitions (with type annotations).}
-  \label{fig:haskellexample}
-\end{figure}
-
-\begin{enumerate}
-\item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{}
-  generates a list $terms$ containing the constants (including functions) from
-  $\Sigma$, the variables from $V$ and type-correct function applications
-  \hs{f x}, where \hs{f} and \hs{x} are elements of $terms$. To ensure the list
-  is finite, function applications are only nested up to a specified depth (by
-  default, 3).
-\item The elements of $terms$ are grouped into equivalence classes, based on
-  their type.
-\item The equivalence of terms in each class is tested using \qcheck{}:
-  variables are instantiated to particular values, generated randomly, and the
-  resulting closed expressions are evaluated and compared for equality.
-\item If a class is found to have non-equal members, it is split up to separate
-  those members.
-\item The previous steps of testing and splitting are repeated until the classes
-  stabilise (i.e. no differences have been observed for some specified number of
-  repetitions).
-\item For each class, one member is selected and equations are conjectured that
-  it is equal to each of the other members.
-\item A congruence closure algorithm is applied to these equations, to discard
-  any which are implied by the others.
-\end{enumerate}
 
 As an example, giving the definitions from Figure~\ref{fig:haskellexample} to
 \qspec{}, along with suitable comparison functions, random data generators and
@@ -237,8 +128,8 @@ clusters $k$, we use the ``rule of thumb'' given in
 \cite[pp. 365]{mardia1979multivariate} of clustering $n$ data points into
 $k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
 
-\subsection{The Bucketing Problem}
-\label{sec:bucketing}
+\subsection{The Signature Selection Problem}
+\label{sec:sigselect}
 
 % TODO{2019-04-19}
 
@@ -296,11 +187,24 @@ the following feature vectors:
   \end{equation}
 \end{small}
 
-Here the features corresponding to the common sub-expression $\CLocal\ \id{y}$ are misaligned, such that only $\frac{1}{3}$ of features are guaranteed to match (others may match by coincidence, depending on $\phi$). These feature vectors might be deemed very dissimilar during clustering, despite the intuitive similarity of the expressions $X$ and $Y$ from which they derive.
+Here the features corresponding to the common sub-expression $\CLocal\ \id{y}$
+are misaligned, such that only $\frac{1}{3}$ of features are guaranteed to match
+(others may match by coincidence, depending on $\phi$). These feature vectors
+might be deemed very dissimilar during clustering, despite the intuitive
+similarity of the expressions $X$ and $Y$ from which they derive.
 
-If we were to align these features optimally, by padding the fourth column rather than the sixth, then $\frac{2}{3}$ of features would be guaranteed to match, making the similarity of the vectors more closely match our intuition and depend less on coincidence.
+If we were to align these features optimally, by padding the fourth column
+rather than the sixth, then $\frac{2}{3}$ of features would be guaranteed to
+match, making the similarity of the vectors more closely match our intuition and
+depend less on coincidence.
 
-The method we use to ``flatten'' expressions, described below, is a variation of breadth-first traversal which pads each level of nesting to a fixed size $c$ (for \emph{columns}). This doesn't guarantee alignment, but it does prevent mis-alignment from accumulating across different levels of nesting. Our method would align these features into the following vectors, if $c = 2$: \footnote{In fact, the constructor identifier $\id{C}$ would not appear in the vector, but this example is still accurate in terms of laying out the features as given.}
+The method we use to ``flatten'' expressions, described below, is a variation of
+breadth-first traversal which pads each level of nesting to a fixed size $c$
+(for \emph{columns}). This doesn't guarantee alignment, but it does prevent
+mis-alignment from accumulating across different levels of nesting. Our method
+would align these features into the following vectors, if $c = 2$: \footnote{In
+  fact, the constructor identifier $\id{C}$ would not appear in the vector, but
+  this example is still accurate in terms of laying out the features as given.}
 
 \begin{small}
   \begin{equation}\label{eq:flattened}
@@ -311,9 +215,16 @@ The method we use to ``flatten'' expressions, described below, is a variation of
   \end{equation}
 \end{small}
 
-Here $\frac{1}{2}$ of the original 6 features align, which is more than $breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2 zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
+Here $\frac{1}{2}$ of the original 6 features align, which is more than
+$breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2
+zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
 
-To perform this flattening we first transform the nested tokens of an expression into a \emph{rose tree} of features. Intuitively, these are simply an s-expression representation of the Core syntax, with the feature extraction function $\phi$ mapped over the labels. The full transformation is given in Appendix \ref{sec:rosetree}, and Figure \ref{fig:rosetreeexample} shows the result for the \hs{odd} function.
+To perform this flattening we first transform the nested tokens of an expression
+into a \emph{rose tree} of features. Intuitively, these are simply an
+s-expression representation of the Core syntax, with the feature extraction
+function $\phi$ mapped over the labels. The full transformation is given in
+Appendix \ref{sec:rosetree}, and Figure \ref{fig:rosetreeexample} shows the
+result for the \hs{odd} function.
 
 \begin{figure}
   \centering
@@ -340,7 +251,9 @@ To perform this flattening we first transform the nested tokens of an expression
                                          $\feature{\id{n}}$ ]]]
                           $\feature{\id{n}}$ ]]]
   \end{scriptsize}
-  \caption[Rose tree for odd]{\label{fig:rosetreeexample} Rose tree for the expression \hs{odd} from Figure \ref{fig:coreexample}. Each (sub-) rose tree is rendered with its feature at the node and sub-trees beneath.}
+  \caption[Rose tree for odd]{\label{fig:rosetreeexample} Rose tree for the
+    expression \hs{odd} from Figure \ref{fig:coreexample}. Each (sub-) rose tree
+    is rendered with its feature at the node and sub-trees beneath.}
 \end{figure}
 
 \begin{figure}
@@ -359,7 +272,11 @@ To perform this flattening we first transform the nested tokens of an expression
     \label{fig:matrixexample}
 \end{figure}
 
-These rose trees are then turned into matrices, as shown in Figure \ref{fig:matrixexample}. Each row $i$ of the matrix contains the features at depth $i$ in the rose tree, read left-to-right, followed by any required padding. These matrices are then either truncated, or padded with rows (on the bottom) or columns (on the right) of zeros, to fit a fixed size $r \times c$.
+These rose trees are then turned into matrices, as shown in Figure
+\ref{fig:matrixexample}. Each row $i$ of the matrix contains the features at
+depth $i$ in the rose tree, read left-to-right, followed by any required
+padding. These matrices are then either truncated, or padded with rows (on the
+bottom) or columns (on the right) of zeros, to fit a fixed size $r \times c$.
 
 \begin{sloppypar}
   Finally, matrices are turned into vectors by concatenating the rows from top
@@ -493,7 +410,11 @@ top-level expression as they are calculated, our algorithm can be computed
 \ref{alg:recurrent}.
 
 \iffalse
-As an example of this recurrent process, we can consider the Peano arithmetic functions from Figure \ref{fig:coreexample}. A valid topological ordering is given in Figure \ref{fig:sccexample}, which can be our value for $d$ (eliding Core expressions to save space):
+
+As an example of this recurrent process, we can consider the Peano arithmetic
+functions from Figure \ref{fig:coreexample}. A valid topological ordering is
+given in Figure \ref{fig:sccexample}, which can be our value for $d$ (eliding
+Core expressions to save space):
 
 \begin{equation}
   d = [\{(\hs{plus}, \dots)\},
@@ -536,7 +457,34 @@ cluster, since they only differ in their choice of constructor names (which are
 discarded by $toTree$) and recursive calls (which are replaced by
 $f_{recursion}$). A more extensive investigation of these features requires a
 concrete implementation, in particular to pin down values for the parameters
-such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.  \fi
+such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.
+
+\fi
+
+\subsection{Experiments}
+
+% TODO: This was taken from the Background section, so probably doesn't fit here
+% without some fiddling.
+% TODO: Describe all of our experimental setups:
+%
+%  - The use of the TEBenchmark methodology for running QuickSpec, including the
+%    sampling process
+%
+%  - Running our recurrent signature selection algorithm on samples from TEBenchmark,
+%    including how we picked the sizes
+%
+%  - The definition of HashSpec and its use as control; how we ran all of the
+%    same samples through it
+%
+%  - The use of optimal and pessimal oracles, defined via constraint
+%    satisfaction. How we it was only feasible to run these up to size 10 (11?)
+
+We follow the tradition of prior practitioners and use an existing corpus of
+theorems as a \emph{ground truth} against which to compare results. To analyse
+behaviour on large inputs (i.e. those for which exploration is currently
+infeasible), as required to study the effects of signature selection, we have used the
+\tebenchmark{} of section~\ref{sec:tebenchmark}, which is based on the Tons of
+Inductive Problems (TIP) problem set for theorem provers~\cite{claessen2015tip}.
 
 \begin{figure}
   \scalebox{0.45}{\input{images/steppedall.pgf}}

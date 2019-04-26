@@ -1,6 +1,20 @@
 \subsection{Theory Exploration}
 \label{sec:theoryexploration}
 
+% TODO Work this in
+\iffalse
+Theory exploration is the task of taking a \emph{signature} of definitions in
+some formal system (for example a programming language) and automatically
+generating a set of formal statements (properties) involving those
+definitions. These may be conjectures or theorems (proven either by sending
+conjectures to an automated theorem prover, or by having the generating
+procedure proceed in logically sound steps); in either case, these statements
+must also be ``interesting'' in some way. It is beyond the scope of this paper
+to define what makes a mathematical statement ``interesting'', but this problem
+has been tackled extensively in the literature~\cite{colton2000notion}.
+\fi
+% END TOTO
+
 In this work we consider the application of \emph{(automated) theory
   exploration} to generate conjectures about code. Existing tools are able to
 \emph{prove} those conjectures, and hence output \emph{novel} theorems without
@@ -8,20 +22,57 @@ guidance from the user. The method of conjecture generation is a key
 characteristic of any theory exploration system, although all existing
 implementations rely on brute force enumeration to some degree.
 
-We focus on \qspec{}~\cite{QuickSpec}, which conjectures equations about
-Haskell code (these may be fed into another tool, such as \hspec{}, for
-proving). These conjectures are arrived at through the following stages:
+We focus on \qspec{}~\cite{QuickSpec}, which conjectures equations about Haskell
+code (these may be fed into another tool, such as \hspec{}, for proving). We
+have used version 1 of \qspec{} in our experiments, due to its availability,
+stability and tooling integration; hence references to \qspec{} are to version 1
+unless stated otherwise. At the time of writing there is a \qspec{} version 2
+available, which has a much improved generation procedure which can be
+significantly faster than its predecessor. Whilst \qspec{} 2 has advanced the
+state of the art in theory exploration, our preliminary experience has found
+that it still suffers the scaling issues we identify in this work; indeed, we
+even encountered memory exhaustion from some of the examples included with the
+\qspec{} 2 source code! Since \qspec{} 2 has less integration with the tooling
+we have used, we leave a more thorough analysis of it (and related systems such
+as \speculate{}) for future work, pending the necessary infrastructure changes
+that would require.
 
-\iffalse TODO: Make this more formal?
- V \in Var
- F \in Fun
- T \in Term
- T ::= V | F | T1 T2
+\begin{figure}
+  \centering
+  \begin{minted}{haskell}
+    -- A datatype with two constructors (Note that -- introduces a comment)
+    data Bool = True | False
 
- Term ::= VAR | Const | Fun (Term)
-or
- Term t ::= x | f | t t'
-\fi
+    -- A recursive datatype (S requires a Nat as argument)
+    data Nat = Z | S Nat
+
+    -- A function turning a Bool into a Bool
+    not :: Bool -> Bool
+    not True  = False
+    not False = True
+
+    -- A pair of mutually recursive functions
+
+    odd :: Nat -> Bool
+    odd    Z  = False
+    odd (S n) = even n
+
+    even :: Nat -> Bool
+    even    Z  = True
+    even (S n) = odd n
+  \end{minted}
+  \caption{Haskell datatypes for booleans and natural numbers, followed by some
+    simple function definitions (with type annotations).}
+  \label{fig:haskellexample}
+\end{figure}
+
+\qspec{} (version 1) is written in the Haskell programming language, and works
+with definitions which are also written in Haskell. A thorough description of
+Haskell, including its suitability for theory exploration, can be found
+in~\ref{sec:haskell}. For illustrative purposes, some simple Haskell definitions
+are shown in Figure~\ref{fig:haskellexample}. The following procedure is used to
+generate conjectures, which are both plausible (due to testing on many examples)
+and potentially interesting (due to being mutually irreducible):
 
 \begin{enumerate}
 \item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{}
@@ -44,10 +95,36 @@ or
 \item A set of equations are then conjectured, relating each class's members.
 \end{enumerate}
 
-Such $conjectures$ can be used in several ways: they can be simplified for
-direct presentation to the user (by removing any equation which can be derived
-from the others by rewriting), sent to a more rigorous system like \hspec{} or
-\textsc{Hipster} for proving, or even serve as a background theory for an
+\iffalse
+% TODO: Compare the above to this; merge/swap anything that's better
+\begin{enumerate}
+\item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{}
+  generates a list $terms$ containing the constants (including functions) from
+  $\Sigma$, the variables from $V$ and type-correct function applications
+  \hs{f x}, where \hs{f} and \hs{x} are elements of $terms$. To ensure the list
+  is finite, function applications are only nested up to a specified depth (by
+  default, 3).
+\item The elements of $terms$ are grouped into equivalence classes, based on
+  their type.
+\item The equivalence of terms in each class is tested using \qcheck{}:
+  variables are instantiated to particular values, generated randomly, and the
+  resulting closed expressions are evaluated and compared for equality.
+\item If a class is found to have non-equal members, it is split up to separate
+  those members.
+\item The previous steps of testing and splitting are repeated until the classes
+  stabilise (i.e. no differences have been observed for some specified number of
+  repetitions).
+\item For each class, one member is selected and equations are conjectured that
+  it is equal to each of the other members.
+\item A congruence closure algorithm is applied to these equations, to discard
+  any which are implied by the others.
+\end{enumerate}
+\fi
+
+Such conjectures can be used in several ways: they can be simplified for direct
+presentation to the user (for example via the congruence closure algorithm
+\iffalse\cite{TODO}\fi), sent to a more rigorous system like \hspec{} or
+\hipster{} for proving, or even serve as a background theory for an
 automated theorem prover \cite{claessen2013automating}.
 
 As an example, we can consider a simple signature containing the expressions
@@ -91,7 +168,8 @@ one argument at a time.
           even (times a a) = even a
 plus (mult a b) (mult a c) = mult a (plus b c)
   \end{haskell}
-  \caption{Equations conjectured by \qspec{} for the functions in Figure \ref{fig:haskellexample}; after simplification.}
+  \caption{Equations conjectured by \qspec{} for the functions in Figure
+    \ref{fig:haskellexample}; after simplification.}
   \label{fig:qspecresult}
 \end{figure}
 

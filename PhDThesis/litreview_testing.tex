@@ -1,39 +1,54 @@
 \subsection{Property Checking}
 
-Automated testing is a common method of software quality assurance. In Haskell,
-some of the most popular testing frameworks go beyond the industry standard of
-\emph{unit testing} (asserting that components of a system behave as expected on
-a fixed set of inputs) to instead perform \emph{property checking}. A
-``property'', in this sense, is a statement about a program's components, which
-may include free variables. Such properties are typically encoded in Haskell as
-functions, accepting values for the free variables as arguments, and returning a
-boolean value (perhaps adorned with useful metadata). A property checker
-proceeds by
-\begin{enumerate*}
-\item generating suitable values for the function's arguments,
-\item calling the function with these values,
-\item inspecting the return value and
-\item repeating until some stop condition is satisfied
-\end{enumerate*}.
+Automated testing is a common method of software quality assurance. Typical
+industry standards (outside of specialised domains like those which are
+life-critical) include \emph{unit testing} \iffalse \cite{TODO} \fi: asserting
+that components of a system behave as expected on a fixed set of inputs. In
+Haskell, some of the most popular testing frameworks go beyond this to instead
+perform \emph{property checking}. A ``property'', in this sense, is a statement
+about a program's components, which may include free variables. We can think of
+a unit test as proving an \emph{existential} property: that the given statement
+holds for at least one assignment of the variables, and those values are stated
+as part of the unit test. However, the phrase ``property checking'' is typically
+reserved for \emph{universal} properties: those which should hold \emph{for all}
+values of the variables.
+
+Universal properties are typically encoded in Haskell as \emph{functions},
+accepting values for the free variables as arguments, and returning a boolean
+value (perhaps adorned with useful metadata). If the type of the variables is
+finite (for example booleans), it might be feasible to check all possible
+values. Typically this is not feasible, especially when multiple variables are
+involved, or the input types contain an infinite number of values (for example
+lists). Property checkers avoid this by only testing a sub-set of values, in the
+hope that a counterexample will be found (if one exists). They work by:
+
+\begin{enumerate}
+\item Generating suitable values for the function's arguments
+\item Calling the function with these values
+\item Inspecting the return value
+\item Repeating until some stop condition is satisfied
+\end{enumerate}.
 
 Most frameworks will test each property a fixed number of times (e.g. 100), and
 stop early if the function returns a false value. The major difference between
-implementations is the way they instantiate free variables (or, in encoded form,
-how they generate arguments for the property functions).
+implementations is the way they generate values to test with.
 
 \textsc{QuickCheck}~\cite{claessen2011quickcheck} popularised the use of
 property checking in Haskell, and has subsequently been ported to many other
 programming languages. \textsc{QuickCheck} generates input data \emph{randomly},
 either using explicit generators (via a function called \texttt{forAll}), or by
 choosing a default generator for types implementing its \texttt{Arbitrary}
-typeclass (the recent \texttt{hedgehog} package works in a similar way).
+typeclass (the recent \texttt{hedgehog} package works in a similar way\iffalse
+\cite{TODO} \fi).
 
 Random testing is effective at thoroughly exercising the branches of a program,
 since inputs may be quite large and cover many cases, especially for functions
 which recurse on each \emph{sub-}expressions of their input as well. The output
-of a random generator will also vary across runs, \emph{increasing} our
-confidence each time we check a property, rather than simply reiterating past
-results. However, there are two common problems with random property checking.
+of a random generator will also vary across runs, rather than checking the same
+values every time. Hence every invocation of a property checker, e.g. as part of
+a development or debugging workflow, allows more of the input space to be
+tested. However, there are two common problems with random property checking.
+
 Firstly we must be able to generate random values, which can be tricky for
 recursive datatypes. Consider a type of binary trees, with constructors
 \texttt{Leaf~::~Tree} and \texttt{Node~::~Tree~->~Tree~->~Tree}. We might
@@ -60,29 +75,30 @@ understand \emph{why} a randomly generated value violated some property.
 output values should be (e.g. the expected length of a list, or number of nodes
 in a tree). The value of the size parameter begins low and increases as more
 tests pass, such that failures are likely to be triggered by small, more easily
-understood counterexamples. Additionally, a mechanism for ``shrinking'' is
+understood counterexamples first. Additionally, a mechanism for ``shrinking'' is
 provided: users can supply a \texttt{shrink} function along with their
 generator, which is given any counterexample found during testing and returns a
 list of smaller values. In the above example we might shrink a \texttt{Node} by
 returning each sub-tree, and return an empty list when asked to shrink a
-\texttt{Leaf}. After a counterexample has been found, the same property is
-applied to each of the shrunk values in an attempt to narrow down the source of
-the problem. When a value cannot be shrunk any more, or if none of its shrunken
-versions are counterexamples, that value is presented to the user in the hope
-that it is simple enough to understand.
+\texttt{Leaf}. If one of these smaller values is also a counterexample, it too
+is shrunk and the process repeats, otherwise it is discarded and the next shrunk
+value is tried. When a value cannot be shrunk any more, or if none of its
+shrunken versions are counterexamples, that value is presented to the user in
+the hope that it is simple enough to understand.
 
 The \textsc{SmallCheck} framework takes a different approach: \emph{enumerating}
-values (either using a user-provided enumerating function or using its
+values (either using a user-provided enumeration function or using its
 \texttt{Serial} typeclass), rather than generating values
 randomly~\cite{runciman2008smallcheck} (a similar approach is also followed by
-the \texttt{testing-feat} package). In the \texttt{Tree} example this might
-check \texttt{Leaf}, then \texttt{Node Leaf Leaf}, then
-\texttt{Node (Node Leaf Leaf) Leaf}, and so on. This ensures that
-counterexamples are always small, that tests are not repeated with the same
-values and that memory is not exhausted (since the stopping condition will
-trigger long before the enumeration reaches such large values). The disadvantage
-is that large inputs (which exercise properties, especially recursive ones, the
-most) may occur so late in the enumeration that testing never reaches them.
+the \texttt{testing-feat} package \iffalse \cite{}TODO} \fi). In the
+\texttt{Tree} example this might check \texttt{Leaf}, then \texttt{Node Leaf
+  Leaf}, then \texttt{Node (Node Leaf Leaf) Leaf}, and so on. Enumerating in
+order of ``size'' ensures that counterexamples are always small, that tests are
+not repeated with the same values and that memory is not exhausted (since the
+stopping condition will trigger long before the enumeration reaches such large
+values). The disadvantage is that large inputs (which exercise properties,
+especially recursive ones, the most) may occur so late in the enumeration that
+testing never reaches them.
 
 The \textsc{LazySmallCheck} framework is similar in spirit to
 \textsc{SmallCheck}, but utilises Haskell's lazy evaluation to avoid generating

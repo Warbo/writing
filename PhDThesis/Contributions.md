@@ -6,9 +6,10 @@
  - Theory Exploration Benchmark, using TIP
  - Empirical benchmarking and comparison of QuickSpec and IsaCoSy
  - Identification of the input selection problem for conjecture/property
-   generation (AKA "bucketing")
- - Empirical analysis of recurrent clustering for bucketing, compared to a
-   (pseudo-)random control and non-learning approach (circular convolution).
+   generation (AKA "signature selection")
+ - Empirical analysis of recurrent clustering for signature selection, compared
+   to a (pseudo-)random control and non-learning approach (circular
+   convolution).
  - Recurrent clustering application to arbitrary tree structures (which we
    apply to Haskell Core)
 

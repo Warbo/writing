@@ -7,6 +7,7 @@
 \usepackage{csquotes}
 \usepackage{csvsimple}
 \usepackage[inline, shortlabels]{enumitem}
+\usepackage{minted}
 \usepackage{subcaption}
 \usepackage{tikz}
 \usetikzlibrary{arrows, calc, decorations.pathreplacing, positioning,
@@ -29,6 +30,9 @@
 \newcommand{\qcheck}{\textsc{QuickCheck}}
 \newcommand{\qspec}{\textsc{QuickSpec}}
 \newcommand{\hspec}{\textsc{HipSpec}}
+\newcommand{\speculate}{\textsc{Speculate}}
+\newcommand{\hipster}{\textsc{Hipster}}
+\newcommand{\smallcheck}{\textsc{SmallCheck}}
 \newcommand{\equal}{=}
 
 %% Language listings
