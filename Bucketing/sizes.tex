@@ -10,19 +10,19 @@
   \label{fig:survival}
 \end{figure}
 
-Figure~\ref{fig:survival} shows a Kaplan-Meier plot of \qspec{} running
-times, when given inputs containing different numbers of definitions. There is a
-clear pattern, with many runs finishing quickly and the remainder occupying a
-``long tail'' which we cut off after 300 seconds (based on preliminary
-experiments, which showed little difference in survival between 300 seconds and
-1 hour).
+Figure~\ref{fig:survival} shows a Kaplan-Meier survival plot of \qspec{} running
+times, when given inputs containing different numbers of definitions. Many runs
+finish quickly, with the remainder occupying a ``long tail'' which we cut off
+after 300 seconds\footnote{Chosen based on preliminary experiments, which showed
+  little difference in survival between 300 seconds and 1 hour}.
 
-There is an overall trend for larger inputs to have more runs time-out, except
-for the very smallest inputs (which are more constrained by the sampling
-procedure). This relationship is linear, which can be explained if the presence
-of certain definitions is causing the exploration process to fail (since larger
-inputs have a higher chance of containing one of these definitions).
+The number of definitions in the input is linearly correlated with the amount of
+timeouts, except for the very smallest inputs (which are more constrained by the
+sampling procedure). One explanation for this is ``toxic'' definitions, whose
+presence in the input always leads to the exploration failing (with larger
+inputs being more likely to have sampled a toxic definition).
 
+\iffalse
 \begin{figure}
   \scalebox{0.45}{\input{images/timeoutsall.pgf}}
   \scalebox{0.45}{\input{images/timeoutsnontoxic.pgf}}
@@ -31,6 +31,7 @@ inputs have a higher chance of containing one of these definitions).
     runs given ``toxic'' definitions.}
   \label{fig:tailsize}
 \end{figure}
+\fi
 
 \begin{figure}
   \scalebox{0.45}{\input{images/proportionsall.pgf}}
@@ -107,7 +108,7 @@ inputs have a higher chance of containing one of these definitions).
                                            (mul3acc x2 x3 (S Z)))
                                   (add3acc x2 x3 x4))))))))))))
   \end{minted}
-  \if
+  \fi
 
   \iffalse
   \begin{minted}{scheme}
@@ -158,14 +159,19 @@ definitions appeared \emph{only} in failing inputs; these are named
 \texttt{mul3}, \texttt{mul3acc}, \texttt{mult2}, \texttt{op} and \texttt{qexp};
 their definitions appear in Figure~\ref{fig:faildefs}. All of these are
 functions of Peano-encoded natural numbers (\texttt{Nat}), and they cause
-exploration to time out by generating very large outputs.
+exploration to time out by either exhausting the RAM with too many expressions
+to explore, % TODO{2019-04-27} CAN QUICKSPEC2 AVOID THIS?
+or by generating such deeply-nested outputs that comparing them takes too long.
+% TODO{2019-04-27} CAN WE PUT TIME AND MEMORY LIMITS ON EACH ATTEMPTED EVALUATION?
 
-\texttt{mul3} and \texttt{mul3acc} are rather pathological implementations of
-multiplication with an accumulator parameter, with many (non-tail) recursive
-calls. The \texttt{op} function appears in files named \texttt{weird\_nat\_op},
-which assert its commutativity and associativity. Finally, the \texttt{mult2}
-and \texttt{qexp} functions are standard tail-recursive definitions of
-multiplication and exponentiation, respectively.
+The \texttt{mul3} and \texttt{mul3acc} definitions are rather pathological
+implementations of multiplication with an accumulator parameter, with many
+(non-tail) recursive calls. The \texttt{op} function appears in files named
+\texttt{weird\_nat\_op}, which assert its commutativity and associativity.
+Finally, the \texttt{mult2} and \texttt{qexp} functions are standard
+tail-recursive definitions of multiplication and exponentiation, respectively.
+All of these functions have an extra ``accumulator'' argument, which increases
+the number of possible expressions to explore compared to those without.
 
 Exploring each of these functions on its own does not require much memory, since
 Haskell generates the output lazily. However, comparing such large numbers for
