@@ -5,7 +5,7 @@
 with builtins;
 with lib;
 
-data: rec {
+{ data, label }: rec {
   times = mapAttrs (_: mapAttrs (_: rep: {
                      inherit (rep) success;
                      time = if rep.success
@@ -134,6 +134,7 @@ data: rec {
 
   survivalGraph = runCommand "survival-graph"
     {
+      inherit label;
       inherit (timingCsv) csv;
       buildInputs = [ basicTex (python3.withPackages (p: [ lifelines ])) ];
       script      = ./survivalGraph.py;
@@ -142,6 +143,7 @@ data: rec {
 
   timeoutGraph = runCommand "timeout-graph"
     {
+      inherit label;
       inherit (timingCsv) csv;
       buildInputs = [
         basicTex

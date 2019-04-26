@@ -28,8 +28,10 @@ rec {
   };
 
   survivalAnalysis = callPackage ./survival.nix { inherit basicTex; };
-  allSurvival      = survivalAnalysis data.data.result;
-  toxicSurvival    = survivalAnalysis contents.all.nonToxic.samples;
+  allSurvival      = survivalAnalysis { data  = data.data.result;
+                                        label = "all"; };
+  nontoxicSurvival = survivalAnalysis { data  = contents.nontoxic.samples;
+                                        label = "nontoxic"; };
 
   # Extract graphs from the above analyses
   graphs = callPackage ./graphs.nix   {};
@@ -37,8 +39,11 @@ rec {
     {
       ds = [
         contents.all.proportions
+        contents.nontoxic.proportions
         allSurvival.survivalGraph
         allSurvival.timeoutGraph
+        nontoxicSurvival.survivalGraph
+        nontoxicSurvival.timeoutGraph
       ];
     }
     ''
@@ -81,7 +86,7 @@ rec {
   };
 
   render = wrap {
-    name  = "render-clustering-paper";
+    name  = "render-bucketing-paper";
     paths = [ fullTex gnumake ];
     vars  = {
       inherit bibtex images;
@@ -112,8 +117,8 @@ rec {
       set -e
       cp -r "$source" ./src
       chmod -R +w     ./src
-      cp    "$bibtex" ./src/Bibtex.bib
-      cp -r "$images" ./src/images
+      cp     "$bibtex" ./src/Bibtex.bib
+      cp -rL "$images" ./src/images
 
       for STYLE in $styles
       do
@@ -135,7 +140,7 @@ rec {
 
   checks = callPackage ./check.nix { inherit bibtex render; };
 
-  paperUntested = runCommand "clustering-paper" { inherit render; } ''
+  paperUntested = runCommand "bucketing-paper" { inherit render; } ''
     "$render"
     mkdir "$out"
     mv src/report.pdf "$out"/

@@ -61,7 +61,7 @@ rec {
 
     proportions = runCommand "content-failure-proportions"
       {
-        inherit csv;
+        inherit csv name;
         buildInputs = [ basicTex (python3.withPackages (p: [ p.matplotlib ])) ];
         script      = ./contentsGraph.py;
       }
@@ -75,7 +75,7 @@ rec {
   all = processSamples { name = "all"; samples = data.data.result; };
 
   # Analyses only those samples which don't contain toxic definitions
-  nonToxic = processSamples {
+  nontoxic = processSamples {
     name    = "nontoxic";
     samples = detox all.toxic data.data.result;
   };

@@ -2,14 +2,16 @@
 from os  import getenv
 from csv import DictReader
 
+label = getenv('name')
+
 def msg(x):
     from sys import stderr
     stderr.write(repr(x))
     stderr.flush()
 
 def save(name, axes):
-    axes.get_figure().savefig(name + '.pdf')
-    axes.get_figure().savefig(name + '.pgf')
+    axes.get_figure().savefig(name + label + '.pdf')
+    axes.get_figure().savefig(name + label + '.pgf')
 
 with open(getenv('csv'), 'r') as f:
     counts = DictReader(f)

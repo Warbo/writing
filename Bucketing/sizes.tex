@@ -1,9 +1,12 @@
 \begin{figure}
-  \input{images/stepped.pgf}
-  \caption{Kaplan-Meier survival plot for running QuickSpec on inputs containing
-    various numbers of definitions, sampled from TIP. Most runs finished
-    quickly, leaving a heavy tail which didn't finish within the 300 second
-    timeout.}
+  \scalebox{0.45}{\input{images/steppedall.pgf}}
+  \scalebox{0.45}{\input{images/steppednontoxic.pgf}}
+  \caption{Kaplan-Meier survival plot for running QuickSpec on inputs
+    containing various numbers of definitions, sampled from TIP. The x axis
+    denotes running time, which we cut short after 300 seconds. The height of
+    each line shows the proportion of \qspec{} runs which were still going at
+    that time (lower is better). First plot is for all TIP definitions, second
+    plot removes runs given ``toxic'' definitions.}
   \label{fig:survival}
 \end{figure}
 
@@ -21,16 +24,22 @@ of certain definitions is causing the exploration process to fail (since larger
 inputs have a higher chance of containing one of these definitions).
 
 \begin{figure}
-  \input{images/timeouts.pgf}
+  \scalebox{0.45}{\input{images/timeoutsall.pgf}}
+  \scalebox{0.45}{\input{images/timeoutsnontoxic.pgf}}
   \caption{Proportion of samples which timed out per size, with least-squares
-    linear regression.}
+    linear regression. First plot is for all TIP definitions, second removes
+    runs given ``toxic'' definitions.}
   \label{fig:tailsize}
 \end{figure}
 
 \begin{figure}
-  \input{images/proportions.pgf}
-  \caption{}
+  \scalebox{0.45}{\input{images/proportionsall.pgf}}
+  \scalebox{0.45}{\input{images/proportionsnontoxic.pgf}}
   \label{fig:proportions}
+  \caption{Definitions, ordered by the ratio of successes to failures of the
+    runs they appeared in. First graph contains all TIP definitions, showing
+    ``toxic'' definitions which always failed. Second graph only contains runs
+    without any toxic definitions.}
 \end{figure}
 
 \begin{figure}
@@ -138,9 +147,9 @@ inputs have a higher chance of containing one of these definitions).
                                (add3 x2 x3 x4))))))))))))
   \end{minted}
   \fi
-  \caption{Definitions which consistently cause \qspec{} to fail. Two other
-    definitions (\texttt{mul3} and \texttt{mul3acc}) are ommitted due to their
-    verbosity.}
+  \caption{``Toxic'' definitions, which consistently cause \qspec{} to fail. Two
+    other definitions (\texttt{mul3} and \texttt{mul3acc}) are ommitted due to
+    their verbosity.}
   \label{fig:faildefs}
 \end{figure}
 

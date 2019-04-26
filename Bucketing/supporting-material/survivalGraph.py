@@ -4,6 +4,9 @@ from os     import getenv
 from pandas import read_csv
 with open(getenv('csv'), 'r') as f:
     times = read_csv(f, header=0, index_col=0)
+
+label = getenv('label')
+
 del(getenv)
 del(read_csv)
 
@@ -11,8 +14,8 @@ from lifelines import KaplanMeierFitter
 import matplotlib.pyplot as plt
 
 def save(name, axes):
-    axes.get_figure().savefig(name + '.pdf')
-    axes.get_figure().savefig(name + '.pgf')
+    axes.get_figure().savefig(name + label + '.pdf')
+    axes.get_figure().savefig(name + label + '.pgf')
 
 axes = plt.subplot(111, label="stepped")
 kmf  = KaplanMeierFitter()
@@ -27,7 +30,10 @@ def crossValidate(name, fitter):
     from lifelines.utils import k_fold_cross_validation
     import numpy as np
     print("Cross Validating " + name)
-    print(np.mean(k_fold_cross_validation(fitter, times, duration_col='time', event_col='success')))
+    print(np.mean(k_fold_cross_validation(fitter,
+                                          times,
+                                          duration_col='time',
+                                          event_col='success')))
     print("End cross-validation of " + name)
 
 from lifelines import CoxPHFitter
