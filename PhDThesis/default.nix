@@ -7,8 +7,30 @@ with { defs = rec {
 
   tex = (texlive.combine {
     inherit (texlive)
-      csquotes csvsimple enumitem scheme-small tikzinclude type1cm;
+      algorithm2e
+      algorithmicx
+      algorithms
+      cm-super
+      csquotes
+      csvsimple
+      enumitem
+      framed      # Required by minted
+      fvextra     # Required by minted
+      ifplatform  # Required by minted
+      minted      # Code listings
+      scheme-small
+      tikz-qtree
+      tikzinclude
+      type1cm
+      xstring     # Required by minted
+      ;
   });
+
+  renderInputs = [
+    pythonPackages.pygments  # For minted
+    which                    # For minted
+    tex
+  ];
 
   isTex = path: hasSuffix ".tex" (baseNameOf path);
 
@@ -16,7 +38,7 @@ with { defs = rec {
     runCommand "${file}-${label}.pdf"
       (env // {
         inherit file src;
-        buildInputs = [ tex ];
+        buildInputs = renderInputs;
       })
       ''
         function go {
@@ -46,7 +68,7 @@ with { defs = rec {
   textWidth = runCommand "widthTex"
     {
       real        = filterSource (path: type: isTex path) ./.;
-      buildInputs = [ tex ];
+      buildInputs = renderInputs;
     }
     ''
       cp -r "$real" ./src
@@ -60,8 +82,8 @@ with { defs = rec {
         cat ./thesis.tex 1>&2
         echo "END THESIS CONTENT" 1>&2
 
-        pdflatex -interaction=nonstopmode -halt-on-error thesis | tee out ||
-          true
+        pdflatex -interaction=nonstopmode -halt-on-error --shell-escape thesis |
+          tee out || true
 
         grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < ./out |
           sed -e 's/WIDTH//g'                      |
