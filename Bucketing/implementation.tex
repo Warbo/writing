@@ -1,25 +1,71 @@
 \section{Implementation}
 \label{sec:implementation}
 
-We provide an implementation of our recurrent clustering algorithm in a tool called \textsc{ML4HS}. We obtain Core ASTs from Haskell packages using a plugin for the GHC compiler, which emits a serialised version of each Core definition as it is being compiled. This approach is more robust than, for example, parsing source files, since it avoids the complications of preprocessors and language extensions altering the syntax.
+We provide an implementation of our recurrent clustering algorithm in a tool
+called \textsc{ML4HS}. We obtain Core ASTs from Haskell packages using a plugin
+for the GHC compiler, which emits a serialised version of each Core definition
+as it is being compiled. This approach is more robust than, for example, parsing
+source files, since it avoids the complications of preprocessors and language
+extensions altering the syntax.
 
-A post-processing stage determines which Core definitions can be used by \qspec{}, based on their type, visibility (whether they are encapsulated inside their module or visible to importers), etc. For each definition, we simply use the GHCi interpreter to check if calling \qspec{} with that argument is well-typed. This information, along with type signatures, arity, etc. are stored alongside the Core definitions in JSON format.
+A post-processing stage determines which Core definitions can be used by
+\qspec{}, based on their type, visibility (whether they are encapsulated inside
+their module or visible to importers), etc. For each definition, we simply use
+the GHCi interpreter to check if calling \qspec{} with that argument is
+well-typed. This information, along with type signatures, arity, etc. are stored
+alongside the Core definitions in JSON format.
 
-The definitions are then sorted topologically, based on the non-local identifiers appearing in their ASTs, and feature vectors are constructed using a Haskell implementation of the approach described in \S \ref{sec:recurrentclustering}. Since the features associated with each identifier may vary between iterations (as the clusters change), we leave the raw identifiers in the vector so their features can be extracted in the correct context.
+The definitions are then sorted topologically, based on the non-local
+identifiers appearing in their ASTs, and feature vectors are constructed using a
+Haskell implementation of the approach described in \S
+\ref{sec:recurrentclustering}. Since the features associated with each
+identifier may vary between iterations (as the clusters change), we leave the
+raw identifiers in the vector so their features can be extracted in the correct
+context.
 
-We implement Algorithm \ref{alg:recurrent} as a simple shell script, which invokes Weka for clustering and associates each Core definition with a cluster number. These numbers are used to finish the deferred feature extraction of identifiers, the resulting feature vectors are clustered, and the process is repeated until all SCCs have been processed.
+We implement Algorithm \ref{alg:recurrent} as a simple shell script, which
+invokes Weka for clustering and associates each Core definition with a cluster
+number. These numbers are used to finish the deferred feature extraction of
+identifiers, the resulting feature vectors are clustered, and the process is
+repeated until all SCCs have been processed.
 
-Once the recurrent clustering is complete, we generate a string of Haskell code for each of the final clusters, which will invoke \qspec{} with a suitable signature. This involves:
+Once the recurrent clustering is complete, we generate a string of Haskell code
+for each of the final clusters, which will invoke \qspec{} with a suitable
+signature. This involves:
 
 \begin{itemize}
-  \item{Monomorphising}: If a value has polymorphic type, e.g. \hs{equal :: forall t. t -> t -> Bool}, we must choose a concrete representation to use (in this case for \hs{t}), in order to know which random generator to use. We take the approach used in \qcheck{} by attempting to instantiate all type variables to \hs{Integer}. Any values where this is invalid, such as those with incompatible class constraints (e.g. \hs{forall t. IsString t => t}, where \hs{Integer} does not implement \hs{IsString}) will not be included in the signature (this is checked at the AST post-processing stage).
+\item{Monomorphising}: If a value has polymorphic type, e.g. \hs{equal :: forall
+    t. t -> t -> Bool}, we must choose a concrete representation to use (in this
+  case for \hs{t}), in order to know which random generator to use. We take the
+  approach used in \qcheck{} by attempting to instantiate all type variables to
+  \hs{Integer}. Any values where this is invalid, such as those with
+  incompatible class constraints (e.g. \hs{forall t. IsString t => t}, where
+  \hs{Integer} does not implement \hs{IsString}) will not be included in the
+  signature (this is checked at the AST post-processing stage).
 
-  \item{Qualifying}: All names are \emph{qualified} (prefixed by their module's name), to avoid most ambiguity. There is still the possibility that multiple packages will declare modules of the same name, although this is rare as it causes problems for any Haskell programmer trying to use those modules. In such cases the exploration process simply aborts.
+\item{Qualifying}: All names are \emph{qualified} (prefixed by their module's
+  name), to avoid most ambiguity. There is still the possibility that multiple
+  packages will declare modules of the same name, although this is rare as it
+  causes problems for any Haskell programmer trying to use those modules. In
+  such cases the exploration process simply aborts.
 
-  \item{Appending variables}: Once a \qspec{} theory has been defined containing all of the given terms, we inspect the types it references and append three variables for each to the theory (enough to discover laws such as associativity, but not too many to overflow the limit of \qspec{}'s exhaustive search).
+\item{Appending variables}: Once a \qspec{} theory has been defined containing
+  all of the given terms, we inspect the types it references and append three
+  variables for each to the theory (enough to discover laws such as
+  associativity, but not too many to overflow the limit of \qspec{}'s exhaustive
+  search).
 
-  \item{Sandboxing}: One difficulty with Haskell's packaging infrastructure is that all required packages and modules must be provided up-front, usually by specification in a Cabal file. Since \textsc{MLSpec} builds signatures \emph{dynamically}, depending on the cluster information it is given, we do not know what packages it may need. To work around this problem, we evaluate these strings of Haskell using a custom library called \texttt{nix-eval}. This uses the Nix package manager to obtain all of the required packages and make them available to GHC.
+\item{Sandboxing}: One difficulty with Haskell's packaging infrastructure is
+  that all required packages and modules must be provided up-front, usually by
+  specification in a Cabal file. Since \textsc{MLSpec} builds signatures
+  \emph{dynamically}, depending on the cluster information it is given, we do
+  not know what packages it may need. To work around this problem, we evaluate
+  these strings of Haskell using a custom library called \texttt{nix-eval}. This
+  uses the Nix package manager to obtain all of the required packages and make
+  them available to GHC.
 
 \end{itemize}
 
-The equations resulting from evaluating these strings are collected and outputted as JSON values, to ease further processing (e.g. displaying in some form, sending to a theorem prover, etc.).
+The equations resulting from evaluating these strings are collected and
+outputted as JSON values, to ease further processing (e.g. displaying in some
+form, sending to a theorem prover, etc.).

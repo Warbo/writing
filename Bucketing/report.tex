@@ -138,15 +138,16 @@
   practice requires careful selection of definitions to avoid infeasible running
   times when more than a few dozen definitions are provided.
 
-  We analyse this selection problem by exploring sets of definitions of
-  different sizes sampled from a theorem-proving corpus, finding median running
-  times remain low but variance increases severely with size. We measure the
-  effect of selection on the number of desirable theorems that remain possible
+  We call this cherry-picking the \emph{bucketing problem}, and demonstrate its
+  necessity empirically by exploring definitions sampled from a theorem-proving
+  corpus; finding that problematic definitions severely increase the variance in
+  running time with size, despite the median remaining low. We measure the
+  effect of bucketing on the number of desirable theorems that remain possible
   to discover, finding a large gap between best- and worst-case selections,
-  indicating the potential for smart strategies to narrow-down selections
-  without impacting exploration potential too severely. We evaluate a strategy
-  for clustering definitions based on similarity, but find it performs no better
-  than random; indicating the difficulty of this open problem.
+  indicating the potential for smart bucketing strategies to avoid impacting
+  exploration potential too severely. We compare bucketing to \emph{clustering}
+  (grouping based on similarity), and find solutions to the latter perform no
+  better than random; indicating the difficulty of this open problem.
 \end{abstract}
 
 \input{intro.tex}
@@ -157,7 +158,6 @@
 \input{evaluation.tex}
 \input{related.tex}
 \input{conclusion.tex}
-%  TODO{2019-04-09}: Section that brings back ML discussion to TE is missing
 
 \bibliographystyle{plain}
 \bibliography{Bibtex}

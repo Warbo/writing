@@ -3,30 +3,78 @@
 
 \subsection{Theory Exploration}
 
-We briefly described theory exploration in \S \ref{sec:theoryexploration}, as the task of discovering \emph{new} theorems in a software or proof library, rather than proving/disproving user-provided statements. This general idea dates back at least to the 1970s, most famously to work by Lenat \cite{lenat1977automated}, though the theory exploration tools used in functional programming trace their roots back to the interactive \textsc{Theorema} \cite{buchberger2000theory} system of Buchberger.
+We briefly described theory exploration in \S \ref{sec:theoryexploration}, as
+the task of discovering \emph{new} theorems in a software or proof library,
+rather than proving/disproving user-provided statements. This general idea dates
+back at least to the 1970s, most famously to work by Lenat
+\cite{lenat1977automated}, though the theory exploration tools used in
+functional programming trace their roots back to the interactive
+\textsc{Theorema} \cite{buchberger2000theory} system of Buchberger.
 
-As well as \qspec{} and \hspec{} in Haskell, automated theory exploration has been applied to Isabelle \cite{Montano-Rivas.McCasland.Dixon.ea:2012} \cite{johansson2009isacosy} \cite{Hipster}. Since \qspec{} is used for conjecture generation in many of these systems, they may also benefit from our machine learning approach.
+As well as \qspec{} and \hspec{} in Haskell, automated theory exploration has
+been applied to Isabelle \cite{Montano-Rivas.McCasland.Dixon.ea:2012}
+\cite{johansson2009isacosy} \cite{Hipster}. Since \qspec{} is used for
+conjecture generation in many of these systems, they may also benefit from our
+machine learning approach.
 
 \subsection{Relevance Filtering}
 \label{sec:relevance}
 
-The idea of \emph{relevance filtering} (or, \emph{premise selection}) is to reduce the search space of a theorem proving task by removing redundant or irrelevant information (axioms, definitions, lemmas, etc.) from the input. Our restriction of theory exploration to intelligently-selected clusters of symbols, rather than whole libraries at a time, is essentially the same idea applied in a novel setting.
+The idea of \emph{relevance filtering} (or, \emph{premise selection}) is to
+reduce the search space of a theorem proving task by removing redundant or
+irrelevant information (axioms, definitions, lemmas, etc.) from the input. Our
+restriction of theory exploration to intelligently-selected clusters of symbols,
+rather than whole libraries at a time, is essentially the same idea applied in a
+novel setting.
 
-The technique is used in Isabelle's Sledgehammer tool, during its translation of Isabelle/HOL theories to statements in first order logic: rather than translating the entire theory, only a sub-set of relevant clauses are included. This reduces the size of the problem and speeds up the proof search, but it creates the new problem of determining when a clause is relevant: how do we know what will be required, before we have the proof?
+The technique is used in Isabelle's Sledgehammer tool, during its translation of
+Isabelle/HOL theories to statements in first order logic: rather than
+translating the entire theory, only a sub-set of relevant clauses are
+included. This reduces the size of the problem and speeds up the proof search,
+but it creates the new problem of determining when a clause is relevant: how do
+we know what will be required, before we have the proof?
 
-The original approach uses the proportion of symbols which a clause has in common with the problem statement \cite{meng2009lightweight} (plus various heuristics), although various alternatives have been proposed in the literature \cite{kuhlwein2013mash} \cite{kuhlwein2012overview} \cite{alama2014premise}.
+The original approach uses the proportion of symbols which a clause has in
+common with the problem statement \cite{meng2009lightweight} (plus various
+heuristics), although various alternatives have been proposed in the literature
+\cite{kuhlwein2013mash} \cite{kuhlwein2012overview} \cite{alama2014premise}.
 
 \subsection{Recurrent Clustering}
 \label{sec:clusteringexpressions}
 
-Our recurrent clustering algorithm is similar to that of ML4PG, as our transformation maps the elements of a syntax tree to distinct cells in a matrix. In contrast, the matrices produced by ACL2(ml) \emph{summarise} the tree elements: providing, for each level of the tree, the number of variables, nullary symbols, unary symbols, etc.
+Our recurrent clustering algorithm is similar to that of ML4PG, as our
+transformation maps the elements of a syntax tree to distinct cells in a
+matrix. In contrast, the matrices produced by ACL2(ml) \emph{summarise} the tree
+elements: providing, for each level of the tree, the number of variables,
+nullary symbols, unary symbols, etc.
 
-Unlike ML4PG, our algorithm can handle mutually-recursive definitions, but it also ignores types. This is because obtaining the type of each component of a Core definition is more difficult than in ML4PG (which queries the current \textsc{Proof General} state), and is left for future work.
+Unlike ML4PG, our algorithm can handle mutually-recursive definitions, but it
+also ignores types. This is because obtaining the type of each component of a
+Core definition is more difficult than in ML4PG (which queries the current
+\textsc{Proof General} state), and is left for future work.
 
-The way we \emph{use} our clusters to inform theory exploration is actually more similar to that of ACL2(ml) than ML4PG. ML4PG can either present clusters to the user for inspection, or produce automata for recreating proofs. In ACL2(ml), the clusters are used to restrict the search space of a proof search, much like we restrict the scope of theory exploration.
+The way we \emph{use} our clusters to inform theory exploration is actually more
+similar to that of ACL2(ml) than ML4PG. ML4PG can either present clusters to the
+user for inspection, or produce automata for recreating proofs. In ACL2(ml), the
+clusters are used to restrict the search space of a proof search, much like we
+restrict the scope of theory exploration.
 
 \subsection{Feature Extraction}
 
-One major difficulty when applying statistical machine learning algorithms to \emph{languages}, such as Haskell, is the appearance of recursive structures. This can lead to nested expressions of arbitrary depth, which are difficult to compare in numerical ways. One common approach to this problem is to represent such structures as \emph{sequences}. \emph{Recurrent neural networks} (RNNs) are a popular choice for processing sequences, especially when combined with mechanisms such as \emph{long short-term memory} (LSTM) for preserving information across long sequences \cite{hochreiter1997long}. Such systems have been used, for example, to parse and execute computer programs \cite{zaremba2014learning}. However, learning to parse sequences seems inefficient considering that we already have correctly-parsed ASTs.
+One major difficulty when applying statistical machine learning algorithms to
+\emph{languages}, such as Haskell, is the appearance of recursive
+structures. This can lead to nested expressions of arbitrary depth, which are
+difficult to compare in numerical ways. One common approach to this problem is
+to represent such structures as \emph{sequences}. \emph{Recurrent neural
+  networks} (RNNs) are a popular choice for processing sequences, especially
+when combined with mechanisms such as \emph{long short-term memory} (LSTM) for
+preserving information across long sequences \cite{hochreiter1997long}. Such
+systems have been used, for example, to parse and execute computer programs
+\cite{zaremba2014learning}. However, learning to parse sequences seems
+inefficient considering that we already have correctly-parsed ASTs.
 
-Whilst neural networks have been applied directly to recursive structures \cite{goller1996learning}, including using LSTM \cite{zhu2015long}, a more popular approach is to use \emph{kernel methods} \cite{bakir2007predicting}. These are promising as a more principled alternative to our current hand-crafted translation of ASTs to vectors.
+Whilst neural networks have been applied directly to recursive structures
+\cite{goller1996learning}, including using LSTM \cite{zhu2015long}, a more
+popular approach is to use \emph{kernel methods}
+\cite{bakir2007predicting}. These are promising as a more principled alternative
+to our current hand-crafted translation of ASTs to vectors.

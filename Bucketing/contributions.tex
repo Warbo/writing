@@ -4,14 +4,33 @@
 \subsection{Recurrent Clustering}
 \label{sec:recurrentclustering}
 
-Rather than clustering Core expressions directly, we first perform \emph{feature extraction} to transform them into numeric \emph{feature vectors}. We adapt the methodology of \emph{recurrent clustering} proposed in \cite{DBLP:journals/corr/HerasK14} \cite{heras2013proof}, which combines feature extraction and clustering into a single recursive algorithm, such that the feature vector of an expression depends on the feature vectors of those expressions it references. We suggest a new recurrent clustering and feature extraction algorithm for Haskell (shown in Algorithm \ref{alg:recurrent}) and compare its similarity and differences to those of ML4PG and ACL2(ml).
+Rather than clustering Core expressions directly, we first perform \emph{feature
+  extraction} to transform them into numeric \emph{feature vectors}. We adapt
+the methodology of \emph{recurrent clustering} proposed in
+\cite{DBLP:journals/corr/HerasK14} \cite{heras2013proof}, which combines feature
+extraction and clustering into a single recursive algorithm, such that the
+feature vector of an expression depends on the feature vectors of those
+expressions it references. We suggest a new recurrent clustering and feature
+extraction algorithm for Haskell (shown in Algorithm \ref{alg:recurrent}) and
+compare its similarity and differences to those of ML4PG and ACL2(ml).
 
-We describe our algorithm in two stages: the first transforms the nested structure of expressions into a flat vector representation; the second converts the discrete symbols of Core syntax into features (real numbers), which we will denote using the function $\phi$.
+We describe our algorithm in two stages: the first transforms the nested
+structure of expressions into a flat vector representation; the second converts
+the discrete symbols of Core syntax into features (real numbers), which we will
+denote using the function $\phi$.
 
 \subsubsection{Expressions to Vectors}
 \label{sec:expressionstovectors}
 
-Our recurrent clustering algorithm is based on k-means clustering, which considers the elements of a feature vector to be \emph{orthogonal}. Hence we must ensure that similar expressions not only give rise to similar numerical values, but crucially that these values appear \emph{at the same position} in the feature vectors. Since different patterns of nesting can alter the ``shape'' of expressions, simple traversals (breadth-first, depth-first, post-order, etc.) may cause features from equivalent sub-expressions to be mis-aligned. For example, consider the following expressions, which represent pattern-match clauses with different patterns but the same body (\hs{\vlocal{y}}):
+Our recurrent clustering algorithm is based on k-means clustering, which
+considers the elements of a feature vector to be \emph{orthogonal}. Hence we
+must ensure that similar expressions not only give rise to similar numerical
+values, but crucially that these values appear \emph{at the same position} in
+the feature vectors. Since different patterns of nesting can alter the ``shape''
+of expressions, simple traversals (breadth-first, depth-first, post-order, etc.)
+may cause features from equivalent sub-expressions to be mis-aligned. For
+example, consider the following expressions, which represent pattern-match
+clauses with different patterns but the same body (\hs{\vlocal{y}}):
 
 \begin{equation}\label{eq:xy}
   \begin{array}{r@{}l@{}l@{}}
@@ -20,7 +39,9 @@ Our recurrent clustering algorithm is based on k-means clustering, which conside
   \end{array}
 \end{equation}
 
-If we traverse these expressions in breadth-first order, converting each token to a feature using $\phi$ and padding to the same length with $0$, we would get the following feature vectors:
+If we traverse these expressions in breadth-first order, converting each token
+to a feature using $\phi$ and padding to the same length with $0$, we would get
+the following feature vectors:
 
 \begin{small}
   \begin{equation}
@@ -97,13 +118,41 @@ To perform this flattening we first transform the nested tokens of an expression
 These rose trees are then turned into matrices, as shown in Figure \ref{fig:matrixexample}. Each row $i$ of the matrix contains the features at depth $i$ in the rose tree, read left-to-right, followed by any required padding. These matrices are then either truncated, or padded with rows (on the bottom) or columns (on the right) of zeros, to fit a fixed size $r \times c$.
 
 \begin{sloppypar}
-Finally, matrices are turned into vectors by concatenating the rows from top to bottom, hence Figure \ref{fig:matrixexample} will produce a vector beginning $(\feature{\CLam}, 0, 0, 0, 0, 0, \feature{\id{a}}, \feature{\CCase}, 0, 0, 0, 0, \feature{\CVar}, \feature{\id{b}}, \feature{\CAlt}, \feature{\CAlt}, \dots$.
+  Finally, matrices are turned into vectors by concatenating the rows from top
+  to bottom, hence Figure \ref{fig:matrixexample} will produce a vector
+  beginning
+  $(\feature{\CLam} ,
+    0               ,
+    0               ,
+    0               ,
+    0               ,
+    0               ,
+    \feature{\id{a}},
+    \feature{\CCase},
+    0               ,
+    0               ,
+    0               ,
+    0               ,
+    \feature{\CVar} ,
+    \feature{\id{b}},
+    \feature{\CAlt} ,
+    \feature{\CAlt} ,
+    \dots$.
 \end{sloppypar}
 
 \subsubsection{Symbols to Features}
 \label{sec:symbolstofeatures}
 
-We now define the function $\phi$, which turns terminal symbols of Core syntax into features (real numbers). For known language features, such as $\feature{\CLam}$ and $\feature{\CCase}$, we can enumerate the possibilities and assign a value to each, in a similar way to \cite{DBLP:journals/corr/HerasK14} in Coq. We use a constant $\alpha$ to separate these values from those of other tokens (e.g. identifiers), but the order is essentially arbitrary: \footnote{In \cite{DBLP:journals/corr/HerasK14}, ``similar'' Gallina tokens like \coq{fix} and \coq{cofix} are grouped together to reduce redundancy; we do not group tokens, but we do put ``similar'' tokens close together, such as \CLocal\ and \CGlobal.}
+We now define the function $\phi$, which turns terminal symbols of Core syntax
+into features (real numbers). For known language features, such as
+$\feature{\CLam}$ and $\feature{\CCase}$, we can enumerate the possibilities and
+assign a value to each, in a similar way to \cite{DBLP:journals/corr/HerasK14}
+in Coq. We use a constant $\alpha$ to separate these values from those of other
+tokens (e.g. identifiers), but the order is essentially arbitrary: \footnote{In
+  \cite{DBLP:journals/corr/HerasK14}, ``similar'' Gallina tokens like \coq{fix}
+  and \coq{cofix} are grouped together to reduce redundancy; we do not group
+  tokens, but we do put ``similar'' tokens close together, such as \CLocal\ and
+  \CGlobal.}
 
 \begin{equation} \label{eq:feature}
   \begin{aligned}
@@ -129,7 +178,10 @@ We now define the function $\phi$, which turns terminal symbols of Core syntax i
   \end{aligned}
 \end{equation}
 
-To encode \emph{local} identifiers $\mathcal{L}$ we would like a quantity which gives equal values for $\alpha$-equivalent expressions (i.e. renaming an identifier shouldn't affect the feature). To do this, we use the \emph{de Bruijn index} of the identifier \cite{de1972lambda}, denoted $i_l$:
+To encode \emph{local} identifiers $\mathcal{L}$ we would like a quantity which
+gives equal values for $\alpha$-equivalent expressions (i.e. renaming an
+identifier shouldn't affect the feature). To do this, we use the \emph{de Bruijn
+  index} of the identifier \cite{de1972lambda}, denoted $i_l$:
 
 \begin{equation} \label{eq:localfeature}
   \feature{l} = i_l + 2 \alpha \quad \text{if $l \in \mathcal{L}$}
@@ -137,9 +189,18 @@ To encode \emph{local} identifiers $\mathcal{L}$ we would like a quantity which 
 
 We again use $\alpha$ to separate these features from those of other constructs.
 
-We discard the contents of literals and constructor identifiers when converting to rose trees, so the only remaining case is global identifiers $\mathcal{G}$. Since these are declared \emph{outside} the body of an expression, we cannot perform the same indexing trick as for local identifiers. We also cannot directly encode the form of the identifiers, e.g. using a scheme like G{\"o}del numbering, since this is essentially arbitrary and has no effect on their semantic meaning (referencing other expressions).
+We discard the contents of literals and constructor identifiers when converting
+to rose trees, so the only remaining case is global identifiers
+$\mathcal{G}$. Since these are declared \emph{outside} the body of an
+expression, we cannot perform the same indexing trick as for local
+identifiers. We also cannot directly encode the form of the identifiers,
+e.g. using a scheme like G{\"o}del numbering, since this is essentially
+arbitrary and has no effect on their semantic meaning (referencing other
+expressions).
 
-Instead, we use the approach taken in the latest versions of ML4PG and encode global identifiers \emph{indirectly}, by looking up the expressions which they \emph{reference}:
+Instead, we use the approach taken in the latest versions of ML4PG and encode
+global identifiers \emph{indirectly}, by looking up the expressions which they
+\emph{reference}:
 
 \begin{equation} \label{eq:globalfeature}
   \feature{g \in \mathcal{G}} =
@@ -149,21 +210,31 @@ Instead, we use the approach taken in the latest versions of ML4PG and encode gl
     \end{cases}
 \end{equation}
 
-Where $C_i$ are our clusters (in some arbitrary order). This is where the recurrent nature of the algorithm appears: to determine the contents of $C_i$, we must perform k-means clustering \emph{during} feature extraction; yet that clustering step, in turn, requires that we perform feature extraction.
+Where $C_i$ are our clusters (in some arbitrary order). This is where the
+recurrent nature of the algorithm appears: to determine the contents of $C_i$,
+we must perform k-means clustering \emph{during} feature extraction; yet that
+clustering step, in turn, requires that we perform feature extraction.
 
-For this recursive process to be well-founded, we perform a topological sort on declarations based on their dependencies (the expressions they reference). In this way, we can avoid looking up expressions which haven't been clustered yet. To handle mutual recursion we use Tarjan's algorithm \cite{tarjan1972depth} to produce a sorted list of \emph{strongly connected components} (SCCs), where each SCC is a mutually-recursive sub-set of the declarations. If an identifier cannot be found amongst those clustered so far, it must appear in the same SCC as the expression we are processing; hence we give that identifier the constant feature value $f_{recursion}$.
-
-By working through the sorted list of SCCs, storing the features of each top-level expression as they are calculated, our algorithm can be computed \emph{iteratively} rather than recursively, as shown in Algorithm \ref{alg:recurrent}.
+For this recursive process to be well-founded, we perform a topological sort on
+declarations based on their dependencies (the expressions they reference). In
+this way, we can avoid looking up expressions which haven't been clustered
+yet. To handle mutual recursion we use Tarjan's algorithm \cite{tarjan1972depth}
+to produce a sorted list of \emph{strongly connected components} (SCCs), where
+each SCC is a mutually-recursive sub-set of the declarations. If an identifier
+cannot be found amongst those clustered so far, it must appear in the same SCC
+as the expression we are processing; hence we give that identifier the constant
+feature value $f_{recursion}$.
 
 \begin{algorithm}
   \begin{algorithmic}[1]
-    \Require List $d$ contains SCCs of (identifier, expression) pairs, in dependency order.
+    \Require List $d$ contains SCCs of (identifier, expression) pairs, in
+    dependency order.
     \Procedure{RecurrentCluster}{}
-      \State $\vect{C}  \gets []$
+      \State $\vect{C} \gets []$
       \State $DB \gets \varnothing$
       \ForAll{$scc$ \textbf{in} $d$}
         \State $DB \gets DB \cup \{(i, featureVec(e)) \mid (i, e) \in scc\}$
-        \State $\vect{C}  \gets kMeans(DB)$
+        \State $\vect{C} \gets kMeans(DB)$
       \EndFor
       \Return $\vect{C}$
     \EndProcedure
@@ -172,26 +243,53 @@ By working through the sorted list of SCCs, storing the features of each top-lev
   \label{alg:recurrent}
 \end{algorithm}
 
+By working through the sorted list of SCCs, storing the features of each
+top-level expression as they are calculated, our algorithm can be computed
+\emph{iteratively} rather than recursively, as shown in Algorithm
+\ref{alg:recurrent}.
+
 \iffalse
 As an example of this recurrent process, we can consider the Peano arithmetic functions from Figure \ref{fig:coreexample}. A valid topological ordering is given in Figure \ref{fig:sccexample}, which can be our value for $d$ (eliding Core expressions to save space):
 
 \begin{equation}
-  d = [\{(\hs{plus}, \dots)\}, \{(\hs{odd}, \dots), (\hs{even}, \dots)\}, \{(\hs{mult}, \dots)\}]
+  d = [\{(\hs{plus}, \dots)\},
+       \{(\hs{odd}, \dots), (\hs{even}, \dots)\},
+       \{(\hs{mult}, \dots)\}]
 \end{equation}
 
 We can then trace the execution of Algorithm \ref{alg:recurrent} as follows:
 
 \begin{itemize}
-  \item The first iteration through \textsc{RecurrentCluster}'s loop will set $scc \gets \{(\hs{plus}, \dots)\}$.
-  \item With $i = \hs{plus}$ and $e$ as its Core expression, calculating $featureVec(e)$ is straightforward; the recursive call $\feature{\hs{plus}}$ will become $f_{recursion}$ (since \hs{plus} doesn't appear in $\vect{C}$).
-  \item The call to $kMeans$ will produce $\vect{C} \gets [\{\hs{plus}\}]$, i.e. a single cluster containing \hs{plus}.
-  \item The next iteration will set $scc \gets \{(\hs{odd}, \dots), (\hs{even}, \dots)\}$.
-  \item With $i = \hs{odd}$ and $e$ as its Core expression, the call to \hs{even} will result in $f_{recursion}$.
-  \item Likewise for the call to $\hs{even}$ when $i = \hs{odd}$.
-  \item Since the feature vectors for \hs{odd} and \hs{even} will be identical, $kMeans$ will put them in the same cluster. To avoid the degenerate case of a single cluster, for this example we will assume that $k = 2$; in which case the other cluster must contain \hs{plus}. Their order is arbitrary, so one possibility is $\vect{C} = [\{\hs{odd}, \hs{even}\}, \{\hs{plus}\}]$.
-  \item Finally \hs{mult} will be clustered. The recursive call will become $f_{recursion}$ whilst the call to \hs{plus} will become $2 + 3 \alpha$, since $\hs{plus} \in C_2$.
-  \item \begin{sloppypar}Again assuming that $k = 2$, the resulting clusters will be \mbox{$\vect{C} \gets [\{\hs{odd}, \hs{even}\}, \{\hs{plus}, \hs{mult}\}]$}.\end{sloppypar}
+\item The first iteration through \textsc{RecurrentCluster}'s loop will set
+  $scc \gets \{(\hs{plus}, \dots)\}$.
+\item With $i = \hs{plus}$ and $e$ as its Core expression, calculating
+  $featureVec(e)$ is straightforward; the recursive call $\feature{\hs{plus}}$
+  will become $f_{recursion}$ (since \hs{plus} doesn't appear in $\vect{C}$).
+\item The call to $kMeans$ will produce $\vect{C} \gets [\{\hs{plus}\}]$, i.e. a
+  single cluster containing \hs{plus}.
+\item The next iteration will set
+  $scc \gets \{(\hs{odd}, \dots), (\hs{even}, \dots)\}$.
+\item With $i = \hs{odd}$ and $e$ as its Core expression, the call to \hs{even}
+  will result in $f_{recursion}$.
+\item Likewise for the call to $\hs{even}$ when $i = \hs{odd}$.
+\item Since the feature vectors for \hs{odd} and \hs{even} will be identical,
+  $kMeans$ will put them in the same cluster. To avoid the degenerate case of a
+  single cluster, for this example we will assume that $k = 2$; in which case
+  the other cluster must contain \hs{plus}. Their order is arbitrary, so one
+  possibility is $\vect{C} = [\{\hs{odd}, \hs{even}\}, \{\hs{plus}\}]$.
+\item Finally \hs{mult} will be clustered. The recursive call will become
+  $f_{recursion}$ whilst the call to \hs{plus} will become $2 + 3 \alpha$, since
+  $\hs{plus} \in C_2$.
+\item \begin{sloppypar}Again assuming that $k = 2$, the resulting clusters will
+    be
+    \mbox{$\vect{C} \gets [\{\hs{odd}, \hs{even}\}, \{\hs{plus},
+      \hs{mult}\}]$}.\end{sloppypar}
 \end{itemize}
 
-Even in this very simple example we can see a few features of our algorithm emerge. For example, \hs{odd} and \hs{even} will always appear in the same cluster, since they only differ in their choice of constructor names (which are discarded by $toTree$) and recursive calls (which are replaced by $f_{recursion}$). A more extensive investigation of these features requires a concrete implementation, in particular to pin down values for the parameters such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.
-\fi
+Even in this very simple example we can see a few features of our algorithm
+emerge. For example, \hs{odd} and \hs{even} will always appear in the same
+cluster, since they only differ in their choice of constructor names (which are
+discarded by $toTree$) and recursive calls (which are replaced by
+$f_{recursion}$). A more extensive investigation of these features requires a
+concrete implementation, in particular to pin down values for the parameters
+such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.  \fi

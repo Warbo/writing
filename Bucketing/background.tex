@@ -16,8 +16,8 @@ has been tackled extensively in the literature~\cite{colton2000notion}.
 
 We will follow the tradition of prior practitioners and use an existing
 corpus of theorems as a \emph{ground truth} against which to compare results.
-Prior work has used libraries of the \textsc{Isabelle/HOL} proof assistant as a
-ground
+Existing work has used libraries of the \textsc{Isabelle/HOL} proof assistant as
+a ground
 truth~\cite{Montano-Rivas.McCasland.Dixon.ea:2012,johansson2009isacosy,claessen2013automating},
 but these only contained a few definitions and theorems each. To analyse
 behaviour on a larger scale, as required to study the effects of bucketing, we
@@ -156,13 +156,32 @@ have the potential to give rise to many equations.
 \subsection{Clustering}
 \label{sec:clustering}
 
-Our approach to scaling up \qspec{} takes inspiration from two sources. The first is relevance filtering, which makes expensive algorithms used in theorem proving more practical by only considering clauses deemed ``relevant'' to the problem \cite{meng2009lightweight}.
+Our approach to scaling up \qspec{} takes inspiration from two sources. The
+first is relevance filtering, which makes expensive algorithms used in theorem
+proving more practical by only considering clauses deemed ``relevant'' to the
+problem \cite{meng2009lightweight}.
 
-Relevance is determined by comparing clauses to the target theorem, but theory exploration does not have such a distinguished term. Instead, we are interested in relationships between \emph{all} terms in a signature, and hence we need a different algorithm for considering the relevance of \emph{all terms} to \emph{all other terms}.
+Relevance is determined by comparing clauses to the target theorem, but theory
+exploration does not have such a distinguished term. Instead, we are interested
+in relationships between \emph{all} terms in a signature, and hence we need a
+different algorithm for considering the relevance of \emph{all terms} to
+\emph{all other terms}.
 
-A natural fit for this task is \emph{clustering}, which attempts to group similar inputs together in an unsupervised way. Based on their success in discovering relationships and patterns between expressions in Coq and ACL2 (in the ML4PG and ACL2(ml) tools respectively), we hypothesise that clustering methods can fulfil the role of relevance filters for theory exploration: intelligently breaking up large signatures into smaller ones more amenable to brute force enumeration, such that related expressions are explored together.
+A natural fit for this task is \emph{clustering}, which attempts to group
+similar inputs together in an unsupervised way. Based on their success in
+discovering relationships and patterns between expressions in Coq and ACL2 (in
+the ML4PG and ACL2(ml) tools respectively), we hypothesise that clustering
+methods can fulfil the role of relevance filters for theory exploration:
+intelligently breaking up large signatures into smaller ones more amenable to
+brute force enumeration, such that related expressions are explored together.
 
-Due to its use by ML4PG and ACL2(ml), we use \emph{k-means} clustering, implemented in the Weka tool \cite{Holmes.Donkin.Witten:1994} by Lloyd's algorithm \cite{lloyd1982least}, with randomly-selected input elements as the initial clusters. Rather than relying on the user to provide the number of clusters $k$, we use the ``rule of thumb'' given in \cite[pp. 365]{mardia1979multivariate} of clustering $n$ data points into $k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
+Due to its use by ML4PG and ACL2(ml), we use \emph{k-means} clustering,
+implemented in the Weka tool \cite{Holmes.Donkin.Witten:1994} by Lloyd's
+algorithm \cite{lloyd1982least}, with randomly-selected input elements as the
+initial clusters. Rather than relying on the user to provide the number of
+clusters $k$, we use the ``rule of thumb'' given in
+\cite[pp. 365]{mardia1979multivariate} of clustering $n$ data points into
+$k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
 
 \subsection{The Bucketing Problem}
 \label{sec:bucketing}
