@@ -26,19 +26,20 @@
  - End-to-end automation for property discovery
  - Runtime evaluation of Haskell code with dynamic dependencies
  - Framework for automated selection of property discovery/conjecture generation
-   inputs ("bucketing")
+   inputs ("signature selection")
  - Implementation of "recurrent clustering" for arbitrary tree structures
    (including application to Haskell Core ASTs)
  - Implementation of circular convolution for arbitrary tree structures
- - Experimental analysis of bucketing via recurrent clustering, compared to a
-   (pseudo-)randomised control.
+ - Experimental analysis of signature selection via recurrent clustering,
+   compared to a (pseudo-)randomised control.
 
 ## Future Directions
 
  - Automated generation of high-level peephole optimisation (via profiling)
  - Abstraction/interface/concept discovery by data mining properties (e.g. via
    anti-unification)
- - On-the-fly input selection, rather than up-front bucketing + brute force
+ - On-the-fly input selection, rather than up-front signature selection + brute
+   force
  - Representation learning (e.g. adversarial networks, posing/proving)
  - Integrating types into the reasoning (not sure quite how yet; other than just
    annotating the trees with extra nodes).
