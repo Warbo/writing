@@ -2,7 +2,11 @@
 
 \section{Core Syntax}\label{sec:core}
 
-The GHC Core language is based on \fc{}, and described in detail in \cite[Appendix C]{sulzmann2007system}. For our machine learning purposes we are mostly interested in the syntax of reducible expressions (representing Haskell of the form \hs{f a b \dots = \dots}), and use the simplified syntax given below in BNF style ($[]$ and $(,)$ denote repetition and grouping, respectively):
+The GHC Core language is based on \fc{}, and described in detail in
+\cite[Appendix C]{sulzmann2007system}. For our machine learning purposes we are
+mostly interested in the syntax of reducible expressions (representing Haskell
+of the form \hs{f a b \dots = \dots}), and use the simplified syntax given below
+in BNF style ($[]$ and $(,)$ denote repetition and grouping, respectively):
 
 \begin{equation}\label{fig:coresyntax}
   \begin{split}
@@ -36,13 +40,33 @@ Where:
   $\mathcal{D}$ & constructor identifiers
 \end{tabular}
 
-The full Core language emitted by GHC (as of version 7.10.2, the latest at the time of writing) is translated automatically to this simplified form prior to recurrent clustering. Our major restriction is to ignore type-level entities (such as datatype definitions, explicit casts, and differences between types/kinds/coercions). Our implementation also handles several other forms of literal (machine words of various sizes, individual characters, etc.), but we omit them here for brevity as their treatment is similar to those of strings and numerals.
+The full Core language emitted by GHC (as of version 7.10.2, the latest at the
+time of writing) is translated automatically to this simplified form prior to
+recurrent clustering. Our major restriction is to ignore type-level entities
+(such as datatype definitions, explicit casts, and differences between
+types/kinds/coercions). Our implementation also handles several other forms of
+literal (machine words of various sizes, individual characters, etc.), but we
+omit them here for brevity as their treatment is similar to those of strings and
+numerals.
 
 \section{Rose Trees}\label{sec:rosetree}
 
-The $toTree$ function shown below transforms Core expressions, described in Appendix \ref{sec:core} to rose trees. We follow the presentation in \cite{blundell2012bayesian} and define rose trees recursively as follows: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and $T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}.
+The $toTree$ function shown below transforms Core expressions, described in
+Appendix \ref{sec:core} to rose trees. We follow the presentation in
+\cite{blundell2012bayesian} and define rose trees recursively as follows: $T$ is
+a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and
+$T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the
+\emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where
+$n_T = 0$ are \emph{leaves}.
 
-The recursive definition is mostly routine; each repeated element (shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors have no internal structure for us to compare; they can only be compared based on their types, which we do not currently support. We also ignore values from $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\phi$, and we conjecture that the effect of such ``magic values'' on clustering real code is low.
+The recursive definition is mostly routine; each repeated element (shown as
+$\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply
+$toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors
+have no internal structure for us to compare; they can only be compared based on
+their types, which we do not currently support. We also ignore values from
+$\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\phi$,
+and we conjecture that the effect of such ``magic values'' on clustering real
+code is low.
 
 %\begin{figure}
   \begin{align*}\label{fig:totree}
