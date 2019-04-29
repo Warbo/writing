@@ -6,14 +6,14 @@ non-critical systems, the level of confidence it provides is rather low, and
 totally inadequate for many (e.g. life-) critical systems. To see why, consider
 the following Haskell function, along with some unit tests:
 
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-factorial 0 = 1
-factorial n = n * factorial (n-1)
+\begin{haskell}
+  factorial 0 = 1
+  factorial n = n * factorial (n-1)
 
-fact_base      = factorial 0 == factorial 1
-fact_increases = factorial 3 <= factorial 4
-fact_div       = factorial 4 == factorial 5 `div` 5
-\end{lstlisting}
+  fact_base      = factorial 0 == factorial 1
+  fact_increases = factorial 3 <= factorial 4
+  fact_div       = factorial 4 == factorial 5 `div` 5
+\end{haskell}
 
 The intent of the function is to map an input $n$ to an output $n!$. The tests
 check a few properties of the implementation, including the base case, that the
@@ -32,13 +32,13 @@ If we do manage to spot this error, we might capture it in a \emph{regression
   test} and update the definition of \hs{factorial} to handle negative numbers,
 e.g. by taking their absolute value:
 
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+\begin{haskell}
 factorial 0 = 1
 factorial n = let nPos = abs n
                in nPos * factorial (nPos - 1)
 
 fact_neg = factorial 1 == factorial (-1)
-\end{lstlisting}
+\end{haskell}
 
 However, this is \emph{still} not enough, since this function will also accept
 fractional values\footnote{Since we only use generic numeric operations, the

@@ -61,6 +61,8 @@ with { defs = rec {
     inherit bibtex tex textWidth;
   };
 
+  bucketingSupport = import ./support-for-bucketing;
+
   # Render a "dummy" version of the thesis which has all of the same styling
   # but just spits out the text width to stdout. We capture this and write
   # it to a file, so the figure generators can read it and set the correct
@@ -97,12 +99,16 @@ with { defs = rec {
       inherit file;
       src  = filterSource (path: type: isTex path) ./.;
       env  = {
-        commands = with benchmarkSupport; with comparison; ''
-          for D in "${graphs.graphs}" "${qualityComparison}" "${timeComparison}"
+        commands = ''
+          for D in "${benchmarkSupport.graphs.graphs}"                \
+                   "${benchmarkSupport.comparison.qualityComparison}" \
+                   "${benchmarkSupport.comparison.timeComparison}"
           do
             echo "Putting '$D' in place" 1>&2
             cp -rs "$D"/* ./
           done
+
+          ln -s "${bucketingSupport.images}" ./images
 
           ln -sv "${bibtex}" ./Bibtex.bib
 
@@ -120,14 +126,16 @@ with { defs = rec {
 
   thesis = renderSection "thesis";
 
-  pdfs = attrsToDirs {
+  pdfs = withDeps (allDrvsIn tests) (attrsToDirs {
     "outline.pdf" = outline;
     "thesis.pdf"  = thesis;
 
     # Individual sections
     "litreview.pdf"  = renderSection "litreview";
     "background.pdf" = renderSection "background";
-  };
+  });
+
+  tests = callPackage ./supporting-material/tests.nix {};
 
 }; };
 

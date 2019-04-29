@@ -117,29 +117,29 @@ of \hs{t} and \hs{op}.
   guarantees than are available just in their types. For example, a module may
   represent email addresses in the following way:
 
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth, upquote=true]
-module Email (Email(), at, render) where
+  \begin{haskell}
+    module Email (Email(), at, render) where
 
-data Email = E String String
+    data Email = E String String
 
-render :: Email -> String
-render (E u h) = u ++ "@" ++ h
+    render :: Email -> String
+    render (E u h) = u ++ "@" ++ h
 
-at :: String -> String -> Maybe Email
-at "" h  = Nothing
-at u  "" = Nothing
-at u  h  = Just (E u h)
-\end{lstlisting}
+    at :: String -> String -> Maybe Email
+    at "" h  = Nothing
+    at u  "" = Nothing
+    at u  h  = Just (E u h)
+  \end{haskell}
 
-The \hs{Email} type guarantees that its elements have both a user part and a
-host part (modulo divergence), but it does not provide any guarantees about
-those parts. We also define the \hs{at} function, a so-called ``smart
-constructor'', which has the additional guarantee that the \hs{Email}s it
-returns contain non-empty \hs{String}s. By ommitting the \hs{E} constructor from
-the export list on the first line \footnote{The syntax \hs{Email()} means we're
-  exporting the \hs{Email} type, but not any of its constructors.}, the only way
-\emph{other} modules can create an \hs{Email} is by using \hs{at}, which forces
-the non-empty guarantee to hold globally.
+  This \hs{Email} type can be constructed in two ways: directly, via the \hs{E}
+  constructor, which requires both a user part and a host part (both
+  \hs{String}s, for simplicity); or indirectly, via the \hs{at} function, which
+  will only call \hs{E} if both \hs{String}s are non-empty (a programming
+  pattern known as a ``smart constructor''). The export list in the first line
+  contains the \hs{at} function, but not the \hs{E} constructor~\footnote{The
+    syntax \hs{Email()} means we're exporting the \hs{Email} type, but not any
+    of its constructors.}, so any code using this module is only able to create
+  \hs{Email} values with non-empty parts.
 
 \end{description}
 
@@ -167,12 +167,14 @@ languages or theorem proving systems, include:
   repositories like \href{http://hackage.haskell.org}{Hackage}, with which we
   can experiment.
 
-\item The existence of theory exploration systems such as \hspec{}, and related
-  tools which we can to re-use, including conjecture generators like \qspec{}
-  and \textsc{Speculate}; counterexample finders like \qcheck{}, \textsc{SmallCheck},
-  \textsc{SmartCheck}, \textsc{LeanCheck}, \textsc{Hedgehog}, etc.; theorem
-  provers like \textsc{Hip} \cite{rosen2012proving}; and other related testing
-  and term-generating systems like \textsc{MuCheck} \cite{le2014mucheck},
+\item The existence of theory exploration systems such as \hspec{}, \qspec{} and
+  \textsc{Speculate}.
+
+\item Related tooling we can re-use such as counterexample finders (\qcheck{},
+  \textsc{SmallCheck}, \textsc{SmartCheck}, \textsc{LeanCheck},
+  \textsc{Hedgehog}, etc.), theorem provers
+  (e.g. \textsc{Hip}~\cite{rosen2012proving}), and other testing and
+  term-generating systems like \textsc{MuCheck}~\cite{le2014mucheck},
   \textsc{MagicHaskeller}~\cite{katayama2011magichaskeller} and
   \textsc{Djinn}~\cite{augustsson2005djinn}.
 
@@ -243,21 +245,21 @@ fact that the state-of-the-art implementation for Isabelle/HOL, the
 \textsc{Hipster}~\cite{Hipster} system, is actually implemented by translating
 to Haskell and invoking \hspec{}~\cite{claessen2013automating}.
 
-Whilst we will use normal Haskell code in this text and many of our examples,
-for simplicity we perform many of our analyses on an intermediate representation
-of the \textsc{GHC} compiler, known as \emph{GHC Core}, rather than the
-relatively large and complex syntax of Haskell proper. Core is based on \fc{},
-which is described in detail in~\cite[Appendix C]{sulzmann2007system}.
+Whilst our systems and experiments use normal Haskell code, for simplicity we
+perform some of our analyses on an intermediate representation of the
+\textsc{GHC} compiler, known as \emph{GHC Core}, rather than the relatively
+large and complex syntax of Haskell proper. Core is based on \fc{}, which is
+described in detail in~\cite[Appendix C]{sulzmann2007system}.
 
-Core contains explicit type annotations and coercions, which we can omit as they
+Core contains explicit type annotations and coercions, which we omit as they
 have no effect on runtime behaviour. The resulting sub-set of Core\footnote{As
-  of GHC version 7.10.2, the latest at the time of writing.} is shown in
-Figure~\ref{fig:coresyntax}; for brevity, we also omit several other forms of
-literal (machine words of various sizes, individual characters, etc.), since
-their treatment is similar to those of strings and numerals. We use quoted
-strings to denote names and literals, e.g. \texttt{Local "foo"},
-\texttt{Global "bar"}, \texttt{Constructor "Baz"}, \texttt{LitStr "quux"} and
-\texttt{LitNum "42"}, and require only that they can be compared for equality.
+  of GHC version 7.10.2.} is shown in Figure~\ref{fig:coresyntax}; for brevity,
+we also omit several other forms of literal (machine words of various sizes,
+individual characters, etc.), since their treatment is similar to those of
+strings and numerals. We use quoted strings to denote names and literals,
+e.g. \hs{Local "foo"}, \hs{Global "bar"}, \hs{Constructor "Baz"}, \hs{LitStr
+  "quux"} and \hs{LitNum "42"}, and require only that they can be compared for
+equality.
 
 \begin{figure}
   \begin{haskell}
@@ -283,7 +285,7 @@ strings to denote names and literals, e.g. \texttt{Local "foo"},
   \caption{A Haskell datatype for Peano numerals with some simple arithmetic
     functions, including mutually-recursive definitions for \hs{odd} and
     \hs{even}. \hs{Bool} is Haskell's built in boolean type, which can be
-    regarded as \hs{data Bool \equal{} True | False}.}
+    regarded as \hs{data Bool = True | False}.}
   \label{fig:haskellexample}
 \end{figure}
 

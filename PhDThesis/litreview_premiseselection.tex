@@ -26,8 +26,10 @@ like \texttt{using}), locally-scoped facts, first-order facts and
 rarely-occuring facts. To choose $r$ relevant clauses for an ATP invocation, we
 simply order the clauses by decreasing score and take the first $r$ of them.
 
-Recently, a variety of alternative algorithms have also been investigated,
-dubbed \textsc{MaSH}, \textsc{SInE}, \textsc{BliStr}, \textsc{HOLyHammer},
+Recently, a variety of alternative algorithms have also been
+investigated~\cite{kuhlwein2013mash,hoder2011sine,urban2013blistr},
+%                  MaSH             SInE,         BliStr
+dubbed , \textsc{SInE}, \textsc{BliStr}, \textsc{HOLyHammer},
 \textsc{MoMM}, \textsc{SNoW}, \textsc{MPTP 0.2}, \textsc{MaLARea} and
 \textsc{MaLARea SG1}. Each one combines an ``off the shelf'' machine learning
 algorithm with a custom feature extraction approach, is trained using a corpus
@@ -53,10 +55,9 @@ Mathematical Library for use by the Vampire ATP system~\cite{alama2014premise}.
 The premise selection problem for theorem proving is related to the signature
 selection problem for theory exploration, in that both are trying to pick a
 small number of terms (depending on the speed of the subsequent algorithm and
-how long the user is willing to wait) from a large set, to optimise the
-outcome of that algorithm (e.g. finding a proof quickly; or finding many
-interesting relationships quickly). The major difference is that premise
-selection has a particular ``target'' theorem statement, against which to
-compare each term (e.g. for the ``relevance'' of their sub-terms). This is not
-the case for theory exploration, so we must consider the interactions of each
-term with all of the others when deciding what to select.
+how long the user is willing to wait) from a large set, to optimise the outcome
+of that algorithm (e.g. finding a proof quickly; or finding many interesting
+relationships quickly). The major difference is that premise selection has a
+particular ``target'' theorem statement, against which to compare each
+term. This is not the case for theory exploration, so we must consider the
+interactions of each term with all of the others when deciding what to select.

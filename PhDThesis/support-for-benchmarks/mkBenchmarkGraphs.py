@@ -265,7 +265,7 @@ mpl.rcParams.update({
 
     # LaTeX default is 10pt font.
     'axes.labelsize'  : 10,
-    'text.fontsize'   : 10,
+    'font.size'       : 10,
     'legend.fontsize' : 8,
     'xtick.labelsize' : 8,
     'ytick.labelsize' : 8,

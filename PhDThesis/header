@@ -1,4 +1,6 @@
 \documentclass{article}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{mathtools}
@@ -9,6 +11,7 @@
 \usepackage[inline, shortlabels]{enumitem}
 \usepackage{minted}
 \usepackage{subcaption}
+\usepackage{tikz-qtree}
 \usepackage{tikz}
 \usetikzlibrary{arrows, calc, decorations.pathreplacing, positioning,
                 shapes, shapes.geometric}
@@ -38,7 +41,8 @@
 %% Language listings
 
 \usepackage{listings}
-\newcommand{\hs}[1]{\texttt{#1}}
+\providecommand{\hs}[1]{\mintinline{haskell}{#1}}
+% \newcommand{\hs}[1]{\texttt{#1}}
 
 \lstset{
   frame=none,
@@ -64,10 +68,17 @@
   morecomment=[l]\%,
 }
 
-\lstnewenvironment{haskell}{%
-  \lstset{language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+\newenvironment{haskell}
+  {\VerbatimEnvironment\begin{minted}[escapeinside=||,mathescape=true]{haskell}}
+  {\end{minted}} 
+
+% \newenvironment{haskell}{\begin{minted}{haskell}}{\end{minted}}
+% \lstnewenvironment{haskell}{%
+%   \lstset{language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
 
 \lstnewenvironment{coqblock}{%
   \lstset{language=ML, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+
+\providecommand{\coq}[1]{\mintinline{coq}{#1}}
 
 \begin{document}

@@ -63,14 +63,14 @@ that would require.
   \end{minted}
   \caption{Haskell datatypes for booleans and natural numbers, followed by some
     simple function definitions (with type annotations).}
-  \label{fig:haskellexample}
+  \label{fig:haskellteexample}
 \end{figure}
 
 \qspec{} (version 1) is written in the Haskell programming language, and works
 with definitions which are also written in Haskell. A thorough description of
 Haskell, including its suitability for theory exploration, can be found
 in~\ref{sec:haskell}. For illustrative purposes, some simple Haskell definitions
-are shown in Figure~\ref{fig:haskellexample}. The following procedure is used to
+are shown in Figure~\ref{fig:haskellteexample}. The following procedure is used to
 generate conjectures, which are both plausible (due to testing on many examples)
 and potentially interesting (due to being mutually irreducible):
 
@@ -128,7 +128,7 @@ presentation to the user (for example via the congruence closure algorithm
 automated theorem prover \cite{claessen2013automating}.
 
 As an example, we can consider a simple signature containing the expressions
-from Figure \ref{fig:haskellexample}:
+from Figure \ref{fig:haskellteexample}:
 
 \begin{align*}
   \Sigma_{\texttt{Nat}} = \{\texttt{Z}, \texttt{S}, \texttt{plus}, \texttt{mult}, \texttt{odd}, \texttt{even}\}
@@ -169,7 +169,7 @@ one argument at a time.
 plus (mult a b) (mult a c) = mult a (plus b c)
   \end{haskell}
   \caption{Equations conjectured by \qspec{} for the functions in Figure
-    \ref{fig:haskellexample}; after simplification.}
+    \ref{fig:haskellteexample}; after simplification.}
   \label{fig:qspecresult}
 \end{figure}
 
