@@ -18,8 +18,8 @@ In this chapter we will:
 
 \begin{enumerate}
   \item Define the \emph{signature selection problem} for theory exploration.
-  \item Analyse the performance of theory exploration on the TEBenchmark problem
-    set.
+  \item Analyse the performance of theory exploration on the Theory Exploration
+    Benchmark.
   \item Analyse the effect of signature selection on the quantity of desirable properties
     attainable by theory exploration on this problem set.
   \item Demonstrate how the signature selection problem is distinct from the well-know
@@ -62,7 +62,7 @@ work is surveyed in \S~\ref{sec:related} and we conclude in
 \subsection{Background}
 \label{sec:background}
 
-As an example, giving the definitions from Figure~\ref{fig:haskellexample} to
+As an example, giving the definitions from Figure~\ref{fig:haskellteexample} to
 \qspec{}, along with suitable comparison functions, random data generators and
 variables \hs{n :: Nat} and \hs{b :: Bool}, will give rise to an equivalence
 class for each type \hs{Nat}, \hs{Bool}, \hs{Nat -> Nat}, \hs{Nat -> Bool} and
@@ -482,9 +482,10 @@ such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.
 We follow the tradition of prior practitioners and use an existing corpus of
 theorems as a \emph{ground truth} against which to compare results. To analyse
 behaviour on large inputs (i.e. those for which exploration is currently
-infeasible), as required to study the effects of signature selection, we have used the
-\tebenchmark{} of section~\ref{sec:tebenchmark}, which is based on the Tons of
-Inductive Problems (TIP) problem set for theorem provers~\cite{claessen2015tip}.
+infeasible), as required to study the effects of signature selection, we have
+used the Theory Exploration Benchmark of section~\ref{sec:tebenchmark}, which is
+based on the Tons of Inductive Problems (TIP) problem set for theorem
+provers~\cite{claessen2015tip}.
 
 \begin{figure}
   \scalebox{0.45}{\input{images/steppedall.pgf}}
