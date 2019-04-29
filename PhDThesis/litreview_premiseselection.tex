@@ -1,56 +1,66 @@
 \subsection{Relevance Filtering}
 \label{sec:relevance}
 
-One fruitful application of machine learning methods to formal mathematics is
-\emph{relevance filtering}, which is used for \emph{premise selection} in
-automated theorem provers~\cite{kuhlwein2012overview}.
+\emph{Relevance filtering} takes a specified ``target'' (such as the current
+goal of a theorem prover), a large list of inputs (e.g. existing lemmas from a
+theory) and produces a sub-set of those inputs which are predicted to be useful
+or relevant to the target. The example of choosing a sub-set of lemmas to help
+prove a theorem is known as \emph{premise
+  selection}~\cite{kuhlwein2012overview}.
 
-Relevance filtering simplifies a proof search problem by removing from
-consideration those clauses (axioms, definitions, lemmas, etc.) which are deemed
-\emph{irrelevant}. The technique is used in Sledgehammer during its translation
-of Isabelle/HOL theories to statements in first order logic: rather than
-translating the entire theory, only a sub-set of relevant clauses are
-included. This reduces the size of the problem and speeds up the proof search,
-but it creates the new problem of determining when a clause is relevant: how do
-we know what will be required, before we have the proof?
+Relevance filtering simplifies such proof search by focusing on only those
+clauses (axioms, definitions, lemmas, etc.) which are deemed relevant, shrinking
+the search space. The technique is used in \textsc{Sledgehammer} during its
+translation of Isabelle/HOL theories to statements in first order logic: rather
+than translating the entire theory, only a sub-set of relevant clauses are
+included. This speeds up the proof search, but it creates the new problem of
+determining when a clause is relevant: how do we know what will be required,
+before we have the proof?
 
-Sledgehammer's initial approach, known as \textsc{MePO} (from
+The initial approach used in \textsc{Sledgehammer}, known as \textsc{MePO} (from
 \emph{Meng-Paulson} \cite{meng2009lightweight}), gives each clause a score based
 on the proportion $m / n$ of its symbols which are ``relevant'' (where $n$ is
 the number of symbols in the clause and $m$ is the number which are relevant).
 Initially, the relevant symbols are those which occur in the goal, but whenever
 a clause is found which scores more than a particular threshold, all of its
 symbols are then also considered relevant. There are other heuristics applied
-too, such as increasing the score of user-provided facts (e.g. given by keywords
+too, such as increasing the score of user-provided facts (given by keywords
 like \texttt{using}), locally-scoped facts, first-order facts and
 rarely-occuring facts. To choose $r$ relevant clauses for an ATP invocation, we
 simply order the clauses by decreasing score and take the first $r$ of them.
 
 Recently, a variety of alternative algorithms have also been
-investigated~\cite{kuhlwein2013mash,hoder2011sine,urban2013blistr},
-%                  MaSH             SInE,         BliStr
-dubbed , \textsc{SInE}, \textsc{BliStr}, \textsc{HOLyHammer},
-\textsc{MoMM}, \textsc{SNoW}, \textsc{MPTP 0.2}, \textsc{MaLARea} and
-\textsc{MaLARea SG1}. Each one combines an ``off the shelf'' machine learning
-algorithm with a custom feature extraction approach, is trained using a corpus
-of existing theorems and their proofs, and evaluated by trying to re-prove a
-selection of unseen theorems from the corpus (i.e. given only the theorem
-statement and possible lemmas, not the existing proof).
+investigated~\cite{kuhlwein2013mash,hoder2011sine,urban2013blistr,gauthier2015premise,alama2014premise,carlson1999snow,kaliszyk2014machinelearner,kaliszyk2015femalecop}.
+%                  MaSH             SInE,         BliStr          HOLyHammer          MOR,             SNoW,           MaLARea
+Each combines an ``off the shelf'' machine learning algorithm (e.g. a
+naive-Bayes classifier, support vector machines, etc.) with a custom feature
+extraction approach; is trained using a corpus of existing theorems and their
+proofs; and evaluated by trying to \emph{re-prove} a selection of unseen
+theorems from the corpus (i.e. given only the theorem statement and possible
+lemmas, not the existing proof).
 
-For example the Machine Learning for SledgeHammer (\textsc{MaSH}) system
-defines a notion of ``visibility''~\cite{kuhlwein2013mash}. This is essentially
-a dependency graph of which theorems were used in the proofs of which other
-theorems (theorems are represented as abstract sets of features, rather than
-e.g. sentences or syntax trees). To select relevant clauses for a goal, the
-set of clauses which are ``visible'' from the goal's components is generated;
-this is further reduced by (an efficient approximation of) a naive Bayes
-algorithm.
+For example the ``Machine Learning for SledgeHammer'' (\textsc{MaSH}) system
+defines a notion of ``visibility''~\cite{kuhlwein2013mash} for determining how
+relevant one statement is to another. Visibility is essentially a dependency
+graph of which theorems were used in the proofs of which other theorems
+(represented as abstract sets of features, rather than concrete sentences or
+syntax trees). To select relevant clauses for a goal, the set of clauses which
+are ``visible'' from the goal's components is generated; and this is filtered
+further by (an efficient approximation of) a naive-Bayes algorithm.
 
 Premise selection has also been applied to the re-proving problem in other
 systems, such as the Multi-Output Ranking (\textsc{MOR}) tool, which uses a
 support vector machine (SVM) to select relevant axioms from the Mizar
-Mathematical Library for use by the Vampire ATP system~\cite{alama2014premise}.
-%TODO: describe the kernel, as that's the interesting bit.
+Mathematical Library (MML) for use by the Vampire ATP
+system~\cite{alama2014premise}. SVM requires a ``kernel function'', effectively
+a similarity measure between formulas. The \textsc{MOR} tool measures similarity
+based on sub-terms which two formulas have in common: first a list of all $m$
+terms appearing in the input space is extracted, and each formula is converted
+to an $m$-dimensional binary vector, with the $n$th element of the vector
+indicating whether the $n$th term of the input space occurs in this formula. The
+kernel used by \textsc{MOR} is a Gaussian function of the dot-products of
+these binary vectors (parameterised by a hyperparameter $\sigma$, chosen via
+grid search).
 
 The premise selection problem for theorem proving is related to the signature
 selection problem for theory exploration, in that both are trying to pick a
@@ -59,5 +69,8 @@ how long the user is willing to wait) from a large set, to optimise the outcome
 of that algorithm (e.g. finding a proof quickly; or finding many interesting
 relationships quickly). The major difference is that premise selection has a
 particular ``target'' theorem statement, against which to compare each
-term. This is not the case for theory exploration, so we must consider the
+term. Indeed, machine learning approaches like \textsc{MOR} learn a separate
+ranking function for each target formula.
+
+This is not the case for theory exploration, which must consider the
 interactions of each term with all of the others when deciding what to select.
