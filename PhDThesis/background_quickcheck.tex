@@ -4,15 +4,17 @@
 Although unit testing is the de facto industry standard for quality assurance in
 non-critical systems, the level of confidence it provides is rather low, and
 totally inadequate for many (e.g. life-) critical systems. To see why, consider
-the following Haskell function, along with some unit tests:
+the following Haskell function, along with some unit
+tests\footnote{Backticks allow functions to be written as infix operators, so
+  \hs{x `div` y} is equivalent to \hs{div x y}.}:
 
 \begin{haskell}
-  factorial 0 = 1
-  factorial n = n * factorial (n-1)
+factorial 0 = 1
+factorial n = n * factorial (n-1)
 
-  fact_base      = factorial 0 == factorial 1
-  fact_increases = factorial 3 <= factorial 4
-  fact_div       = factorial 4 == factorial 5 `div` 5
+fact_base      = factorial 0 == factorial 1
+fact_increases = factorial 3 <= factorial 4
+fact_div       = factorial 4 == factorial 5 `div` 5
 \end{haskell}
 
 The intent of the function is to map an input $n$ to an output $n!$. The tests
@@ -56,21 +58,21 @@ Haskell offers a partial solution to this problem in the form of \emph{property
   variables}; a source of values to instantiate these free variables; and a
 stopping criterion. Here is how we might restate our unit tests as properties:
 
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+\begin{haskell}
 fact_base        = factorial 0 == factorial 1
 fact_increases n = factorial n <= factorial (n+1)
 fact_div       n = factorial n == factorial (n+1) `div` (n+1)
 fact_neg       n = factorial n == factorial (-n)
-\end{lstlisting}
+\end{haskell}
 
 The free variables (all called \hs{n} in this case) are abstracted as function
 parameters; these parameters are implicitly \emph{universally quantified},
 i.e. we've gone from a unit test asserting $factorial(3) \leq factorial(4)$ to a
 property asserting $\forall n, factorial(n) \leq factorial(n+1)$. Notice that
-unit tests like \hs{fact\_base} are valid properties; they just assert rather
+unit tests like \hs{fact_base} are valid properties; they just assert rather
 weak statements.
 
-To check these properties, \qcheck{} treats closed terms (like \hs{fact\_base})
+To check these properties, \qcheck{} treats closed terms (like \hs{fact_base})
 just like unit tests: pass if they evaluate to \hs{True}, fail otherwise. For
 open terms, a random selection of values are generated and passed in via the
 function parameter; the results are then treated in the same way as closed
