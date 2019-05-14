@@ -13,7 +13,7 @@ is due to the given expression being passed to the \hs{show} function (e.g.
 \hs{eval "length []"} will produce \hs{"0" :: String}, not
 \hs{0 :: Int}).\footnote{\hs{show :: Show a => a -> String} is a method of the
   \hs{Show} type class, and is the standard way to equip Haskell types values
-  with a printable representation (akin to Java's \textt{toString} method).
+  with a printable representation (akin to Java's \texttt{toString} method).
   \hs{show} has no associated laws, but it is conventional to make it the
   inverse of the \hs{read :: Read a => String -> a} method of the \hs{Read} type
   class (where possible).} Serialising results in this way simplifies the
@@ -216,7 +216,7 @@ access to. In these cases the \hs{TypedExpr} approach can still be useful for
 auxiliary code whose types are known to us; those unknown or unavailable parts
 can either be unwrapped into raw \hs{Expr}s, or dummy types can be used instead.
 For example, if we are manipulating code involving the \hs{Data.Text.Text} type,
-but we don't have or want the \textt{text} package in our dependencies, we can
+but we don't have or want the \texttt{text} package in our dependencies, we can
 declare an empty type like \hs{data TEXT} (note that this declaration has no
 right-hand side) and use this in our annotations in place of
 \hs{Data.Text.Text}. The compiler will type-check our code as desired, ensuring

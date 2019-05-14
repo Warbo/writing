@@ -20,6 +20,8 @@
 
 \newcommand{\fc}{System F\textsubscript{C}}
 \newcommand{\eval}{\texttt{eval}}
+\newcommand{\hint}{\texttt{hint}}
+\newcommand{\nixeval}{\texttt{nix-eval}}
 
 \newcommand{\blank}{\cdot}
 \newcommand*\mean[1]{\overline{#1}}
