@@ -183,13 +183,13 @@ To support looking up local identifiers, our implementation of $toTree$ takes a
 context as argument, extending it as required. As an example of the complexity
 this adds, here is the \CCase\ branch of $toTree$:
 
-\begin{lstlisting}[language=Haskell, xleftmargin=0pt, xrightmargin=0pt]
+\begin{haskell}
 toTree :: Context -> Expr -> RoseTree
 toTree ctx x = case x of
   ...
   Case e l as -> Node fCase (toTree ctx e : map (toTreeAlt (l:ctx)) as)
   ...
-\end{lstlisting}
+\end{haskell}
 
 Breaking this down we can see \hs{fCase} representing the value of
 $\feature{\CCase}$, and a list of sub-trees defined in parentheses. The first
@@ -212,14 +212,14 @@ As shown above, the values from equations \ref{eq:feature} are encoded directly
 in $toTree$. For $phi(l \in \mathcal{L})$ we use standard Haskell functions to
 look up the required indices in the context:
 
-\begin{lstlisting}[language=Haskell, xleftmargin=0.1\textwidth, xrightmargin=0.1\textwidth]
+\begin{haskell}
 phiL :: Context -> Local -> Feature
 phiL ctx x = case elemIndex x ctx of
   Nothing -> error (concat ["Local '", show x,
                             "' not in context '",
                             show ctx, "'"])
   Just i  -> (2 * alpha) + i
-\end{lstlisting}
+\end{haskell}
 
 As explained in \S \ref{sec:symbolstofeatures}, local identifiers should always
 exist in the context. If this precondition doesn't hold, we abort the program
@@ -241,12 +241,12 @@ To produce feature vectors, we do not directly construct the matrix; instead we
 generate the rows and concatenate them together in one step, using the
 \hs{concatMap} function:
 
-\begin{lstlisting}[language=Haskell, xleftmargin=0.1\textwidth, xrightmargin=0.1\textwidth]
+\begin{haskell}
 featureVec :: Expr -> [Feature]
 featureVec e = concatMap (\m -> pad (level m tree)) [1..r]
   where tree   = toTree [] e
         pad xs = take c (xs ++ repeat 0)
-\end{lstlisting}
+\end{haskell}
 
 By providing \hs{featureVec} with the latest set of clusters, read from the
 \textsc{AstPlugin} database, we turn Core expressions into feature vectors,
