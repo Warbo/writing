@@ -19,6 +19,7 @@
 \newcommand{\etal}{{\em et al.}}
 
 \newcommand{\fc}{System F\textsubscript{C}}
+\newcommand{\eval}{\texttt{eval}}
 
 \newcommand{\blank}{\cdot}
 \newcommand*\mean[1]{\overline{#1}}
@@ -29,6 +30,8 @@
 \newcommand{\vlocal}[1]{\CVar\ (\CLocal\ \id{#1})}
 \newcommand{\vglobal}[1]{\CVar\ (\CGlobal\ \id{#1})}
 \newcommand{\cat}{\mbox{\ensuremath{+\!\!+\,}}}
+
+%% System names
 
 \newcommand{\qcheck}{\textsc{QuickCheck}}
 \newcommand{\qspec}{\textsc{QuickSpec}}
@@ -62,45 +65,23 @@
 
 %% Language listings
 
-\usepackage{listings}
+\providecommand{\coq}[1]{\mintinline{coq}{#1}}
 \providecommand{\hs}[1]{\mintinline{haskell}{#1}}
-% \newcommand{\hs}[1]{\texttt{#1}}
+\providecommand{\js}[1]{\mintinline{javascript}{#1}}
 
-\lstset{
-  frame=none,
-  xleftmargin=2pt,
-  stepnumber=1,
-  numbers=none,
-  numbersep=5pt,
-  numberstyle=\ttfamily\tiny\color[gray]{0.3},
-  columns=flexible,
-  belowcaptionskip=\bigskipamount,
-  captionpos=b,
-  escapeinside={*'}{'*},
-  language=haskell,
-  tabsize=2,
-  emphstyle={\bf},
-  commentstyle=\it,
-  stringstyle=\mdseries\ttfamily,
-  showspaces=false,
-  keepspaces=true,
-  keywordstyle=\bfseries\ttfamily,
-  basicstyle=\small\ttfamily,
-  showstringspaces=false,
-  morecomment=[l]\%,
-}
-
-\newenvironment{haskell}
-  {\VerbatimEnvironment\begin{minted}[escapeinside=||,mathescape=true]{haskell}}
+\newenvironment{common-lisp}
+  {\VerbatimEnvironment\begin{minted}[escapeinside=!!,mathescape=true]{common-lisp}}
   {\end{minted}} 
 
-% \newenvironment{haskell}{\begin{minted}{haskell}}{\end{minted}}
-% \lstnewenvironment{haskell}{%
-%   \lstset{language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+\newenvironment{coqblock}
+  {\VerbatimEnvironment\begin{minted}[escapeinside=!!,mathescape=true]{haskell}}
+  {\end{minted}}
 
-\lstnewenvironment{coqblock}{%
-  \lstset{language=ML, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth}}{}
+% NOTE: Function definitions will only get their name highlighted if they're
+% flush against the left margin (i.e. we shouldn't indent our code blocks).
+\newenvironment{haskell}
+  {\VerbatimEnvironment\begin{minted}[escapeinside=!!,mathescape=true]{haskell}}
+  {\end{minted}} 
 
-\providecommand{\coq}[1]{\mintinline{coq}{#1}}
 
 \begin{document}
