@@ -1,6 +1,49 @@
 \subsection{Haskell}
 \label{sec:haskell}
 
+\begin{figure}
+  \centering
+  \begin{haskell}
+-- A datatype with two constructors
+data Bool = True | False
+
+-- A recursive datatype (S requires a Nat as argument)
+data Nat = Z | S Nat
+
+-- A polymorphic (AKA "generic") datatype
+data List t = Nil | Cons t (List t)
+
+-- Arithmetic functions
+
+plus :: Nat -> Nat -> Nat
+plus    Z  y = y
+plus (S x) y = S (plus x y)
+
+mult :: Nat -> Nat -> Nat
+mult    Z  y = Z
+mult (S x) y = plus y (mult x y)
+
+-- Mutually-recursive functions
+
+odd :: Nat -> Bool
+odd    Z  = False
+odd (S n) = even n
+
+even :: Nat -> Bool
+even    Z  = True
+even (S n) = odd n
+  \end{haskell}
+  \caption{Haskell code, defining datatypes and functions involving them (note
+    that \hs{--} introduces a comment). \hs{Bool} is the Booleans, \hs{Nat} is a
+    Peano encoding of the natural numbers and \hs{List t} are polymorphic lists
+    with elements of type \hs{t}. Functions are called using whitespace, e.g.
+    \hs{f x}, and may be defined by pattern-matching (case analysis) on their
+    arguments. \hs{A :: B} is an optional type annotation, stating that value
+    \hs{A} has type \hs{B}. \hs{A -> B} is the type of functions from \hs{A} to
+    \hs{B}.}
+  \label{fig:haskellexample}
+\end{figure}
+
 We mostly focus our attention on the Haskell programming language, both as an
 implementation vehicle and as our representation of functions, properties, etc.
 to explore. We choose Haskell since it combines formal, logical underpinnings
@@ -8,85 +51,144 @@ which aid reasoning (compared to more popular languages like Java or C), yet it
 is still popular enough to sustain a rich ecosystem of tooling and a large
 corpus of existing code (compared to more formal languages like Coq or
 Isabelle). Haskell is well-suited to programming language research; indeed, this
-was a goal of the language's creators \cite{marlow2010haskell}. Like most
-\emph{functional} programming languages, Haskell builds upon $\lambda$-calculus,
-with extra features such as a strong type system and ``syntactic sugar'' to
-improve readability.
+was a goal of the language's creators \cite{marlow2010haskell}. An example of
+Haskell code is given in Figure~\ref{fig:haskellexample}.
 
-The following features make Haskell especially useful for our purposes, although
-many are also present in other languages such as StandardML and Coq (which we
-also use, but only when needed for compatibility with prior work):
+Like most \emph{functional} programming languages, Haskell builds upon
+$\lambda$-calculus, with extra features such as a strong type system and
+``syntactic sugar'' to improve readability. The following features make Haskell
+especially useful for our purposes, although many are also present in other
+languages such as StandardML and Coq (which we also use, but only when needed
+for compatibility with prior work):
 
 \begin{description}
 
-\item{Functional}: All control flow in Haskell is performed by function
-  abstraction and application, which we can reason about using standard rules of
-  inference such as \emph{modus ponens}.
+\item{Functional}: Most control flow in Haskell (all except
+  \emph{pattern-matching}, described below) is performed by function abstraction
+  and application , which we can reason about using standard rules of inference
+  such as \emph{modus ponens}. For example, reading from external sources (like
+  environment variables) is \emph{impure}, so the only way to parameterise a
+  value of type \hs{B} with a value of type \hs{A} is using a function of type
+  \hs{A -> B}. Conversely, applying a function of type \hs{A -> B} to a value of
+  type \hs{A} can only ever produce a value of type \hs{B} (it may instead crash
+  the program or loop forever, but neither of those are \emph{observable}, i.e.
+  we can't branch on them).
 
-\item{Pure}: Execution of actions (e.g. reading files) is separate to evaluation
-  of expressions; hence our reasoning can safely ignore complicated external and
-  non-local interactions.
+\item{Pure}: Execution of actions (e.g. reading or writing files) is separate to
+  evaluation of expressions; hence our reasoning can safely ignore complicated
+  external and non-local interactions. Purity ensures \emph{referential
+    transparency}: references can be substituted for their referent with
+  no change in semantics (as in standard mathematical practice). This implies
+  that calling a function twice with the same argument must produce the same
+  result (modulo crashes or infinite loops). For example, consider applying the
+  function \hs{pair x = (x, x)} to some arbitrary function call \hs{foo y}. The
+  references \hs{x} in the resulting pair \hs{(x, x)} both refer to \hs{foo y}
+  so, by referential transparency, can be substituted to get
+  \hs{(foo y, foo y)}. Both members of \hs{(x, x)} are identical, by definition;
+  hence, to preserve the semantics, both (and indeed \emph{all}) calls to
+  \hs{foo y} must also be identical. This holds regardless of what we choose for
+  \hs{foo} and \hs{y}, and implies that function behaviour cannot depend on
+  external interactions or non-deterministic processes (which may change between
+  calls).
 
 \item{Statically Typed}: Expressions are constrained by \emph{types}, which can
-  be used to eliminate unwanted combinations of values, and hence reduce search
-  spaces; \emph{static} types can be deduced syntactically, without having to
-  execute the code.
+  be used to eliminate unwanted combinations of values (for example
+  \hs{plus True} is not a valid expression), and hence reduce search spaces;
+  \emph{static} types can be deduced syntactically, without having to execute
+  the code. The type of Haskell expressions can also be \emph{inferred}
+  automatically.\footnote{Except for certain cases, such as those caused by the
+    \emph{monomorphism restriction}~\cite{marlow2010haskell}[$\S$4.5.5]}
 
-\item{Non-strict}: If an evaluation strategy exists for $\beta$-normalising an
-  expression (i.e. performing function calls) without diverging, then a
-  non-strict evaluation strategy will not diverge when evaluating that
-  expression. This is rather technical, but in simple terms it allows us to
-  reason effectively about a Turing-complete language, where evaluation may not
-  terminate. For example, when reasoning about \emph{pairs} of values \hs{(x,
-    y)} and projection functions \hs{fst} and \hs{snd}, we might want to use an
-  ``obvious'' rule such as
-  $\forall \text{\hs{x y}}, \text{\hs{x}} = \text{\hs{fst (x, y)}}$. Haskell's
-  non-strict semantics makes this equation valid; whilst it would \emph{not} be
-  valid in the strict setting common to most other languages, where the
-  expression \hs{fst (x, y)} will diverge if \hs{y} diverges (and hence alter
-  the semantics, if \hs{x} doesn't diverge).
+\item{Curried}: All functions in Haskell take a single argument (as in
+  $\lambda$-calculus), which makes them easier to manipulate programatically.
+  Currying allows multi-argument functions to be simulated, by accepting one
+  argument and returning a function to accept the rest. The \hs{mult} function
+  in Figure~\ref{fig:haskellexample} has type \hs{Nat -> Nat -> Nat} meaning it
+  takes a \hs{Nat} as argument and returns a function of type
+  \hs{Nat -> Nat}. Function calls are written with whitespace, so \hs{mult x y}
+  calls the \hs{mult} function with the argument \hs{x}, then calls the result
+  of that with the argument \hs{y}. This allows \emph{partial application} such
+  as \hs{double = mult (S (S Z))}, but for our purposes it is important for
+  unifying calling conventions. For example, in Javascript \hs{mult x y} would
+  be either \js{mult(x, y)} or \js{mult(x)(y)}, and depends on the definition of
+  \js{mult} (the problem compounds with more arguments). In Haskell there is no
+  distinction between these forms.
+
+\item{Non-strict}: ``Strict'' evaluation strategies evaluate the arguments of a
+  function call before the function body; non-strict does the opposite. The
+  Haskell standards do not specify a particular evaluation strategy, but they
+  do require that it be non-strict (for efficiency, most implementations use
+  \emph{lazy} evaluation to avoid duplicating work). Strictness can result in
+  infinite loops and other errors which may be avoided by non-strictness,
+  making the latter more useful for reasoning in the face of such errors.
+  For example, given a pair of values \hs{(x, y)} and a projection function
+  \hs{fst}, we might make the ``obvious''  conjecture that
+  \hs{fst (x, y) = x}.\footnote{Incidentally, this is also a valid definition of
+    the \hs{fst} function} This statement is true for non-strict languages, but
+  \emph{not} for strict languages. Crucially, a strict language will attempt to
+  calculate the value of \hs{y}, which may cause an infinite loop or other
+  error; a non-strict language like Haskell will ignore \hs{y} since it isn't
+  used in the body of the \hs{fst} function.
 
 \item{Algebraic Data Types}: These provide a rich grammar for building up
   user-defined data representations, and an inverse mechanism to inspect these
-  data by \emph{pattern-matching}. For our purposes, the useful consequences of
-  ADTs and pattern-matching include their amenability for inductive proofs and
-  the fact they are \emph{closed}; i.e. an ADT's declaration specifies all of
-  the normal forms for that type. This makes exhaustive case analysis trivial,
-  which would be impossible for \emph{open} types (for example, consider classes
-  in an object oriented language, where new subclasses can be introduced at any
-  time).
+  data by \emph{pattern-matching} (Haskell's other form of control flow). The
+  \hs{Bool}, \hs{Nat} and \hs{List t} definitions in
+  Figure~\ref{fig:haskellexample} are ADTs; whilst the functions use
+  pattern-matching to branch on their first argument. For our purposes, the
+  useful consequences of ADTs and pattern-matching include their amenability for
+  inductive proofs and the fact they are \emph{closed}; i.e. an ADT's
+  declaration specifies all of the normal forms for that type. This makes
+  exhaustive case analysis trivial, which would be impossible for \emph{open}
+  types (for example, consider classes in an object oriented language, where new
+  subclasses can be introduced at any time).
 
 \item{Parametricity}: This allows Haskell \emph{values} to be parameterised over
   \emph{type-level} objects; provided those objects are never inspected. This
-  has the \emph{practical} benefit of enabling \emph{polymorphism}: for example,
-  we can write a polymorphic identity function \hs{id :: forall t. t ->
-    t}. \footnote{Read ``\hs{a :: b}'' as ``\hs{a} has type \hs{b}'' and ``\hs{a
-      -> b}'' as ``the type of functions from \hs{a} to \hs{b}''.} Conceptually,
-  this function takes \emph{two} parameters: a type \hs{t} \emph{and} a value of
-  type \hs{t}; yet only the latter is available in the function body,
-  e.g. \hs{id x = x}. This inability to inspect type-level arguments gives us
-  the \emph{theoretical} benefit of being able to characterise the behaviour of
-  polymorphic functions from their type alone, a technique known as
-  \emph{theorems for free} \cite{wadler1989theorems}.
+  enables \emph{polymorphism}. The \hs{List t} type in
+  Figure~\ref{fig:haskellexample} is an example: there are many useful functions
+  involving lists which work in the same way regardless of the element type
+  (e.g. getting the length, appending, reversing, etc.). An even simpler example
+  is the polymorphic identity function \hs{id x = x}. The type of \hs{id} is
+  \hs{forall t. t -> t}\footnote{The \hs{forall t.} is optional; type-level
+    identifiers beginning with a lowercase letter are assumed to be universally
+    quantified variables.}, which we can view as taking \emph{two} parameters:
+  a type \hs{t} and a value of type \hs{t}. Only the latter argument appears in
+  the definition (as \hs{x}), meaning that we can't use the type \hs{t} to
+  determine the function's behaviour. Indeed, in the case of \hs{id} we can't
+  branch on the value of \hs{x} either, since we don't know what type it might
+  have (our definition must work \emph{for all} types \hs{t}); the only
+  functions we can call on \hs{x} must also be polymorphic, and hence also
+  incapable of branching. The type of \hs{id} states that it returns a value of
+  type \hs{t}; without knowing what that type is, the only type-correct value it
+  can return is the argument \hs{x}. Hence the \emph{type} of \hs{id} tells us
+  everything about its behaviour, with this style of reasoning known as
+  \emph{theorems for free}~\cite{wadler1989theorems}. Haskell definitions are
+  commonly made polymorphic like this, to prevent incorrect implementations
+  passing the type checker, e.g. \hs{fst :: (Nat, Nat) -> Nat} might return the
+  wrong element, but \hs{fst :: (t1, t2) -> t1} can't.
 
 \item{Type classes}: Along with their various extensions, type classes are
-  interfaces which specify a set of operations over a type (or other type-level
-  object, such as a \emph{type constructor}). Many type classes also specify a
-  set of \emph{laws} which their operations should obey but, lacking a simple
-  mechanism to enforce this, laws are usually considered as documentation. As a
-  simple example, we can define a type class \hs{Semigroup} with the following
-  operation and associativity law:
+  interfaces which specify a set of operations over a type or other type-level
+  object (like a \emph{type constructor}, e.g. \hs{List}). Many type classes
+  also specify a set of \emph{laws} which their operations should obey but,
+  lacking a simple mechanism to enforce this, laws are usually considered as
+  documentation. As a simple example, we can define a type class \hs{Semigroup}
+  with the following operation and an associativity law:
 
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+  \begin{center}
+    \begin{haskell}
 op :: forall t. Semigroup t => t -> t -> t
-\end{lstlisting}
+    \end{haskell}
 
-$$\forall \text{\hs{x y z}}, \text{\hs{op x (op y z)}} = \text{\hs{op (op x y) z}}$$
+    $\forall \text{\hs{x y z}}, \text{\hs{op x (op y z)}} =
+                                \text{\hs{op (op x y) z}}$
+  \end{center}
 
-The notation \hs{Semigroup t =>} is a \emph{type class constraint}, which
-restricts the possible types \hs{t} to only those which implement
-\hs{Semigroup}. \footnote{Alternatively, we can consider \hs{Semigroup t} as the
-  type of ``implementations of \hs{Semigroup} for \hs{t}'', in which case
+  The notation \hs{Semigroup t =>} is a \emph{type class constraint}, which
+  restricts the possible types \hs{t} to only those which implement
+  \hs{Semigroup}. \footnote{Alternatively, we can consider \hs{Semigroup t} as
+    the type of ``implementations of \hs{Semigroup} for \hs{t}'', in which case
   \hs{=>} has a similar role to \hs{->} and we can consider \hs{op} to take
   \emph{four} parameters: a type \hs{t}, an implementation of \hs{Semigroup t}
   and two values of type \hs{t}. As with parameteric polymorphism, this extra
@@ -94,12 +196,12 @@ restricts the possible types \hs{t} to only those which implement
   were, we could not alter our behaviour by inspecting it, since Haskell only
   allows types to implement each type class in at most one way, so there would
   be no information to branch on.} There are many \emph{instances} of
-\hs{Semigroup} (types which may be substituted for \hs{t}), e.g. \hs{Integer}
-with \hs{op} performing addition. Many more examples can be found in the
-\emph{typeclassopedia} \cite{yorgey2009typeclassopedia}. This ability to
-constrain types, and the existence of laws, helps us reason about code
-generically, rather than repeating the same arguments for each particular pair
-of \hs{t} and \hs{op}.
+  \hs{Semigroup} (types which may be substituted for \hs{t}), e.g. \hs{Integer}
+  with \hs{op} performing addition. Many more examples can be found in the
+  \emph{typeclassopedia} \cite{yorgey2009typeclassopedia}. This ability to
+  constrain types, and the existence of laws, helps us reason about code
+  generically, rather than repeating the same arguments for each particular pair
+  of \hs{t} and \hs{op}.
 
 \item{Equational}: Haskell uses equations at the value level, for definitions;
   at the type level, for coercions; at the documentation level, for typeclass
@@ -109,37 +211,50 @@ of \hs{t} and \hs{op}.
   tools such as SMT solvers, this makes equational conjectures a natural target
   for theory exploration.
 
-\item{Modularity}: Haskell has a module system, where each module may specify an
-  \emph{export list} containing the names which should be made available for
-  other modules to import. When such a list is given, any expressions \emph{not}
-  on the list are considered \emph{private} to that module, and are hence
-  inaccessible from elsewhere. This mechanism allows modules to provide more
-  guarantees than are available just in their types. For example, a module may
-  represent email addresses in the following way:
+\item{Modularity}: Haskell's module system allows definitions to be kept
+  private. This mechanism allows modules to provide more guarantees than are
+  available just in their types, by constraining the ways that values can be
+  constructed. For example, the following module represents email addresses as a
+  pair of \hs{String}s, one for the user part and one for the host:
 
   \begin{haskell}
-    module Email (Email(), at, render) where
+-- Exports appear between the parentheses
+module Email (Email(), at, render) where
 
-    data Email = E String String
+data Email = E String String
 
-    render :: Email -> String
-    render (E u h) = u ++ "@" ++ h
+render :: Email -> String
+render (E user host) = user ++ "@" ++ host
 
-    at :: String -> String -> Maybe Email
-    at "" h  = Nothing
-    at u  "" = Nothing
-    at u  h  = Just (E u h)
+-- if/then/else is sugar for pattern-matching a Bool
+at :: String -> String -> Maybe Email
+at user host = if user == "" || host == ""
+                  then Nothing
+                  else Just (E user host)
   \end{haskell}
 
-  This \hs{Email} type can be constructed in two ways: directly, via the \hs{E}
-  constructor, which requires both a user part and a host part (both
-  \hs{String}s, for simplicity); or indirectly, via the \hs{at} function, which
-  will only call \hs{E} if both \hs{String}s are non-empty (a programming
-  pattern known as a ``smart constructor''). The export list in the first line
-  contains the \hs{at} function, but not the \hs{E} constructor~\footnote{The
-    syntax \hs{Email()} means we're exporting the \hs{Email} type, but not any
-    of its constructors.}, so any code using this module is only able to create
-  \hs{Email} values with non-empty parts.
+  An \hs{Email} value can be constructed by passing any two \hs{String}s to
+  \hs{E}, but \hs{E} is private (not exported). The \hs{at} function is
+  exported, but only passes its arguments to \hs{E} iff they are not empty.\footnote{\hs{Maybe t} is a
+    safer alternative to the \textsc{Null} construct of other
+    languages~\cite{hoare2009null}. It is defined as
+    \hs{data Maybe t = Nothing | Just t} and can be understood as an optional
+    value, or a computation which may fail, or as a list with at most one
+    element, or as a degenerate search tree with no
+    backtracking~\cite{wadler1985replace}} Since this module never calls \hs{E}
+  with empty \hs{String}s, and other modules must use \hs{at}, we're guaranteed
+  that \emph{all} \hs{Email} values will have non-empty \hs{String}s. Such
+  ``smart constructors'' can guarantee \emph{any} decidable property, at the
+  cost of performing run-time checks on each invocation.\footnote{We can
+    guarantee non-emptiness ``by construction'', without run-time checks or
+    \hs{Maybe} wrappers, by changing the type to require at least one element.
+    \hs{String} is equivalent to \hs{List Char}, with \hs{""} represented as
+    \hs{Nil}. Changing \hs{Nil} to require a \hs{Char} would eliminate empty
+    \hs{String}s, e.g. \hs{data NonEmpty t = Nil t | Cons t (NonEmpty t)}. We
+    could also use a pair like \hs{data NonEmpty t = NE t (List t)} instead.
+    Such precise types are often more desirable than smart constructors, but are
+    less general since ad-hoc representations need to be invented to enforce
+    each guarantee.}
 
 \end{description}
 
@@ -182,26 +297,6 @@ languages or theorem proving systems, include:
   Haskell code, including package managers, compilers, interpreters, parsers,
   static analysers, etc.
 \end{itemize}
-
-\newcommand{\CVar}{\texttt{Var}}
-\newcommand{\CLit}{\texttt{Lit}}
-\newcommand{\CApp}{\texttt{App}}
-\newcommand{\CLam}{\texttt{Lam}}
-\newcommand{\CLet}{\texttt{Let}}
-\newcommand{\CCase}{\texttt{Case}}
-\newcommand{\CType}{\texttt{Type}}
-\newcommand{\CLocal}{\texttt{Local}}
-\newcommand{\CGlobal}{\texttt{Global}}
-\newcommand{\CConstructor}{\texttt{Constructor}}
-\newcommand{\CLitNum}{\texttt{LitNum}}
-\newcommand{\CLitStr}{\texttt{LitStr}}
-\newcommand{\CAlt}{\texttt{Alt}}
-\newcommand{\CDataAlt}{\texttt{DataAlt}}
-\newcommand{\CLitAlt}{\texttt{LitAlt}}
-\newcommand{\CDefault}{\texttt{Default}}
-\newcommand{\CNonRec}{\texttt{NonRec}}
-\newcommand{\CRec}{\texttt{Rec}}
-\newcommand{\CBind}{\texttt{Bind}}
 
 \begin{figure}
   \begin{equation*}
@@ -260,34 +355,6 @@ strings and numerals. We use quoted strings to denote names and literals,
 e.g. \hs{Local "foo"}, \hs{Global "bar"}, \hs{Constructor "Baz"}, \hs{LitStr
   "quux"} and \hs{LitNum "42"}, and require only that they can be compared for
 equality.
-
-\begin{figure}
-  \begin{haskell}
-    data Nat = Z
-             | S Nat
-
-    plus :: Nat -> Nat -> Nat
-    plus    Z  y = y
-    plus (S x) y = S (plus x y)
-
-    mult :: Nat -> Nat -> Nat
-    mult    Z  y = Z
-    mult (S x) y = plus y (mult x y)
-
-    odd :: Nat -> Bool
-    odd    Z  = False
-    odd (S n) = even n
-
-    even :: Nat -> Bool
-    even    Z  = True
-    even (S n) = odd n
-  \end{haskell}
-  \caption{A Haskell datatype for Peano numerals with some simple arithmetic
-    functions, including mutually-recursive definitions for \hs{odd} and
-    \hs{even}. \hs{Bool} is Haskell's built in boolean type, which can be
-    regarded as \hs{data Bool = True | False}.}
-  \label{fig:haskellexample}
-\end{figure}
 
 \begin{figure}
   \begin{subfigure}[plus]{\textwidth}
@@ -355,16 +422,18 @@ Lam "a" (Case (Var (Local "a"))
   \label{fig:coreexample}
 \end{figure}
 
-Figure~\ref{fig:haskellexample} shows some simple Haskell function definitions,
-along with a custom datatype for Peano numerals. The translation to Core syntax
-is routine, and shown in Figure~\ref{fig:coreexample}. Although the Core is more
-verbose, we can see that similar structure in the Haskell definitions gives rise
-to similar structure in the Core; for example, the definitions of \hs{odd} and
-\hs{even} are identical in both languages, except for the particular identifiers
-used. It is this close correspondence which allows us to analyse Core
-expressions in place of their more complicated Haskell source.
+GHC's translation from Haskell to Core is routine: Figure~\ref{fig:coreexample}
+shows the Core representation of functions from Figure~\ref{fig:haskellexample}.
+Although the Core is more verbose, we can see that similar structure in the
+Haskell definitions gives rise to similar structure in the Core; for example,
+the definitions of \hs{odd} and \hs{even} are identical in both languages,
+except for the particular identifiers used. It is this close correspondence
+which allows us to analyse Core expressions in place of their more complicated
+Haskell source.
 
 Note that we exclude representations for type-level entities, including datatype
-definitions like that of \hs{Nat}. GHC can represent these, but in this work we
-only consider reducible expressions (i.e. value-level bindings of the form
-\mbox{\hs{f a b ... = ...}}).
+definitions like that of \hs{Nat}. GHC can represent these, but we are mostly
+concerned with dynamic behaviour, which excludes types (they are \emph{erased}
+during compilation). For simplicity we also avoid using constructors directly,
+choosing instead to wrap them with normal functions (e.g. \hs{s x = S x}), since
+this makes our domain more symmetric and reduces cross-language differences.
