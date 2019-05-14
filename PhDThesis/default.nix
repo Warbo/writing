@@ -130,9 +130,13 @@ with { defs = rec {
     "outline.pdf" = outline;
     "thesis.pdf"  = thesis;
 
-    # Individual sections
-    "litreview.pdf"  = renderSection "litreview";
+    # Individual sections, for reviewing, etc.
     "background.pdf" = renderSection "background";
+    "benchmark.pdf"  = renderSection "benchmark";
+    "bucketing.pdf"  = renderSection "bucketing";
+    "litreview.pdf"  = renderSection "litreview";
+    "related.pdf"    = renderSection "related";
+    "futurework.pdf" = renderSection "futurework";
   });
 
   tests = callPackage ./supporting-material/tests.nix {};
