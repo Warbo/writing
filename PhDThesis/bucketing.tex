@@ -774,7 +774,7 @@ the others in their cluster (although most are recursive, due to the nature of
 the \hs{text} library).
 
 \begin{figure}
-  \begin{haskell}
+  \begin{common-lisp}
 (defun fact (n)
   (if (zp n) 1 (* n (fact (- n 1)))))
 
@@ -809,7 +809,7 @@ the \hs{text} library).
 
 (defun fib-tail (n)
   (helper-fib n 0 1))
-  \end{haskell}
+  \end{common-lisp}
   \caption{Common Lisp functions, both tail-recursive and non-tail-recursive.}
   \label{fig:lisp}
 \end{figure}
@@ -1072,7 +1072,7 @@ mostly interested in the syntax of reducible expressions (representing Haskell
 of the form \hs{f a b \dots = \dots}), and use the simplified syntax given below
 in BNF style ($[]$ and $(,)$ denote repetition and grouping, respectively):
 
-\begin{equation}\label{fig:coresyntax}
+\begin{equation}\label{eq:coresyntax}
   \begin{split}
     expr\    \rightarrow\ & \CVar\ id                          \\
                        |\ & \CLit\ literal                     \\
