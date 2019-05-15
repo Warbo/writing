@@ -29,4 +29,30 @@ with rec {
       done
       mkdir "$out"
     '';
+
+  no-bare-macros = runCommand "no-bare-macros"
+    {
+      inherit texFiles;
+      buildInputs = [ fail ];
+      header      = ../header;
+    }
+    ''
+      FAIL=0
+      for F in "$texFiles"/*.tex
+      do
+        while read -r CMD
+        do
+          if grep -v 'newcommand' < "$F" | grep "\\$CMD[^{]"
+          then
+            FAIL=1
+            echo "Spotted unbraced $CMD in $(basename "$F")" 1>&2
+          fi
+        done < <(grep 'newcommand{' < "$header" | cut -d '{' -f2-  |
+                                                  cut -d '}' -f1   |
+                                                  grep -v 'argmin' |
+                                                  grep -v '^\\C'   )
+      done
+      [[ "$FAIL" -eq 0 ]] || fail "Macros should end in {} for whitespace"
+      mkdir "$out"
+    '';
 }
