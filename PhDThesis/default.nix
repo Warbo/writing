@@ -18,10 +18,12 @@ with { defs = rec {
       fvextra     # Required by minted
       ifplatform  # Required by minted
       minted      # Code listings
+      multirow
       scheme-small
       tikz-qtree
       tikzinclude
       type1cm
+      xpatch
       xstring     # Required by minted
       ;
   });
@@ -131,6 +133,7 @@ with { defs = rec {
     "thesis.pdf"  = thesis;
 
     # Individual sections, for reviewing, etc.
+    "appendix.pdf"   = renderSection "appendix";
     "background.pdf" = renderSection "background";
     "benchmark.pdf"  = renderSection "benchmark";
     "bucketing.pdf"  = renderSection "bucketing";

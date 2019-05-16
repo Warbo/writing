@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass{book}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{hyperref}
@@ -6,8 +6,13 @@
 \usepackage{mathtools}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{csquotes}
+\usepackage{array}
 \usepackage{csvsimple}
+\usepackage{float}
+\restylefloat{table}
+\usepackage{hhline}
+\usepackage{multirow}
+\usepackage{csquotes}
 \usepackage[inline, shortlabels]{enumitem}
 \usepackage{minted}
 \usepackage{subcaption}
@@ -17,6 +22,7 @@
                 shapes, shapes.geometric}
 
 \newcommand{\etal}{{\em et al.}}
+\newcommand{\Bagai}{Bagai \etal{}}
 
 \newcommand{\fc}{System F\textsubscript{C}}
 \newcommand{\eval}{\texttt{eval}}
@@ -38,6 +44,7 @@
 \newcommand{\qcheck}{\textsc{QuickCheck}}
 \newcommand{\qspec}{\textsc{QuickSpec}}
 \newcommand{\hspec}{\textsc{HipSpec}}
+\newcommand{\mlspec}{\textsc{MLSpec}}
 \newcommand{\speculate}{\textsc{Speculate}}
 \newcommand{\hipster}{\textsc{Hipster}}
 \newcommand{\smallcheck}{\textsc{SmallCheck}}
@@ -65,6 +72,22 @@
 \newcommand{\CRec}{\texttt{Rec}}
 \newcommand{\CBind}{\texttt{Bind}}
 
+%% Interestingness table
+
+\newcommand{\iE}{\textbf{E}}
+\newcommand{\iN}{\textbf{N}}
+\newcommand{\iS}{\textbf{S}}
+\newcommand{\iA}{\textbf{A}}
+\newcommand{\iC}{\textbf{C}}
+\newcommand{\iU}{\textbf{U}}
+\newcommand{\tIFF}{if-and-only-if}
+\newcommand{\tNE}{non-exists}
+\newcommand{\tIMP}{implies}
+\newcommand{\tEQ}{equations}
+\newcommand{\tINE}{inequalities}
+\newcommand{\tCON}{conditional}
+\newcommand{\tRow}[1]{#1 \\ \hline}
+
 %% Language listings
 
 \providecommand{\coq}[1]{\mintinline{coq}{#1}}
@@ -83,7 +106,18 @@
 % flush against the left margin (i.e. we shouldn't indent our code blocks).
 \newenvironment{haskell}
   {\VerbatimEnvironment\begin{minted}[escapeinside=!!,mathescape=true]{haskell}}
-  {\end{minted}} 
+  {\end{minted}}
 
+% Define a cminted environment which centres the code on the page. Taken from
+% https://tex.stackexchange.com/a/161128/89790
+
+% \usepackage{xpatch,letltxmacro}
+% \LetLtxMacro{\cminted}{\minted}
+% \let\endcminted\endminted
+% \xpretocmd{\cminted}{\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}}{}{}
+
+% \newenvironment{chaskell}
+%   {{\centering\VerbatimEnvironment\begin{cminted}[escapeinside=!!,mathescape=true]{haskell}}
+%   {\end{cminted}\par}}
 
 \begin{document}
