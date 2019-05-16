@@ -47,10 +47,12 @@ with rec {
             FAIL=1
             echo "Spotted unbraced $CMD in $(basename "$F")" 1>&2
           fi
-        done < <(grep 'newcommand{' < "$header" | cut -d '{' -f2-  |
-                                                  cut -d '}' -f1   |
-                                                  grep -v 'argmin' |
-                                                  grep -v '^\\C'   )
+        done < <(grep 'newcommand{' < "$header" | cut -d '{' -f2-     |
+                                                  cut -d '}' -f1      |
+                                                  grep -v 'argmin'    |
+                                                  grep -v '^\\C'      |
+                                                  grep -v '^\\i[A-Z]' |
+                                                  grep -v '^\\t[A-Z]' )
       done
       [[ "$FAIL" -eq 0 ]] || fail "Macros should end in {} for whitespace"
       mkdir "$out"
