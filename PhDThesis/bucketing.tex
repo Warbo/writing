@@ -1,4 +1,4 @@
-\section{The Signature Selection Problem}
+\chapter{The Signature Selection Problem}
 
 Despite the clever search strategies employed by theory exploration tools, they
 all rely on enumerating combinations of definitions in some way, which can cause
@@ -59,7 +59,7 @@ work is surveyed in \S~\ref{sec:related} and we conclude in
 \S~\ref{sec:conclusion} with potential directions for future research.
 \fi
 
-\subsection{Background}
+\section{Background}
 \label{sec:background}
 
 As an example, giving the definitions from Figure~\ref{fig:haskellteexample} to
@@ -98,7 +98,7 @@ machine learning technique aims to predict these kinds of relations between
 functions, so we can create small signatures which can be explored quickly, yet
 have the potential to give rise to many equations.
 
-\subsection{Clustering}
+\section{Clustering}
 \label{sec:clustering}
 
 Our approach to scaling up \qspec{} takes inspiration from two sources. The
@@ -132,9 +132,6 @@ $k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
 \label{sec:sigselect}
 
 % TODO{2019-04-19}
-
-\section{Contributions}
-\label{sec:contributions}
 
 \subsection{Recurrent Clustering}
 \label{sec:recurrentclustering}
@@ -461,7 +458,7 @@ such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.
 
 \fi
 
-\subsection{Experiments}
+\section{Experiments}
 
 % TODO: This was taken from the Background section, so probably doesn't fit here
 % without some fiddling.
@@ -738,7 +735,8 @@ signature. This involves:
   not know what packages it may need. To work around this problem, we evaluate
   these strings of Haskell using a custom library called \texttt{nix-eval}. This
   uses the Nix package manager to obtain all of the required packages and make
-  them available to GHC.
+  them available to GHC, and is described further in
+  Appendix~\ref{sec:nix-eval}.
 
 \end{itemize}
 

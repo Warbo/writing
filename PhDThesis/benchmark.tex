@@ -1,4 +1,4 @@
-\section{Theory Exploration Benchmark}
+\chapter{Theory Exploration Benchmark}
 \label{sec:benchmark}
 
 If we wish to make measurable progress on the task of conjecture generation, we
@@ -12,7 +12,7 @@ similar to prior work, with the main difference being the source of definitions
 and ground truths: we take existing problem sets designed for automated theorem
 proving, and adapt their content for use in the conjecture generation setting.
 
-\subsection{Preparation}
+\section{Preparation}
 \label{section:prep}
 
 Automated theorem proving is an active area of research, with large problem sets
@@ -70,7 +70,7 @@ updated to use the remaining definition (e.g. chosen based on lexicographic
 order). In the above example, the \texttt{plus} function would be removed, and
 the commutativity statement updated to reference \texttt{add} instead.
 
-\subsection{Sampling}
+\section{Sampling}
 \label{section:sampling}
 
 We could, in theory, send these de-duplicated definitions straight into an MTE
@@ -117,7 +117,7 @@ on the tool's output. One downside of this restriction is that we limit the
 number of possible samples to measure; this is significant for sample sizes less
 than 3.
 
-\subsection{Evaluation}
+\section{Evaluation}
 \label{section:evaluation}
 
 Given a sample of definitions and a corresponding ground truth, the actual
@@ -450,7 +450,7 @@ design).
   \label{figure:flow_chart}
 \end{figure}
 
-\subsection{Application}
+\section{Application}
 \label{sec:application}
 
 We have applied our benchmarking methodology to the QuickSpec and IsaCoSy MTE
