@@ -1,19 +1,159 @@
 \subsection{Interestingness}
 
-Whilst there are many reasonably objective benchmarks for mathematical tasks
-such as automated theorem proving, the precision/recall analysis shown
-in~\cite{claessen2013automating}, and described further in $\S$\ref{sec:te}, is
-the only quantitative comparison of these recent MTE tools we have found in the
-literature. Our Theory Exploration Benchmark, described in
-section~\ref{sec:benchmark}, is essentially an extension of this approach, to a
-larger and more diverse set of examples. The suitability of the TIP theorem
-proving benchmark for our purposes, detailed in $\S$\ref{sec:tip}, is not
-coincidental, since its developers are also those of the IsaCoSy and QuickSpec
-tools we have tested. This goes some way to ensuring that our demonstration is a
-faithful representation of the task these tools were intended to solve; our
-independent repurposing of this problem set, in a way it was not designed for,
-reduces the risk that the benchmark is tailor-made for these tools (or that the
-tools over-fit to these particular problems).
+A major challenge when generating conjectures is choosing how to narrow down the
+resulting set to only those deemed ``interesting'', since this is an imprecise
+term with many different interpretations. For example, all existing approaches
+agree that simple tautologies are ``uninteresting'', but differ when it comes to
+more complex statements.  Colton \etal{} surveyed tools for theory formation
+and exploration, and their associated notions of ``interestingness'' for
+concepts and conjectures~\cite{colton2000notion}. Six qualities were identified,
+which are applied to conjectured properties as follows:
+
+{\bf Empirical plausibility} checks whether a property holds across some
+specific examples. This is especially useful for avoiding falsehoods, without
+resorting to a deductive proof search.
+
+{\bf Novelty} depends on whether the property, or one isomorphic or more
+general, has already been seen.
+
+{\bf Surprisingness} of a property is whether or not it is ``obvious'', for
+example if it is an instance of a tautology.
+
+{\bf Applicability} depends on the number of models in which a
+property holds. High applicability makes a property more interesting, but so
+does zero applicability (i.e. non-existence).
+
+{\bf Comprehensibility} depends on the syntactic complexity of the property's
+statement. Simpler statements are considered more interesting (which favours
+tools adopting a small-to-large search order).
+
+{\bf Utility} is the relevance or usefulness of a property to the user's
+particular task. For example, if we want to find properties which are useful for
+optimisation, like Equation~\ref{eq:mapreduce}, then utility would include
+whether the property justifies some rewrite rule, the difference in resource
+usage of the expressions involved, and how common those expressions are in real
+usage.
+
+% FIXME: This is original work, so should be in a different section
+\begin{table}
+  \centering
+  \begin{tabular}{ |l|l|c|c|c|c|c|c| }
+    \hline
+    \multirow{2}{*}{\textbf{Program}}                      &
+    \multirow{2}{*}{\textbf{Conjecture Types}}             &
+    \multicolumn{6}{c|}{\textbf{Interestingness Measures}} \\ \hhline{~~------}
+    \tRow{          &                     & \iE & \iN & \iS & \iA & \iC & \iU}
+    \tRow{AM        & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
+    \tRow{GT        & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
+    \tRow{Graffiti  & \tINE               &   X &   X &   X &     &   X &   X}
+    \tRow{\Bagai{}  & \tNE                &     &   X &     &   X &   X &    }
+    \tRow{HR        & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
+    \tRow{QuickSpec & \tEQ                &   X &   X &     &   X &   X &    }
+    \tRow{Speculate & \tCON\ \tEQ / \tINE &   X &   X &     &   X &   X &    }
+    \tRow{IsaCoSy   & \tEQ                &   X &   X &     &   X &   X &   X}
+    \tRow{IsaScheme & \tEQ                &   X &   X &     &   X &   X &   X}
+  \end{tabular}
+  \caption{Classification of MTE tools from~\cite{colton2000notion}, extended
+    to include four more recent tools. The interestingness measures are
+    \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
+    \iA{}pplicability, \iC{}omprehensibility (low complexity) and \iU{}tility.}
+  \label{table:colton}
+\end{table}
+
+% JUSTIFICATIONS
+%
+% IsaCoSy uses counter-example checking; this ensures empirical plausibility
+% IsaCoSy uses constraints to avoid special-cases; this ensures novelty
+% IsaCoSy uses utility, since there are some hard-coded patterns which are
+% looked for
+%
+% Speculate uses a form of unification to ensure novelty, making sure one
+% equation is not a special-case of another
+% Speculate uses LeanCheck to enumerate values, looking for counterexamples
+% Speculate uses testing, to ensure Empirical Plausibility
+%
+% QuickSpec uses QuickCheck to ensure empirical plausibility
+% QuickSpec uses a congruence closure algorithm to ensure novelty
+%
+% IsaScheme uses utility, since it determines the "quality" of a definition
+% based on how many theorems it appears in?
+% IsaScheme uses novelty, using an equational rewrite system (Knuth-Bendix
+% completion) to remove redundancies
+% IsaScheme uses utility, since it focuses on the terms and definitions of a
+% user's theory. However, don't all of them?
+% IsaScheme uses counterexample checking for empirical plausibility.
+
+% ONLY APPLIES TO PRECONDITIONS
+% APPLICABILITY: ensure a conjecture holds in many models (or exactly zero, in
+% the case of Bagai et al). Does the testing-based approach of QuickSpec and
+% Speculate ensure that there's a model? After all, these are concrete values
+% rather than e.g. implications of some abstract specification.
+
+% FIXME: Give brief description and reference for each system in the text.
+% We could include the more lengthy descriptions of IsaCoSy and QuickSpec here?
+
+We summarise the criteria in Table~\ref{table:colton} and state which were used
+in key ATF/MTE tools. The entries for AM, GT, Graffiti, \Bagai{} and HR are
+based on this survey (the latter is Colton's own tool). We extend this analysis
+to some more recent tools in the remaining rows (based on our understanding of
+their function): \qspec{}~\cite{QuickSpec},
+Speculate~\cite{braquehais2017speculate},
+IsaCoSy~\cite{Johansson.Dixon.Bundy:conjecture-generation}
+and IsaScheme~\cite{MontanoRivas2011}.
+
+These recent tools all use testing to check for counterexamples, which ensures
+results are empirically plausible and applicable (conditions are satisfiable,
+types are inhabited, etc.). They also use a small-to-large search order,
+ensuring more easily-comprehensibile conjectures are explored first.
+
+IsaCoSy ensures novelty using a constraint system to prevent special-cases being
+generated, whilst the others use post-hoc filters based on unification and term
+rewriting to achieve the same result. IsaCoSy is able to look for commonly
+desirable patterns, such as commutativity and associativity, which increases the
+utility of its output, whilst IsaScheme is completely based around such
+pattern-instantiation.
+
+This diversity of approaches makes it difficult to compare the existing
+evaluations of these tools directly. In particular, evaluation methods created
+for one tool might not make sense for another, due to assumptions made about
+the algorithms' operation. For example, the novelty filters used by \qspec{}
+and Speculate are applied to the whole output set, guaranteeing that no
+special-cases will appear; yet we cannot assume this in the case of IsaCoSy,
+since its constraint solver allows special cases if they're found \emph{before}
+the general case (it does not go back and discard previous results).
+
+In addition, attempting to \emph{measure} these qualities directly is difficult,
+and having too many measures complicates comparisons. System developers have
+employed a more practical alternative in their evaluations, which is to perform
+\emph{precision/recall} analysis against a \emph{ground-truth}. This requires
+choosing a set of definitions and a set of properties (the ground truth) which
+represent the ``ideal'' result of conjecture generation for those definitions.
+To analyse the quality of a tool's conjectures, we run it on these chosen
+definitions and compare its output to the ground truth:
+
+\begin{itemize}
+\item \emph{Precision} is the proportion of a tool's output which appears in
+  the ground truth (the ratio of true positives to all positives). This
+  penalises overly-liberal tools which output a large number of properties in
+  the hope that some turn out to be ``good''.
+\item \emph{Recall} is the proportion of the ground truth which appears in the
+  tool's output (the ratio of true positives to actual positives). This
+  penalises overly-conservative tools which generate very few properties as a
+  way to avoid ``bad'' ones.
+\end{itemize}
+
+To score 100\% on precision and recall, all of the properties which appear in
+the ground truth must have been conjectured, and nothing else. This gives us a
+simple method to evaluate and compare tools without requiring a general solution
+to the question of what is ``interesting''; although we must still decide what
+to put in the ground truth set, and what to leave out, for each measured set of
+definitions.
+
+The precision/recall analysis shown in~\cite{claessen2013automating} is the only
+quantitative comparison of recent MTE tools we have found in the literature.
+Our Theory Exploration Benchmark, described in section~\ref{sec:benchmark}, is
+essentially an extension of this approach, to a larger and more diverse set of
+examples.
 
 % TODO Include Colton/Bundy et al
 
