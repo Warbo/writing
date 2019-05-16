@@ -1,42 +1,47 @@
-\subsection{\texttt{nix-eval}}
+\section{\texttt{nix-eval}}
+\label{sec:nix-eval}
 
-Haskell's support for runtime evaluation of code (a la Lisp's \eval) is
-limited. The most popular mechanism is the \hint package, which is built
-on top of GHC's API and provides functions like
-\hs{eval :: MonadInterpreter m => String -> m String}. The \hs{MonadInterpreter}
-constraint ensures that GHC can be invoked and for managing its ``session'',
-which includes details like compiler flags, a list of imported modules and paths
-to compiled packages.
+\begin{sloppypar}
+  Haskell's support for runtime evaluation of code (\'a la Lisp's
+  \eval{}~\cite[\S~1.6]{edwards1962lisp}) is limited. The most popular mechanism
+  is the \hint{} package\footnote{https://hackage.haskell.org/package/hint},
+  which is built on top of GHC's API and provides functions like
+  \hs{eval :: MonadInterpreter m => String -> m String}. The
+  \hs{MonadInterpreter} constraint provides mechanisms for calling into GHC and
+  managing its ``session'', which includes details like compiler flags, a list
+  of imported modules and paths to compiled packages.
 
-This function doesn't return arbitrary types of value; only \hs{String}s. This
-is due to the given expression being passed to the \hs{show} function (e.g.
-\hs{eval "length []"} will produce \hs{"0" :: String}, not
-\hs{0 :: Int}).\footnote{\hs{show :: Show a => a -> String} is a method of the
-  \hs{Show} type class, and is the standard way to equip Haskell types values
-  with a printable representation (akin to Java's \texttt{toString} method).
-  \hs{show} has no associated laws, but it is conventional to make it the
-  inverse of the \hs{read :: Read a => String -> a} method of the \hs{Read} type
-  class (where possible).} Serialising results in this way simplifies the
-interface between evaluation contexts (in particular, type checking and
-inference doesn't need to cross the interface); at the cost of having to
-explicitly deserialise results into the desired type as needed.
+  This function doesn't return arbitrary types of value; only \hs{String}s. This
+  is due to the given expression being passed to the \hs{show} function (e.g.
+  \hs{eval "not True"} will produce \hs{"False" :: String}, not
+  \hs{False :: Bool}).\footnote{\hs{show :: Show a => a -> String} is a method
+    of the \hs{Show} type class, and is the standard way to equip Haskell types
+    with a printable representation (akin to Java's \texttt{toString} method).
+    \hs{show} has no associated laws, but convention is for \hs{show} to be the
+    inverse of the \hs{read :: Read a => String -> a} method of the \hs{Read}
+    type class (where possible).} Serialising results in this way simplifies the
+  interface between evaluation contexts (in particular, type checking and
+  inference doesn't need to cross the interface); at the cost of having to
+  explicitly deserialise results into the desired type as needed.
 
-One major problem with the \hint package is that the available packages
-(and GHC version) are hard-coded into the ``outer'' Haskell context. For
-example, a Haskell interpreter based on \hint would fail to evaluate
-expressions that use packages or GHC features other than those the interpreter
-was compiled against.\footnote{The package database could be overridden in
-  principle, but compatibility issues and version conflicts would make this
-  unreliable and error-prone in practice.} For our research we want a single
-program for exploring \hs{arbitrary} Haskell code, which makes approaches like
-\hint undesirable.
+  One major problem with \hint{} is that the available packages
+  (and GHC version) are hard-coded into the ``outer'' Haskell context. For
+  example, a Haskell interpreter based on \hint{} would be restricted to only
+  those packages and GHC features that are available during its
+  compilation.\footnote{The package database could be overridden in principle,
+    but compatibility issues and version conflicts would make this unreliable
+    and error-prone in practice.} For our research we want a single program for
+  exploring \emph{arbitrary} Haskell code, regardless of what package it comes
+  from, which makes approaches like those of \hint{} undesirable.
 
-Our solution is the \nixeval package. This provides a function
-\hs{eval :: Expr -> IO (Maybe String)}, which returns a \hs{String} for the same
-reasons as \hint, but differs in its handling of expressions and context. Rather
-than operating on a raw \hs{String}, \nixeval defines a type \hs{Expr}
-containing several fields to keep track of the context in which the expression
-is to be evaluated:
+  To solve this problem we created the \nixeval{}
+  package\footnote{https://hackage.haskell.org/package/nix-eval}. This provides
+  a function \hs{eval :: Expr -> IO (Maybe String)}, which produces \hs{String}s
+  for the same reasons as \hint{}, but differs in its handling of expressions
+  and context. Rather than operating on a raw \hs{String}, \nixeval{} defines
+  the \hs{Expr} type, containing several fields to keep track of the context in
+  which the expression is to be evaluated:
+\end{sloppypar}
 
 \begin{itemize}
 \item \hs{eExpr :: String} is the raw code itself.
@@ -51,9 +56,9 @@ is to be evaluated:
 The types \hs{Pkg}, \hs{Mod} and \hs{Flag} are just wrappers containing a
 \hs{String}; they are kept distinct to allow the type checker to catch
 mistakes.\footnote{Avoiding such distinctions (i.e. using types to track
-  representations but not semantics) is known as ``stringly-typed programming''
-  and contributes to widespread errors like injection attacks. In the case of
-  binary choices this principle is known as ``boolean blindness''.} These
+  representations but not semantics) is known as ``stringly-typed
+  programming''~\cite{c2stringlytyped}. In the case of binary choices this
+  practice is known as ``boolean blindness''~\cite[\S~26.2]{Harper:2009}.} These
 wrapper types, as well as \hs{Expr} itself, implement the \hs{IsString} type
 class, which allows GHC's \texttt{OverloadedStrings} language extension to parse
 them from quoted literals, for example:
@@ -66,18 +71,18 @@ textToUpper = withPkgs       ["text"     ]  -- This is a  Pkg
                     "toUpper"))             -- This is an Expr
 \end{haskell}
 
-The main advantage over \hint is the reification of packages, which can be
+The main advantage over \hint{} is the reification of packages, which can be
 computed in arbitrary ways (including from user input). When an \hs{Expr} is
 passed to our \hs{eval} function, a new \texttt{runhaskell} process is launched
 with the given \hs{eFlags} (hence the presence of \hs{IO}). The elements of
 \hs{eMods} are prefixed with \hs{"import "} and fed into its standard input
 stream, followed by the contents of \hs{ePreamble}. The \hs{eExpr} code is
 wrapped in parentheses and prefixed with \hs{"main = Prelude.putStr"} which acts
-as the entry point of the generated code (\hs{Prelude.putStr} writes a
-\hs{String} to standard output).\footnote{The code generation for \hs{eExpr} is
-  actually user-configurable, in case the default is too simplistic. Unlike
-  \hint we never force calls to the \hs{show} method, since normal function
-  calls are easier to specify and override than type class instances.} If the
+as the entry point of the generated code (writing the expression, which must be
+a \hs{String}, to standard output).\footnote{The code generation for \hs{eExpr}
+  is actually user-configurable, in case the default is too simplistic. Unlike
+  \hint{} we never force calls to the \hs{show} method, since normal function
+  calls are easier to specify and override than type class methods.} If the
 subprocess exits successfully, its standard output is returned (wrapped in
 \hs{Just}); otherwise it is written to the standard error stream and a
 \hs{Nothing} value is returned (the subprocess inherits the parent's standard
@@ -87,12 +92,12 @@ The \texttt{runhaskell} command can be invoked in two ways: if
 \texttt{runhaskell} is available via the \texttt{PATH} environment variable, and
 the contents of \hs{ePkgs} are all installed in its package database, then we
 invoke that command directly. If not, we use the \texttt{nix-shell} command of
-the Nix package manager to invoke \texttt{runhaskell} in a sandbox~\cite{TODO}.
-We use the Nix language to request a sandbox containing GHC and all of the
-elements of \hs{ePkgs}. We also allow the default Nix packages to be overridden
-via an environment variable, which allows the user to define their own packages,
-select particular versions, or perform any other arbitrary setup (since the Nix
-language is Turing-complete).
+the Nix package manager to invoke \texttt{runhaskell} in a
+sandbox~\cite{dolstra2004nix}. We use the Nix language to request a sandbox
+containing GHC and all of the elements of \hs{ePkgs}. We also allow the default
+Nix packages to be overridden via an environment variable, which allows the user
+to define their own packages, select particular versions, or perform any other
+arbitrary setup (since the Nix language is Turing-complete).
 
 Nix packages are immutable and (mostly) reproducible, which allows sandboxes and
 their components to be re-used, and even shared across machines. However, any
@@ -100,31 +105,27 @@ package which isn't cached in this way must be built from source, which can
 cause \hs{eval} to take an arbitrarily long time. Even a cached sandbox can take
 a few seconds to initialise (largely due to I/O latency as Nix computes and
 inspects the sandbox components). To avoid too much overhead, it is advisable to
-invoke \hs{eval} as few times as possible (preferably only once). If we need to
+invoke \hs{eval} as few times as possible (ideally only once). If we need to
 dynamically evaluate multiple parts of a program, it might be preferable to move
 them all into one big \hs{Expr} value.
 
 \begin{figure}
   \begin{haskell}
--- An Expr representing a list of the given Exprs
-asList :: [Expr] -> Expr
-asList = foldr (\x -> (("(:)" $$ x) $$)) "[]"
+-- Apply x to n undefined arguments; result is undefined with x's output type
+addCalls :: Int -> Expr -> Expr
+addCalls 0 x = x
+addCalls n x = addCalls (n-1) (x $$ "undefined")
+
+-- Identity function, monomorphised to the output type of "f" (of arity a)
+converter :: Expr
+converter = ("flip" $$ "asTypeOf") $$ addCalls a "f"
 
 -- Composes the given list of functions using the (.) operator
 compose :: [Expr] -> Expr
 compose [x]    = x
 compose (x:xs) = ("(.)" $$ x) $$ compose xs
 
--- Apply x to n undefined arguments; result is undefined with x's output type
-addCalls :: Int -> Expr -> Expr
-addCalls 0 x = x
-addCalls n x = addCalls (n-1) (x $$ "undefined")
-
--- Coerces values to have the output type of a known function "f" (of arity a)
-converter :: Expr
-converter = ("flip" $$ "asTypeOf") $$ addCalls a "f"
-
--- Coerces a value to the output type of "f", serialises it then hashes it
+-- Forces a value's type, serialises it then hashes it
 hasher :: Expr
 hasher = compose [withPkgs ["murmur-hash"]
                     (qualified "Data.Digest.Murmur32" "asWord32"),
@@ -136,46 +137,47 @@ hasher = compose [withPkgs ["murmur-hash"]
                     (qualified "Data.Serialize" "put"),
                   converter]
   \end{haskell}
-  \caption{Example usage of \nixeval functions, taken from \textsc{ML4HS}, which
-    invokes \qspec on arbitrary user-provided functions.}
+  \caption{Example usage of \nixeval{} functions, taken from \textsc{ML4HS}.
+    These are used to dynamically generate \qspec{} signatures of user-provided
+    functions.}
   \label{fig:nix-eval}
 \end{figure}
 
-Using \hs{String} functions to manipulate such complicated values soon becomes
-unwieldy, so a suite of combinators are provided for composing \hs{Expr} values
-in useful ways; examples are shown in Figure~\ref{fig:nix-eval}. Besides the
-\hs{withFoo} functions shown before, the \hs{qualified} function can reduce the
-ambiguity of names while avoiding repetition of module names: a call like
-\hs{qualified "Data.Text" "toUpper"} returns an \hs{Expr} of the name
-\hs{"Data.Text.toUpper"} with the \hs{"Data.Text"} \hs{Mod}ule in its
-\hs{eMods} list. \hs{foo $$ bar} denotes function application (analogous to
-Haskell's standard \hs{$}%$ operator), by juxtaposing the \hs{eExpr} of \hs{foo}
-with that of \hs{bar} (wrapping both in parentheses to ensure precedence); the
-contexts are appended. Finally, the \hs{asString :: Show a => a -> Expr}
-function calls \hs{show} on the given value and wraps the resulting \hs{String}
-into an \hs{Expr}; this is especially useful for representing literal
-\hs{String}s, since their \hs{show} instance will wrap them in quotes and
-perform any required escaping.
+\begin{sloppypar}
+  Using \hs{String} functions to manipulate such complicated values soon becomes
+  unwieldy, so a suite of combinators (such as the \hs{withFoo} functions above)
+  are provided for composing \hs{Expr} values in useful ways; examples are shown
+  in Figure~\ref{fig:nix-eval}. The \hs{qualified} function is particularly
+  useful, for qualifying names with their module (reducing ambiguity and making
+  composition more robust) and appending to \hs{eMods}, i.e.
+  \hs{qualified "Data.Text" "toUpper"} is equivalent to
+  \hs{withMods ["Data.Text"] "Data.Text.toUpper"}. Function calls are also very
+  common, which can be written as \hs{foo $$ bar} (analogous to Haskell's
+  standard \hs{$} %$
+  operator); this wraps both \hs{Expr}essions in parentheses
+  and juxtaposes them, appending both contexts.
+\end{sloppypar}
 
 Despite being more structured than raw \hs{String}s, the the above API still
-suffers from a form of "stringly-typed programming"; notably, that every encoded
-expression has the same type: \hs{Expr}. We can avoid this through the use of
-\emph{phantom types}: overly-restrictive type annotations, which are unrelated
-to the encoding but must still match up in order to pass the type checker. In
-particular we can represent typed expressions like this:
+suffers from a form of ``stringly-typed programming''; notably, that every
+encoded expression has the same type: \hs{Expr}. We can avoid this through the
+use of \emph{phantom types}: overly-restrictive type annotations, which are
+unrelated to the encoding but must still match up in order to pass the type
+checker~\cite[\S~5.1]{leijen1999domain}. In particular we can represent typed
+expressions like this:
 
 \begin{haskell}
 newtype TypedExpr t = TE Expr
 \end{haskell}
 
 Notice that the parameter \hs{t} doesn't appear on the right hand side: the
-values of \hs{TypedExpr} are just those of \hs{Expr} (the phantom type is
-\emph{erased} after type-checking). The \hs{TE} constructor is hence polymorphic
-in \hs{t}, so \hs{TE x :: TypedExpr T} is valid for \emph{any} choice of \hs{x}
-and \hs{T} (similar to how \hs{Nil :: List T} is valid for any choice of
-\hs{T}). In particular, this includes the type of the expression
-\emph{represented by} \hs{x}, for example \hs{TE "True" :: TypedExpr Bool} is a
-type-correct expression.
+values of \hs{TypedExpr} are just those of \hs{Expr} (the wrapper, along with
+the phantom type, is \emph{erased} after type-checking). The \hs{TE} constructor
+is hence polymorphic in \hs{t}, so \hs{TE x :: TypedExpr T} is valid for
+\emph{any} choice of \hs{x} and \hs{T} (similar to how \hs{Nil :: List T} is
+valid for any choice of \hs{T}). In particular, this includes the type of the
+expression \emph{represented by} \hs{x}, for example
+\hs{TE "True" :: TypedExpr Bool} is a type-correct expression.
 
 Haskell will infer the most general type of an expression if none is provided
 (i.e. \hs{forall t. TypedExpr t}), but will honour more restricted annotations
@@ -198,34 +200,43 @@ types, most notably:
 ($$$) :: TypedExpr (a -> b) -> TypedExpr a -> TypedExpr b
 TE f $$$ TE x = TE (f $$ x)
 
--- Only expressions of type String can be evaluated, since we use Prelude.putStr
+-- Only expressions of type String can be evaluated
 tEval :: TypedExpr String -> IO (Maybe String)
 tEval (TE x) = eval x
 \end{haskell}
 
-Haskell will accept any annotation, so care must be taken to ensure that they
-correspond correctly to the encoded expressions. If user-provided literals
-aren't required then the \hs{TE} constructor can be kept private to prevent
-unsound assertions or coercions. However, there is a more subtle problem with
-such \hs{TypedExpr}s: the whole point of \nixeval is to manipulate and evaluate
-code whose dependencies are unknown or unavailable at compile time. For example,
-we cannot assign a meaningful type at compile time to an expression which has
-been generated from user input. Even if we know the value of an expression at
-compile time, its type may come from a dependency that our program doesn't have
-access to. In these cases the \hs{TypedExpr} approach can still be useful for
-auxiliary code whose types are known to us; those unknown or unavailable parts
-can either be unwrapped into raw \hs{Expr}s, or dummy types can be used instead.
+Haskell will not check that these annotation match the encoded expressions, so
+care must be taken to ensure that they correspond correctly. Unannotated values
+will remain polymorphic and unify with anything, which reduces the verbosity and
+correctness burden (e.g. for intermediate values) whilst still guaranteeing
+consistency (unification will fail if multiple incompatible types are used). If
+user-provided literals aren't required then the \hs{TE} constructor can be kept
+private to prevent unsound assertions or coercions.
+
+However, there is a more subtle problem with such \hs{TypedExpr}s: the whole
+point of \nixeval{} is to manipulate and evaluate code whose dependencies are
+unknown or unavailable at compile time. For example, we cannot assign a
+meaningful type at compile time to an expression which has been generated from
+user input. Even if we know the value of an expression at compile time, its type
+may come from a dependency that our program doesn't have access to. In these
+cases the \hs{TypedExpr} approach can still be useful for auxiliary code whose
+types are known to us; those unknown or unavailable parts can either be left
+polymorphic, unwrapped into raw \hs{Expr}s, or dummy types can be used instead.
 For example, if we are manipulating code involving the \hs{Data.Text.Text} type,
 but we don't have or want the \texttt{text} package in our dependencies, we can
-declare an empty type like \hs{data TEXT} (note that this declaration has no
-right-hand side) and use this in our annotations in place of
-\hs{Data.Text.Text}. The compiler will type-check our code as desired, ensuring
-functions are called on appropriate arguments, \hs{tEval} is given on a
-\hs{String}, etc.
+declare an empty type like:
 
-In the course of writing MLSpec we experimented with both raw \hs{Expr} and
+\begin{haskell}
+data TEXT  -- No constructors given, making this type empty
+\end{haskell}
+
+We can use this in our annotations in place of \hs{Data.Text.Text}. The compiler
+will type-check our code as desired, ensuring functions are called on
+appropriate arguments, \hs{tEval} is called with a \hs{String}, etc.
+
+In the course of writing \mlspec{} we experimented with both raw \hs{Expr} and
 \hs{TypedExpr} values. Whilst we found the latter easier for constructing large
 expressions, we ultimately found it even more productive to move as much
 functionality as possible into a standalone Cabal package
-(\texttt{mlspec-helper}) and have MLSpec call into that code from simple
-\hs{Expr} values.
+(\texttt{mlspec-helper}), add that package to the Nix package set and have
+\mlspec{} call it using simple \hs{Expr} values.
