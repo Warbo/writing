@@ -57,4 +57,44 @@ with rec {
       [[ "$FAIL" -eq 0 ]] || fail "Macros should end in {} for whitespace"
       mkdir "$out"
     '';
+
+  no-unmacroed-terms =
+    with nixListToBashArray {
+      name = "TERMS";
+      args = [
+        "hackage"
+        "hipspec"
+        "hipster"
+        "isacosy"
+        "isascheme"
+        "mlspec"
+        "quickcheck"
+        "quickspec"
+        "smallcheck"
+      ];
+    };
+    runCommand "no-unmacroed-terms"
+      (env // {
+        inherit texFiles;
+        buildInputs = [ fail ];
+      })
+      ''
+        ${code}
+        FAIL=0
+        for F in "$texFiles"/*.tex
+        do
+          for TERM in "''${TERMS[@]}"
+          do
+            if grep -i "$TERM" < "$F"
+            then
+              FAIL=1
+              NAME=$(basename "$F")
+              echo "Spotted '$TERM', which should be a macro, in $NAME" 1>&2
+            fi
+          done
+      done
+      [[ "$FAIL" -eq 0 ]] ||
+        fail "Terms written directly, when macros should be used"
+      mkdir "$out"
+    '';
 }
