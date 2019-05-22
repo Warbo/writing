@@ -1,5 +1,10 @@
-\section{QuickCheck}
-\label{sec:quickcheck}
+\section{Property Checking}
+\label{sec:propertychecking}
+
+% TODO: Automated testing
+% TODO: Agile
+% TODO: Unit testing
+% TODO:
 
 Although unit testing is the de facto industry standard for quality assurance in
 non-critical systems, the level of confidence it provides is rather low, and
@@ -21,7 +26,7 @@ The intent of the function is to map an input $n$ to an output $n!$. The tests
 check a few properties of the implementation, including the base case, that the
 function is monotonically increasing, and a relationship between adjacent
 outputs. However, these tests will \emph{not} expose a serious problem with the
-implementation: it diverges on half of its possible inputs!
+implementation: it diverges on half of its possible inputs.
 
 All of Haskell's built-in numeric types allow negative numbers, which this
 implementation doesn't take into account. Whilst this is a rather trivial
@@ -56,7 +61,18 @@ Haskell offers a partial solution to this problem in the form of \emph{property
   checking}. Tools such as \qcheck{} separate tests into three components: a
 \emph{property} to check, which unlike a unit test may contain \emph{free
   variables}; a source of values to instantiate these free variables; and a
-stopping criterion. Here is how we might restate our unit tests as properties:
+stopping criterion.
+
+\subsection{\qcheck{}}
+\label{sec:quickcheck}
+
+\qcheck{}~\cite{quickcheck} is the most widely used property checking library
+for
+Haskell~\footnote{According to downloads counted at
+  \href{http://hackage.haskell.org/packages/browse}, and packages depending on
+  it at \href{https://packdeps.haskellers.com/reverse/QuickCheck}, accessed on
+  2019-05-21.}. Here is how we might restate our unit tests as \qcheck{}
+properties:
 
 \begin{haskell}
 fact_base        = factorial 0 == factorial 1
@@ -96,12 +112,12 @@ manifests in two ways:
   negative numbers, which we weren't expecting.
 \end{itemize}
 
-Property checking is certainly an improvement over unit testing, but the problem
-of tests being biased towards expected cases remains, since we are manually
-specifying the properties to be checked.
-
-We can reduce this bias further through the use of \emph{theory exploration}
-tools, such as \qspec{} and \hspec{}. These programs \emph{discover} properties
-of a ``theory'' (e.g. a library), through a combination of brute-force
-enumeration, random testing and (in the case of \hspec{}) automated theorem
-proving.
+Whilst property checking generalises and improves upon unit testing, the problem
+of tests being biased towards expected cases remains, since the properties to be
+checked are still manually specified. Property checking can be complemented by
+\emph{theory exploration} (TE), which avoids this bias by \emph{discovering}
+such properties; through a combination of brute-force enumeration, random
+testing and (in the case of \hspec{} and \hipster{}) automated theorem proving.
+These TE systems make use of property checkers as part of their search process,
+to try and disprove generated conjectures before output (to the user, or a
+subsequent tool).
