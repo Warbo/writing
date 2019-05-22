@@ -16,11 +16,15 @@ has been tackled extensively in the literature~\cite{colton2000notion}.
 % END TOTO
 
 In this work we consider the application of \emph{(automated) theory
-  exploration} to generate conjectures about code. Existing tools are able to
-\emph{prove} those conjectures, and hence output \emph{novel} theorems without
-guidance from the user. The method of conjecture generation is a key
-characteristic of any theory exploration system, although all existing
-implementations rely on brute force enumeration to some degree.
+  exploration} (TE) to generate conjectures about code\footnote{In principle TE
+  can be used with any formal system, but appropriate methods can differ
+  according to the underlying logic, etc. that is in use. We focus on Haskell
+  code to anchor these variables, and to ensure our results have immediate
+  utility.}. Existing tools are able to \emph{prove} those conjectures, and
+hence output \emph{novel} theorems without guidance from the user. The method of
+conjecture generation is a key characteristic of any theory exploration system,
+although all existing implementations rely on brute force enumeration to some
+degree.
 
 We focus on \qspec{}~\cite{QuickSpec}, which conjectures equations about Haskell
 code (these may be fed into another tool, such as \hspec{}, for proving). We
