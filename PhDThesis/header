@@ -48,6 +48,7 @@
 \newcommand{\speculate}{\textsc{Speculate}}
 \newcommand{\hipster}{\textsc{Hipster}}
 \newcommand{\smallcheck}{\textsc{SmallCheck}}
+\newcommand{\hackage}{\href{http://hackage.haskell.org}{Hackage}}
 \newcommand{\equal}{=}
 
 %% GHC Core

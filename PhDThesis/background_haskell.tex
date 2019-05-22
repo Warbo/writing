@@ -235,9 +235,9 @@ at user host = if user == "" || host == ""
 
   An \hs{Email} value can be constructed by passing any two \hs{String}s to
   \hs{E}, but \hs{E} is private (not exported). The \hs{at} function is
-  exported, but only passes its arguments to \hs{E} iff they are not empty.\footnote{\hs{Maybe t} is a
-    safer alternative to the \textsc{Null} construct of other
-    languages~\cite{hoare2009null}. It is defined as
+  exported, but only passes its arguments to \hs{E} iff they are not
+  empty.\footnote{\hs{Maybe t} is a safer alternative to the \textsc{Null}
+    construct of other languages~\cite{hoare2009null}. It is defined as
     \hs{data Maybe t = Nothing | Just t} and can be understood as an optional
     value, or a computation which may fail, or as a list with at most one
     element, or as a degenerate search tree with no
@@ -279,7 +279,7 @@ languages or theorem proving systems, include:
 
 \begin{itemize}
 \item The large amount of Haskell code which is freely available online, e.g. in
-  repositories like \href{http://hackage.haskell.org}{Hackage}, with which we
+  repositories like \hackage{}, with which we
   can experiment.
 
 \item The existence of theory exploration systems such as \hspec{}, \qspec{} and
@@ -331,7 +331,8 @@ languages or theorem proving systems, include:
     $\mathcal{D}$ & constructor identifiers
   \end{tabular}
 
-  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote repetition and grouping, respectively.}
+  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote
+    repetition and grouping, respectively.}
   \label{fig:coresyntax}
 \end{figure}
 
@@ -339,6 +340,9 @@ Further evidence of Haskell's suitability for theory exploration is given by the
 fact that the state-of-the-art implementation for Isabelle/HOL, the
 \textsc{Hipster}~\cite{Hipster} system, is actually implemented by translating
 to Haskell and invoking \hspec{}~\cite{claessen2013automating}.
+
+\subsection{GHC Core}
+\label{sec:ghccore}
 
 Whilst our systems and experiments use normal Haskell code, for simplicity we
 perform some of our analyses on an intermediate representation of the
