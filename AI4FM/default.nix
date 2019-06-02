@@ -13,6 +13,7 @@ with rec {
 runCommand "ai4fm"
   {
     inherit bibtex;
+    __noChroot  = true;
     src         = ./.;
     buildInputs = [ ditaa pandocPkgs tex ];
   }
