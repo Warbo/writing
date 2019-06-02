@@ -84,7 +84,7 @@ multiple specialised instances. Related techniques, like \emph{symbolic
 execution of code, where unknown runtime data is represented as opaque
 metavariables. Property- and model-checkers are similar, except they work
 empirically by performing multiple runs, instantiating metavariables with
-synthetic data (\qcheck{} does this randomly, \textsc{SmallCheck} enumerates
+synthetic data (\quickcheck{} does this randomly, \smallcheck{} enumerates
 values, etc.).
 
 Efficiency can be calculated using techniques like cost
@@ -109,7 +109,7 @@ study~\cite{mudigonda2017learning}.
 The open-ended search process of such superoptimisers is similar to application
 of mathematical theory exploration to software property discovery, especially
 when exploration is limited to equality properties (which is the case for
-\textsc{IsaCoSy} and \textsc{QuickSpec}). Quality metrics like efficiency (e.g.
+\isacosy{} and \quickspec{}). Quality metrics like efficiency (e.g.
 relative instruction count) can be considered a subset of the interestingness
 criteria of theory exploration. The \emph{aims} of these analyses are in
 opposition, since theory exploration \emph{builds up} structure and abstraction

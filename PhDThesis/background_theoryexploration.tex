@@ -1,45 +1,46 @@
 \section{Theory Exploration}
 \label{sec:theoryexploration}
 
-% TODO Work this in
+(Automated) Theory Exploration (TE) is the task of taking a \emph{signature}
+of definitions in some formal system (for example a programming language) and
+automatically generating a set of formal statements (properties) involving
+those definitions. These may be conjectures or theorems (proven either by
+sending conjectures to an automated theorem prover, or by having the generating
+procedure proceed in logically sound steps). These statements must also be
+``interesting'' in some way, to rule out unhelpful trivialities such as
+iterating a pattern over and over (e.g. \hs{x + 0 = x}, \hs{(x + 0) + 0 = x},
+\dots).
+
 \iffalse
-Theory exploration is the task of taking a \emph{signature} of definitions in
-some formal system (for example a programming language) and automatically
-generating a set of formal statements (properties) involving those
-definitions. These may be conjectures or theorems (proven either by sending
-conjectures to an automated theorem prover, or by having the generating
-procedure proceed in logically sound steps); in either case, these statements
-must also be ``interesting'' in some way. It is beyond the scope of this paper
+It is beyond the scope of this paper
 to define what makes a mathematical statement ``interesting'', but this problem
 has been tackled extensively in the literature~\cite{colton2000notion}.
 \fi
 % END TOTO
 
-In this work we consider the application of \emph{(automated) theory
-  exploration} (TE) to generate conjectures about code\footnote{In principle TE
-  can be used with any formal system, but appropriate methods can differ
-  according to the underlying logic, etc. that is in use. We focus on Haskell
-  code to anchor these variables, and to ensure our results have immediate
-  utility.}. Existing tools are able to \emph{prove} those conjectures, and
-hence output \emph{novel} theorems without guidance from the user. The method of
-conjecture generation is a key characteristic of any theory exploration system,
-although all existing implementations rely on brute force enumeration to some
-degree.
+The choice of appropriate methods can differ according to the underlying logic,
+etc. that is in use, so in this work we ground ourselves by applying TE to
+discovering properties of pure functional software libraries, mostly in the
+Haskell programming language. This also gives our results immediate utility to
+software engineering. We ignore the issue of \emph{proving} such conjectures,
+deferring that task to existing tools (such as \hipspec{}).
 
-We focus on \qspec{}~\cite{QuickSpec}, which conjectures equations about Haskell
-code (these may be fed into another tool, such as \hspec{}, for proving). We
-have used version 1 of \qspec{} in our experiments, due to its availability,
-stability and tooling integration; hence references to \qspec{} are to version 1
-unless stated otherwise. At the time of writing there is a \qspec{} version 2
-available, which has a much improved generation procedure which can be
-significantly faster than its predecessor. Whilst \qspec{} 2 has advanced the
-state of the art in theory exploration, our preliminary experience has found
-that it still suffers the scaling issues we identify in this work; indeed, we
-even encountered memory exhaustion from some of the examples included with the
-\qspec{} 2 source code! Since \qspec{} 2 has less integration with the tooling
-we have used, we leave a more thorough analysis of it (and related systems such
-as \speculate{}) for future work, pending the necessary infrastructure changes
-that would require.
+The method of conjecture generation is a key characteristic of any theory
+exploration system, although all existing implementations rely on brute force
+enumeration to some degree. We focus on \quickspec{}~\cite{QuickSpec}, which
+conjectures equations about Haskell code. We have used version 1 of
+\quickspec{} in our experiments, due to its availability, stability and tooling
+integration; hence references to \quickspec{} are to version 1 unless stated
+otherwise. At the time of writing there is a \quickspec{} version 2 available,
+which has a much improved generation procedure which can be significantly faster
+than its predecessor. Whilst \quickspec{} 2 has advanced the state of the art in
+theory exploration, our preliminary experience has found that it still suffers
+the scaling issues we identify in this work\footnote{We encountered memory
+  exhaustion when trying to run some of the examples included with the
+  \quickspec{} 2 source code; let alone auto-generated signatures.} Since
+\quickspec{} 2 has less integration with the tooling we have used, we leave a
+more thorough analysis of it (and related systems such as \speculate{}) for
+future work, pending the necessary infrastructure changes that would require.
 
 \begin{figure}
   \centering
@@ -70,87 +71,64 @@ that would require.
   \label{fig:haskellteexample}
 \end{figure}
 
-\qspec{} (version 1) is written in the Haskell programming language, and works
-with definitions which are also written in Haskell. A thorough description of
-Haskell, including its suitability for theory exploration, can be found
-in~\ref{sec:haskell}. For illustrative purposes, some simple Haskell definitions
-are shown in Figure~\ref{fig:haskellteexample}. The following procedure is used to
-generate conjectures, which are both plausible (due to testing on many examples)
-and potentially interesting (due to being mutually irreducible):
+\quickspec{} (version 1) is written in the Haskell programming language, and
+works with definitions which are also written in Haskell. A thorough description
+of Haskell, including its suitability for theory exploration, can be found
+in \S~\ref{sec:haskell}. For illustrative purposes, some simple Haskell
+definitions are shown in Figure~\ref{fig:haskellteexample}. \quickspec{} uses
+the following procedure to generate conjectures, which are both plausible (due
+to testing on many examples) and potentially interesting (due to being mutually irreducible):
 
 \begin{enumerate}
-\item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{}
-  generates a list $terms$ containing the constants (including functions) from
-  $\Sigma$, the variables from $V$ and type-correct function applications
-  $f(x)$, where $f$ and $x$ are elements of $terms$ \iffalse TODO: A little
-  awkward; maybe use the above notation? \fi. To ensure the list is finite,
-  function applications are only nested up to a specified depth (by default, 3).
+\item Given a signature $\Sigma$ of typed expressions and set of variables $V$,
+  \quickspec{} generates a list $terms$ containing the expressions from
+  $\Sigma$ (including functions), the variables from $V$ and type-correct
+  function applications \hs{f x}, where \hs{f} and \hs{x} are elements of
+  $terms$. To ensure the list is finite, function applications are only nested
+  up to a specified depth (by default, 3).
 \item The elements of $terms$ are grouped into equivalence classes, based on
   their type.
-\item Each variable is instantiated to a particular value, generated randomly by
-  \qcheck{}.
-\item For each class, the members are compared (using a pre-specified function,
-  such as equality \hs{==}) to see if these instantiations have caused an
-  observable difference between members. If so, the class is split up to
-  separate such distinguishable members.
-\item The previous steps of variable instantiation and comparison are repeated
-  until the classes stabilise (i.e. no differences have been observed for some
-  specified number of repetitions).
-\item A set of equations are then conjectured, relating each class's members.
-\end{enumerate}
-
-\iffalse
-% TODO: Compare the above to this; merge/swap anything that's better
-\begin{enumerate}
-\item Given a typed signature $\Sigma$ and set of variables $V$, \qspec{}
-  generates a list $terms$ containing the constants (including functions) from
-  $\Sigma$, the variables from $V$ and type-correct function applications
-  \hs{f x}, where \hs{f} and \hs{x} are elements of $terms$. To ensure the list
-  is finite, function applications are only nested up to a specified depth (by
-  default, 3).
-\item The elements of $terms$ are grouped into equivalence classes, based on
-  their type.
-\item The equivalence of terms in each class is tested using \qcheck{}:
+\item The equivalence of terms in each class is tested using \quickcheck{}:
   variables are instantiated to particular values, generated randomly, and the
   resulting closed expressions are evaluated and compared for equality.
 \item If a class is found to have non-equal members, it is split up to separate
   those members.
-\item The previous steps of testing and splitting are repeated until the classes
-  stabilise (i.e. no differences have been observed for some specified number of
-  repetitions).
+\item The previous steps of variable instantiation and comparison are repeated
+  until the classes stabilise (i.e. no differences have been observed for some
+  specified number of repetitions).
 \item For each class, one member is selected and equations are conjectured that
   it is equal to each of the other members.
 \item A congruence closure algorithm is applied to these equations, to discard
   any which are implied by the others.
 \end{enumerate}
-\fi
 
-Such conjectures can be used in several ways: they can be simplified for direct
-presentation to the user (for example via the congruence closure algorithm
-\iffalse\cite{TODO}\fi), sent to a more rigorous system like \hspec{} or
-\hipster{} for proving, or even serve as a background theory for an
-automated theorem prover \cite{claessen2013automating}.
+Such conjectures can be used in several ways: they can be presented directly
+to the user, sent to a more rigorous system like \hipspec{} or \hipster{} for
+proving, or even serve as a background theory for an automated theorem
+prover~\cite{claessen2013automating}.
 
 As an example, we can consider a simple signature containing the expressions
-from Figure \ref{fig:haskellteexample}:
+from Figure~\ref{fig:haskellteexample}, and some suitable variables:
 
 \begin{align*}
-  \Sigma_{\texttt{Nat}} = \{\texttt{Z}, \texttt{S}, \texttt{plus}, \texttt{mult}, \texttt{odd}, \texttt{even}\}
+  \Sigma_{\hs{Nat}} &= \{\hs{Z},\ \hs{S},\ \hs{plus},\ \hs{mult},\ \hs{odd},
+                       \ \hs{even}\} \\
+  V_{\hs{Nat}}     &= \{\hs{a :: Nat},\ \hs{b :: Nat},\ \hs{c :: Nat}\}
 \end{align*}
 
-Together with a set of variables, say $V_{\texttt{Nat}} = \{a, b, c\}$,
-\qspec{}'s enumeration will resemble the following:
+\quickspec{}'s enumeration of these terms will resemble the following:
 
 \begin{align*}
-  terms_{\texttt{Nat}} = [& \texttt{Z},\ \texttt{S},\ \texttt{plus},\ \texttt{mult},\ \texttt{odd},\ \texttt{even},\ a,\ b,\ c,\ \texttt{S Z},\ \texttt{S}\ a,\ \texttt{S}\ b, \\
-                     & \texttt{S}\ c,\ \texttt{plus Z},\ \texttt{plus}\ a,\ \dots ]
+  terms_{\hs{Nat}} = [& \hs{Z},\ \hs{S},\ \hs{plus},\ \hs{mult},\ \hs{odd},
+                     \ \hs{even},\ \hs{a},\ \hs{b},\ \hs{c},\ \hs{S Z},
+                     \ \hs{S a},\ \hs{S b}, \\
+                     & \hs{S c},\ \hs{plus Z},\ \hs{plus a},\ \dots ]
 \end{align*}
 
 Notice that functions such as \hs{plus} and \hs{mult} are valid terms, despite
-not being applied to any arguments. In addition, Haskell curries functions, so
-these binary functions will be treated as unary functions which return unary
-functions. This is required as the construction of $terms$ applies functions to
-one argument at a time.
+not being applied to any arguments. In addition, all Haskell functions are unary
+(due to currying), which makes it valid to apply them one argument at a time as
+we construct $terms_{\hs{Nat}}$.
 
 \begin{figure}
   % To reproduce, run 'quickSpec nat' in haskell_example/src/QuickSpecExample.hs
@@ -172,34 +150,71 @@ one argument at a time.
               even (times a a) = even a
     plus (mult a b) (mult a c) = mult a (plus b c)
   \end{haskell}
-  \caption{Equations conjectured by \qspec{} for the functions in Figure
+  \caption{Equations conjectured by \quickspec{} for the functions in Figure
     \ref{fig:haskellteexample}; after simplification.}
   \label{fig:qspecresult}
 \end{figure}
 
-These terms will be grouped into five classes, one each for \hs{Nat},
-\hs{Nat -> Nat}, \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool} and \hs{Bool}. As the
-variables $a$, $b$ and $c$ are instantiated to various randomly-generated
-numbers, these equivalence classes will be divided, until eventually the
-equations in Figure \ref{fig:qspecresult} are conjectured.
+The elements of $terms_{\hs{Nat}}$ will be grouped into five classes, one each
+for \hs{Nat}, \hs{Nat -> Nat}, \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool} and
+\hs{Bool}. As the variables \hs{a}, \hs{b} and \hs{c} are instantiated to
+various randomly-generated numbers, the differences between these terms will
+be discovered and the equivalence classes will be divided, until eventually
+the equations in Figure \ref{fig:qspecresult} are conjectured.
 
 Although complete, this enumeration approach is wasteful: many terms are
 unlikely to appear in theorems, which requires careful choice by the user of
 what to include in the signature. Here we know that addition and multiplication
-are closely related, and hence obey many algebraic laws.
+are closely related, and hence obey many algebraic laws; arbitrary definitions
+from a typical software library or proof development are unlikely to have be
+related so strongly.
 
-\qspec{} (and \hspec{}) is also compatible with Haskell's existing testing
+\iffalse
+\quickspec{} (and \hipspec{}) is also compatible with Haskell's existing testing
 infrastructure, such that an invocation of \texttt{cabal test} can run these
-tools alongside more traditional QA tools like \qcheck{}, \textsc{HUnit} and
+tools alongside more traditional QA tools like \quickcheck{}, \textsc{HUnit} and
 \textsc{Criterion}.
 
-In fact, there are similarities between the way a TE system like \qspec{} can
+In fact, there are similarities between the way a TE system like \quickspec{} can
 generalise from checking \emph{particular} properties to \emph{inventing} new
-ones, and the way counterexample finders like \qcheck{} can generalise from
+ones, and the way counterexample finders like \quickcheck{} can generalise from
 testing \emph{particular} expressions to \emph{inventing} expressions to
 test. One of our aims is to understand the implications of this generalisation,
 the lessons that each can learn from the other's approach to term generation,
 and the consequences for testing and QA in general.
+\fi
+
+\iffalse
+% TODO: Work this into the example
+
+As an example, giving the definitions from Figure~\ref{fig:haskellteexample} to
+\quickspec{}, along with suitable comparison functions, random data generators and
+variables \hs{n :: Nat} and \hs{b :: Bool}, will give rise to an equivalence
+class for each type \hs{Nat}, \hs{Bool}, \hs{Nat -> Nat}, \hs{Nat -> Bool} and
+\hs{Bool -> Bool}. Testing will find unequal terms in some of these classes
+(such as the \hs{Bool} class containing \hs{True}, \hs{False}, \hs{b},
+\hs{not b}, \hs{odd n} and \hs{even n}, which are all mutually unequal), split
+them up, and repeat until no more splits are found. Equations are then generated
+between elements of non-singleton classes, such as $\{\text{\hs{odd n}},
+\text{\hs{not (even n)}}, \text{\hs{not (not (odd n))}}, \ldots\}$, and reduced
+to a minimal set (for example, discarding \hs{odd n == not (not (odd n))} as an
+instance of the more general \hs{b == not (not b)}). The remaining equations
+(including \hs{not (not b) == b} and \hs{not (odd n) == even n}, etc.) are
+output, either for the user to peruse or for another system to process, like the
+\hipspec{} automated theorem prover.
+
+Note that we must be able to generate values of a type in order to include
+variables of that type. Also, only equivalence classes whose element type can be
+compared are split and conjectured about in this way; in particular, functions
+(like \hs{odd} and \hs{even}) are first-class values, so they will be put in an
+equivalence class, but they will not be subject to testing and comparison since
+Haskell has no generic notion of function equality~\footnote{In
+  fact \quickspec{} compares expressions using a total ordering rather than equality;
+  this is even more restrictive than requiring a notion of equality, but reduces
+  the number of required comparisons}. \quickspec{} can hence conjecture that two
+functions are pointwise-equal (e.g. \hs{f x == g x}) but it cannot conjecture
+that the functions themselves are equal (e.g. \hs{f == g}).
+\fi
 
 % TODO
 %%%%% THE BELOW SEEMS TO BE INTERESTINGNESS?

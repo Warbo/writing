@@ -1,13 +1,13 @@
 \section{Property Checking}
 
-Some prominent tools for mathematical theory exploration, like \qspec{}, were
-originally developed in the context of \emph{property checking} (although for
-\emph{discovering} software properties, rather than checking them), and only
+Some prominent tools for mathematical theory exploration, like \quickspec{},
+were originally developed in the context of \emph{property checking} (although
+for \emph{discovering} software properties, rather than checking them), and only
 later applied more directly to fields like formal mathematics (e.g. via the
 \hipster{} tool for Isabelle/HOL). In particular, the logical domain used by
-\qspec{} (inductive logic with higher-order functions) comes directly from its
-application to Haskell; and its search algorithm makes heavy use of the
-\qcheck{} property checker. The boundary between these two fields is hence
+\quickspec{} (inductive logic with higher-order functions) comes directly from
+its application to Haskell; and its search algorithm makes heavy use of the
+\quickcheck{} property checker. The boundary between these two fields is hence
 rather fuzzy, and cross-pollination of techniques is a compelling target for
 research.
 
@@ -43,9 +43,9 @@ Most frameworks will test each property a fixed number of times (e.g. 100), and
 stop early if the function returns a false value. The major difference between
 implementations is the way they generate values to test with.
 
-\textsc{QuickCheck}~\cite{claessen2011quickcheck} popularised the use of
+\quickcheck{}~\cite{claessen2011quickcheck} popularised the use of
 property checking in Haskell, and has subsequently been ported to many other
-programming languages. \textsc{QuickCheck} generates input data \emph{randomly},
+programming languages. \quickcheck{} generates input data \emph{randomly},
 either using explicit generators (via a function called \hs{forAll}), or by
 choosing a default generator for types implementing its \hs{Arbitrary}
 typeclass (the recent \texttt{hedgehog} package works in a similar way\iffalse
@@ -81,7 +81,7 @@ the property checking process.
 
 The other problem with random generators is that it can be difficult to
 understand \emph{why} a randomly generated value violated some property.
-\textsc{QuickCheck} tackles this in two ways: generators have access to a
+\quickcheck{} tackles this in two ways: generators have access to a
 ``size'' parameter, with the intention that this be used to decide how large the
 output values should be (e.g. the expected length of a list, or number of nodes
 in a tree). The value of the size parameter begins low and increases as more
@@ -97,7 +97,7 @@ tried. When a value cannot be shrunk any more, or if none of its shrunken
 versions are counterexamples, that value is presented to the user in the hope
 that it is simple enough to understand.
 
-The \textsc{SmallCheck} framework takes a different approach: \emph{enumerating}
+The \smallcheck{} framework takes a different approach: \emph{enumerating}
 values (either using a user-provided enumeration function or using its
 \hs{Serial} typeclass), rather than generating values
 randomly~\cite{runciman2008smallcheck} (a similar approach is also followed by
@@ -111,12 +111,12 @@ values). The disadvantage is that large inputs (which exercise properties,
 especially recursive ones, the most) may occur so late in the enumeration that
 testing never reaches them.
 
-The \textsc{LazySmallCheck} framework is similar in spirit to
-\textsc{SmallCheck}, but utilises Haskell's lazy evaluation to avoid generating
+The \lazysmallcheck{} framework is similar in spirit to
+\smallcheck{}, but utilises Haskell's lazy evaluation to avoid generating
 values up front~\cite{reich2013advances}. Instead, a partial value is generated
 which will trigger an exception if evaluated. Since catching a Haskell exception
 is an \hs{IO} action, pure properties which inspect such values will always
-be aborted, handing control back to \textsc{LazySmallCheck} which refines the
+be aborted, handing control back to \lazysmallcheck{} which refines the
 previous value and tries again. For example, a lazily generated \hs{Tree} may
 initially be equivalent to $\bot$ (an undefined value). If the property
 aborts, it will be run again with each possible refinement of $\bot$: in this
@@ -133,9 +133,9 @@ a false value, the input is a \emph{minimal} counterexample, since it only
 specifies those sub-terms which are required to violate the property; any
 undefined sub-terms are irrelevant to the failure.
 
-\textsc{LazySmallCheck}'s automatic elaboration of free variables is similar in
+\lazysmallcheck{}'s automatic elaboration of free variables is similar in
 operation to the use of search procedures in logic programming languages like
-Kanren, Prolog (which has its own \textsc{QuickCheck} port) and Curry (a
+Kanren, Prolog (which has its own \quickcheck{} port) and Curry (a
 functional logic language, whose \textsc{EasyCheck} framework explicitly
 unifies the concepts of generators and logic
 variables~\cite{christiansen2008easycheck}). The use of uninterpreted symbols

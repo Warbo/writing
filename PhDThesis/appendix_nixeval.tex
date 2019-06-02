@@ -4,8 +4,8 @@
 \begin{sloppypar}
   Haskell's support for runtime evaluation of code (\'a la Lisp's
   \eval{}~\cite[\S~1.6]{edwards1962lisp}) is limited. The most popular mechanism
-  is the \hint{} package\footnote{https://hackage.haskell.org/package/hint},
-  which is built on top of GHC's API and provides functions like
+  is the \hint{} package\footnote{\hPackage{hint}}, which is built on top of
+  GHC's API and provides functions like
   \hs{eval :: MonadInterpreter m => String -> m String}. The
   \hs{MonadInterpreter} constraint provides mechanisms for calling into GHC and
   managing its ``session'', which includes details like compiler flags, a list
@@ -35,11 +35,11 @@
   from, which makes approaches like those of \hint{} undesirable.
 
   To solve this problem we created the \nixeval{}
-  package\footnote{https://hackage.haskell.org/package/nix-eval}. This provides
-  a function \hs{eval :: Expr -> IO (Maybe String)}, which produces \hs{String}s
-  for the same reasons as \hint{}, but differs in its handling of expressions
-  and context. Rather than operating on a raw \hs{String}, \nixeval{} defines
-  the \hs{Expr} type, containing several fields to keep track of the context in
+  package\footnote{\hPackage{nix-eval}}. This provides a function
+  \hs{eval :: Expr -> IO (Maybe String)}, which produces \hs{String}s for the
+  same reasons as \hint{}, but differs in its handling of expressions and
+  context. Rather than operating on a raw \hs{String}, \nixeval{} defines the
+  \hs{Expr} type, containing several fields to keep track of the context in
   which the expression is to be evaluated:
 \end{sloppypar}
 
@@ -137,9 +137,9 @@ hasher = compose [withPkgs ["murmur-hash"]
                     (qualified "Data.Serialize" "put"),
                   converter]
   \end{haskell}
-  \caption{Example usage of \nixeval{} functions, taken from \textsc{ML4HS}.
-    These are used to dynamically generate \qspec{} signatures of user-provided
-    functions.}
+  \caption{Example usage of \nixeval{} functions, taken from \mlforhs{}.
+    These are used to dynamically generate \quickspec{} signatures of
+    user-provided functions.}
   \label{fig:nix-eval}
 \end{figure}
 

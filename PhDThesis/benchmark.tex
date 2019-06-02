@@ -4,8 +4,8 @@
 If we wish to make measurable progress on the task of conjecture generation, we
 must quantify what it is we are trying to achieve. Various approaches can then
 be measured and compared to optimise toward our goal. To this end we define a
-benchmarking methodology, shown in Figure~\ref{figure:flow_chart} on
-page~\pageref{figure:flow_chart}, which both generates a large
+benchmarking methodology, shown in Figure~\ref{fig:flow_chart} on
+page~\pageref{fig:flow_chart}, which both generates a large
 definition/ground-truth corpus, and provides a scalable, statistical approach to
 evaluating MTE tools using this corpus. We follow a precision/recall approach
 similar to prior work, with the main difference being the source of definitions
@@ -447,21 +447,21 @@ design).
       \node [trapezium, trapezium left angle=70, trapezium right angle=110,
              text centered, draw=black]{inputs};
   \end{tikzpicture}}
-  \label{figure:flow_chart}
+  \label{fig:flow_chart}
 \end{figure}
 
 \section{Application}
 \label{sec:application}
 
-We have applied our benchmarking methodology to the QuickSpec and IsaCoSy MTE
-tools, using version 0.2 of the TIP (Tons of Inductive Problems) theorem proving
-benchmark as our ground truth corpus~\cite{claessen2015tip}.
+We have applied our benchmarking methodology to the \quickspec{} and \isacosy{}
+MTE tools, using version 0.2 of the TIP (Tons of Inductive Problems) theorem
+proving benchmark as our ground truth corpus~\cite{claessen2015tip}.
 
 To determine our benchmarking parameters we ran some initial tests on both tools
 for a few samples sized between 1 and 100, for an hour each on our benchmarking
 machine with a 3.2GHz dual-core Intel i5 processor with hyper-threading and 8GB
-of RAM. Most QuickSpec runs either finished within 200 seconds or not at all,
-and sizes above 20 mostly timed out. IsaCoSy mostly finished within 300 seconds
+of RAM. Most \quickspec{} runs either finished within 200 seconds or not at all,
+and sizes above 20 mostly timed out. \isacosy{} mostly finished within 300 seconds
 on sample sizes up to 4, but by size 8 was mostly timing out; its few successes
 above this took thousands of seconds each, which we deemed infeasibly long.
 
@@ -470,8 +470,8 @@ seemed to perform well beyond that. The Speedup-Test protocol follows the
 statistical ``rule of thumb'' of treating sample sizes $\leq$ 30 as ``small'',
 so we pick 31 samples of each size in order to cross this threshold. This gave a
 total of 1240 runs. To keep the benchmarking time down to a few days we chose a
-timeout of 300 seconds, since that covered most of the successful QuickSpec and
-IsaCoSy results we saw, and longer times gave rapidly diminishing
+timeout of 300 seconds, since that covered most of the successful \quickspec{} and
+\isacosy{} results we saw, and longer times gave rapidly diminishing
 returns. During analysis, duplicate samples (caused by our requirement that
 samples have a non-empty ground truth) were found and discarded, so only 14
 samples of size 1 were used and 30 of size 2.
@@ -497,7 +497,7 @@ datatypes and functions it involves.
 
 TIP datatypes can have several ``constructors'' (introduction forms) and
 ``destructors'' (elimination forms; field accessors). For example the type of
-lists from Figure~\ref{figure:list_theory} can be defined in the TIP format as
+lists from Figure~\ref{fig:list_theory} can be defined in the TIP format as
 follows:
 
 \begin{samepage}
@@ -571,7 +571,7 @@ definitions).
 
 TIP comes with software to translate its definitions into Haskell and Isabelle
 code, including comparison functions and random data generators suitable for
-QuickCheck. We translate all 269 unique definitions into a single module/theory
+\quickcheck{}. We translate all 269 unique definitions into a single module/theory
 which is imported on each run of the tools, although only those functions which
 appear in the current sample are included in the signature and explored. We also
 encode all names in hexadecimal to avoid problems with language-specific naming
@@ -580,18 +580,18 @@ distinguishes these from local variables and prevents names from beginning with
 a digit). This ensures that the generated conjectures will be using the same
 names as the ground truth, rather than some language-specific variant.
 
-\subsection{QuickSpec}
+\subsection{\quickspec{}}
 
-We benchmarked QuickSpec version 0.9.6, a tool written in Haskell for
+We benchmarked \quickspec{} version 0.9.6, a tool written in Haskell for
 conjecturing equations involving Haskell functions, described in more detail in
-$\S$\ref{sec:existing-tools}. In order to thoroughly benchmark QuickSpec, we
+$\S$\ref{sec:existing-tools}. In order to thoroughly benchmark \quickspec{}, we
 need to automate some of the decisions which are normally left up to the user:
 
 \begin{sloppypar}
   \begin{itemize}
   \item We must decide what variables to include. We choose to add three
     variables for each type that appears as a function argument, except for
-    types which have no QuickCheck data generators.
+    types which have no \quickcheck{} data generators.
   \item We must \emph{monomorphise} all types. For example, functions like
     \texttt{constructor-Cons} are \emph{polymorphic}: they build lists of any
     element type, but we need to pick a specific type in order to know which
@@ -602,9 +602,9 @@ need to automate some of the decisions which are normally left up to the user:
       type class constraint, we pick a suitable type non-deterministically from
       those in scope during compilation; if no suitable type is found, we give
       up and don't include that function.}
-  \item Haskell functions are ``black boxes'', which QuickSpec can't compare
+  \item Haskell functions are ``black boxes'', which \quickspec{} can't compare
     during its exploration process. They are also curried, always taking one
-    argument but potentially returning another function. QuickSpec lets us
+    argument but potentially returning another function. \quickspec{} lets us
     assign an arity to each function in the signature, from 0 to 5, so we pick
     the highest that is type-correct, since this avoids a proliferation of
     incomparable, partially-applied functions.
@@ -614,7 +614,7 @@ need to automate some of the decisions which are normally left up to the user:
 \begin{figure}
   \centering
   \input{quickspectime.pgf}
-  \caption{Running times of QuickSpec on theories sampled from TIP. Each point
+  \caption{Running times of \quickspec{} on theories sampled from TIP. Each point
     is a successful run (spread out horizontally to reduce overlaps). Red
     crosses show runs which timed out, which occurred for every size. Each size
     has 31 runs total, except for size 1 (14 runs) and size 2 (30 runs) due to
@@ -622,31 +622,31 @@ need to automate some of the decisions which are normally left up to the user:
     the timeout for sizes above 8. Medians are marked with a line and remain
     near zero until size 10, with those of size 13 and 20 timing out. Whiskers
     show 1.5$\times$~inter-quartile range.}
-  \label{figure:quickspec_runtimes}
+  \label{fig:quickspec_runtimes}
 \end{figure}
 
 \begin{figure}
   \centering
   \input{quickspecprec.pgf}
-  \caption{Precision and recall of successful QuickSpec runs (spread
+  \caption{Precision and recall of successful \quickspec{} runs (spread
     horizontally to reduce overlapping). Lines show the mean proportion for each
     sample size (average of the ratios) and errorbars show the sample standard
     deviation. Mean precision steadily reduces from around $0.5$ at size 1 to
     around $0.1$ for size 20, whilst mean recall remains roughly flat between
     $0.2$ and $0.5$"}
-  \label{figure:quickspec_precRec}
+  \label{fig:quickspec_precRec}
 \end{figure}
 
 The time taken to explore samples of different sizes is shown in
-Figure~\ref{figure:quickspec_runtimes}. Failed runs are shown in red: all
+Figure~\ref{fig:quickspec_runtimes}. Failed runs are shown in red: all
 failures were due to timing out, and these occurred for all sample sizes but are
 more common for larger samples (over half the runs for sample sizes 13 and 20
 timed out). Runs which succeeded mostly finished within 30 seconds, generating
 few or no conjectures; those taking longer generated more conjectures, with the
 most being 133 conjectures from a sample of size 19.
 
-Precision and recall are shown in Figure~\ref{figure:quickspec_precRec}.
-Since QuickSpec generates monotonically more conjectures as definitions are
+Precision and recall are shown in Figure~\ref{fig:quickspec_precRec}.
+Since \quickspec{} generates monotonically more conjectures as definitions are
 added to a signature (assuming sufficient testing), its decreasing precision
 can't be due to finding fewer wanted conjectures at larger sizes. This is
 supported by the relative flatness of the recall results. Rather, the number of
@@ -655,7 +655,7 @@ truth. These extra conjectures may involve those ``padding'' definitions in a
 sample which don't contribute to its ground truth, or may be ``uninteresting''
 relationships between the dependencies of different ground truth properties.
 
-This indicates two potential improvements to the QuickSpec algorithm (as far as
+This indicates two potential improvements to the \quickspec{} algorithm (as far as
 this benchmark is concerned). The deluge of generated conjectures could be
 filtered down to a more desirable sub-set by another post-processing step.
 Alternatively, rather than exploring all of the given definitions together,
@@ -664,38 +664,38 @@ combinations are likely to lead to interesting conjectures; this would avoid
 both the ``padding'' and the cross-dependency relationships. Both of these
 methods could improve the precision, although care would be needed to avoid a
 large reduction in recall. The latter option could also improve the running
-time, since (based on Figure~\ref{figure:quickspec_runtimes}) multiple smaller
+time, since (based on Figure~\ref{fig:quickspec_runtimes}) multiple smaller
 signatures may be faster to explore than a single large one. Such improvements
 would also need to be ``generic'', to avoid over-fitting to this particular
 benchmark.
 
-QuickSpec's recall is limited by two factors: the algorithm is unable to
+\quickspec{}'s recall is limited by two factors: the algorithm is unable to
 synthesise some properties, such as conditional equations, inequalities, terms
 larger than the search depth and those containing anonymous functions. The
 congruence closure algorithm used as a post-processor may also be removing
 ``interesting'' results, for example if we found an ``uninteresting'' result
 which is more general.
 
-\subsection{IsaCoSy}
+\subsection{\isacosy{}}
 
-We took IsaCoSy from version 2015.0.3 of the IsaPlanner project, and ran it
+We took \isacosy{} from version 2015.0.3 of the IsaPlanner project, and ran it
 with the 2015 version of Isabelle. The following issues had to be overcome to
-make our benchmark applicable to IsaCoSy:
+make our benchmark applicable to \isacosy{}:
 
 \begin{itemize}
 \item TIP includes a benchmark called \texttt{polyrec} whose types cannot be
   encoded in Isabelle. We strip out this type and the functions which depend on
   it before translating. It still appears in samples and contributes to the
-  ground truth, which penalises IsaCoSy for being unable to explore such
+  ground truth, which penalises \isacosy{} for being unable to explore such
   definitions.
-\item When using a type in an IsaCoSy signature, that type's constructors will
+\item When using a type in an \isacosy{} signature, that type's constructors will
   automatically be included in the exploration. Since those constructors will
   not appear in the ground truth (we use $\eta$-expanded wrappers instead, and
   even those may not be present in the current sample) this will unfairly reduce
   the calculated precision. To avoid this, we add a post-processing step which
   replaces all occurrences of a constructor with the corresponding wrapper, then
   discards any conjectures which involve functions other than those in the
-  current sample. This presumably results in more work for IsaCoSy, exploring
+  current sample. This presumably results in more work for \isacosy{}, exploring
   constructors unnecessarily, but it at least does not bring down the quality
   measures.
 \item Since Isabelle is designed for theorem proving rather than programming, it
@@ -705,16 +705,16 @@ make our benchmark applicable to IsaCoSy:
   ``quick and dirty'' option in Isabelle, which lets us skip these proofs with
   the \texttt{sorry} keyword.
 \item Partial functions cause problems during exploration, since they can throw
-  an ``undefined'' exception which causes IsaCoSy to abort. We avoid this by
-  pre-populating IsaCoSy's constraint set with these undefined expressions
+  an ``undefined'' exception which causes \isacosy{} to abort. We avoid this by
+  pre-populating \isacosy{}'s constraint set with these undefined expressions
   (for example \texttt{(destructor-head constructor-Nil)}), hence preventing
-  IsaCoSy from ever generating them.
+  \isacosy{} from ever generating them.
 \end{itemize}
 
 \begin{figure}
   \centering
   \input{isacosytime.pgf}
-  \caption{Running times of IsaCoSy on theories sampled from TIP. Each point
+  \caption{Running times of \isacosy{} on theories sampled from TIP. Each point
     is a successful run (spread out horizontally to reduce overlaps). Red
     crosses are failed runs, caused by timeouts or out-of-memory. All runs of
     size 1 succeeded, whilst nothing succeeded above size 6. Each size has 31
@@ -723,42 +723,42 @@ make our benchmark applicable to IsaCoSy:
     and lines mark the median time, which increases rapidly from around 100
     seconds at size 1 to timing out at size 4 and above. Whiskers show
     1.5$\times$~inter-quartile range.}
-  \label{figure:isacosy_runtimes}
+  \label{fig:isacosy_runtimes}
 \end{figure}
 
 \begin{figure}
   \centering
   \input{isacosyprec.pgf}
-  \caption{Precision and recall of all successful IsaCoSy runs (spread
+  \caption{Precision and recall of all successful \isacosy{} runs (spread
     horizontally to reduce overlapping; all runs above size 6 failed). Lines
     show the mean proportion for each sample size (average of the ratios), which
     trends downwards for precision and appears flat for recall, although there
     are too few datapoints to be definitive. Errorbars show the sample standard
     deviation.}
-  \label{figure:isacosy_precRec}
+  \label{fig:isacosy_precRec}
 \end{figure}
 
-The most striking result is how rapidly IsaCoSy's running time, shown in
-Figure~\ref{figure:isacosy_runtimes}, increases with sample size: all runs above
+The most striking result is how rapidly \isacosy{}'s running time, shown in
+Figure~\ref{fig:isacosy_runtimes}, increases with sample size: all runs above
 size 6 failed, with most timing out and a few aborting early due to running out
 of memory. Like in our preliminary testing, this increase appears exponential,
 so even large increases to the timeout would not produce many more successful
-observations. A significant amount of IsaCoSy's time (around 50 seconds) was
+observations. A significant amount of \isacosy{}'s time (around 50 seconds) was
 spent loading the generated theory (containing all distinct datatypes and
 functions from TIP); this overhead is unfortunate, but since it is constant
 across all sample sizes it does not affect our conclusions.
 
 With so few successful datapoints it is difficult to make strong claims about
-the precision/recall quality of IsaCoSy's output, shown in
-Figure~\ref{figure:isacosy_precRec}. It is clear from the quantity of non-zero
-proportions that IsaCoSy is capable of discovering interesting conjectures, and
-the graphs appear to follow the same shapes as those of QuickSpec (decreasing
+the precision/recall quality of \isacosy{}'s output, shown in
+Figure~\ref{fig:isacosy_precRec}. It is clear from the quantity of non-zero
+proportions that \isacosy{} is capable of discovering interesting conjectures, and
+the graphs appear to follow the same shapes as those of \quickspec{} (decreasing
 precision, flat recall), although the error margins are too wide to be
 definitive.
 
 \subsection{Comparison}
 
-We compare the running times of QuickSpec and IsaCoSy using our paired variant
+We compare the running times of \quickspec{} and \isacosy{} using our paired variant
 of the Speedup-Test protocol, where each of our sample sizes is a separate
 ``benchmark''. We used version 2 of the Speedup-Test \texttt{R} implementation,
 which we patched to use the \emph{paired} form of the (one-sided) Wilcoxon
@@ -772,10 +772,10 @@ significantly different (with $\alpha < 0.05$), then the signed-rank test is
 only performed if more than 30 samples are available. This was the case for all
 sample sizes except for 1 and 2 (due to the removed duplicates), and hence those
 two speedups were not deemed statistically significant. For all other sample
-sizes QuickSpec was found to be significantly faster with $\alpha = 0.05$,
+sizes \quickspec{} was found to be significantly faster with $\alpha = 0.05$,
 putting the proportion of sizes with faster median times between 66.9\% and
-98.2\% with 95\% confidence. The magnitude of each speedup (median IsaCoSy time
-divided by median QuickSpec time) is given in table~\ref{table:speedups}. We
+98.2\% with 95\% confidence. The magnitude of each speedup (median \isacosy{} time
+divided by median \quickspec{} time) is given in table~\ref{table:speedups}. We
 would predict the speedup to grow for larger sample sizes, but the increasing
 proportion of timeouts causes our estimates to become more conservative: by size
 20 most runs are timing out, and hence are tied.
@@ -789,8 +789,8 @@ proportion of timeouts causes our estimates to become more conservative: by size
     {\\\hline\csvcoli&\csvcolii} \\
     \hline
   \end{tabular}
-  \caption{Speedup from using QuickSpec compared to IsaCoSy, i.e. the median
-    time taken by IsaCoSy divided by that of QuickSpec. QuickSpec was found to
+  \caption{Speedup from using \quickspec{} compared to \isacosy{}, i.e. the median
+    time taken by \isacosy{} divided by that of \quickspec{}. \quickspec{} was found to
     be significantly faster ($\alpha = 0.05$) for all sizes, except 1 and 2 due
     to too few samples. These are conservative estimates, since the 300 second
     time limit acts to reduce the measured time difference (e.g. sizes 13 and
@@ -801,23 +801,23 @@ proportion of timeouts causes our estimates to become more conservative: by size
 We compare the recall proportions by applying McNemar's test to only those
 samples where both tools succeeded. We pooled these together from all sample
 sizes to produce table~\ref{table:recall}, and found that the recall of
-QuickSpec ($37\%$) is significantly higher than IsaCoSy ($25\%$) with a p-value
+\quickspec{} ($37\%$) is significantly higher than \isacosy{} ($25\%$) with a p-value
 of 0.0026.
 
 \begin{table}
   \centering
   \begin{tabular}{ |r|l|l| }
     \hline
-    & \bfseries Found by IsaCoSy & \bfseries Not found by IsaCoSy \\
+    & \bfseries Found by \isacosy{} & \bfseries Not found by \isacosy{} \\
     \hline
-    \bfseries Found by QuickSpec     & 28 & 19 \\
+    \bfseries Found by \quickspec{}     & 28 & 19 \\
     \hline
-    \bfseries Not found by QuickSpec & 4  & 75 \\
+    \bfseries Not found by \quickspec{} & 4  & 75 \\
     \hline
   \end{tabular}
   \caption{Contingency table for ground truth properties, pooled from those
-    samples where both QuickSpec and IsaCoSy finished successfully. The combined
-    recall for QuickSpec is $37\%$ and for IsaCoSy is $25\%$.}
+    samples where both \quickspec{} and \isacosy{} finished successfully. The combined
+    recall for \quickspec{} is $37\%$ and for \isacosy{} is $25\%$.}
   \label{table:recall}
 \end{table}
 
@@ -833,33 +833,33 @@ shown in table~\ref{table:precision}
     \hline
               & \bfseries Interesting & \bfseries Uninteresting \\
     \hline
-    \bfseries IsaCoSy   & 32          & 137      \\
+    \bfseries \isacosy{}   & 32          & 137      \\
     \hline
-    \bfseries QuickSpec & 47          & 301      \\
+    \bfseries \quickspec{} & 47          & 301      \\
     \hline
   \end{tabular}
-  \caption{Interesting and uninteresting conjectures generated by QuickSpec and
-    IsaCoSy, pooled from those samples where both both finished successfully.
-    The combined precision for QuickSpec is $14\%$ and for IsaCoSy is $19\%$.}
+  \caption{Interesting and uninteresting conjectures generated by \quickspec{} and
+    \isacosy{}, pooled from those samples where both both finished successfully.
+    The combined precision for \quickspec{} is $14\%$ and for \isacosy{} is $19\%$.}
   \label{table:precision}
 \end{table}
 
 We tested these totals for independence using Boschloo's test and find a p-value
 of 0.111, which exceeds our (conventional) significance threshold of
 $\alpha = 0.05$; hence we do not consider the difference between these
-proportions (14\% for QuickSpec, 19\% for IsaCoSy) to be significant.
+proportions (14\% for \quickspec{}, 19\% for \isacosy{}) to be significant.
 
-Note that precision is the only comparison where IsaCoSy scored higher, and even
+Note that precision is the only comparison where \isacosy{} scored higher, and even
 that was not found to be significant. Also, precision on its own is not the
 whole story: it can be increased at the expense of recall by making a tool more
-conservative. IsaCoSy may already be overly-conservative compared to QuickSpec,
+conservative. \isacosy{} may already be overly-conservative compared to \quickspec{},
 given that its recall is significantly lower.
 
-More importantly, the poor time and memory usage of IsaCoSy meant that very few
+More importantly, the poor time and memory usage of \isacosy{} meant that very few
 samples finished successfully. If we include failed runs in our tables, treating
 them as if they succeeded with no output, the resulting statistics lean
-overwhelmingly in favour of QuickSpec simply because it generated so much more
-than IsaCoSy in the available time.
+overwhelmingly in favour of \quickspec{} simply because it generated so much more
+than \isacosy{} in the available time.
 
 \subsection{Discussion}
 \label{sec:discussion}
@@ -928,9 +928,9 @@ with real human users, rather than relying solely on artificial benchmarks.
 Another practical limitation of our benchmarking approach is that it only
 applies to tools which act in ``batch mode'', i.e. those which choose to halt
 after emitting some output. Whilst all of the systems we have encountered are of
-this form, some (such as IsaCoSy, QuickSpec 2 and Speculate) could conceivably
-be run without a depth limit, and form part of the ``scientist assistant'' role
-which Lenat envisaged for AM, or McCarthy's earlier ``advice
+this form, some (such as \isacosy{}, \quickspec{} 2 and \speculate{}) could
+conceivably be run without a depth limit, and form part of the ``scientist
+assistant'' role which Lenat envisaged for AM, or McCarthy's earlier ``advice
 taker''~\cite{McCarthy_Programs59}. Analogous benchmarks could be designed for
 such long-running, potentially interactive programs, but that is beyond the
 scope of this project.

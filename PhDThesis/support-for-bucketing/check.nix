@@ -110,7 +110,7 @@ with rec {
     '';
 
     checkLatexMacros = f: ''
-      for MACRO in qcheck qspec hspec
+      for MACRO in qcheck quickspec hipspec
       do
         while read -r USAGE
         do

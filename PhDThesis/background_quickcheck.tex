@@ -10,17 +10,24 @@ Although unit testing is the de facto industry standard for quality assurance in
 non-critical systems, the level of confidence it provides is rather low, and
 totally inadequate for many (e.g. life-) critical systems. To see why, consider
 the following Haskell function, along with some unit
-tests\footnote{Backticks allow functions to be written as infix operators, so
-  \hs{x `div` y} is equivalent to \hs{div x y}.}:
+tests\footnote{Haskell functions can be prefix or infix: prefix functions have
+  alphanumeric names, like \hs{div} and \hs{factorial}, and appear in function
+  calls before their arguments, e.g. \hs{div 10 5}; infix functions have
+  non-alphanumeric names, like \hs{+} and \hs{==}, and appear in function calls
+  between their first two arguments, e.g. \hs{4 + 3}. Prefix functions can
+  appear infix using backticks, like \hs{10 `div` 5}, and infix functions can
+  appear prefix using parentheses, like \hs{(+) 4 3}.}:
 
+% BEGIN unit
 \begin{haskell}
 factorial 0 = 1
-factorial n = n * factorial (n-1)
+factorial n = n * factorial (n - 1)
 
 fact_base      = factorial 0 == factorial 1
 fact_increases = factorial 3 <= factorial 4
 fact_div       = factorial 4 == factorial 5 `div` 5
 \end{haskell}
+% END unit
 
 The intent of the function is to map an input $n$ to an output $n!$. The tests
 check a few properties of the implementation, including the base case, that the
@@ -28,71 +35,79 @@ function is monotonically increasing, and a relationship between adjacent
 outputs. However, these tests will \emph{not} expose a serious problem with the
 implementation: it diverges on half of its possible inputs.
 
-All of Haskell's built-in numeric types allow negative numbers, which this
+Haskell's built-in numeric types allow negative numbers, which this
 implementation doesn't take into account. Whilst this is a rather trivial
 example, it highlights a common problem: unit tests are insufficient to expose
 incorrect assumptions. In this case, our assumption that numbers are positive
 has caused a bug in the implementation \emph{and} limited the tests we've
 written.
 
-If we do manage to spot this error, we might capture it in a \emph{regression
-  test} and update the definition of \hs{factorial} to handle negative numbers,
-e.g. by taking their absolute value:
+One way to avoid this problem, if we do manage to spot it, would make results
+symmetric around zero, which can be checked by a \emph{regression test} such as:
 
+% BEGIN neg
 \begin{haskell}
-factorial 0 = 1
-factorial n = let nPos = abs n
-               in nPos * factorial (nPos - 1)
-
 fact_neg = factorial 1 == factorial (-1)
 \end{haskell}
+% END neg
+
+The implementation can be modified by composing if with the \hs{abs}olute value
+function:
+
+% BEGIN abs
+\begin{haskell}
+factorial = original . abs
+  where original 0 = 1
+        original n = n * naive (n - 1)
+\end{haskell}
+% END abs
 
 However, this is \emph{still} not enough, since this function will also accept
 fractional values\footnote{Since we only use generic numeric operations, the
-  function will be polymorphic with a type of the form \hs{forall t. Num t => t
-    -> t}, where \hs{Num t} constrains the type variable \hs{t} to be
-  numeric. In fact, Haskell will infer extra constraints such as \hs{Eq t} since
-  we have used \hs{==} in the unit tests.}, which will also cause it to
-diverge. Clearly, by choosing what to test we are biasing the test suite towards
-those cases we've already taken into account, whilst neglecting the problems we
-did not expect.
+  function will be polymorphic with a type of the form
+  \hs{forall t. Num t => t -> t}, where \hs{Num t} constrains the type variable
+  \hs{t} to be numeric.}, which will also cause it to diverge. This problem can
+be fixed by restricting \hs{factorial}'s type with an explicit annotation, e.g.
+to only whole numbers: \hs{factorial :: forall t. Integral t => t -> t}
 
-Haskell offers a partial solution to this problem in the form of \emph{property
-  checking}. Tools such as \qcheck{} separate tests into three components: a
-\emph{property} to check, which unlike a unit test may contain \emph{free
-  variables}; a source of values to instantiate these free variables; and a
+Clearly, by choosing which scenarios to check, we are biasing the test suite
+towards those cases we've already thought of, whilst neglecting the problems we
+did not expect. Haskell offers a partial solution to this problem in the form of \emph{property checking}. Tools such as \quickcheck{} separate tests into three components: a \emph{property} to check, which unlike a unit test may contain
+\emph{free variables}; a source of values to instantiate these free variables; and a
 stopping criterion.
 
-\subsection{\qcheck{}}
+\subsection{\quickcheck{}}
 \label{sec:quickcheck}
 
-\qcheck{}~\cite{quickcheck} is the most widely used property checking library
-for
+\quickcheck{}~\cite{claessen2011quickcheck} is the most widely used property
+checking library for
 Haskell~\footnote{According to downloads counted at
-  \href{http://hackage.haskell.org/packages/browse}, and packages depending on
-  it at \href{https://packdeps.haskellers.com/reverse/QuickCheck}, accessed on
-  2019-05-21.}. Here is how we might restate our unit tests as \qcheck{}
+  \url{http://hackage.haskell.org/packages/browse}, and packages depending on
+  it at \url{https://packdeps.haskellers.com/reverse/QuickCheck}, accessed on
+  2019-05-21.}. Here is how we might restate our unit tests as \quickcheck{}
 properties:
 
+% BEGIN quickchecked
 \begin{haskell}
 fact_base        = factorial 0 == factorial 1
-fact_increases n = factorial n <= factorial (n+1)
-fact_div       n = factorial n == factorial (n+1) `div` (n+1)
+fact_increases n = factorial n <= factorial (n + 1)
+fact_div       n = factorial n == factorial (n + 1) `div` (n + 1)
 fact_neg       n = factorial n == factorial (-n)
 \end{haskell}
+% END quickchecked
 
 The free variables (all called \hs{n} in this case) are abstracted as function
 parameters; these parameters are implicitly \emph{universally quantified},
 i.e. we've gone from a unit test asserting $factorial(3) \leq factorial(4)$ to a
 property asserting $\forall n, factorial(n) \leq factorial(n+1)$. Notice that
-unit tests like \hs{fact_base} are valid properties; they just assert rather
-weak statements.
+unit tests like \hs{fact_base} are valid properties; they just happen to assert
+rather weak statements, since they contain no free variables.
 
-To check these properties, \qcheck{} treats closed terms (like \hs{fact_base})
+To check these properties, \quickcheck{} treats closed terms (like \hs{fact_base})
 just like unit tests: pass if they evaluate to \hs{True}, fail otherwise. For
 open terms, a random selection of values are generated and passed in via the
 function parameter; the results are then treated in the same way as closed
-terms. The default stopping criterion for \qcheck{} (for each test) is when a
+terms. The default stopping criterion for \quickcheck{} (for each test) is when a
 single generated test fails, or when 100 generated tests pass.
 
 The ability to state \emph{universal} properties in this way avoids some of the
@@ -100,15 +115,23 @@ bias we encountered with unit tests. In the \hs{factorial} example, this
 manifests in two ways:
 
 \begin{itemize}
-\item \qcheck{} cannot test polymorphic functions; they must be
-  \emph{monomorphised} first (instantiated to a particular concrete type). This
-  is a technical limitation, since \qcheck{} must know which type of values to
-  generate, but in our example it would bring the issue with fractional values
-  to our attention.
+\item We are forced to confront the generality of \hs{factorial}'s type, since
+  \quickcheck{} cannot test polymorphic functions directly; they must be
+  \emph{monomorphised} first (instantiated to a particular concrete type), to
+  decide which data generator to use (i.e. which instance of \quickcheck{}'s
+  \hs{Arbitrary} type class). This can be done either by specifying a generator
+  directly (avoiding the type class mechanism), or by adding explicit type
+  annotations, or by calling \quickcheck{}'s \hs{monomorphic}
+  function.\footnote{\hs{monomorphic} picks \hs{Integer} for all polymorphic
+    type variables. This na\"ive choice instantiates many common type classes
+    like \hs{Num}, \hs{Show} and \hs{Eq}; variables whose constraints are not
+    satisfied will fail to type check (e.g. \hs{Bounded}, since \hs{Integer} is
+    a bignum).} This will bring the problem of fractional values. Instead of
+  monomorphising the properties, we might choose to monomorphise \hs{factorial}
 
-\item The generators used by \qcheck{} depend only on the \emph{type} of value
-  they are generating: since \hs{Int} includes positive and negative values, the
-  \hs{Int} generator will output both. This will expose the problem with
+\item By default, \quickcheck{} picks a generator based on the \emph{type} of
+  value to be generated: since \hs{Int} includes positive and negative values,
+  the \hs{Int} generator will output both. This will expose the problem with
   negative numbers, which we weren't expecting.
 \end{itemize}
 
@@ -117,7 +140,7 @@ of tests being biased towards expected cases remains, since the properties to be
 checked are still manually specified. Property checking can be complemented by
 \emph{theory exploration} (TE), which avoids this bias by \emph{discovering}
 such properties; through a combination of brute-force enumeration, random
-testing and (in the case of \hspec{} and \hipster{}) automated theorem proving.
-These TE systems make use of property checkers as part of their search process,
-to try and disprove generated conjectures before output (to the user, or a
-subsequent tool).
+testing and (in the case of \hipspec{} and \hipster{}) automated theorem
+proving. Property checkers like \quickcheck{} are an important component of TE
+systems, since their data generators can the search process, and they can
+prevent ``obvious'' falsehoods from being output by checking them first.

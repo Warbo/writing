@@ -1,7 +1,7 @@
 \section{Future Work}
 \label{sec:future}
 
-Our use of clustering to pre-process \qspec{} signatures has required many
+Our use of clustering to pre-process \quickspec{} signatures has required many
 decisions and tradeoffs to be made. Hence our approach is just one possibility
 out of many alternatives which could be investigated to push this work
 further. In addition, there are other ways in which machine learning could aid
@@ -28,7 +28,7 @@ inside the Proof General environment).
 
 One partial solution would be leave most Core expressions without types, but to
 include them for non-local identifiers (i.e. globals and constructors), which we
-can look up in a database. In fact, our ML4HS framework already includes such
+can look up in a database. In fact, our \mlforhs{} framework already includes such
 type information in its database, alongside the Core syntax trees. Integrating
 this information into our algorithm is the next logical step.
 
@@ -47,23 +47,23 @@ occur together in equations.
 \subsection{Theory Exploration Extensions}
 
 Our current approach is a rather conservative change to the existing theory
-exploration approaches, as it is essentially a wrapper around \qspec{}. There is
-potential for more radical changes to be made, which alter the search process
-itself.
+exploration approaches, as it is essentially a wrapper around \quickspec{}.
+There is potential for more radical changes to be made, which alter the search
+process itself.
 
 \subsubsection{Variable Instantiation}
 
-\qcheck{} is certainly the most popular property checker for Haskell, which
-motivates its use in \qspec{} to instantiate variables to random
+\quickcheck{} is certainly the most popular property checker for Haskell, which
+motivates its use in \quickspec{} to instantiate variables to random
 values. However, this task of finding type inhabitants has also been solved in
-many other ways, which may be worth investigating in place of \qcheck{} (or
+many other ways, which may be worth investigating in place of \quickcheck{} (or
 perhaps even as part of an ensemble).
 
-The \textsc{SmallCheck} system \cite{runciman2008smallcheck} \emph{enumerates}
+The \smallcheck{} system \cite{runciman2008smallcheck} \emph{enumerates}
 values rather than sampling them randomly. Whilst this does not make
-\textsc{SmallCheck} objectively ``better'' than \qcheck{}, one major advantage
+\smallcheck{} objectively ``better'' than \quickcheck{}, one major advantage
 is that it may use much less memory, as the generated values are built up
-incrementally. In contrast, \qcheck{} may generate very large values; in
+incrementally. In contrast, \quickcheck{} may generate very large values; in
 particular, generating tree structures na\"{\i}vely can cause them to grow
 exponentially. For example, here is a potential generator for \hs{RoseTree}s:
 
@@ -82,28 +82,27 @@ more difficult for our automated approach. For example, if a type does not have
 a generator available, we cannot use a library like \hs{derive} to create one
 automatically, as it suffers from this na\"{\i}vity problem.
 
-A relative of \textsc{SmallCheck} is \textsc{Lazy SmallCheck}
-\cite{reich2013advances}, which uses laziness to only produce parts of a
-datastructure as they are demanded. This may narrow down our search procedures
-greatly, especially when predicates are involved. \qcheck{} allows predicates to
-restrict the values it tests with, and hence allows \emph{conditional} equations
-to be discovered. However, its implementation uses a simple rejection sampling
-technique: values are generated just as if the predicate were not there, and
-afterwards are filtered to reject any which do not satisfy the predicate. This
-makes it difficult to use very specific predicates, as it is unlikely that many
-of our random samples will exactly match our criteria. On the other hand,
-\textsc{Lazy SmallCheck} will focus its search on exactly those parts of the
-datastructure which are checked by the predicate, as those are the parts being
-forced to evaluate. This makes it much more likely that we will find values
-which satisfy the predicate, allowing us to effectively explore more specific
-conditional properties.
+A relative of \smallcheck{} is \lazysmallcheck{}~\cite{reich2013advances}, which
+uses laziness to only produce parts of a datastructure as they are demanded.
+This may narrow down our search procedures greatly, especially when predicates
+are involved. \quickcheck{} allows predicates to restrict the values it tests
+with, and hence allows \emph{conditional} equations to be discovered. However,
+its implementation uses a simple rejection sampling technique: values are
+generated just as if the predicate were not there, and afterwards are filtered
+to reject any which do not satisfy the predicate. This makes it difficult to use
+very specific predicates, as it is unlikely that many of our random samples will
+exactly match our criteria. On the other hand, \lazysmallcheck{} will focus its
+search on exactly those parts of the datastructure which are checked by the
+predicate, as those are the parts being forced to evaluate. This makes it much
+more likely that we will find values which satisfy the predicate, allowing us to
+effectively explore more specific conditional properties.
 
-Other approaches to generating inhabitants include \textsc{Djinn}
-\cite{augustsson2005djinn}, which uses a decision procedure for a sub-set of
+Other approaches to generating inhabitants include
+\djinn{}~\cite{augustsson2005djinn}, which uses a decision procedure for a sub-set of
 Haskell types which in particular can generate and apply functions (unlike the
 above tools, which generate values ``bottom-up'' from constructors, and only use
 functions when they have been explicitly written in a
-generator). \textsc{MuCheck} \cite{le2014mucheck} is designed for
+generator). \mucheck{}~\cite{le2014mucheck} is designed for
 \emph{mutation testing}, and contains combinators for altering functions in
 common ways (e.g. changing the order of pattern match clauses); whilst not as
 exhaustive as the other approaches, mutating existing values in this way is
@@ -113,18 +112,17 @@ more ``realistic'' areas of the search space, and hence avoiding some of the
 more useless or bizarre expressions that random search and enumeration may
 produce.
 
-In fact, the database generated by our \textsc{AstPlugin} may prove helpful in
+In fact, the database generated by our \astplugin{} may prove helpful in
 generating values, since its type information can be fed to a tool like
-\textsc{Djinn} to discover chains of function applications for building values,
+\djinn{} to discover chains of function applications for building values,
 which would be particularly useful in cases where constructors are private, like
-in our email example. This is similar to the \textsc{Hoogle} tool, but also
-offers the ability to use dependency information to avoid potentially infinite
-recursion.
+in our email example. This is similar to the \hoogle{} tool, but also offers the
+ability to use dependency information to avoid potentially infinite recursion.
 
 The Core syntax trees in our database could also be used to generate theories
-for automated theorem provers. \hspec{} currently uses the GHC API to transform
+for automated theorem provers. \hipspec{} currently uses the GHC API to transform
 Core within its own process, however that approach suffers from the problems
-described in \S \ref{sec:astplugin}.
+described in \S~\ref{sec:astplugin}.
 
 \subsubsection{Interestingness}
 \label{sec:interestingness}
@@ -136,8 +134,8 @@ interested in among the haystack of trivialities and coincidences.
 
 This is governed by the ``interestingness'' criteria of the theory exploration
 system: what to keep and what to discard, and even what areas of the search
-space to prioritise. \qspec{}'s approach, briefly mentioned in \S
-\ref{sec:theoryexploration}, is very simple: we discard equations which are
+space to prioritise. \quickspec{}'s approach, briefly mentioned in
+\S~\ref{sec:theoryexploration}, is very simple: we discard equations which are
 direct consequences of others, and keep all the rest. Different, and more
 sophisticated notions of interestingness have been widely studied in other
 fields, which may be applied in the context of theory exploration.
@@ -157,17 +155,17 @@ exploration system), to others which are more closely related to theories of
 human learning and discovery \cite{Piantadosi.Tenenbaum.Goodman:2012,
   mullerunderstanding}. Those based on finding patterns in data, such as
 \cite{Wille:2005}, may be useful in tandem with our expression database, and
-the results of value generators like \qcheck{}.
+the results of value generators like \quickcheck{}.
 
-Since tools like \hspec{} already call out to third-party automated theorem
-provers, and indeed our own ML4HS system uses the external Weka program, there
+Since tools like \hipspec{} already call out to third-party automated theorem
+provers, and indeed our own \mlforhs{} system uses the external Weka program, there
 may also be merit in using external concept formation or conjecture generation
 tools (or reimplementations of their ideas), in order to build up more structure
 on top of that provided by the code we are exploring. For example, the
 approaches taken by AM \cite{lenat1977automated, lenat1979automated}, Graffiti
 \cite{delavina2005some, delavina2005graffiti} and HR
 \cite{colton1999automatic, colton2000agent} could be used alongside those of
-\qspec{}.
+\quickspec{}.
 
 \paragraph{Artificial Curiosity} \label{sec:curiosity} \leavevmode \newline
 
@@ -253,7 +251,7 @@ compressed together. This seems particularly relevant for our problem of
 identifying interesting theorems: those new theorems (``observations'') which
 shorten the proofs of previously discovered theorems may be more general, more
 powerful and therefore more \emph{interesting} and hence worth keeping. In fact
-this is very similar to \qspec{}'s interestingness criterion.
+this is very similar to \quickspec{}'s interestingness criterion.
 
 Another example of explicit artificial curiosity is given in
 \cite{Hester.Stone:2012}, where world states which cause \emph{disagreement}

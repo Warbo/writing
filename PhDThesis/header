@@ -1,4 +1,5 @@
 \documentclass{book}
+
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{hyperref}
@@ -38,18 +39,34 @@
 \newcommand{\vlocal}[1]{\CVar\ (\CLocal\ \id{#1})}
 \newcommand{\vglobal}[1]{\CVar\ (\CGlobal\ \id{#1})}
 \newcommand{\cat}{\mbox{\ensuremath{+\!\!+\,}}}
+\newcommand{\equal}{=}
+\newcommand{\hPackage}[1]{\url{http://hackage.haskell.org/#1}}
 
 %% System names
 
-\newcommand{\qcheck}{\textsc{QuickCheck}}
-\newcommand{\qspec}{\textsc{QuickSpec}}
-\newcommand{\hspec}{\textsc{HipSpec}}
-\newcommand{\mlspec}{\textsc{MLSpec}}
-\newcommand{\speculate}{\textsc{Speculate}}
-\newcommand{\hipster}{\textsc{Hipster}}
-\newcommand{\smallcheck}{\textsc{SmallCheck}}
+\newcommand{\astplugin}{\textsc{ASTPlugin}}
+\newcommand{\djinn}{\textsc{Djinn}}
 \newcommand{\hackage}{\href{http://hackage.haskell.org}{Hackage}}
-\newcommand{\equal}{=}
+\newcommand{\hedgehog}{\textsc{Hedgehog}}
+\newcommand{\hip}{\textsc{Hip}}
+\newcommand{\hipspec}{\textsc{HipSpec}}
+\newcommand{\hipster}{\textsc{Hipster}}
+\newcommand{\hoogle}{\textsc{Hoogle}}
+\newcommand{\isacosy}{\textsc{IsaCoSy}}
+\newcommand{\isascheme}{\textsc{IsaScheme}}
+\newcommand{\lazysmallcheck}{\textsc{Lazy SmallCheck}}
+\newcommand{\leancheck}{\textsc{LeanCheck}}
+\newcommand{\magichaskeller}{\textsc{MagicHaskeller}}
+\newcommand{\mlforhs}{ML4HS}
+\newcommand{\mlspec}{\textsc{MLSpec}}
+\newcommand{\mucheck}{\textsc{MuCheck}}
+\newcommand{\quickcheck}{\textsc{QuickCheck}}
+\newcommand{\quickspec}{\textsc{QuickSpec}}
+\newcommand{\smartcheck}{\textsc{SmartCheck}}
+\newcommand{\sparsecheck}{\textsc{SparseCheck}}
+\newcommand{\speculate}{\textsc{Speculate}}
+\newcommand{\smallcheck}{\textsc{SmallCheck}}
+\newcommand{\templatehaskell}{\textsc{TemplateHaskell}}
 
 %% GHC Core
 
@@ -96,29 +113,20 @@
 \providecommand{\js}[1]{\mintinline{javascript}{#1}}
 
 \newenvironment{common-lisp}
-  {\VerbatimEnvironment\begin{minted}[escapeinside=!!,mathescape=true]{common-lisp}}
-  {\end{minted}} 
+  {\VerbatimEnvironment
+   \begin{minted}[escapeinside=!!,mathescape=true]{common-lisp}}
+  {\end{minted}}
 
 \newenvironment{coqblock}
-  {\VerbatimEnvironment\begin{minted}[escapeinside=!!,mathescape=true]{haskell}}
+  {\VerbatimEnvironment
+   \begin{minted}[escapeinside=!!,mathescape=true]{coq}}
   {\end{minted}}
 
 % NOTE: Function definitions will only get their name highlighted if they're
 % flush against the left margin (i.e. we shouldn't indent our code blocks).
 \newenvironment{haskell}
-  {\VerbatimEnvironment\begin{minted}[escapeinside=!!,mathescape=true]{haskell}}
+  {\VerbatimEnvironment
+   \begin{minted}[escapeinside=!!,mathescape=true]{haskell}}
   {\end{minted}}
-
-% Define a cminted environment which centres the code on the page. Taken from
-% https://tex.stackexchange.com/a/161128/89790
-
-% \usepackage{xpatch,letltxmacro}
-% \LetLtxMacro{\cminted}{\minted}
-% \let\endcminted\endminted
-% \xpretocmd{\cminted}{\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}}{}{}
-
-% \newenvironment{chaskell}
-%   {{\centering\VerbatimEnvironment\begin{cminted}[escapeinside=!!,mathescape=true]{haskell}}
-%   {\end{cminted}\par}}
 
 \begin{document}

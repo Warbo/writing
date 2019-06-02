@@ -65,10 +65,10 @@ subsequent proofs, calculations, etc. The potential of this strategy was
 evaluated by illustrating the automated synthesis of Buchberger's own Gr\"obner
 bases algorithm~\cite{buchberger:04}.
 
-A similar ``layering'' approach is found in the \textsc{IsaScheme} system of
+A similar ``layering'' approach is found in the \isascheme{} system of
 Monta{\~n}o-Rivas \etal{}~\cite{Montano-Rivas.McCasland.Dixon.ea:2012}, which
-has also been quantitatively compared against \textsc{IsaCoSy} and
-\textsc{HipSpec} using precision/recall analysis~\cite{claessen2013automating}.
+has also been quantitatively compared against \isacosy{} and \hipspec{} using
+precision/recall analysis~\cite{claessen2013automating}.
 The name comes from its embedding in the Isabelle proof assistant and its use of
 ``schemes'': higher-order formulae which can be used to generate new concepts
 and conjectures. Variables within a scheme are instantiated automatically and
@@ -78,7 +78,7 @@ successor and addition to produce a definition of multiplication. The same
 scheme can be instantiated with this new multiplication function to produce
 exponentiation.
 
-\textsc{IsaCoSy} (Isabelle Conjecture Synthesis) is written for the Isabelle
+\isacosy{} (Isabelle Conjecture Synthesis) is written for the Isabelle
 proof assistant, mostly in
 StandardML~\cite{Johansson.Dixon.Bundy:conjecture-generation}. It conjectures
 equations by enumerating expressions involving a given set of (typed) constants
@@ -89,14 +89,14 @@ this property in the future. Conjectures are tested by looking for
 counterexamples and, if none are found, sent to \textsc{IsaPlanner} which
 attempts to prove them.
 
-\textsc{QuickSpec} (the conjecture generation component of \textsc{HipSpec})
-emerged from work on the \textsc{QuickCheck} software testing framework for the
+\quickspec{} (the conjecture generation component of \hipspec{})
+emerged from work on the \quickcheck{} software testing framework for the
 Haskell programming language~\cite{claessen2011quickcheck}. As well as
-conjecturing properties of Haskell definitions for \textsc{HipSpec}, it has been
-applied to Isabelle definitions via the \textsc{Hipster} tool~\cite{Hipster}.
-Like \textsc{IsaCoSy}, \textsc{QuickSpec} takes a signature and enumerates
+conjecturing properties of Haskell definitions for \hipspec{}, it has been
+applied to Isabelle definitions via the \hipster{} tool~\cite{Hipster}.
+Like \isacosy{}, \quickspec{} takes a signature and enumerates
 well-typed terms. It collects together those of the same type into equivalence
-classes, assuming them to be equal, then uses \textsc{QuickCheck} to find
+classes, assuming them to be equal, then uses \quickcheck{} to find
 counterexamples to this assumption by randomly instantiating the variables and
 comparing the resulting closed expressions. Any equivalence class whose elements
 don't compare equal are split up, and the process is repeated with new random
@@ -105,22 +105,22 @@ values.
 After 500 rounds of testing, any expressions still sharing the same equivalence
 class are conjectured to be equal for all values of their variables. Rather than
 using a constraint system to prevent redundancies (such as special-cases of
-other properties), \textsc{QuickSpec} instead passes its output through a
+other properties), \quickspec{} instead passes its output through a
 congruence closure algorithm to achieve the same effect.
 
-\textsc{QuickSpec} has since evolved to version 2~\cite{smallbone2017quick},
+\quickspec{} has since evolved to version 2~\cite{smallbone2017quick},
 which replaces the distinct enumeration and testing steps with a single,
-iterative algorithm similar to that of \textsc{IsaCoSy}. Generated conjectures
+iterative algorithm similar to that of \isacosy{}. Generated conjectures
 are fed into a Knuth-Bendix completion algorithm to form a corresponding set of
 rewrite rules. As expressions are enumerated, they are simplified using these
-rules and discarded if equal to a known expression. If not, \textsc{QuickCheck}
+rules and discarded if equal to a known expression. If not, \quickcheck{}
 tests whether the new expression can be distinguished from the known expressions
 through random testing: those which can are added to the set of known
 expressions. Those which cannot be distinguished are conjectured to be equal,
 and the rewrite rules are updated.
 
-\textsc{QuickSpec} has also inspired another MTE tool for Haskell called
-\textsc{Speculate}~\cite{braquehais2017speculate}, which operates in a similar
+\quickspec{} has also inspired another MTE tool for Haskell called
+\speculate{}~\cite{braquehais2017speculate}, which operates in a similar
 way but also makes use of the laws of total orders and Boolean algebra to
 conjecture \emph{in}equalities and conditional relations between expressions.
 

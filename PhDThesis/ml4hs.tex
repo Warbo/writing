@@ -2,7 +2,7 @@
 \label{sec:implementation}
 
 We provide an implementation of our recurrent clustering algorithm in a tool
-called \textsc{ML4HS}, which consists of a loose collection of components shown
+called \mlforhs{}, which consists of a loose collection of components shown
 in Figure \ref{fig:ml4hs}. This arrangement makes it easy to swap out parts for
 experimentation. In the following, we describe the custom components in the
 order they appear in the diagram.
@@ -15,7 +15,7 @@ order they appear in the diagram.
   \colorlet{shade}{rgb:black,1;white,4}
 
   \begin{tikzpicture}[node distance=2cm]
-    \node [block] (hackage) {Hackage};
+    \node [block] (hackage) {\hackage{}};
 
     \node [block, below of=hackage] (cabal) {
       \begin{tikzpicture}[node distance = 2cm]
@@ -44,8 +44,8 @@ order they appear in the diagram.
 
     \node [block, below of=clustering, fill=shade] (mlspec) {
       \begin{tikzpicture}[node distance = 2cm, auto]
-        \node (mlspeclabel) {MLSpec};
-        \node [block, anchor=north west, fill=white] at (mlspeclabel.south) (qs) {QuickSpec};
+        \node (mlspeclabel) {\mlspec{}};
+        \node [block, anchor=north west, fill=white] at (mlspeclabel.south) (qs) {\quickspec{}};
       \end{tikzpicture}
     };
 
@@ -72,7 +72,7 @@ syntactic equality check.
 
 Since we are interested in comparing definitions based on the terms they
 reference, building our framework on top of GHC seems like a promising
-approach. Indeed, \hspec{} already invokes GHC's API to obtain the definitions
+approach. Indeed, \hipspec{} already invokes GHC's API to obtain the definitions
 of Haskell functions, in order to transform them into a form suitable for ATP
 systems. However, our initial experiments showed that this technique is too
 fragile for use on many real Haskell projects.
@@ -260,21 +260,21 @@ append them to the database. As long as more SCCs remain unprocessed, we keep
 looping this process, using the database to communicate between the feature
 extraction and clustering phases.
 
-\subsection{\textsc{MLSpec}}
+\subsection{\mlspec{}}
 \label{sec:mlspec}
 
-We cannot supply these clusters as-is to \qspec{}, since it must be provided
-with a \emph{signature}. These are constructed by our \textsc{MLSpec} tool,
-using information from the \textsc{AstPlugin} database. Tasks performed by
-\textsc{MLSpec} include:
+We cannot supply these clusters as-is to \quickspec{}, since it must be provided
+with a \emph{signature}. These are constructed by our \mlspec{} tool,
+using information from the \astplugin{} database. Tasks performed by
+\mlspec{} include:
 
 \begin{itemize}
 \item{Monomorphising}: Given values of polymorphic type, e.g. \hs{safeHead ::
     forall t. [t] -> Maybe t} and \hs{[] :: forall t. [t]}, a testing-based
-  system like \qspec{} is unable to evaluate these expressions without
+  system like \quickspec{} is unable to evaluate these expressions without
   instantiating the variable \hs{t} to a specific type. Such an instantiation is
-  called \emph{monomorphising}, and in the case of \textsc{MLSpec} we build on
-  previous work in \qcheck{} by attempting to instantiate all type variables to
+  called \emph{monomorphising}, and in the case of \mlspec{} we build on
+  previous work in \quickcheck{} by attempting to instantiate all type variables to
   \hs{Integer}. We discard those cases where this is invalid, such as variable
   \emph{type constructors} (e.g. \hs{forall c. c Bool -> c Bool}) or
   incompatible class constraints (e.g. \hs{forall t. IsString t => t}).
@@ -285,18 +285,18 @@ using information from the \textsc{AstPlugin} database. Tasks performed by
   causes problems for any Haskell programmer trying to use those modules. In
   such cases the exploration process simply aborts.
 
-\item{Variable definition}: Once a \qspec{} theory has been defined containing
+\item{Variable definition}: Once a \quickspec{} theory has been defined containing
   all of the given terms, we inspect the types it references and append three
   variables for each to the theory (enough to discover laws such as
-  associativity, but not too many to overflow the limit of \qspec{}'s exhaustive
+  associativity, but not too many to overflow the limit of \quickspec{}'s exhaustive
   search).
 
 \item{Sandboxing}: One difficulty with Haskell's packaging infrastructure is
   that all required packages and modules must be provided up-front, usually by
-  specification in a Cabal file. Since \textsc{MLSpec} builds signatures
+  specification in a Cabal file. Since \mlspec{} builds signatures
   \emph{dynamically}, depending on the cluster information it is given, we do
   not know what packages it may need. To work around this problem,
-  \textsc{MLSpec} invokes \qspec{} for each cluster using a library we have
+  \mlspec{} invokes \quickspec{} for each cluster using a library we have
   built called \texttt{nix-eval}. This provides an \texttt{eval} function, like
   those commonly found in dynamic languages such as Python and Javascript, for
   evaluating Haskell expressions. The key feature of \texttt{nix-eval} is that
