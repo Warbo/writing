@@ -58,7 +58,7 @@ function:
 \begin{haskell}
 factorial = original . abs
   where original 0 = 1
-        original n = n * naive (n - 1)
+        original n = n * original (n - 1)
 \end{haskell}
 % END abs
 
@@ -90,6 +90,8 @@ properties:
 % BEGIN quickchecked
 \begin{haskell}
 fact_base        = factorial 0 == factorial 1
+
+fact_increases, fact_div, fact_neg :: Int -> Bool  
 fact_increases n = factorial n <= factorial (n + 1)
 fact_div       n = factorial n == factorial (n + 1) `div` (n + 1)
 fact_neg       n = factorial n == factorial (-n)
