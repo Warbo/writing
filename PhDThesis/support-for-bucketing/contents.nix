@@ -1,4 +1,4 @@
-{ basicTex, data, lib, python3, runCommand, writeScript }:
+{ basicTex, data, lib, python3, runCommand, wrap, writeScript }:
 
 with builtins;
 with lib;
@@ -62,8 +62,11 @@ rec {
     proportions = runCommand "content-failure-proportions"
       {
         inherit csv name;
-        buildInputs = [ basicTex (python3.withPackages (p: [ p.matplotlib ])) ];
-        script      = ./contentsGraph.py;
+        script = wrap {
+          name  = "contentsGraph.py";
+          file  = ./contentsGraph.py;
+          paths = [ basicTex (python3.withPackages (p: [ p.matplotlib ])) ];
+        };
       }
       ''
         mkdir "$out"

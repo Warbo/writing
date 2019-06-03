@@ -1,6 +1,7 @@
 # Perform survival rate analysis for QuickCheck running times
 { basicTex, callPackage, fetchurl, gcc, lib, nixpkgs1709, path, python3,
-  python3Packages, runCommand, stdenv, overrideCC, buildPackages, writeScript }:
+  python3Packages, runCommand, stdenv, overrideCC, buildPackages, wrap,
+  writeScript }:
 
 with builtins;
 with lib;
@@ -136,8 +137,12 @@ with lib;
     {
       inherit label;
       inherit (timingCsv) csv;
-      buildInputs = [ basicTex (python3.withPackages (p: [ lifelines ])) ];
-      script      = ./survivalGraph.py;
+      buildInputs = [ basicTex ];
+      script      = wrap {
+        name  = "survivalGraph.py";
+        file  = ./survivalGraph.py;
+        paths = [ (python3.withPackages (p: [ lifelines ])) ];
+      };
     }
     runner;
 
@@ -145,11 +150,12 @@ with lib;
     {
       inherit label;
       inherit (timingCsv) csv;
-      buildInputs = [
-        basicTex
-        (python3.withPackages (p: [ p.matplotlib p.scipy ]))
-      ];
-      script = ./timeoutGraph.py;
+      buildInputs = [ basicTex ];
+      script = wrap {
+        name  = "timeoutGraph.py";
+        file  = ./timeoutGraph.py;
+        paths = [ (python3.withPackages (p: [ p.matplotlib p.scipy ])) ];
+      };
     }
     runner;
 }

@@ -1,5 +1,6 @@
-{ fail, fetchgit, jq, lzip, mkBin, nixListToBashArray, perl, python, R, replace,
-  rPackages, runCommand, tetex, tex, textWidth, which, wrap, writeScript }:
+{ coreutils, fail, fetchgit, jq, lzip, mkBin, nixListToBashArray, perl, python,
+  R, replace, rPackages, runCommand, tetex, tex, textWidth, which, wrap,
+  writeScript }:
 
 with builtins;
 rec {
@@ -16,7 +17,7 @@ rec {
       buildInputs = [ jq lzip python ];
       files       = builtins.toJSON resultPaths;
       script      = writeScript "normalise.py" ''
-        #!/usr/bin/env python
+        #!${coreutils}/bin/env python
         import json
         import sys
 
