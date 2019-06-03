@@ -20,8 +20,8 @@ with rec {
       # version of nix-helpers (which saves having to repeat ourselves).
       packages-src = fetchgit {
         url    = http://chriswarbo.net/git/warbo-packages.git;
-        rev    = "7cd00c7";
-        sha256 = "19cyljalgdrwfkc4h59wdbfk56sxq9cxqk9fj20a0rglbkng73y3";
+        rev    = "4a7075b";
+        sha256 = "1263li5lc8fkhblzsbw1d7bchsnwprknk5xnajkkxcbikzczi3i4";
       };
 
       # This defines helper functions for Nix.
@@ -30,7 +30,7 @@ with rec {
     import path {
       config   = {};
       overlays = [
-        (import "${helpers-src}/overlay.nix" )
+        (import "${ helpers-src}/overlay.nix" )
         (import "${packages-src}/overlay.nix")
       ];
     };
