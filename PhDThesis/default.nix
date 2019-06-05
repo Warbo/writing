@@ -128,19 +128,23 @@ with { defs = rec {
 
   thesis = renderSection "thesis";
 
-  pdfs = withDeps (allDrvsIn tests) (attrsToDirs {
-    "outline.pdf" = outline;
-    "thesis.pdf"  = thesis;
-
-    # Individual sections, for reviewing, etc.
-    "appendix.pdf"   = renderSection "appendix";
-    "background.pdf" = renderSection "background";
-    "benchmark.pdf"  = renderSection "benchmark";
-    "bucketing.pdf"  = renderSection "bucketing";
-    "litreview.pdf"  = renderSection "litreview";
-    "related.pdf"    = renderSection "related";
-    "futurework.pdf" = renderSection "futurework";
-  });
+  pdfs =
+    with rec {
+      mkSec  = sec: { name = "${sec}.pdf"; value = renderSection sec; };
+      mkSecs = l: listToAttrs (map mkSec l);
+      main   = { "outline.pdf" = outline; "thesis.pdf" = thesis; };
+    };
+    withDeps (allDrvsIn tests)
+             (attrsToDirs (main // mkSecs [
+               "appendix"
+               "background"
+               "benchmark"
+               "bucketing"
+               "clustering"
+               "litreview"
+               "related"
+               "futurework"
+             ]));
 
   tests = callPackage ./supporting-material/tests.nix {};
 
