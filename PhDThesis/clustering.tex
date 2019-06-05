@@ -1,90 +1,320 @@
 \chapter{Similarity and Clustering}
 \label{sec:recurrentclustering}
 
-Rather than clustering Core expressions directly, we first perform \emph{feature
-  extraction} to transform them into numeric \emph{feature vectors}. We adapt
-the methodology of \emph{recurrent clustering} proposed in
-\cite{DBLP:journals/corr/HerasK14} \cite{heras2013proof}, which combines feature
-extraction and clustering into a single recursive algorithm, such that the
-feature vector of an expression depends on the feature vectors of those
-expressions it references. We suggest a new recurrent clustering and feature
-extraction algorithm for Haskell (shown in Algorithm \ref{alg:recurrent}) and
-compare its similarity and differences to those of ML4PG and ACL2(ml).
+To improve the performance of theory exploration tools, we need to avoid
+brute-force search in favour of a more informed strategy. This, in turn,
+requires more information about the terms in the given signature. One
+generally available source of information is a term's definition.
+
+Unfortunately these definitions are over-complicated due to the relatively large
+syntax of Haskell, which includes many convenience features (``syntactic
+sugar'') and alternative ways to write essentially the same thing (e.g.
+\hs{let} vs \hs{where}, \hs{if} vs \hs{case}, \hs{f x = ...} vs
+\hs{f = \x -> ...}, etc.). This obscures the simplicity of the lambda calculus
+underlying the language, and more importantly it makes syntactic analysis less
+useful for our purposes by making distinctions between semantically identical
+terms (which will behave identically under theory exploration). For this reason
+we perform our analyses on the \emph{GHC Core} language instead.
+
+\section{GHC Core}\label{sec:core}
+\label{sec:ghccore}
+
+\begin{figure}
+  \begin{equation*}
+    \begin{split}
+      expr\    \rightarrow\ & \CVar\ id                          \\
+                         |\ & \CLit\ literal                     \\
+                         |\ & \CApp\ expr\ expr                  \\
+                         |\ & \CLam\ \mathcal{L}\ expr           \\
+                         |\ & \CLet\ bind\ expr                  \\
+                         |\ & \CCase\ expr\ \mathcal{L}\ [alt]   \\
+                         |\ & \CType                             \\
+      id\      \rightarrow\ & \CLocal\       \mathcal{L}         \\
+                         |\ & \CGlobal\      \mathcal{G}         \\
+                         |\ & \CConstructor\ \mathcal{D}         \\
+      literal\ \rightarrow\ & \CLitNum\ \mathcal{N}              \\
+                         |\ & \CLitStr\ \mathcal{S}              \\
+      alt\     \rightarrow\ & \CAlt\ altcon\ expr\ [\mathcal{L}] \\
+      altcon\  \rightarrow\ & \CDataAlt\ \mathcal{D}             \\
+                         |\ & \CLitAlt\ literal                  \\
+                         |\ & \CDefault                          \\
+      bind\    \rightarrow\ & \CNonRec\ binder                   \\
+                         |\ & \CRec\ [binder]                    \\
+      binder   \rightarrow\ & \CBind\ \mathcal{L}\ expr
+    \end{split}
+  \end{equation*}
+  Where:
+  \begin{tabular}[t]{l @{ $=$ } l}
+    $\mathcal{S}$ & string literals    \\
+    $\mathcal{N}$ & numeric literals   \\
+    $\mathcal{L}$ & local identifiers  \\
+    $\mathcal{G}$ & global identifiers \\
+    $\mathcal{D}$ & constructor identifiers
+  \end{tabular}
+
+  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote
+    repetition and grouping, respectively. Other forms of literal, like machine
+    words, are treated in a similar way and have been omitted for brevity.}
+  \label{fig:coresyntax}
+\end{figure}
+
+GHC Core is an intermediate language of the \textsc{GHC} compiler based on
+\fc{}, and described in detail in~\cite[Appendix C]{sulzmann2007system}. Core
+contains explicit type annotations and coercions, which we omit as they have no
+effect on runtime behaviour (they have no ``computational content''). The
+resulting sub-set of Core\footnote{As of GHC version 7.10.2.} is shown in
+Figure~\ref{fig:coresyntax}.
+
+\begin{figure}
+  \begin{subfigure}[haskell]{\textwidth}
+    \underline{\texttt{Haskell definitions}}
+    \begin{haskell}
+plus    Z  y = y
+plus (S x) y = S      (plus x y)
+
+mult    Z  y = Z
+mult (S x) y = plus y (mult x y)
+
+odd     Z  = False
+odd  (S n) = even n
+
+even    Z  = True
+even (S n) = odd n
+    \end{haskell}
+    \smallskip
+  \end{subfigure}
+  \begin{subfigure}[plus]{\textwidth}
+    \begin{small}
+      \underline{\texttt{plus}}
+      \begin{verbatim}
+Lam "a" (Lam "y" (Case (Var (Local "a"))
+                       "b"
+                       (Alt (DataAlt "Z") (Var (Local "y")))
+                       (Alt (DataAlt "S") (App (Var (Constructor "S"))
+                                               (App (App (Var (Global "plus"))
+                                                         (Var (Local  "x")))
+                                                    (Var (Local "y"))))
+                                          "x")))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[mult]{\textwidth}
+    \begin{small}
+      \underline{\texttt{mult}}
+      \begin{verbatim}
+Lam "a" (Lam "y" (Case (Var (Local "a"))
+                       "b"
+                       (Alt (DataAlt "Z") (Var (Constructor "Z")))
+                       (Alt (DataAlt "S") (App (App (Var (Global "plus"))
+                                                    (Var (Local  "y")))
+                                               (App (App (Var (Global "mult"))
+                                                         (Var (Local  "x")))
+                                                    (Var (Local  "y"))))
+                                          "x")))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[odd]{\textwidth}
+    \begin{small}
+      \underline{\texttt{odd}}
+      \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              (Alt (DataAlt "Z") (Var (Constructor "False")))
+              (Alt (DataAlt "S") (App (Var (Global "even"))
+                                      (Var (Local  "n")))
+                                 "n"))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \begin{subfigure}[even]{\textwidth}
+    \begin{small}
+      \underline{\texttt{even}}
+      \begin{verbatim}
+Lam "a" (Case (Var (Local "a"))
+              "b"
+              (Alt (DataAlt "Z") (Var (Constructor "True")))
+              (Alt (DataAlt "S") (App (Var (Global "odd"))
+                                      (Var (Local  "n")))
+                                 "n"))
+      \end{verbatim}
+    \end{small}
+  \end{subfigure}
+  \caption{Example Haskell functions and their translations into the Core syntax
+    of Figure \ref{fig:coresyntax}. Notice the introduction of explicit
+    $\lambda$ abstractions (\texttt{Lam}) and the use of \texttt{Case} to
+    represent piecewise definitions. Fresh variables are chosen arbitrarily
+    as \texttt{"a"}, \texttt{"b"}, etc.}
+  \label{fig:coreexample}
+\end{figure}
+
+GHC's translation from Haskell to Core is routine: Figure~\ref{fig:coreexample}
+shows the Core representation of some simple functions. Although the Core is
+more verbose, we can see that similar structure in the Haskell definitions gives
+rise to similar structure in the Core; for example, the definitions of \hs{odd}
+and \hs{even} are identical in both languages, except for the particular
+identifiers used. It is this close correspondence which allows us to analyse
+Core expressions in place of their more complicated Haskell source.
+
+For simplicity we also avoid using constructors directly, choosing instead to
+wrap them with normal functions (e.g. \hs{s x = S x}, known as
+$\eta$-expansion), since this eliminates another distinction (constructors vs
+functions) and also reduces cross-language differences (e.g. Isabelle treats
+constructors in a different way to Haskell).
+
+\section{Feature Extraction}
+
+Raw syntax trees, even in Core form, are unsuitable for many forms of analysis
+due to their recursive structure, use of discrete labels and heavy reliance on
+references. These are unsuitable for many machine learning algorithms, which
+instead require a fixed-size vector of continuous numbers known as a
+\emph{feature vector}.
+
+The process of turning raw data into feature vectors is called \emph{feature
+  extraction}, and we adapt the methodology of \emph{recurrent clustering}
+proposed in~\cite{DBLP:journals/corr/HerasK14,heras2013proof}, since this
+handles recursive tree structures, resolves references and produces numeric
+vectors. We suggest a new recurrent clustering and feature extraction algorithm
+for Haskell (shown in Algorithm \ref{alg:recurrent}) and compare its similarity
+and differences to the existing approaches of ML4PG (Coq) and ACL2(ml) (ACL2).
 
 We describe our algorithm in two stages: the first transforms the nested
 structure of expressions into a flat vector representation; the second converts
 the discrete symbols of Core syntax into features (real numbers), which we will
-denote using the function $\phi$.
+denote using the function $\phi$. Before introducing our algorithm, we briefly
+describe \emph{clustering}, and its use in \emph{recurrent clustering}.
 
-\section{Core Syntax}\label{sec:core}
+\subsection{Clustering}
 
-The GHC Core language is based on \fc{}, and described in detail in
-\cite[Appendix C]{sulzmann2007system}. For our machine learning purposes we are
-mostly interested in the syntax of reducible expressions (representing Haskell
-of the form \hs{f a b \dots = \dots}), and use the simplified syntax given below
-in BNF style ($[]$ and $(,)$ denote repetition and grouping, respectively):
+Clustering is an unsupervised machine learning task for grouping $n$ data points
+using a similarity metric. There are many variations on this theme, but in our
+case we make the following choices:
 
-\begin{equation}\label{eq:coresyntax}
-  \begin{split}
-    expr\    \rightarrow\ & \CVar\ id                          \\
-                       |\ & \CLit\ literal                     \\
-                       |\ & \CApp\ expr\ expr                  \\
-                       |\ & \CLam\ \mathcal{L}\ expr           \\
-                       |\ & \CLet\ bind\ expr                  \\
-                       |\ & \CCase\ expr\ \mathcal{L}\ [alt]   \\
-                       |\ & \CType                             \\
-    id\      \rightarrow\ & \CLocal\       \mathcal{L}         \\
-                       |\ & \CGlobal\      \mathcal{G}         \\
-                       |\ & \CConstructor\ \mathcal{D}         \\
-    literal\ \rightarrow\ & \CLitNum\ \mathcal{N}              \\
-                       |\ & \CLitStr\ \mathcal{S}              \\
-    alt\     \rightarrow\ & \CAlt\ altcon\ expr\ [\mathcal{L}] \\
-    altcon\  \rightarrow\ & \CDataAlt\ \mathcal{D}             \\
-                       |\ & \CLitAlt\ literal                  \\
-                       |\ & \CDefault                          \\
-    bind\    \rightarrow\ & \CNonRec\ binder                   \\
-                       |\ & \CRec\ [binder]                    \\
-    binder   \rightarrow\ & \CBind\ \mathcal{L}\ expr
-  \end{split}
+\begin{itemize}
+\item For simplicity, we use the ``rule of thumb'' given in
+  \cite[pp. 365]{mardia1979multivariate} to fix the number of clusters at
+  $k = \lceil \sqrt{\frac{n}{2}} \rceil$.
+\item Data points will be $d$-dimensional feature vectors, as defined above.
+\item We will use euclidean distance (denoted $e$) as our similarity metric.
+\item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm
+  \cite{lloyd1982least}.
+\end{itemize}
+
+This is a standard setup, supported by off-the-shelf tools; in particular we use
+the \hPackage{k-means} Haskell package.
+
+Since k-means is iterative, we will use function notation to denote time steps,
+so $x(t)$ denotes the value of $x$ at time $t$. We denote the clusters as $C^1$
+to $C^k$. As the name suggests, k-means uses the mean value of each cluster,
+which we denote as $\vect{m}^1$ to $\vect{m}^k$, hence:
+
+\begin{equation*}
+  m^i_j(t) = \mean{C^i_j}(t) = \frac{\sum_{\vect{x} \in C^i(t)} x_j}{|C^i(t)|} \quad \text{for $t > 0$}
+\end{equation*}
+
+Before k-means starts, we must choose \emph{seed} values for
+$\vect{m}^i(0)$. Many methods have been proposed for choosing these values
+\cite{arthur2007k}. For simplicity, we will choose values randomly from our
+data set $S$; this is known as the Forgy method.
+
+The elements of each cluster $C^i(t)$ are those data points closest to the mean
+value at the previous time step:
+
+\begin{equation*}
+  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x}, \vect{m}^j(t-1)) \} \quad \text{for $t > 0$}
+\end{equation*}
+
+As $t$ increases, the clusters $C^i$ move from their initial location around the
+``seeds'', to converge on a local minimum of the ``within-cluster sum of squared
+error'' objective:
+
+\begin{equation} \label{eq:kmeansobjective}
+  \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
 \end{equation}
-Where:
-\begin{tabular}[t]{l @{ $=$ } l}
-  $\mathcal{S}$ & string literals    \\
-  $\mathcal{N}$ & numeric literals   \\
-  $\mathcal{L}$ & local identifiers  \\
-  $\mathcal{G}$ & global identifiers \\
-  $\mathcal{D}$ & constructor identifiers
-\end{tabular}
 
-The full Core language emitted by GHC (as of version 7.10.2, the latest at the
-time of writing) is translated automatically to this simplified form prior to
-recurrent clustering. Our major restriction is to ignore type-level entities
-(such as datatype definitions, explicit casts, and differences between
-types/kinds/coercions). Our implementation also handles several other forms of
-literal (machine words of various sizes, individual characters, etc.), but we
-omit them here for brevity as their treatment is similar to those of strings and
-numerals.
+We chose k-means because it is a standard approach and we are more concerned
+with the application of feature extraction to Haskell and its use in theory
+exploration, rather than precise tuning of learning algorithms. There are many
+other clustering algorithms we could use, such as \emph{expectation
+  maximisation}~\footnote{In fact, k-means is very similar to
+  expectation-maximisation, as it alternates between an \emph{expectation step}
+  (finding the mean value of each cluster) and a \emph{maximisation step}
+  (assigning points to the cluster they're most similar to; or alternatively,
+  \emph{minimising} the distance of each point to the centre of its cluster, as
+  per equation \ref{eq:kmeansobjective}).}, but experiments with ML4PG have
+shown little difference in their results; in effect, the quality of the features
+is the bottleneck to learning, so there is no reason to avoid a fast algorithm
+like k-means.
 
-\section{Rose Trees}\label{sec:rosetree}
+In any case there are many conservative improvements to the standard k-means
+algorithm, which could be applied to our setup. For example, a more efficient
+approach like \emph{yinyang k-means}~\cite{conf/icml/DingZSMM15} could make
+larger input sizes more practical to cluster, especially since recurrent
+clustering invokes k-means many times. The \emph{k-means++}
+approach~\cite{arthur2007k, bahmani2012scalable} can be used to more carefully
+select the ``seed'' values for the first timestep, and the \emph{x-means}
+algorithm~\cite{pelleg2000x} is able to estimate how many clusters to use.
+
+\subsection{Recurrent Clustering}
+
+\emph{Recurrent clustering} has been implemented in the
+ML4PG tool for analysing Coq proofs~\cite{journals/corr/abs-1212-3618} and
+ACL2(ml) for ACL2~\cite{heras2013proof}. Whilst both transform syntax trees into
+matrices, the algorithm of ML4PG most closely resembles ours as it assigns tokens directly to matrix elements. In contrast,
+the matrices produced by ACL2(ml) \emph{summarise} information about the tree;
+for example, one column counts the number of variables appearing at each tree
+level, others count the number of function symbols which are nullary, unary,
+binary, etc. Whilst it may be interesting to contrast our current algorithm with
+an alternative based on that of ACL2(ml), it is unclear how such summaries could
+be extended to include types, which seems the next logical step for our
+approach. The ML4PG algorithm extends trivially, by using (term, type) pairs
+instead of just terms.
+
+The way we \emph{use} our clusters to inform theory exploration is actually more
+similar to that of ACL2(ml) than ML4PG. ML4PG can either present clusters to the
+user for inspection, or produce automata for recreating proofs. In ACL2(ml), the
+clusters are used to restrict the search space of a proof search, much like we
+restrict the scope of theory exploration.
+
+ACL2(ml) reasons by analogy: finding theorem statements which are similar to the
+current goal, and attempting to prove the goal in a similar way. In particular,
+the lemmas used to prove a theorem are mutated by substituting symbols for those
+which appear in the same cluster. For example, if \texttt{plus} and
+\texttt{multiply} are clustered together, and we are trying to prove a goal
+involving \texttt{multiply}, then ACL2(ml) might consider an existing theorem
+involving \texttt{plus}. The lemmas used to prove that theorem will be mutated,
+for example replacing occurrences of \texttt{plus} with \texttt{mult}, in an
+attempt to prove the goal.
+
+\iffalse
+% TODO: Move this to the end of the chapter?
+Whilst we do not currently reason by analogy, this is an interesting area for
+future work in theory exploration: given a set of theorems relating particular
+terms, we might form conjectures regarding similar terms found through
+clustering.
+\fi
+
+\subsection{Rose Trees}\label{sec:rosetree}
 
 The $toTree$ function shown below transforms Core expressions, described in
-Appendix \ref{sec:core} to rose trees. We follow the presentation in
-\cite{blundell2012bayesian} and define rose trees recursively as follows: $T$ is
-a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and
-$T_i$ are rose trees. $T_i$ are the \emph{sub-trees} of $T$ and $f$ is the
-\emph{feature at} $T$. $n_T$ may differ for each (sub-) tree; trees where
-$n_T = 0$ are \emph{leaves}.
+\S~\ref{sec:core}, to rose trees. We follow the presentation
+in~\cite{blundell2012bayesian} and define rose trees recursively as follows: $T$
+is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and
+$T_i$ are rose trees.
+
+$T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$.
+
+$n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}.
 
 The recursive definition is mostly routine; each repeated element (shown as
 $\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply
 $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors
-have no internal structure for us to compare; they can only be compared based on
-their types, which we do not currently support. We also ignore values from
+have no internal structure for us to compare. We also ignore values from
 $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\phi$,
 and we conjecture that the effect of such ``magic values'' on clustering real
 code is low.
 
-%\begin{figure}
+\begin{figure}
   \begin{align*}\label{fig:totree}
     toTree(e) &=
     \begin{cases}
@@ -109,8 +339,7 @@ code is low.
       (\feature{\CBind},    toTree(e_1))                                & \text{if $e = \CBind\ l_1\ e_1$}
     \end{cases}
   \end{align*}
-
-%\end{figure}
+\end{figure}
 
 \subsubsection{Expressions to Vectors}
 \label{sec:expressionstovectors}
