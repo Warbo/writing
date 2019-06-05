@@ -3,8 +3,9 @@
 
 Despite the clever search strategies employed by theory exploration tools, they
 all rely on enumerating combinations of definitions in some way, which can cause
-infeasible running times on larger inputs (based on results of the Theory
-Exploration Benchmark in \S~\ref{sec:benchmark}, this happens above a few dozen
+infeasible running times on larger inputs (based on experiments with our Theory
+Exploration Benchmark,%in \S~\ref{sec:benchmark}
+this happens above a few dozen
 definitions). To avoid this, users of these systems must carefully select only
 small subsets of their definitions to explore at a time.
 
@@ -20,8 +21,8 @@ In this chapter we will:
 
 \begin{enumerate}
   \item Define the \emph{signature selection problem} for theory exploration.
-  \item Analyse the performance of theory exploration on the Theory Exploration
-    Benchmark.
+  \item Analyse system performance on the Theory Exploration Benchmark, to
+    demonstrate the effect of ``toxic'' definitions leading to timeouts.
   \item Analyse the effect of signature selection on the quantity of desirable
     properties attainable by theory exploration on this problem set.
   \item Demonstrate how the signature selection problem is distinct from the
@@ -60,75 +61,36 @@ careful choice by the user of what to include in the signature. For example, we
 know that addition and multiplication are closely related, and hence obey many
 algebraic laws; it would be prudent to explore these functions together. On the
 other hand, functions such as HTTP parsers and spell-checkers will not be
-related in many interesting ways; exploring their combinations is wasteful.
+related in many interesting ways, so exploring their combinations is wasteful.
 
-The signature selection problem is that of selecting sub-sets of a large
+The signature selection problem is that of choosing sub-sets of a large
 signature, such that:
 
 \begin{itemize}
 \item Few subsets are selected
-\item Each sub-set is small
-\item As many of the total interesting relationships are still findable
+\item Each sub-set can be explored quickly
+\item Many of the interesting properties of the original signature can be
+  found in the union of properties of the subsets
 \end{itemize}
 
-\section{Clustering}
-\label{sec:clustering}
+There is a clear trade-off to be made between speed (the first two requirements)
+and ``quality'' (the final requirement): we can find all of the interesting
+properties of a signature if we explore the whole thing at once; whilst it
+is fastest to explore no definitions at all. In between are opportunities for a
+Pareto-optimal balance to be struck. Whilst the number of subsets can be
+determined simply by counting, the others require more thorough investigation.
 
-Our approach to scaling up \quickspec{} takes inspiration from two sources. The
-first is relevance filtering, which makes expensive algorithms used in theorem
-proving more practical by only considering clauses deemed ``relevant'' to the
-problem \cite{meng2009lightweight}.
+\section{Exploration Speed}
 
-Relevance is determined by comparing clauses to the target theorem, but theory
-exploration does not have such a distinguished term. Instead, we are interested
-in relationships between \emph{all} terms in a signature, and hence we need a
-different algorithm for considering the relevance of \emph{all terms} to
-\emph{all other terms}.
-
-A natural fit for this task is \emph{clustering}, which attempts to group
-similar inputs together in an unsupervised way. Based on their success in
-discovering relationships and patterns between expressions in Coq and ACL2 (in
-the ML4PG and ACL2(ml) tools respectively), we hypothesise that clustering
-methods can fulfil the role of relevance filters for theory exploration:
-intelligently breaking up large signatures into smaller ones more amenable to
-brute force enumeration, such that related expressions are explored together.
-
-Due to its use by ML4PG and ACL2(ml), we use \emph{k-means} clustering,
-implemented in the Weka tool \cite{Holmes.Donkin.Witten:1994} by Lloyd's
-algorithm \cite{lloyd1982least}, with randomly-selected input elements as the
-initial clusters. Rather than relying on the user to provide the number of
-clusters $k$, we use the ``rule of thumb'' given in
-\cite[pp. 365]{mardia1979multivariate} of clustering $n$ data points into
-$k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
-
-
-\section{Experiments}
-
-% TODO: This was taken from the Background section, so probably doesn't fit here
-% without some fiddling.
-% TODO: Describe all of our experimental setups:
-%
-%  - The use of the TEBenchmark methodology for running QSpec, including the
-%    sampling process
-%
-%  - Running our recurrent signature selection algorithm on samples from TEBenchmark,
-%    including how we picked the sizes
-%
-%  - The definition of HashSpec and its use as control; how we ran all of the
-%    same samples through it
-%
-%  - The use of optimal and pessimal oracles, defined via constraint
-%    satisfaction. How we it was only feasible to run these up to size 10 (11?)
-
-We follow the tradition of prior practitioners and use an existing corpus of
-theorems as a \emph{ground truth} against which to compare results. To analyse
-behaviour on large inputs (i.e. those for which exploration is currently
-infeasible), as required to study the effects of signature selection, we have
-used the Theory Exploration Benchmark of section~\ref{sec:tebenchmark}, which is
-based on the Tons of Inductive Problems (TIP) problem set for theorem
-provers~\cite{claessen2015tip}.
+The time taken to explore a subset of definitions from a signature can be easily
+measured, but only in hindsight. Choosing each subset must be done with only a
+\emph{prediction} of how long it will take to explore. Here we investigate the
+time taken by \quickspec{} on signatures chosen from our Theory Exploration
+Benchmark (containing definitions from Tons of Inductive Problems (TIP)
+benchmark~\cite{claessen2015tip}), and how this is affected by their content.
 
 \begin{figure}
+  \centering
   \scalebox{0.45}{\input{images/steppedall.pgf}}
   \scalebox{0.45}{\input{images/steppednontoxic.pgf}}
   \caption{Kaplan-Meier survival plot for running \quickspec{} on inputs
@@ -140,19 +102,12 @@ provers~\cite{claessen2015tip}.
   \label{fig:survival}
 \end{figure}
 
-Figure~\ref{fig:survival} shows a Kaplan-Meier survival plot of \quickspec{} running
-times, when given inputs containing different numbers of definitions. Many runs
+Figure~\ref{fig:survival} shows a Kaplan-Meier survival plot of \quickspec{}
+running times, when given inputs containing different numbers of definitions. Many runs
 finish quickly, with the remainder occupying a ``long tail'' which we cut off
 after 300 seconds\footnote{Chosen based on preliminary experiments, which showed
   little difference in survival between 300 seconds and 1 hour}.
 
-The number of definitions in the input is linearly correlated with the amount of
-timeouts, except for the very smallest inputs (which are more constrained by the
-sampling procedure). One explanation for this is ``toxic'' definitions, whose
-presence in the input always leads to the exploration failing (with larger
-inputs being more likely to have sampled a toxic definition).
-
-\iffalse
 \begin{figure}
   \scalebox{0.45}{\input{images/timeoutsall.pgf}}
   \scalebox{0.45}{\input{images/timeoutsnontoxic.pgf}}
@@ -161,16 +116,22 @@ inputs being more likely to have sampled a toxic definition).
     runs given ``toxic'' definitions.}
   \label{fig:tailsize}
 \end{figure}
-\fi
+
+Figure~\ref{fig:tailsize} shows that the number of definitions in the input is
+linearly correlated with the proportion of timeouts, except for the very
+smallest inputs (which are more constrained by the sampling procedure). One
+hypothesis to explain this is the existence of ``toxic'' definitions, whose
+presence in the input always leads to the exploration failing (with larger
+inputs being more likely to have sampled a toxic definition).
 
 \begin{figure}
   \scalebox{0.45}{\input{images/proportionsall.pgf}}
   \scalebox{0.45}{\input{images/proportionsnontoxic.pgf}}
-  \label{fig:proportions}
   \caption{Definitions, ordered by the ratio of successes to failures of the
     runs they appeared in. First graph contains all TIP definitions, showing
     ``toxic'' definitions which always failed. Second graph only contains runs
     without any toxic definitions.}
+  \label{fig:proportions}
 \end{figure}
 
 \begin{figure}
@@ -303,14 +264,151 @@ tail-recursive definitions of multiplication and exponentiation, respectively.
 All of these functions have an extra ``accumulator'' argument, which increases
 the number of possible expressions to explore compared to those without.
 
-Exploring each of these functions on its own does not require much memory, since
-Haskell generates the output lazily. However, comparing such large numbers for
-equality takes a lot of CPU time as the \texttt{S} constructors are successively
-unwrapped from each side, and this is why the timeout is reached. We confirmed
-this hypothesis by exploring with a custom data generator which only generates
-the values \texttt{Z}, \texttt{S Z} and \texttt{S (S Z)} (0, 1 and 2); this
-caused the exploration to finish quickly. Other interventions, like making the
-accumulator arguments strict (to prevent space leaks), did not prevent timeouts.
+Note that Haskell is lazily evaluated, which allows large structures like Peano
+numerals to be compared using little memory: the \texttt{S} constructors are
+successively unwrapped from each side, being calculated on-demand and
+immediately garbage collected in a tight loop. However, this still takes a lot
+of CPU time and hence causes timeouts. We confirmed this hypothesis by exploring
+with a custom data generator which only generates the values \texttt{Z},
+\texttt{S Z} and \texttt{S (S Z)} (0, 1 and 2), which caused the exploration to
+finish quickly in these cases. Other interventions, like making the accumulator
+arguments strict (to prevent space leaks), did not prevent timeouts.
 
-To assess the impact of these problematic definitions, we removed any samples
-containing them and repeated our analysis.
+To assess the impact of these toxic definitions, we removed any samples
+containing them and repeated our analysis: the results are shown on the right
+hand side of the previous figures. Whilst timeouts remain, they are
+substantially reduced, and completely eliminated for the smallest sample sizes.
+Some definitions never appeared in a failing signature.
+
+Our analysis of signature contents on theory exploration performance leads us to
+two recommendations for signature selection methods:
+
+\begin{itemize}
+\item Avoid ``toxic'' definitions: those producing exponentially large outputs,
+  and/or taking many arguments (leading to a large number of combinations). In
+  particular, exposing the accumulator argument of tail-recursive functions can
+  make them harder to explore.
+\item Smaller sets are faster to explore than larger sets, but the
+\end{itemize}
+
+It also seems prudent for theory exploration tools to limit time and memory
+usage at the level of individual evaluations: these can abort evaluation of
+toxic definitions, whilst still being high enough to allow the majority of
+non-toxic definitions to be unhindered.
+
+\section{Maintaining Quality}
+
+Our final criterion concerns the ``quality'' of the selected subsets. This
+depends crucially on how we define whether a property is ``interesting''. We can
+use the same ground truth definition as our Theory Exploration Benchmark: a
+property is ``interesting'' if it appears in a particular corpus (in our case
+TIP~\cite{claessen2015tip}), and ``uninteresting'' if not. Whilst na\"ive, this
+approach allows the criterion to be quantified: the quality of the selected
+subsets is proportion of the whole signature's interesting properties that also
+apply to the subsets.
+
+Since signature selection is largely independent of which tool we choose to
+explore the resulting subsets, we do not require that such exploration actually
+\emph{finds} all of the interesting properties; only that we have not
+\emph{prevented} them from being found. For example, we may be given a signature
+containing addition and multiplication functions and may consider commutativity
+and distributivity properties to be ``interesting''. Selecting a subset
+containing both would be high quality, since all of these properties are
+\emph{available} to find, even if our chosen tool doesn't spot them. In
+contrast, splitting addition and multiplication into \emph{separate} subsets is
+lower quality, since this prevents \emph{any} tool finding the distributivity
+property (since it involves both definitions).
+
+To understand the quality impact of limiting ourselves to such subsets, we
+applied four signature selection methods to signatures sampled from the Theory
+Exploration Benchmark. Signatures varied in size from a single definition up to
+100 definitions and 100 signatures of each size were sampled. Each method was
+run 19 times on each signature: splitting into between 1 and 20 subsets.
+
+All four methods place each definition in exactly one subset, to focus on the
+effect of splitting apart definitions. The tested methods are:
+
+\begin{itemize}
+\item \textbf{Optimal}: Uses knowledge of the ground truth to choose equal sized
+  subsets with the highest quality.
+\item \textbf{Pessimal}: Like optimal but chooses the lowest quality subsets.
+\item \textbf{Pseudorandom}: Assigns definitions to subsets pseudorandomly, used
+  as a control.
+\item \textbf{Clustering}: Subsets are chosen by a recurrent clustering
+  algorithm, based on their syntactic similarity.
+\end{itemize}
+
+The optimal and pessimal methods are unrealistic, since they require access to
+the ground truth (which only exists for benchmark problems), but set upper and
+lower bounds on the impact of separating a signature's definitions. These are
+implemented via constraint solving, whose exponential running time became
+infeasible for signatures containing more than 10 definitions. To avoid extreme
+solutions, such as all-but-one subsets being singletons, subset cardinality
+could only differ by at most one.
+
+The pseudorandom and clustering implementations are more realistic, since they
+do not use any information from the ground truth. Cardinality limits were also
+not imposed for these methods.
+
+% TODO: Insert graph of hash vs MLSpec on 1-100
+
+% TODO: Insert graph of 1-10 with all
+
+\iffalse
+% TODO
+\section{Clustering}
+\label{sec:clustering}
+
+Our approach to scaling up \quickspec{} takes inspiration from two sources. The
+first is relevance filtering, which makes expensive algorithms used in theorem
+proving more practical by only considering clauses deemed ``relevant'' to the
+problem~\cite{meng2009lightweight}.
+
+Relevance is determined by comparing clauses to the target theorem, but theory
+exploration does not have such a distinguished term. Instead, we are interested
+in relationships between \emph{all} terms in a signature, and hence we need a
+different algorithm for considering the relevance of \emph{all terms} to
+\emph{all other terms}.
+
+A natural fit for this task is \emph{clustering}, which attempts to group
+similar inputs together in an unsupervised way. Based on their success in
+discovering relationships and patterns between expressions in Coq and ACL2 (in
+the ML4PG and ACL2(ml) tools respectively), we hypothesise that clustering
+methods can fulfil the role of relevance filters for theory exploration:
+intelligently breaking up large signatures into smaller ones more amenable to
+brute force enumeration, such that related expressions are explored together.
+
+Due to its use by ML4PG and ACL2(ml), we use \emph{k-means} clustering,
+implemented in the Weka tool \cite{Holmes.Donkin.Witten:1994} by Lloyd's
+algorithm \cite{lloyd1982least}, with randomly-selected input elements as the
+initial clusters. Rather than relying on the user to provide the number of
+clusters $k$, we use the ``rule of thumb'' given in
+\cite[pp. 365]{mardia1979multivariate} of clustering $n$ data points into
+$k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
+\fi
+
+%\section{Experiments}
+
+% TODO: This was taken from the Background section, so probably doesn't fit here
+% without some fiddling.
+% TODO: Describe all of our experimental setups:
+%
+%  - The use of the TEBenchmark methodology for running QSpec, including the
+%    sampling process
+%
+%  - Running our recurrent signature selection algorithm on samples from TEBenchmark,
+%    including how we picked the sizes
+%
+%  - The definition of HashSpec and its use as control; how we ran all of the
+%    same samples through it
+%
+%  - The use of optimal and pessimal oracles, defined via constraint
+%    satisfaction. How we it was only feasible to run these up to size 10 (11?)
+
+%We follow the tradition of prior practitioners and use an existing corpus of
+%theorems as a \emph{ground truth} against which to compare results. To analyse
+%behaviour on large inputs (i.e. those for which exploration is currently
+%infeasible), as required to study the effects of signature selection, we have
+%used the Theory Exploration Benchmark of section~\ref{sec:tebenchmark}, which is
+%based on the Tons of Inductive Problems (TIP) problem set for theorem
+%provers~\cite{claessen2015tip}.
