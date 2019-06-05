@@ -34,7 +34,7 @@ rec {
                                         label = "nontoxic"; };
 
   # Extract graphs from the above analyses
-  graphs = callPackage ./graphs.nix   { inherit bucketing; };
+  graphs = callPackage ./graphs.nix { inherit basicTex bucketing; };
   images = runCommand "bucketing-images"
     {
       ds = [

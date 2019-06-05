@@ -1,4 +1,5 @@
-{ bucketing, gnuplot, jq, lzip, msgpack-tools, rpl, runCommand, writeScript }:
+{ basicTex, bucketing, gnuplot, jq, lzip, msgpack-tools, nixpkgs1609, rpl,
+  runCommand, wrap, writeScript }:
 
 with builtins;
 rec {
@@ -9,53 +10,55 @@ rec {
       exit 1
     '';
 
+  proportionsTsv = runCommand "proportions-rows.tsv"
+    {
+      buildInputs = [ jq lzip msgpack-tools ];
+      data        = ./BIG_DATA/WITH_AVERAGES.msgpack.lzip;
+      extract     = ''
+        to_entries | .[] | .key as $size        | .value |
+        to_entries | .[] | .key as $method      | .value |
+        to_entries | .[] | .key as $bucketCount | .value | .proportion |
+        [ $method,
+          $size,
+          $bucketCount,
+          (.mean   | tostring),
+          (.stddev | tostring)
+        ] | join("\t")
+      '';
+    }
+    ''lzip -d < "$data" | msgpack2json | jq -r "$extract" > "$out"'';
+
   bounds = bucketing.bucketBounds;
 
   boundsGraph = runCommand "bounds-graph"
     {
       inherit bounds;
       buildInputs = [ gnuplot jq ];
-      script = writeScript "bounds-graph.gnuplot" ''
-        set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 600, 400
-        set output 'hashed.png'
-        set title "Bucketing Cost, Recurrent vs Pseudorandom"
-        set xlabel "Number of Functions"
-        set ylabel "Available Proportion of Ground Truth"
-        set yrange [0:1]
-        set ytics scale 0.1
-        set xtics scale 1
-        unset mxtics
-        unset key
-
-        # The actual plotting. The comment is a sentinel value that will get
-        # replaced by our bash script.
-        plot #PLOTHERE
-    '';
+      runner      = wrap {
+        name  = "boundsData.py";
+        file  = ./boundsData.py;
+        paths = [
+          basicTex
+          (nixpkgs1609.python3.withPackages (p: [
+            p.matplotlib p.pandas p.numpy
+          ]))
+        ];
+        vars = { inherit proportionsTsv; };
+      };
     }
     ''
-      echo "TODO"
-      exit 1
+      mkdir "$out"
+      cd "$out"
+      "$runner" < "$bounds"
     '';
 
   graphs = runCommand "bucketing-graphs"
     {
       buildInputs = [ gnuplot jq lzip msgpack-tools rpl ];
-      #data        = ./SMALL_DATA/averageBucketProportions.msgpack.lz;
-      data        = ./BIG_DATA/WITH_AVERAGES.msgpack.lzip;
-      extract     = ''
-        to_entries | .[] | .key as $size | .value |
-          to_entries | .[] | .key as $method | .value |
-            to_entries | .[] | .key as $bucketCount | .value | .proportion |
-              [$method,
-               $size,
-               $bucketCount,
-               (.mean   | tostring),
-               (.stddev | tostring)
-               ] | join("\t")
-             '';
+      rows        = proportionsTsv;
 
       # For rpl bug https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=852813
-      LANG = "en_US.UTF-8";
+      LANG   = "en_US.UTF-8";
 
       script = writeScript "bucketing-graph.gnuplot" ''
         set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 600, 400
@@ -75,15 +78,12 @@ rec {
       '';
     }
     ''
-      echo "Converting JSON to TSV rows" 1>&2
-      lzip -d < "$data" | msgpack2json | jq -r "$extract" > rows.tsv
-
       echo "Finding methods" 1>&2
       METHODS=()
       while read -r METHOD
       do
         METHODS+=("$METHOD")
-      done < <(cut -f1 < rows.tsv | sort -u)
+      done < <(cut -f1 < "$rows" | sort -u)
 
       echo "Finding bucket counts" 1>&2
       # Use 'sort' to do two things: strip out dupes ('-u'), and put in
@@ -93,7 +93,7 @@ rec {
       do
         BUCKETCOUNTS+=("$BUCKETCOUNT")
         MAXBUCKET="$BUCKETCOUNT"  # After the loop, this will be max bucket count
-      done < <(cut -f3 < rows.tsv | sort -u -n)
+      done < <(cut -f3 < "$rows" | sort -u -n)
 
       MINGREY=0
       MAXGREY=200
@@ -128,8 +128,8 @@ rec {
                    ]}")
 
           echo "Extracting bucket count $BUCKETCOUNT for method $METHOD" 1>&2
-          grep "^$METHOD	[0-9]*	$BUCKETCOUNT	" < rows.tsv | cut -f 2,4,5 |
-                                                             sort -n >> "$F"
+          grep "^$METHOD	[0-9]*	$BUCKETCOUNT	" < "$rows" | cut -f 2,4,5 |
+                                                              sort -n >> "$F"
         done
       done
 
