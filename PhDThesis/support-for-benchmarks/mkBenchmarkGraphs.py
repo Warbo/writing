@@ -237,6 +237,8 @@ del(data)
 
 msg('Setting up plots')
 
+import warnings
+warnings.filterwarnings('ignore', module='matplotlib')
 import matplotlib as mpl
 import numpy      as np
 

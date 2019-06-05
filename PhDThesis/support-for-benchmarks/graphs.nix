@@ -216,10 +216,6 @@ rec {
       # Run script; it handles any even/odd split itself
       mkdir "$out"
       cd "$out"
-      "$script" 2>&1 | ${concatStringsSep " | " (map (x: "grep -v '${x}'") [
-        # Put known warnings here, to avoid spooking Emacs
-        "Matplotlib is building the font cache using fc-list"
-        "error getting fonts from fc-list"
-      ])} 1>&2
+      "$script"
     '';
 }
