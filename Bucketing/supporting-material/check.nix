@@ -36,8 +36,7 @@ with rec {
       if grep "TO""DO[^{]" "${f}" > /dev/null
       then
         NUM=$(grep -c "TO""DO" < "${f}")
-        echo "Found $NUM undated TO""DOs in ${f}"
-        exit 1
+        echo "Found $NUM undated TO""DOs in ${f}" 1>&2
       fi
     '';
 
@@ -48,8 +47,7 @@ with rec {
         D=$(echo "$TD" | sed -e 's/.*{\(.*\)\}/\1/g')
         S=$(date --date="$D" +%s)
         [[ "$S" -gt "$NOW" ]] || {
-          echo "Found TO""DO dated '$D' in '${f}'"
-          ERR=1
+          echo "WARNING: Found TO""DO dated '$D' in '${f}'" 1>&2
         }
       done < <(grep -o "TO""DO{[^}]*}" < "${f}")
     '';
