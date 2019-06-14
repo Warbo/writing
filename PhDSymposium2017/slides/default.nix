@@ -5,6 +5,7 @@ with { inherit (callPackage ../support.nix {}) renderers tex; };
 runCommand "phd-symposium-2017-slides.html"
   {
     inherit bibtex;
+    __noChroot     = true;
     buildInputs    = [ ditaa ghostscript imagemagick jq ] ++ renderers;
 
     # Required for Haskell and Perl to not barf at unicode

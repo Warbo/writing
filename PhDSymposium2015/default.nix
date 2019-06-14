@@ -3,6 +3,7 @@ with nixpkgs;
 
 runCommand "phd-symposium-2015"
   {
+    __noChroot  = true;
     buildInputs = [
       pandocPkgs
       (texlive.combine {
