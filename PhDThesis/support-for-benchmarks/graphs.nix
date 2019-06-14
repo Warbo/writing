@@ -1,6 +1,6 @@
-{ coreutils, fail, fetchgit, jq, lzip, mkBin, nixListToBashArray, perl, python,
-  R, replace, rPackages, runCommand, tetex, tex, textWidth, which, wrap,
-  writeScript }:
+{ callPackage, coreutils, fail, fetchgit, jq, lzip, mkBin, nixListToBashArray,
+  perl, python, R, replace, rPackages, runCommand, tetex, tex, textWidth, which,
+  wrap, writeScript }:
 
 with builtins;
 rec {
@@ -154,36 +154,7 @@ rec {
       "benchmarks/results/desktop/bdea634a-nix-py-dirnull.json.lz"
       "benchmarks/results/desktop/a531ce8f-nix-py-dirnull.json.lz" ];
 
-  tetex-hack = runCommand "tetex-hack"
-    {
-      inherit tetex;
-      newDvipng = mkBin {
-        name   = "dvipng";
-        paths  = [ perl tetex ];
-        script = ''
-          #!/usr/bin/env bash
-          set -e
-          if [[ "x$1" = "x-version" ]]
-          then
-            dvipng "$@" | perl -pe 's/[^[:ascii:]]//g'
-          else
-            dvipng "$@"
-          fi
-        '';
-      };
-    }
-    ''
-      set -e
-
-      # Hack for https://github.com/matplotlib/matplotlib/issues/4545/
-      mkdir -p "$out/bin"
-      for F in "$tetex/bin"/*
-      do
-        cp -s "$F" "$out/bin"/
-      done
-      rm "$out/bin/dvipng"
-      ln -s "$newDvipng/bin/dvipng" "$out/bin/dvipng"
-    '';
+  tetex-hack = callPackage ../supporting-material/tetex-hack.nix {};
 
   # The dimensions of each graph, in units of textWidth; i.e. a width of 1.0
   # takes up the whole text width, whilst a height of 1.0 takes up a vertical

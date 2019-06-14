@@ -1,5 +1,5 @@
-{ basicTex, bucketing, gnuplot, jq, lzip, msgpack-tools, nixpkgs1609, rpl,
-  runCommand, wrap, writeScript }:
+{ basicTex, bucketing, callPackage, gnuplot, jq, lzip, msgpack-tools,
+  nixpkgs1609, rpl, runCommand, textWidth, wrap, writeScript }:
 
 with builtins;
 rec {
@@ -42,6 +42,7 @@ rec {
           (nixpkgs1609.python3.withPackages (p: [
             p.matplotlib p.pandas p.numpy
           ]))
+          (callPackage ../supporting-material/tetex-hack.nix {})
         ];
         vars = { inherit proportionsTsv; };
       };
