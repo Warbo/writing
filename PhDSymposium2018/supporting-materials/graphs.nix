@@ -17,7 +17,7 @@ rec {
       buildInputs = [ jq lzip python ];
       files       = builtins.toJSON resultPaths;
       script      = writeScript "normalise.py" ''
-        #!/usr/bin/env python
+        #!${python}/bin/python
         import json
         import sys
 

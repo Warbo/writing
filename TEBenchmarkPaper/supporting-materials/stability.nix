@@ -68,21 +68,15 @@ rec {
       makeWrapper "${script}" "$out" --prefix PATH : "${env}/bin"
     '';
 
-    plot =
-    with {
-      env = with pythonPackages; python.buildEnv.override rec {
-        extraLibs = [ numpy matplotlib pillow scipy ];
-      };
+    plot = mkBin {
+      name  = "plot";
+      file  = ./plotter.py;
+      paths = [
+        (with pythonPackages; python.buildEnv.override rec {
+          extraLibs = [ numpy matplotlib pillow scipy ];
+        })
+      ];
     };
-    runCommand "chart.py"
-      {
-        buildInputs = [ makeWrapper env ];
-        plotter     = writeScript "plotter.py" (readFile ./plotter.py);
-      }
-      ''
-        mkdir -p "$out/bin"
-        makeWrapper "$plotter" "$out/bin/plot" --prefix PATH : "${env}/bin"
-      '';
 
   plotsOf = name: data:
     stdenv.mkDerivation {

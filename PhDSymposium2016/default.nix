@@ -13,7 +13,7 @@ attrsToDirs' "PhDSymposium2016" {
       inherit bibtex;
       buildInputs = [ pandocPkgs tex ];
       render      = writeScript "render" ''
-        #!/usr/bin/env bash
+        #!${bash}/bin/bash
         set -e
         pdflatex -interaction=nonstopmode -halt-on-error --shell-escape abstract
       '';

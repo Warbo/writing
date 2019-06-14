@@ -5,11 +5,12 @@
 # (produces incorrect plots with no indication that this has happened) and the
 # developer is actively hostile.
 with (import ../../resources).nixpkgs.nixpkgs1609;
+with { py = python.withPackages (p: [ p.matplotlib p.seaborn ]); };
 runCommand "graph_test"
   {
-    buildInputs = [ (python.withPackages (p: [ p.matplotlib p.seaborn ])) ];
+    buildInputs = [ py ];
     script      = writeScript "graph_test.py" ''
-      #!/usr/bin/env python
+      #!${py}/bin/python
       import matplotlib        as mpl
       import numpy             as np
       import matplotlib.pyplot as plt
