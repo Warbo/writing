@@ -44,7 +44,10 @@ rec {
           ]))
           (callPackage ../supporting-material/tetex-hack.nix {})
         ];
-        vars = { inherit proportionsTsv; };
+        vars = {
+          inherit proportionsTsv textWidth;
+          LANG = "en_US.UTF-8";
+        };
       };
     }
     ''

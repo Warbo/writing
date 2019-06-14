@@ -63,13 +63,13 @@ with { defs = rec {
     inherit bibtex tex textWidth;
   };
 
-  bucketingSupport = import ./support-for-bucketing;
+  bucketingSupport = import ./support-for-bucketing { inherit textWidth; };
 
   # Render a "dummy" version of the thesis which has all of the same styling
   # but just spits out the text width to stdout. We capture this and write
   # it to a file, so the figure generators can read it and set the correct
   # size, without having to scale things up or down.
-  textWidth = runCommand "widthTex"
+  textWidth = import (runCommand "widthTex.nix"
     {
       real        = filterSource (path: type: isTex path) ./.;
       buildInputs = renderInputs;
@@ -89,11 +89,12 @@ with { defs = rec {
         pdflatex -interaction=nonstopmode -halt-on-error --shell-escape thesis |
           tee out || true
 
-        grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < ./out |
-          sed -e 's/WIDTH//g'                      |
-          tr -d 'pt ' > "$out"
+        N=$(grep 'WIDTH[ ]*[0-9.]*pt[ ]*WIDTH' < ./out |
+              sed -e 's/WIDTH//g'                      |
+              tr -d 'pt ')
+        echo "\"$N\"" > "$out"
       popd > /dev/null
-    '';
+    '');
 
   renderSection = file:
     assert pathExists (./. + "/${file}.tex") || abort "'${file}.tex' not found";

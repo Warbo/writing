@@ -243,8 +243,7 @@ import matplotlib as mpl
 import numpy      as np
 
 def figSize(widthFraction, height=None):
-    with open(os.getenv('textWidth'), 'r') as textWidthFile:
-        textWidthPt = float(textWidthFile.read())
+    textWidthPt = float(os.getenv('textWidth'))
     ptToInch    = 1.0 / 72.27
     textWidthIn = textWidthPt * ptToInch
     goldMean    = (np.sqrt(5.0)-1.0) / 2.0

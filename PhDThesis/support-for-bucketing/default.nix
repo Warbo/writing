@@ -1,3 +1,4 @@
+{ textWidth }:
 with builtins;
 with {
   inherit (import ../../resources) bibtex nixpkgs styles;
@@ -34,7 +35,7 @@ rec {
                                         label = "nontoxic"; };
 
   # Extract graphs from the above analyses
-  graphs = callPackage ./graphs.nix { inherit basicTex bucketing; };
+  graphs = callPackage ./graphs.nix { inherit basicTex bucketing textWidth; };
   images = runCommand "bucketing-images"
     {
       ds = [
