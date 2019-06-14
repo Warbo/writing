@@ -103,10 +103,11 @@ benchmark~\cite{claessen2015tip}), and how this is affected by their content.
 \end{figure}
 
 Figure~\ref{fig:survival} shows a Kaplan-Meier survival plot of \quickspec{}
-running times, when given inputs containing different numbers of definitions. Many runs
-finish quickly, with the remainder occupying a ``long tail'' which we cut off
-after 300 seconds\footnote{Chosen based on preliminary experiments, which showed
-  little difference in survival between 300 seconds and 1 hour}.
+running times, when given inputs containing different numbers of definitions.
+Many runs finish quickly, with the remainder occupying a ``long tail'' which
+didn't finish within our 300 second timeout\footnote{Chosen based on preliminary
+  experiments, which showed little difference in survival between 300 seconds
+  and 1 hour}.
 
 \begin{figure}
   \scalebox{0.45}{\input{images/timeoutsall.pgf}}
@@ -117,9 +118,8 @@ after 300 seconds\footnote{Chosen based on preliminary experiments, which showed
   \label{fig:tailsize}
 \end{figure}
 
-Figure~\ref{fig:tailsize} shows that the number of definitions in the input is
-linearly correlated with the proportion of timeouts, except for the very
-smallest inputs (which are more constrained by the sampling procedure). One
+The height of these ``tails'' is linearly correlated with the number of
+definitions in the signature, as shown in Figure~\ref{fig:tailsize}. One
 hypothesis to explain this is the existence of ``toxic'' definitions, whose
 presence in the input always leads to the exploration failing (with larger
 inputs being more likely to have sampled a toxic definition).
@@ -245,13 +245,14 @@ inputs being more likely to have sampled a toxic definition).
   \label{fig:faildefs}
 \end{figure}
 
-This does appear to be the case, as Figure~\ref{fig:proportions} shows that five
-definitions appeared \emph{only} in failing inputs; these are named
-\texttt{mul3}, \texttt{mul3acc}, \texttt{mult2}, \texttt{op} and \texttt{qexp};
-their definitions appear in Figure~\ref{fig:faildefs}. All of these are
-functions of Peano-encoded natural numbers (\texttt{Nat}), and they cause
-exploration to time out by either exhausting the RAM with too many expressions
-to explore, % TODO{2019-04-27} CAN QSPEC2 AVOID THIS?
+To investigate the plausibility of such definitions, the ratio of successful and
+timed-out runs is plotted for each name in Figure~\ref{fig:proportions}; showing
+that five definitions appeared \emph{only} in failing inputs, and seem likely to
+be ``toxic''. These definitions are named \texttt{mul3}, \texttt{mul3acc},
+\texttt{mult2}, \texttt{op} and \texttt{qexp}; their definitions appear in
+Figure~\ref{fig:faildefs}. All of these are functions of Peano-encoded natural
+numbers (\texttt{Nat}), and they cause exploration to time out by either
+exhausting the RAM with too many expressions to explore, % TODO{2019-04-27} CAN QSPEC2 AVOID THIS?
 or by generating such deeply-nested outputs that comparing them takes too long.
 % TODO{2019-04-27} CAN WE PUT TIME AND MEMORY LIMITS ON EACH ATTEMPTED EVALUATION?
 
@@ -286,15 +287,18 @@ two recommendations for signature selection methods:
 \begin{itemize}
 \item Avoid ``toxic'' definitions: those producing exponentially large outputs,
   and/or taking many arguments (leading to a large number of combinations). In
-  particular, exposing the accumulator argument of tail-recursive functions can
-  make them harder to explore.
-\item Smaller sets are faster to explore than larger sets, but the
+  particular, tail-recursive functions which expose their accumulator argument
+  are harder to explore.
+\item Smaller signatures are faster to explore, so should be preferred if
+  possible.
 \end{itemize}
 
 It also seems prudent for theory exploration tools to limit time and memory
-usage at the level of individual evaluations: these can abort evaluation of
-toxic definitions, whilst still being high enough to allow the majority of
-non-toxic definitions to be unhindered.
+usage, both at the global level (to abort if it becomes clear we are in the
+``long tail'') and at the level of individual evaluations. In particular such
+fine-grained limits can abort evaluation of toxic definitions, whilst still
+being lenient enough to allow the majority of non-toxic definitions to be
+explored unhindered.
 
 \section{Maintaining Quality}
 
@@ -304,29 +308,30 @@ use the same ground truth definition as our Theory Exploration Benchmark: a
 property is ``interesting'' if it appears in a particular corpus (in our case
 TIP~\cite{claessen2015tip}), and ``uninteresting'' if not. Whilst na\"ive, this
 approach allows the criterion to be quantified: the quality of the selected
-subsets is proportion of the whole signature's interesting properties that also
-apply to the subsets.
+subsets is the proportion of the whole signature's interesting properties that
+also apply to the subsets taken individually.
 
 Since signature selection is largely independent of which tool we choose to
 explore the resulting subsets, we do not require that such exploration actually
 \emph{finds} all of the interesting properties; only that we have not
 \emph{prevented} them from being found. For example, we may be given a signature
 containing addition and multiplication functions and may consider commutativity
-and distributivity properties to be ``interesting''. Selecting a subset
-containing both would be high quality, since all of these properties are
+and distributivity properties to be ``interesting''. A subset containing both
+would be a high quality selection, since all of these properties are
 \emph{available} to find, even if our chosen tool doesn't spot them. In
 contrast, splitting addition and multiplication into \emph{separate} subsets is
-lower quality, since this prevents \emph{any} tool finding the distributivity
+lower quality, since this stops \emph{any} tool from finding the distributivity
 property (since it involves both definitions).
 
 To understand the quality impact of limiting ourselves to such subsets, we
 applied four signature selection methods to signatures sampled from the Theory
 Exploration Benchmark. Signatures varied in size from a single definition up to
-100 definitions and 100 signatures of each size were sampled. Each method was
-run 19 times on each signature: splitting into between 1 and 20 subsets.
+100; for each size, we sampled 100 signatures.
 
-All four methods place each definition in exactly one subset, to focus on the
-effect of splitting apart definitions. The tested methods are:
+All four methods were forced to place each definition in exactly one subset, to
+focus on the effect of splitting apart definitions rather than e.g. duplicating
+definitions across several subsets or dropping some entirely. The tested methods
+are:
 
 \begin{itemize}
 \item \textbf{Optimal}: Uses knowledge of the ground truth to choose equal sized
@@ -343,16 +348,74 @@ the ground truth (which only exists for benchmark problems), but set upper and
 lower bounds on the impact of separating a signature's definitions. These are
 implemented via constraint solving, whose exponential running time became
 infeasible for signatures containing more than 10 definitions. To avoid extreme
-solutions, such as all-but-one subsets being singletons, subset cardinality
-could only differ by at most one.
+solutions, such as placing all definitions in one subset and leaving the others
+empty, we required that all of the selected subsets are non-empty and their
+cardinality differs by at most one. As a consequence, these methods cannot
+divide signatures of size $N$ into more than $N$ subsets (since there are not
+enough definitions to populate every subset without duplicating).
 
 The pseudorandom and clustering implementations are more realistic, since they
-do not use any information from the ground truth. Cardinality limits were also
-not imposed for these methods.
+do not use any information from the ground truth. These methods may also leave
+some of their subsets empty (since, unlike the optimal and pessimal methods,
+they are less prone to extremes).
 
-% TODO: Insert graph of hash vs MLSpec on 1-100
+\begin{figure}
+  % \input{images/bounds.pgf}
+  \includegraphics[width=\textwidth]{images/bounds.png}
+  \caption{The average quality (proportion of ground-truth properties available)
+    when splitting signatures sampled using the Theory Exploration Benchmark
+    into subsets. Each plot shows division into a different number of subsets.
+    The shaded area is bounded by the optimal and pessimal methods, which are
+    can only produce $N$ subsets for signatures of size $\geq N$. Grey lines
+    show pseudorandom selection, for comparison; these extend into smaller
+    signature sizes since empty subsets are permitted.}
+  \label{fig:bounds}
+\end{figure}
 
-% TODO: Insert graph of 1-10 with all
+Figure~\ref{fig:bounds} shows the impact of selection (specifically, dividing
+definitions between subsets, with no skipping or duplication) on the proportion
+of interesting properties that remain available for subsequent theory
+exploration tools to discover. The shaded region shows the difference between
+(average) quality, with optimal and pessimal selections starting out equal (when
+dividing signatures of $N$ definitions into $N$ subsets, where there is no
+choice other than putting each definition on its own) but quickly diverging as
+choices become available. Note that the optimal and pessimal methods are
+constrained to avoid empty or unequally-distributed sets, so they cannot divide
+up a signature of size $N$ into more than $N$ subsets. Pseudorandom selection is
+shown as a grey line, and although the cardinality of its subsets is not
+constrained, it nevertheless appears consistently between the bounds.
+
+Two trends are visible in these charts: firstly the bounded region trends
+upwards as the signature size increases, which is promising for the application
+of signature selection to break apart large signatures. Secondly the upper bound
+reduces as the number of subsets increases: this is to be expected as more
+definitions must be separated to produce the extra sets, but it demonstrates the
+tradeoff between quality and subset size. The distance between the pseudorandom
+and optimal results shows the potential gains to be made by smarter signature
+selection methods.
+
+\begin{figure}
+  % \input{images/bucketing}
+  \includegraphics[width=\textwidth]{images/bucketing.png}
+  \caption{Comparison of subset quality when selected by recurrent clustering
+    (solid lines) versus pseudorandom selection (dashed lines). Darker lines
+    show division into a greater number of subsets (between 1 and 20). The solid
+    and dashed lines follow each other closely, indicating that clustering
+    performs no better than random at signature selection.}
+  \label{fig:bucketing}
+\end{figure}
+
+The signature selection problem is superficially similar to the
+\emph{clustering} problem in machine learning: grouping data points based on
+their similarity across multiple dimensions. To investigate this potential
+relationship we created a signature selection method based on a \emph{recurrent
+  clustering} algorithm for Haskell code: this flattens syntax trees into
+vectors, substitutes fixed numbers for keywords and recurses to determine
+suitable numbers for referenced expressions.
+
+The results of this method are shown in Figure~\ref{fig:bucketing}, along with
+the pseudorandom method as a control. The results of clustering turn out to be
+no better than random; in fact the curves show surprisingly similar patterns.
 
 \iffalse
 % TODO
