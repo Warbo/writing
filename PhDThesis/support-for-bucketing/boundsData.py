@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import json
 import sys
+#reload(sys)
+#sys.setdefaultencoding('utf8')
 
 msg = lambda x: (sys.stderr.write(repr(x)), sys.stderr.flush(), None)[-1]
 
@@ -63,9 +66,49 @@ with open(os.getenv('proportionsTsv'), 'r') as f:
 # Based on https://python-graph-gallery.com/125-small-multiples-for-line-chart
 import warnings
 warnings.filterwarnings('ignore', module='matplotlib')
+
+# Must be done before importing matplotlob.pyplot
+# Taken from http://bkanuka.com/articles/native-latex-plots
+import numpy      as np
+import matplotlib as mpl
+def figSize(widthFraction, height=None):
+    textWidthPt = float(os.getenv('textWidth'))
+    ptToInch    = 1.0 / 72.27
+    textWidthIn = textWidthPt * ptToInch
+    goldMean    = (np.sqrt(5.0)-1.0) / 2.0
+    calcWidth   = widthFraction * textWidthIn
+    calcHeight  = textWidthIn * ((goldMean * widthFraction) \
+                                 if height is None else height)
+    return (10, 10) #(calcWidth, calcHeight)
+
+mpl.rcParams.update({
+    # 'pgf.texsystem' : 'pdflatex',
+    # 'text.latex.unicode': True,
+    # 'text.usetex'   : True,  # Use LaTeX to write all text
+
+    # # '[]' causes fonts to be inherited from document
+    # 'font.family'     : 'serif',
+    # 'font.serif'      : [],
+    # 'font.sans-serif' : [],
+    # 'font.monospace'  : [],
+
+    # # LaTeX default is 10pt font.
+    # 'axes.labelsize'  : 10,
+    # 'font.size'       : 10,
+    # 'legend.fontsize' : 8,
+    # 'xtick.labelsize' : 8,
+    # 'ytick.labelsize' : 8,
+
+    'figure.figsize'  : figSize(0.9),  # Set a default
+
+    # plots will be generated using this preamble. Use UTF-8.
+    # 'pgf.preamble': [
+    #     #r'\usepackage[utf8x]{inputenc}',
+    #     #r'\usepackage[T1]{fontenc}',
+    # ]
+})
+
 import matplotlib.pyplot as plt
-import numpy             as np
-import pandas            as pd
 
 # Inspired by https://stackoverflow.com/a/29107972/884682
 def suplabels(x=None, y=None):
@@ -172,5 +215,6 @@ plt.suptitle("Optimal, Pessimal and Random Signature Selection Quality",
 
 suplabels(x='Sample size', y='Available proportion')
 
-plt.savefig('bounds.pgf')
-plt.savefig('bounds.pdf')
+plt.savefig('bounds.png', dpi=300)
+#plt.savefig('bounds.pgf')
+#plt.savefig('bounds.pdf')
