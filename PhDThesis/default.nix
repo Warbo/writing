@@ -69,7 +69,7 @@ with { defs = rec {
   # but just spits out the text width to stdout. We capture this and write
   # it to a file, so the figure generators can read it and set the correct
   # size, without having to scale things up or down.
-  textWidth = import (runCommand "widthTex.nix"
+  textWidthDrv = runCommand "widthTex.nix"
     {
       real        = filterSource (path: type: isTex path) ./.;
       buildInputs = renderInputs;
@@ -94,7 +94,15 @@ with { defs = rec {
               tr -d 'pt ')
         echo "\"$N\"" > "$out"
       popd > /dev/null
-    '');
+    '';
+
+  # Import the textWidth derivation, to break the dependency chain between the
+  # contents of the .tex files (which keep changing) and our graphs (which take
+  # a while to calculate). By importing the result, we get a plain Nix string;
+  # the graphs will only get rebuilt if this string's value (i.e. the text
+  # width) changes; *not* if its dependencies change without affecting the
+  # width (which is almost always the case)
+  textWidth = import textWidthDrv;
 
   renderSection = file:
     assert pathExists (./. + "/${file}.tex") || abort "'${file}.tex' not found";
@@ -135,7 +143,7 @@ with { defs = rec {
       mkSecs = l: listToAttrs (map mkSec l);
       main   = { "outline.pdf" = outline; "thesis.pdf" = thesis; };
     };
-    withDeps (allDrvsIn tests)
+    withDeps (allDrvsIn tests ++ [ textWidthDrv /*For the gcroot*/ ])
              (attrsToDirs (main // mkSecs [
                "appendix"
                "background"
