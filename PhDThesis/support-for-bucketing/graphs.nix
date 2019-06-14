@@ -56,7 +56,7 @@ rec {
       "$runner" < "$bounds"
     '';
 
-  graphs = runCommand "bucketing-graphs"
+  bucketingGraph = runCommand "bucketing-graphs"
     {
       buildInputs = [ gnuplot jq lzip msgpack-tools rpl ];
       rows        = proportionsTsv;
@@ -66,8 +66,8 @@ rec {
 
       script = writeScript "bucketing-graph.gnuplot" ''
         set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 600, 400
-        set output 'hashed.png'
-        set title "Bucketing Cost, Recurrent vs Pseudorandom"
+        set output 'bucketing.png'
+        set title "Signature Selection Quality, Clustering vs Pseudorandom"
         set xlabel "Number of Functions"
         set ylabel "Available Proportion of Ground Truth"
         set yrange [0:1]

@@ -45,6 +45,8 @@ rec {
         allSurvival.timeoutGraph
         nontoxicSurvival.survivalGraph
         nontoxicSurvival.timeoutGraph
+        graphs.boundsGraph
+        graphs.bucketingGraph
       ];
     }
     ''
@@ -60,7 +62,13 @@ rec {
     '';
 
   # Just enough LaTeX packages to render PDF graphs
-  basicTex = texlive.combine { inherit (texlive) scheme-small; };
+  basicTex = texlive.combine {
+    inherit (texlive)
+      scheme-small
+      type1cm
+      ucs
+      ;
+  };
 
   # All of the LaTeX and related tools for rendering the paper
   fullTex  = buildEnv {
