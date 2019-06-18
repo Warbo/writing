@@ -105,11 +105,13 @@ rec {
         script = ''
           #!/usr/bin/env bash
           set -e
-          echo "Running pdflatex" 1>&2
-          pdflatex -interaction=nonstopmode \
+          DRAFT='-draftmode'
+          [[ "$FINAL" -eq 1 ]] && DRAFT=""
+          echo "Running pdflatex $DRAFT" 1>&2
+          pdflatex -interaction=batchmode $DRAFT \
                    -halt-on-error \
                    --shell-escape report || {
-            echo "ERROR: pdflatex gave error code $?" 1>&2
+            echo "ERROR: pdflatex $DRAFT gave error code $?" 1>&2
             exit 1
           }
         '';
@@ -141,7 +143,7 @@ rec {
       echo "RUNNING bibtex"
       bibtex report
       "$go"
-      "$go"
+      FINAL=1 "$go"
     '';
   };
 

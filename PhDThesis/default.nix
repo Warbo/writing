@@ -44,16 +44,19 @@ with { defs = rec {
       })
       ''
         function go {
-          pdflatex -interaction=nonstopmode -halt-on-error --shell-escape "$@"
+          pdflatex $DRAFT -interaction=batchmode -halt-on-error \
+                   --shell-escape "$@"
         }
 
         echo "SRC is '$src'" 1>&2
         cp -s  "$src"/*  ./
         ${env.commands or ""}
 
+        DRAFT="-draftmode"
         go     "$file"
         [[ -e "Bibtex.bib" ]] && bibtex "$file"
         go     "$file"
+        DRAFT=""
         go     "$file"
 
         cp "$file.pdf" "$out"
