@@ -4,17 +4,18 @@
 To improve the performance of theory exploration tools, we need to avoid
 brute-force search in favour of a more informed strategy. This, in turn,
 requires more information about the terms in the given signature. One
-generally available source of information is a term's definition.
+generally available source of information is the syntax of a term's definition.
 
 Unfortunately these definitions are over-complicated due to the relatively large
 syntax of Haskell, which includes many convenience features (``syntactic
-sugar'') and alternative ways to write essentially the same thing (e.g.
-\hs{let} vs \hs{where}, \hs{if} vs \hs{case}, \hs{f x = ...} vs
-\hs{f = \x -> ...}, etc.). This obscures the simplicity of the lambda calculus
-underlying the language, and more importantly it makes syntactic analysis less
-useful for our purposes by making distinctions between semantically identical
-terms (which will behave identically under theory exploration). For this reason
-we perform our analyses on the \emph{GHC Core} language instead.
+sugar'') and alternative ways to express the same operation (e.g. binding using
+\hs{let} or \hs{where}, pattern matching with \hs{if} or \hs{case}, function
+abstraction via \hs{f x = ...} or \hs{f = \x -> ...}, etc.). This obscures the
+simplicity of the lambda calculus underlying the language, and more importantly
+it makes syntactic analysis less useful for our purposes by drawing distinctions
+between semantically identical terms. Since theory exploration is concerned only
+with semantics (e.g. telling us how code actually behaves), we perform our
+analyses on the syntax of the \emph{GHC Core} language instead.
 
 \section{GHC Core}\label{sec:core}
 \label{sec:ghccore}
@@ -59,10 +60,10 @@ we perform our analyses on the \emph{GHC Core} language instead.
 \end{figure}
 
 GHC Core is an intermediate language of the \textsc{GHC} compiler based on
-\fc{}, and described in detail in~\cite[Appendix C]{sulzmann2007system}. Core
-contains explicit type annotations and coercions, which we omit as they have no
-effect on runtime behaviour (they have no ``computational content''). The
-resulting sub-set of Core\footnote{As of GHC version 7.10.2.} is shown in
+\fc{}, and described in detail in~\cite[Appendix C]{sulzmann2007system}. We
+ignore type annotations and coercions, since these have no effect on the
+semantics (they have no ``computational content''). The resulting sub-set of
+Core\footnote{As of GHC version 7.10.2.} is shown in
 Figure~\ref{fig:coresyntax}.
 
 \begin{figure}
@@ -149,34 +150,40 @@ Lam "a" (Case (Var (Local "a"))
 \end{figure}
 
 GHC's translation from Haskell to Core is routine: Figure~\ref{fig:coreexample}
-shows the Core representation of some simple functions. Although the Core is
-more verbose, we can see that similar structure in the Haskell definitions gives
-rise to similar structure in the Core; for example, the definitions of \hs{odd}
-and \hs{even} are identical in both languages, except for the particular
-identifiers used. It is this close correspondence which allows us to analyse
-Core expressions in place of their more complicated Haskell source.
+shows the Core representation of some simple functions. Although Core is more
+verbose, it has fewer redundant features than the full Haskell syntax: for
+example all pattern-matching is represented with \texttt{Case}, all function
+abstraction uses \texttt{Lam}(bda), and so on. We can see that similar structure
+in the Haskell definitions gives rise to similar structure in the Core, such as
+the definitions of \hs{odd} and \hs{even} being identical except for the
+identifiers. It is this close correspondence which allows us to analyse Core
+expressions in place of their more complicated Haskell source.
 
-For simplicity we also avoid using constructors directly, choosing instead to
-wrap them with normal functions (e.g. \hs{s x = S x}, known as
-$\eta$-expansion), since this eliminates another distinction (constructors vs
-functions) and also reduces cross-language differences (e.g. Isabelle treats
-constructors in a different way to Haskell).
+As a further simplification, we also replace data constructors in definitions
+with normal functions, e.g. replacing occurrences of a constructor
+\hs{S :: Nat -> Nat} with a function \hs{s} defined as \hs{s x = S x} (this is
+known as the $\eta$-expansion of \hs{S}). We do this to remove more distinctions
+from the syntax, and also to reduce cross-language differences (in particular,
+the Isabelle language used by the \isascheme{}, \isacosy{} and \hipster{} theory
+exploration systems treats constructors in a different way to Haskell, so having
+constructors in our data would complicate comparisons).
 
 \section{Feature Extraction}
 
-Raw syntax trees, even in Core form, are unsuitable for many forms of analysis
-due to their recursive structure, use of discrete labels and heavy reliance on
-references. These are unsuitable for many machine learning algorithms, which
-instead require a fixed-size vector of continuous numbers known as a
+Raw syntax trees, even in Core form, are difficult to analyse due to their
+recursive structure, use of discrete labels and heavy reliance on references.
+This makes them unsuitable for many machine learning algorithms, which instead
+require a fixed-size vector of continuous numbers known as a
 \emph{feature vector}.
 
 The process of turning raw data into feature vectors is called \emph{feature
   extraction}, and we adapt the methodology of \emph{recurrent clustering}
 proposed in~\cite{DBLP:journals/corr/HerasK14,heras2013proof}, since this
 handles recursive tree structures, resolves references and produces numeric
-vectors. We suggest a new recurrent clustering and feature extraction algorithm
+values. We suggest a new recurrent clustering and feature extraction algorithm
 for Haskell (shown in Algorithm \ref{alg:recurrent}) and compare its similarity
-and differences to the existing approaches of ML4PG (Coq) and ACL2(ml) (ACL2).
+and differences to the existing approaches of \textsc{ML4PG} and
+\textsc{ACL2(ml)}.
 
 We describe our algorithm in two stages: the first transforms the nested
 structure of expressions into a flat vector representation; the second converts
@@ -200,8 +207,15 @@ case we make the following choices:
   \cite{lloyd1982least}.
 \end{itemize}
 
-This is a standard setup, supported by off-the-shelf tools; in particular we use
-the \hPackage{k-means} Haskell package.
+We choose k-means because it is a standard approach and we are more concerned
+with the application of feature extraction to Haskell and its use in theory
+exploration, rather than precise tuning of learning algorithms. There are many
+other clustering algorithms we could use, such as \emph{expectation
+  maximisation}, but experiments with \textsc{ML4PG} have shown little
+difference in their results; it seems that the quality of the features is the
+bottleneck to learning, so there is no reason to avoid a fast algorithm like
+k-means. We use a Haskell implementation provided by the package
+\hPackage{k-means}.
 
 Since k-means is iterative, we will use function notation to denote time steps,
 so $x(t)$ denotes the value of $x$ at time $t$. We denote the clusters as $C^1$
@@ -209,7 +223,8 @@ to $C^k$. As the name suggests, k-means uses the mean value of each cluster,
 which we denote as $\vect{m}^1$ to $\vect{m}^k$, hence:
 
 \begin{equation*}
-  m^i_j(t) = \mean{C^i_j}(t) = \frac{\sum_{\vect{x} \in C^i(t)} x_j}{|C^i(t)|} \quad \text{for $t > 0$}
+  m^i_j(t) = \mean{C^i_j}(t) = \frac{\sum_{\vect{x} \in C^i(t)} x_j}{|C^i(t)|}
+    \quad \text{for $t > 0$}
 \end{equation*}
 
 Before k-means starts, we must choose \emph{seed} values for
@@ -221,7 +236,9 @@ The elements of each cluster $C^i(t)$ are those data points closest to the mean
 value at the previous time step:
 
 \begin{equation*}
-  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x}, \vect{m}^j(t-1)) \} \quad \text{for $t > 0$}
+  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x},
+                                                        \vect{m}^j(t-1)) \}
+    \quad \text{for $t > 0$}
 \end{equation*}
 
 As $t$ increases, the clusters $C^i$ move from their initial location around the
@@ -232,126 +249,61 @@ error'' objective:
   \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
 \end{equation}
 
-We chose k-means because it is a standard approach and we are more concerned
-with the application of feature extraction to Haskell and its use in theory
-exploration, rather than precise tuning of learning algorithms. There are many
-other clustering algorithms we could use, such as \emph{expectation
-  maximisation}~\footnote{In fact, k-means is very similar to
-  expectation-maximisation, as it alternates between an \emph{expectation step}
-  (finding the mean value of each cluster) and a \emph{maximisation step}
-  (assigning points to the cluster they're most similar to; or alternatively,
-  \emph{minimising} the distance of each point to the centre of its cluster, as
-  per equation \ref{eq:kmeansobjective}).}, but experiments with ML4PG have
-shown little difference in their results; in effect, the quality of the features
-is the bottleneck to learning, so there is no reason to avoid a fast algorithm
-like k-means.
-
-In any case there are many conservative improvements to the standard k-means
-algorithm, which could be applied to our setup. For example, a more efficient
-approach like \emph{yinyang k-means}~\cite{conf/icml/DingZSMM15} could make
-larger input sizes more practical to cluster, especially since recurrent
-clustering invokes k-means many times. The \emph{k-means++}
+Many conservative improvements can be made to the standard k-means algorithm
+described above. For example, a more efficient approach like
+\emph{yinyang k-means}~\cite{conf/icml/DingZSMM15} could make larger input sizes
+more practical to cluster; the \emph{k-means++}
 approach~\cite{arthur2007k, bahmani2012scalable} can be used to more carefully
-select the ``seed'' values for the first timestep, and the \emph{x-means}
-algorithm~\cite{pelleg2000x} is able to estimate how many clusters to use.
+select the ``seed'' values for the first timestep; and the \emph{x-means}
+algorithm~\cite{pelleg2000x} is able to estimate how many clusters to use
+(instead of relying on our ``rule of thumb''). However, like the choice of
+k-means versus other clustering algorithms, these algorithmic improvements would
+need higher quality data than we are capable of producing in these early
+experiments.
 
-\subsection{Recurrent Clustering}
+\subsubsection{Recurrent Clustering}
 
 \emph{Recurrent clustering} has been implemented in the
 ML4PG tool for analysing Coq proofs~\cite{journals/corr/abs-1212-3618} and
-ACL2(ml) for ACL2~\cite{heras2013proof}. Whilst both transform syntax trees into
-matrices, the algorithm of ML4PG most closely resembles ours as it assigns tokens directly to matrix elements. In contrast,
-the matrices produced by ACL2(ml) \emph{summarise} information about the tree;
-for example, one column counts the number of variables appearing at each tree
-level, others count the number of function symbols which are nullary, unary,
-binary, etc. Whilst it may be interesting to contrast our current algorithm with
-an alternative based on that of ACL2(ml), it is unclear how such summaries could
-be extended to include types, which seems the next logical step for our
-approach. The ML4PG algorithm extends trivially, by using (term, type) pairs
-instead of just terms.
+\textsc{ACL2(ml)} for ACL2~\cite{heras2013proof}. Both approaches transform
+syntax trees into fixed-size matrices, then concatenate the rows of these
+matrices to produce feature vectors. \textsc{ACL2(ml)} produces matrices by
+\emph{summarising} information about the tree; for example, one column counts
+the number of variables appearing at each tree level, others count the number of
+function symbols which are nullary, unary, binary, etc. In contrast, the
+algorithm of ML4PG converts tokens of the syntax tree directly into numbers,
+arranging them in the matrix based on their position in the syntax tree. It is
+this latter algorithm that we adapt for analysing GHC Core expressions.
 
-The way we \emph{use} our clusters to inform theory exploration is actually more
-similar to that of ACL2(ml) than ML4PG. ML4PG can either present clusters to the
-user for inspection, or produce automata for recreating proofs. In ACL2(ml), the
-clusters are used to restrict the search space of a proof search, much like we
-restrict the scope of theory exploration.
+The key to recurrent clustering is its treatment of identifiers. From a purely
+symbolic perspective, they are atomic: two identifiers can either be identical
+or distinct. Consider the \hs{odd} and \hs{even} functions in
+Figure~\ref{fig:coreexample}, which differ only in their choice of identifiers.
+These functions are clearly different (opposite, in fact), so their identifiers
+should play a role in determining their similarity. Yet these distinctions, e.g.
+between \hs{True} and \hs{False}, seem intuitively small relative to the
+distinction between, for example, \hs{isEmpty} and \hs{isValidEmailAddress}.
 
-ACL2(ml) reasons by analogy: finding theorem statements which are similar to the
-current goal, and attempting to prove the goal in a similar way. In particular,
-the lemmas used to prove a theorem are mutated by substituting symbols for those
-which appear in the same cluster. For example, if \texttt{plus} and
-\texttt{multiply} are clustered together, and we are trying to prove a goal
-involving \texttt{multiply}, then ACL2(ml) might consider an existing theorem
-involving \texttt{plus}. The lemmas used to prove that theorem will be mutated,
-for example replacing occurrences of \texttt{plus} with \texttt{mult}, in an
-attempt to prove the goal.
+Recurrent clustering solves this dichotomy by introducing a finer granularity to
+the treatment of identifiers, by first clustering the definitions that they
+refer to. If two definitions appear in the same cluster, their identifiers will
+be denoted by similar numbers during subsequent feature extraction; if they
+appear in different clusters, their numbers will differ more during feature
+extraction. It is this use of clustering to determine features that makes the
+approach \emph{recurrecnt}.
 
-\iffalse
-% TODO: Move this to the end of the chapter?
-Whilst we do not currently reason by analogy, this is an interesting area for
-future work in theory exploration: given a set of theorems relating particular
-terms, we might form conjectures regarding similar terms found through
-clustering.
-\fi
-
-\subsection{Rose Trees}\label{sec:rosetree}
-
-The $toTree$ function shown below transforms Core expressions, described in
-\S~\ref{sec:core}, to rose trees. We follow the presentation
-in~\cite{blundell2012bayesian} and define rose trees recursively as follows: $T$
-is a rose tree if $T = (f, T_1, \dots, T_{n_T})$, where $f \in \mathbb{R}$ and
-$T_i$ are rose trees.
-
-$T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$.
-
-$n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}.
-
-The recursive definition is mostly routine; each repeated element (shown as
-$\dots$) has an example to indicate their handling, e.g. for $\CRec$ we apply
-$toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since constructors
-have no internal structure for us to compare. We also ignore values from
-$\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of $\phi$,
-and we conjecture that the effect of such ``magic values'' on clustering real
-code is low.
-
-\begin{figure}
-  \begin{align*}\label{fig:totree}
-    toTree(e) &=
-    \begin{cases}
-      (\feature{\CVar},     toTree(e_1))                                 & \text{if $e = \CVar\ e_1$} \\
-      (\feature{\CLit},     toTree(e_1))                                 & \text{if $e = \CLit\ e_1$} \\
-      (\feature{\CApp},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CApp\ e_1\ e_2$} \\
-      (\feature{\CLam},     toTree(e_1))                                 & \text{if $e = \CLam\ l_1\ e_1$} \\
-      (\feature{\CLet},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CLet\ e_1\ e_2$} \\
-      (\feature{\CCase},    toTree(e_1), toTree(a_1), \dots)             & \text{if $e = \CCase\ e_1\ l_1\ a_1\ \dots$} \\
-      (\feature{\CType})                                                & \text{if $e = \CType$} \\
-      (\feature{\CLocal},   (\feature{l_1}))                            & \text{if $e = \CLocal\ l_1$} \\
-      (\feature{\CGlobal},  (\feature{g_1}))                            & \text{if $e = \CGlobal\ g_1$} \\
-      (\feature{\CConstructor})                                         & \text{if $e = \CConstructor\ d_1$} \\
-      (\feature{\CLitNum})                                              & \text{if $e = \CLitNum\ n_1$} \\
-      (\feature{\CLitStr})                                              & \text{if $e = \CLitStr\ s_1$} \\
-      (\feature{\CAlt},     toTree(e_1), toTree(e_2))                   & \text{if $e = \CAlt\ e_1\ e_2\ l_1\ \dots$}  \\
-      (\feature{\CDataAlt})                                             & \text{if $e = \CDataAlt\ g_1$}  \\
-      (\feature{\CLitAlt},  toTree(e_1))                                & \text{if $e = \CLitAlt\ e_1$}  \\
-      (\feature{\CDefault})                                             & \text{if $e = \CDefault$}  \\
-      (\feature{\CNonRec},  toTree(e_1))                                & \text{if $e = \CNonRec\ e_1$}  \\
-      (\feature{\CRec},     toTree(e_1), \dots)                         & \text{if $e = \CRec\ e_1\ \dots$} \\
-      (\feature{\CBind},    toTree(e_1))                                & \text{if $e = \CBind\ l_1\ e_1$}
-    \end{cases}
-  \end{align*}
-\end{figure}
-
-\subsubsection{Expressions to Vectors}
+\subsection{Expressions to Vectors}
 \label{sec:expressionstovectors}
 
-Our recurrent clustering algorithm is based on k-means clustering, which
-considers the elements of a feature vector to be \emph{orthogonal}. Hence we
-must ensure that similar expressions not only give rise to similar numerical
-values, but crucially that these values appear \emph{at the same position} in
-the feature vectors. Since different patterns of nesting can alter the ``shape''
-of expressions, simple traversals (breadth-first, depth-first, post-order, etc.)
+The first step of our feature extraction algorithm is to convert the tree
+structure of Core expressions to a flat vector. Since k-means clustering
+considers the elements of a feature vector to be \emph{orthogonal}, we must
+ensure that similar expressions not only give rise to similar numerical values,
+but crucially that these values appear \emph{at the same position} in the
+feature vectors. Different patterns of nesting can alter the ``shape'' of
+expressions, so simple traversals (breadth-first, depth-first, post-order, etc.)
 may cause features from equivalent sub-expressions to be mis-aligned. For
-example, consider the following expressions, which represent pattern-match
+example, consider the following Core expressions, which represent pattern-match
 clauses with different patterns but the same body (\hs{\vlocal{y}}):
 
 \begin{equation}\label{eq:xy}
@@ -362,14 +314,24 @@ clauses with different patterns but the same body (\hs{\vlocal{y}}):
 \end{equation}
 
 If we traverse these expressions in breadth-first order, converting each token
-to a feature using $\phi$ and padding to the same length with $0$, we would get
-the following feature vectors:
+to a feature using some function $\phi$ (defined later) and padding to the same
+length with $0$, we would get the following feature vectors:
 
 \begin{small}
   \begin{equation}
     \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
-      breadthFirst(X)\ &=\ (\feature{\CAlt},\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{C}},\ &\feature{\CLocal},\ &\feature{\id{y}} &) \\
-      breadthFirst(Y)\ &=\ (\feature{\CAlt},\ &\feature{\CDefault},\ &\feature{\CVar},\ &\feature{\CLocal},\ &\feature{\id{y}},\ &0 &)
+      breadthFirst(X)\ &=\ (\feature{\CAlt},\
+                           &\feature{\CDataAlt},\
+                           &\feature{\CVar},\
+                           &\feature{\id{C}},\
+                           &\feature{\CLocal},\
+                           &\feature{\id{y}} &) \\
+      breadthFirst(Y)\ &=\ (\feature{\CAlt},\
+                           &\feature{\CDefault},\
+                           &\feature{\CVar},\
+                           &\feature{\CLocal},\
+                           &\feature{\id{y}},\
+                           &0 &)
     \end{array}
   \end{equation}
 \end{small}
@@ -389,15 +351,27 @@ The method we use to ``flatten'' expressions, described below, is a variation of
 breadth-first traversal which pads each level of nesting to a fixed size $c$
 (for \emph{columns}). This doesn't guarantee alignment, but it does prevent
 mis-alignment from accumulating across different levels of nesting. Our method
-would align these features into the following vectors, if $c = 2$: \footnote{In
-  fact, the constructor identifier $\id{C}$ would not appear in the vector, but
-  this example is still accurate in terms of laying out the features as given.}
+would align these features into the following vectors, if $c = 2$:
 
 \begin{small}
   \begin{equation}\label{eq:flattened}
     \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
-      featureVec(X)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDataAlt},\ &\feature{\CVar},\ &\feature{\id{C}},\  &\feature{\CLocal},\ &\feature{\id{y}},\ &0 &) \\
-      featureVec(Y)\ &=\ (\feature{\CAlt},\ &0,\ &\feature{\CDefault},\ &\feature{\CVar},\ &\feature{\CLocal},\ &0,\                 &\feature{\id{y}},\ &0 &)
+      featureVec(X)\ &=\ (\feature{\CAlt},\
+                         &0,\
+                         &\feature{\CDataAlt},\
+                         &\feature{\CVar},\
+                         &\feature{\id{C}},\
+                         &\feature{\CLocal},\
+                         &\feature{\id{y}},\
+                         &0 &) \\
+      featureVec(Y)\ &=\ (\feature{\CAlt},\
+                         &0,\
+                         &\feature{\CDefault},\
+                         &\feature{\CVar},\
+                         &\feature{\CLocal},\
+                         &0,\
+                         &\feature{\id{y}},\
+                         &0 &)
     \end{array}
   \end{equation}
 \end{small}
@@ -405,13 +379,6 @@ would align these features into the following vectors, if $c = 2$: \footnote{In
 Here $\frac{1}{2}$ of the original 6 features align, which is more than
 $breadthFirst$ but not optimal. Both vectors have also been padded by an extra 2
 zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
-
-To perform this flattening we first transform the nested tokens of an expression
-into a \emph{rose tree} of features. Intuitively, these are simply an
-s-expression representation of the Core syntax, with the feature extraction
-function $\phi$ mapped over the labels. The full transformation is given in
-Appendix \ref{sec:rosetree}, and Figure \ref{fig:rosetreeexample} shows the
-result for the \hs{odd} function.
 
 \begin{figure}
   \centering
@@ -443,6 +410,54 @@ result for the \hs{odd} function.
     is rendered with its feature at the node and sub-trees beneath.}
 \end{figure}
 
+To perform this flattening we first transform the nested tokens of an expression
+into a \emph{rose tree} of features, via the function $toTree$ defined below.
+Intuitively, rose trees are simply an s-expression representation of the Core
+syntax, with the feature extraction function $\phi$ mapped over the labels:
+Figure~\ref{fig:rosetreeexample} shows the result of transforming the \hs{odd}
+function from Figure~\ref{fig:coreexample}.
+
+We follow the presentation in~\cite{blundell2012bayesian} and define rose trees
+recursively as follows: $T$ is a rose tree if $T = (f, T_1, \dots, T_{n_T})$,
+where $f \in \mathbb{R}$ and $T_i$ are rose trees.
+
+$T_i$ are the \emph{sub-trees} of $T$ and $f$ is the \emph{feature at} $T$.
+
+$n_T$ may differ for each (sub-) tree; trees where $n_T = 0$ are \emph{leaves}.
+
+The recursive definition of $toTree$ is mostly routine; each repeated element
+(shown as $\dots$) has an example to indicate their handling, e.g. for $\CRec$
+we apply $toTree$ to each $e_i$. We ignore values of $\mathcal{D}$, since
+constructors have no internal structure for us to compare. We also ignore values
+from $\mathcal{S}$ and $\mathcal{N}$ as it simplifies our later definition of
+$\phi$, and we conjecture that the effect of such ``magic values'' on clustering
+real code is low.
+
+\begin{align*}\label{fig:totree}
+  toTree(e) &=
+  \begin{cases}
+    (\feature{\CVar},     toTree(e_1))                                 & \text{if $e = \CVar\ e_1$} \\
+    (\feature{\CLit},     toTree(e_1))                                 & \text{if $e = \CLit\ e_1$} \\
+    (\feature{\CApp},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CApp\ e_1\ e_2$} \\
+    (\feature{\CLam},     toTree(e_1))                                 & \text{if $e = \CLam\ l_1\ e_1$} \\
+    (\feature{\CLet},     toTree(e_1), toTree(e_2))                    & \text{if $e = \CLet\ e_1\ e_2$} \\
+    (\feature{\CCase},    toTree(e_1), toTree(a_1), \dots)             & \text{if $e = \CCase\ e_1\ l_1\ a_1\ \dots$} \\
+    (\feature{\CType})                                                & \text{if $e = \CType$} \\
+    (\feature{\CLocal},   (\feature{l_1}))                            & \text{if $e = \CLocal\ l_1$} \\
+    (\feature{\CGlobal},  (\feature{g_1}))                            & \text{if $e = \CGlobal\ g_1$} \\
+    (\feature{\CConstructor})                                         & \text{if $e = \CConstructor\ d_1$} \\
+    (\feature{\CLitNum})                                              & \text{if $e = \CLitNum\ n_1$} \\
+    (\feature{\CLitStr})                                              & \text{if $e = \CLitStr\ s_1$} \\
+    (\feature{\CAlt},     toTree(e_1), toTree(e_2))                   & \text{if $e = \CAlt\ e_1\ e_2\ l_1\ \dots$}  \\
+    (\feature{\CDataAlt})                                             & \text{if $e = \CDataAlt\ g_1$}  \\
+    (\feature{\CLitAlt},  toTree(e_1))                                & \text{if $e = \CLitAlt\ e_1$}  \\
+    (\feature{\CDefault})                                             & \text{if $e = \CDefault$}  \\
+    (\feature{\CNonRec},  toTree(e_1))                                & \text{if $e = \CNonRec\ e_1$}  \\
+    (\feature{\CRec},     toTree(e_1), \dots)                         & \text{if $e = \CRec\ e_1\ \dots$} \\
+    (\feature{\CBind},    toTree(e_1))                                & \text{if $e = \CBind\ l_1\ e_1$}
+  \end{cases}
+\end{align*}
+
 \begin{figure}
     \begin{equation*}
       \begin{bmatrix}
@@ -459,15 +474,15 @@ result for the \hs{odd} function.
     \label{fig:matrixexample}
 \end{figure}
 
-These rose trees are then turned into matrices, as shown in Figure
-\ref{fig:matrixexample}. Each row $i$ of the matrix contains the features at
-depth $i$ in the rose tree, read left-to-right, followed by any required
+These rose trees are then turned into matrices, as shown in
+Figure~\ref{fig:matrixexample}. Each row $i$ of the matrix contains the features
+at depth $i$ in the rose tree, read left-to-right, followed by any required
 padding. These matrices are then either truncated, or padded with rows (on the
 bottom) or columns (on the right) of zeros, to fit a fixed size $r \times c$.
 
 \begin{sloppypar}
   Finally, matrices are turned into vectors by concatenating the rows from top
-  to bottom, hence Figure \ref{fig:matrixexample} will produce a vector
+  to bottom, hence Figure~\ref{fig:matrixexample} will produce a vector
   beginning
   $(\feature{\CLam} ,
     0               ,
@@ -494,13 +509,13 @@ bottom) or columns (on the right) of zeros, to fit a fixed size $r \times c$.
 We now define the function $\phi$, which turns terminal symbols of Core syntax
 into features (real numbers). For known language features, such as
 $\feature{\CLam}$ and $\feature{\CCase}$, we can enumerate the possibilities and
-assign a value to each, in a similar way to \cite{DBLP:journals/corr/HerasK14}
+assign a value to each, in a similar way to~\cite{DBLP:journals/corr/HerasK14}
 in Coq. We use a constant $\alpha$ to separate these values from those of other
-tokens (e.g. identifiers), but the order is essentially arbitrary: \footnote{In
-  \cite{DBLP:journals/corr/HerasK14}, ``similar'' Gallina tokens like \coq{fix}
-  and \coq{cofix} are grouped together to reduce redundancy; we do not group
-  tokens, but we do put ``similar'' tokens close together, such as \CLocal\ and
-  \CGlobal.}
+tokens (e.g. identifiers), but the order is essentially
+arbitrary:~\footnote{In~\cite{DBLP:journals/corr/HerasK14}, ``similar'' Gallina
+  tokens like \coq{fix} and \coq{cofix} are grouped together to reduce
+  redundancy; we do not group tokens, but we do put ``similar'' tokens close
+  together, such as \CLocal\ and \CGlobal.}
 
 \begin{equation} \label{eq:feature}
   \begin{aligned}
@@ -529,7 +544,7 @@ tokens (e.g. identifiers), but the order is essentially arbitrary: \footnote{In
 To encode \emph{local} identifiers $\mathcal{L}$ we would like a quantity which
 gives equal values for $\alpha$-equivalent expressions (i.e. renaming an
 identifier shouldn't affect the feature). To do this, we use the \emph{de Bruijn
-  index} of the identifier \cite{de1972lambda}, denoted $i_l$:
+  index} of the identifier~\cite{de1972lambda}, denoted $i_l$:
 
 \begin{equation} \label{eq:localfeature}
   \feature{l} = i_l + 2 \alpha \quad \text{if $l \in \mathcal{L}$}
@@ -546,9 +561,8 @@ e.g. using a scheme like G{\"o}del numbering, since this is essentially
 arbitrary and has no effect on their semantic meaning (referencing other
 expressions).
 
-Instead, we use the approach taken in the latest versions of ML4PG and encode
-global identifiers \emph{indirectly}, by looking up the expressions which they
-\emph{reference}:
+Instead, we use the approach taken nu ML4PG and encode global identifiers
+\emph{indirectly}, by looking up the expressions which they \emph{reference}:
 
 \begin{equation} \label{eq:globalfeature}
   \feature{g \in \mathcal{G}} =
@@ -566,7 +580,7 @@ clustering step, in turn, requires that we perform feature extraction.
 For this recursive process to be well-founded, we perform a topological sort on
 declarations based on their dependencies (the expressions they reference). In
 this way, we can avoid looking up expressions which haven't been clustered
-yet. To handle mutual recursion we use Tarjan's algorithm \cite{tarjan1972depth}
+yet. To handle mutual recursion we use Tarjan's algorithm~\cite{tarjan1972depth}
 to produce a sorted list of \emph{strongly connected components} (SCCs), where
 each SCC is a mutually-recursive sub-set of the declarations. If an identifier
 cannot be found amongst those clustered so far, it must appear in the same SCC
@@ -593,12 +607,88 @@ feature value $f_{recursion}$.
 
 By working through the sorted list of SCCs, storing the features of each
 top-level expression as they are calculated, our algorithm can be computed
-\emph{iteratively} rather than recursively, as shown in Algorithm
-\ref{alg:recurrent}.
+\emph{iteratively} rather than recursively, as shown in
+Algorithm~\ref{alg:recurrent}.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}{\textwidth}
+    \centering
+    \begin{tikzpicture}[node distance=2cm]
+      \tikzset{vertex/.style = {minimum size=1.5em}}
+      \tikzset{edge/.style = {->,> = latex'}}
+
+      \node[vertex]                at (0.5\textwidth, 3)   (z)     {\hs{Z}};
+      \node[vertex]                at (0.5\textwidth, 0)   (s)     {\hs{S}};
+      \node[vertex]                at (0,             1.5) (plus)  {\hs{plus}};
+      \node[vertex, anchor=east]   at (\textwidth,    1.5) (false) {\hs{False}};
+      \node[vertex, right of=plus]                         (mult)  {\hs{mult}};
+      \node[vertex, left of=false]                         (odd)   {\hs{odd}};
+      \node[vertex, left of=odd]                           (even)  {\hs{even}};
+      \node[vertex, left of=even]                          (true)  {\hs{True}};
+
+      \draw[edge, dashed]     (z)     to (plus);
+      \draw[edge, dashed]     (z)     to (mult);
+      \draw[edge, dashed]     (z)     to (odd);
+      \draw[edge, dashed]     (z)     to (even);
+      \draw[edge, dashed]     (s)     to (plus);
+      \draw[edge, dashed]     (s)     to (mult);
+      \draw[edge, dashed]     (s)     to (odd);
+      \draw[edge, dashed]     (s)     to (even);
+      \draw[edge, dashed]     (false) to (odd);
+      \draw[edge, dashed]     (true)  to (even);
+      \draw[edge]             (plus)  to (mult);
+      \draw[edge]             (even)  to (odd);
+      \draw[edge]             (odd)   to (even);
+      \draw[edge, loop above] (plus)  to (plus);
+      \draw[edge, loop above] (mult)  to (mult);
+    \end{tikzpicture}
+
+    \caption{Dependency graph for Figure \ref{fig:coreexample}. Loops indicate
+      recursive functions, double arrows indicate mutual recursion. Dashed lines
+      show references to data constructors, which we do not consider in this
+      work.}
+    \label{fig:dagexample}
+  \end{subfigure}
+  \begin{subfigure}{\textwidth}
+    \centering
+    \tikzstyle{block} = [rectangle, draw]
+    \tikzstyle{line}  = [draw, -latex']
+    \begin{tikzpicture}[node distance=2cm]
+      \node [block] (plusset) {
+        \begin{tikzpicture}[node distance = 2cm]
+          \node [block] (plus) {\hs{plus}};
+        \end{tikzpicture}
+      };
+      \node [block, right of=plusset] (parityset) {
+        \begin{tikzpicture}[node distance = 1cm]
+          \node [block]               (odd)  {\hs{odd}};
+          \node [block, below of=odd] (even) {\hs{even}};
+        \end{tikzpicture}
+      };
+      \node [block, right of=parityset] (multset) {
+        \begin{tikzpicture}[node distance = 2cm]
+          \node [block] (mult) {\hs{mult}};
+        \end{tikzpicture}
+      };
+
+      \path [line] (plusset)   -- (parityset);
+      \path [line] (parityset) -- (multset);
+    \end{tikzpicture}
+    \caption{One possible topological sorting of simply connected components for
+      Figure \ref{fig:dagexample} (ignoring constructors). \hs{even} and
+      \hs{odd} are mutually recursive, neither can appear before the other, so
+      they are grouped into one component and handled concurrently by Algorithm
+      \ref{alg:recurrent}.}
+    \label{fig:sccexample}
+  \end{subfigure}
+  \caption{Sorting functions from Figure \ref{fig:coreexample} into dependency order.}
+  \label{fig:dependencyexample}
+\end{figure}
 
 As an example of this recurrent process, we can consider the Peano arithmetic
-functions from Figure \ref{fig:coreexample}. A valid topological ordering is
-given in Figure \ref{fig:sccexample}, which can be our value for $d$ (eliding
+functions from Figure~\ref{fig:coreexample}. A valid topological ordering is
+given in Figure~\ref{fig:sccexample}, which can be our value for $d$ (eliding
 Core expressions to save space):
 
 \begin{equation}
@@ -607,7 +697,7 @@ Core expressions to save space):
        \{(\hs{mult}, \dots)\}]
 \end{equation}
 
-We can then trace the execution of Algorithm \ref{alg:recurrent} as follows:
+We can then trace the execution of Algorithm~\ref{alg:recurrent} as follows:
 
 \begin{itemize}
 \item The first iteration through \textsc{RecurrentCluster}'s loop will set
@@ -640,19 +730,18 @@ Even in this very simple example we can see a few features of our algorithm
 emerge. For example, \hs{odd} and \hs{even} will always appear in the same
 cluster, since they only differ in their choice of constructor names (which are
 discarded by $toTree$) and recursive calls (which are replaced by
-$f_{recursion}$). A more extensive investigation of these features requires a
-concrete implementation, in particular to pin down values for the parameters
-such as $r$, $c$, $f_{recursion}$, $\alpha$ and so on.
+$f_{recursion}$).
 
 \section{Implementation}
 \label{sec:implementation}
 
 We provide an implementation of our recurrent clustering algorithm in a tool
 called \mlforhs{}. We obtain Core ASTs from Haskell packages using a plugin
-for the GHC compiler, which emits a serialised version of each Core definition
-as it is being compiled. This approach is more robust than, for example, parsing
-source files, since it avoids the complications of preprocessors and language
-extensions altering the syntax.
+for the GHC compiler~\footnote{Available at
+  \url{https://github.com/warbo/ast-plugin}}, which emits a serialised version
+of each Core definition as it is being compiled. This approach is more robust
+than, for example, parsing source files, since it avoids the complications of
+preprocessors and language extensions altering the syntax.
 
 A post-processing stage determines which Core definitions can be used by
 \quickspec{}, based on their type, visibility (whether they are encapsulated inside
