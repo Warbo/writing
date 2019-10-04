@@ -1,34 +1,68 @@
-\subsection{Statistics of Formal Systems}
+\section{Statistics of Formal Systems}
+
+\iffalse
+TODO: Alison: I'd like to revisit this chapter once I see the whole
+thesis. At the moment it feels in parts more like a discussion of your work,
+than of related work. It might help to read other people's related work sections
+to get a better idea of what to include here. I think it'll be more obvious too,
+once we have the intro, etc. I suspect you'll need to do a fair bit more work on
+this one.
+\fi
 
 The core problem of assigning ``interestingness'' to logical formulae is the
 application of statistical reasoning to the discrete, semantically-rich domain
 of formal systems. This problem has been tackled from various directions for a
-variety of reasons; here we summarise those contributions which seem of
+variety of reasons; here we summarise those contributions which are of
 particular importance for theory exploration.
 
-
-\subsubsection{Clustering}
+\iffalse
+\subsection{Clustering}
 \label{sec:clustering}
 
 % TODO: ML4PG
 \cite{journals/corr/abs-1212-3618}
 % TODO: ACL2(ml) (also examples section)
 \cite{heras2013proof}
+\fi
 
-\subsubsection{Probability of Sentences}
+\subsection{Probability of Statements}
 
-The most important property of a logical formula is its truth value. Although we
-may be able to determine some truth values exactly, e.g. using decision or
-semi-decision procedures, it may be more efficient to \emph{approximate} truth
-values. One straightforward extension of truth values is \emph{probabilities},
-where we can assign probability $1$ to formulae which are known to be true, $0$
-to formulae known to be false, and intermediate values to those which we do not
-yet know.
+An important property of a logical formula (in general, and in particular with
+regards to interestingness) is its truth value. Although we may be able to
+determine some truth values exactly, e.g. via deduction, it may only be possible
+(or more efficient) to \emph{approximate} truth values. One straightforward
+approximation is to adopt \emph{probabilities}, where we assign probability $1$
+to formulae which are known to be true (e.g. axioms), $0$ to formulae known to
+be false, and intermediate values to those which are not known.
 
-% TODO
-\cite{Hutter.Lloyd.Ng.ea:2013}
+This can be useful for ``knowledge bases'' of non-logical axioms (e.g. the
+observed colours of Hempel's ravens~\cite{10.1093/mind/LIV.214.97} \iffalse
+TODO: Alison: Maybe a bit of explanation here \fi), and allows the probability of
+universal statements to be inferred from non-exhaustive
+cases~\cite{Hutter.Lloyd.Ng.ea:2013}. However, inferring consistent
+probabilities requires \emph{logical omniscience}: knowledge of all the logical
+consequences of the chosen axioms. This is unfortunate, since it is precisely
+what we are trying to avoid by approximating with probabilities.
 
-\subsubsection{Interestingness in Concept Formation}
+Avoiding this requirement for logical omniscience has given rise to the field of
+\emph{bounded rationality}, where reasoning (deduction, induction, etc.) is
+subject to some computational constraints. For example, the ``logical inductor''
+of~\cite{garrabrant2016logical} avoids assigning particular probabilities to
+formal statements, and instead produces a \emph{sequence} of successive
+approximate probabilities, each computable with finite (though
+doubly-exponential!) resources. These approximations are only guaranteed to be
+consistent in the limit.
+
+The probability of a statement can affect its interestingness in a few ways.
+Statements whose probability is very close to $0$ or $1$ may be considered
+less interesting, since they are essentially known (e.g. easily derivable or
+refutable via known facts). Those closer to $\frac{1}{2}$ may be considered more
+interesting; although in a bounded rationality context this may simply indicate
+the requirement for some routine (but lengthy) computation: for example stating
+that the $n$th bit of $\pi$ is a zero, for some large $n$.
+
+\iffalse
+\subsection{Interestingness in Concept Formation}
 \label{sec:conceptformation}
 
 % TODO:
@@ -44,7 +78,7 @@ yet know.
 \cite{johansson2009isacosy}
 \cite{spector2008genetic}
 \cite{colton2012automated}
- \cite{geng2006interestingness}
+\cite{geng2006interestingness}
 % TODO: How does https en.wikipedia.org/wiki/Discovery system relate?
 
 % However, this search space grows exponentially in the length of the proofs,
@@ -54,8 +88,9 @@ yet know.
 % Alan Bundy et al
 
 % Eurisko, AM, etc.?
+\fi
 
-\subsubsection{Learning From Structured Data}
+\subsection{Learning From Structured Data}
 
 One major difficulty with formal mathematics as a domain in which to apply
 statistical machine learning is the use of \emph{structure} to encode
@@ -66,7 +101,7 @@ makes them difficult to represent with a fixed number of features, as is
 expected by most machine learning algorithms. Here we review a selection of
 solutions to this problem, and compare their distinguishing properties.
 
-\paragraph{Feature Extraction}\label{sec:featureextraction}
+\subsubsection{Feature Extraction}\label{sec:featureextraction}
 
 \emph{Feature extraction} is a common pre-processing step for machine learning
 (ML). Rather than feeding ``raw'' data straight into our ML algorithm, we only
@@ -133,7 +168,8 @@ We might hope our algorithm discovers relationships like:
   \item There is a symmetry in \hs{Either}: \hs{Either a b} is equivalent to
     \hs{Either b a} if we swap occurences of \hs{Left} and \hs{Right}.
   \item It is trivial to satisfy \hs{Maybe} (using \hs{Nothing}).
-  \item It is not trivial to satisfy \hs{Either}; we require an \hs{a} or a \hs{b}.
+  \item It is not trivial to satisfy \hs{Either}; we require an \hs{a} or a
+    \hs{b}.
 \end{itemize}
 
 However, this is too optimistic. Without our domain-knowledge of Haskell, an ML
@@ -170,7 +206,7 @@ extractor for our main learning task. This stacking of one learning algorithm on
 top of another, especially with greedy learning of each layer, has lead to the
 recent trend of \emph{deep learning}.
 
-\paragraph{Truncation and Padding}
+\subsubsection{Truncation and Padding}
 
 The simplest way to limit the size of our inputs is to truncate anything larger
 than a particular size (and pad anything smaller). This is the approach taken by
@@ -187,22 +223,23 @@ truncate. Since many ML algorithms scale poorly with input size, we would prefer
 to eliminate the redundancy using a more aggressive algorithm, to keep the
 resulting feature size as low as possible.
 
-\paragraph{Dimension Reduction}
+\subsubsection{Dimension Reduction}
 
 A more sophisticated approach to the problem of reducing input size is to view
 it as a \emph{dimension reduction} technique: our inputs can be modelled as
 points in high-dimensional spaces, which we want to project into a
-lower-dimensional space ($\left\{ {0, 1} \right\}^N$ in the case of $N$-bit
-vectors).
+lower-dimensional space.
 
 Truncation is a trivial dimension reduction technique: take the first $N$
-coordinates (bits). More sophisticated projection functions consider the
+coordinates. More sophisticated projection functions consider the
 \emph{distribution} of the points, and project with the hyperplane which
 preserves as much of the variance as possible (or, equivalently, reduces the
 \emph{mutual information} between the points).
 
 There are many techniques to find these hyperplanes, such as \emph{principle
-  component analysis} (PCA) and \emph{autoencoding}; however, since these
+  component analysis} (PCA) and \emph{autoencoding}. If the data are labelled,
+these classes can also be taken into account during dimension
+reduction~\cite{Oveisi.Oveisi.Erfanian.ea:2012}. However, since these
 techniques are effectively ML algorithms in their own right, they suffer some of
 the same constraints we're trying to avoid:
 
@@ -221,15 +258,16 @@ since any learning we perform for feature extraction will interfere with the
 core learning algorithm that's consuming these features (this is why deep
 learning is often done greedily).
 
-\paragraph{Sequences}
+\subsubsection{Sequences}
 
-To handle input of \emph{variable} size, most attention has been given to the
-handling of \emph{sequences}. This is a lossless approach, which splits the
-input into fixed-size \emph{chunks}, which are fed into an appropriate ML
-algorithm one at a time. The sequence is terminated by a sentinel; an
-``end-of-sequence'' marker which, by construction, is distinguishable from the
-data chunks. This technique allows us to trade \emph{space} (the size of our
-input) for \emph{time} (the number of chunks in a sequence).
+To handle input of \emph{variable} size, research attention has been given to
+the handling of \emph{sequences}. This is a lossless approach, which splits the
+input into fixed-size \emph{chunks} (e.g. splitting text into a sequence of
+characters), which are fed into an appropriate ML algorithm one at a time. The
+sequence is terminated by a sentinel; an ``end-of-sequence'' marker which, by
+construction, is distinguishable from the data chunks. This technique allows us
+to trade \emph{space} (the size of our input) for \emph{time} (the number of
+chunks in a sequence).
 
 Not all ML algorithms can be adapted to accept sequences. One notable approach
 is to use \emph{recurrent ANNs} (RANNs), which allow arbitrary connections
@@ -250,7 +288,19 @@ ANN) and \emph{long short-term memory} (LSTM; introducing a few special,
 untrainable nodes to persist values for long time periods
 \cite{hochreiter1997long}).
 
-\paragraph{Recursive Structure}
+An alternative to introducing recurrent connections, is the use of
+\emph{attention}. % TODO: cite
+In a (typically feed-forward) ANN with attention, the whole input is provided to
+the network, which produces some output as well as some ``attention''
+information; the network is run again, but with the input adjusted using this
+attention information (increasing and decreasing some of the input values); more
+output is produced, along with new attention information, and so on. Such
+networks do not need to ``remember'' long-distance relationships, whether by
+recurrent connections or gated nodes; they instead use the same input over and
+over again, but use their ``attention'' to emphasise those parts which should be
+relevant to future iterations.
+
+\subsubsection{Recursive Structure}
 
 Recursive structures, like trees and lists, have \emph{fractal} dimension:
 adding layers to a recursive structure gives us more \emph{fine-grained}
@@ -278,11 +328,6 @@ circular convolution to functional programming expressions found most of the
 information to be lost in the process; presumably as the expressions are too
 small.
 
-The application of \emph{kernel methods} to structured information is discussed
-in \cite{Gartner2003}, where the input data (including sequences, trees and
-graphs) are represented using \emph{generative models}, such as hidden Markov
-models, of a fixed size.
-
 \emph{Kernel methods} have also been applied to structured information, for
 example in \cite{Gartner2003} the input data (including sequences, trees and
 graphs) are represented using \emph{generative models}, such as hidden Markov
@@ -290,13 +335,3 @@ models, of a fixed size suitable for learning. Many more applications of kernel
 methods to structured domains are given in \cite{bakir2007predicting}, which
 could be used to learn more subtle relations between expressions than recurrent
 clustering alone.
-
-% TODO
-\cite{Gartner2003}
-\cite{Oveisi.Oveisi.Erfanian.ea:2012}
-\cite{bakir2007predicting}
-\cite{conf/ijcai/Plate91}
-\cite{goller1996learning}
-\cite{kwasny1995tail}
-\cite{pollack1990recursive}
-\cite{zanzotto2012distributed}
