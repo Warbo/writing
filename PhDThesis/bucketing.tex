@@ -3,11 +3,10 @@
 
 Despite the clever search strategies employed by theory exploration tools, they
 all rely on enumerating combinations of definitions in some way, which can cause
-infeasible running times on larger inputs (based on experiments with our Theory
-Exploration Benchmark,%in \S~\ref{sec:benchmark}
-this happens above a few dozen
-definitions). To avoid this, users of these systems must carefully select only
-small subsets of their definitions to explore at a time.
+infeasible running times for input signatures with more than around a dozen
+definitions (based on experiments with our Theory Exploration Benchmark, in
+\S~\ref{sec:benchmark}. To avoid this, users of these systems must carefully
+select only small subsets of their definitions to explore at a time.
 
 We dub such cherry-picking the \emph{signature selection problem} for theory
 exploration, and we analyse its effect on the running time of theory exploration
@@ -17,6 +16,8 @@ problem would accept a large number of definitions and efficiently select
 sub-sets which are both small enough to reasonably explore, whilst still
 enabling interesting properties to be discovered.
 
+\iffalse TODO: Alison: This is very clear and good. Each chapter should have
+this at the start \fi
 In this chapter we will:
 
 \begin{enumerate}
@@ -29,6 +30,14 @@ In this chapter we will:
     well-known \emph{clustering problem} in machine learning, and how clustering
     algorithms cannot be directly applied to signature selection.
 \end{enumerate}
+
+\iffalse
+TODO: Alison: Are you aiming to produce a set of recommendation for TE
+researchers to follow here?
+
+My thoughts: Not really. We are identifying an open problem (our attempt at a
+solution turns out not to work :( )
+\fi
 
 \iffalse
 % TODO: Split out
@@ -91,14 +100,20 @@ benchmark~\cite{claessen2015tip}), and how this is affected by their content.
 
 \begin{figure}
   \centering
-  \scalebox{0.45}{\input{images/steppedall.pgf}}
-  \scalebox{0.45}{\input{images/steppednontoxic.pgf}}
+  \scalebox{0.5}{\input{images/steppedall.pgf}}
+  \scalebox{0.5}{\input{images/timeoutsall.pgf}}
+  \scalebox{0.5}{\input{images/steppednontoxic.pgf}}
+  \scalebox{0.5}{\input{images/timeoutsnontoxic.pgf}}
   \caption{Kaplan-Meier survival plot for running \quickspec{} on inputs
     containing various numbers of definitions, sampled from TIP. The x axis
     denotes running time, which we cut short after 300 seconds. The height of
-    each line shows the proportion of \quickspec{} runs which were still going at
-    that time (lower is better). First plot is for all TIP definitions, second
-    plot removes runs given ``toxic'' definitions.}
+    each line shows the proportion of \quickspec{} runs which were still going
+    at that time (lower is better). First plot is for all TIP definitions,
+    second plot removes runs given ``toxic'' definitions.
+    \iffalse
+    TODO: Alison: The key needs further explanation (either here or in the caption)
+    TODO: Alison: Label the y axis (on both)
+    \fi}
   \label{fig:survival}
 \end{figure}
 
@@ -109,6 +124,7 @@ didn't finish within our 300 second timeout\footnote{Chosen based on preliminary
   experiments, which showed little difference in survival between 300 seconds
   and 1 hour}.
 
+\iffalse
 \begin{figure}
   \scalebox{0.45}{\input{images/timeoutsall.pgf}}
   \scalebox{0.45}{\input{images/timeoutsnontoxic.pgf}}
@@ -117,6 +133,7 @@ didn't finish within our 300 second timeout\footnote{Chosen based on preliminary
     runs given ``toxic'' definitions.}
   \label{fig:tailsize}
 \end{figure}
+\fi
 
 The height of these ``tails'' is linearly correlated with the number of
 definitions in the signature, as shown in Figure~\ref{fig:tailsize}. One
@@ -128,9 +145,15 @@ inputs being more likely to have sampled a toxic definition).
   \scalebox{0.45}{\input{images/proportionsall.pgf}}
   \scalebox{0.45}{\input{images/proportionsnontoxic.pgf}}
   \caption{Definitions, ordered by the ratio of successes to failures of the
-    runs they appeared in. First graph contains all TIP definitions, showing
-    ``toxic'' definitions which always failed. Second graph only contains runs
-    without any toxic definitions.}
+    runs they appeared in. The first graph contains all TIP definitions, showing
+    ``toxic'' definitions which always failed. The second graph only contains
+    runs without any toxic definitions.
+    \iffalse
+    TODO: Alison: ? (ME: The green/red bar graphs appear as empty white boxes in
+    the PDF Alison sent over. Check how it's rendered!)
+    TODO: The x-axis ticks are crap (all overlapping); turn them off, put a
+    single label like ``Definitions (ordered by failure rate)''
+    \fi}
   \label{fig:proportions}
 \end{figure}
 
@@ -245,8 +268,8 @@ inputs being more likely to have sampled a toxic definition).
   \label{fig:faildefs}
 \end{figure}
 
-To investigate the plausibility of such definitions, the ratio of successful and
-timed-out runs is plotted for each name in Figure~\ref{fig:proportions}; showing
+To investigate the plausibility of such definitions, we plotted the ratio of
+successful and timed-out runs for each name in Figure~\ref{fig:proportions}; showing
 that five definitions appeared \emph{only} in failing inputs, and seem likely to
 be ``toxic''. These definitions are named \texttt{mul3}, \texttt{mul3acc},
 \texttt{mult2}, \texttt{op} and \texttt{qexp}; their definitions appear in
@@ -286,9 +309,12 @@ two recommendations for signature selection methods:
 
 \begin{itemize}
 \item Avoid ``toxic'' definitions: those producing exponentially large outputs,
-  and/or taking many arguments (leading to a large number of combinations). In
+  and/or taking many arguments (leading to a large number of combinations)
+  \iffalse TODO: Alison: Is it always obvious which are toxic? \fi. In
   particular, tail-recursive functions which expose their accumulator argument
-  are harder to explore.
+  are harder to explore. \iffalse TODO: Alison: These should be in the
+  contributions and further recommendations based on your other findings in this
+  chapter \fi
 \item Smaller signatures are faster to explore, so should be preferred if
   possible.
 \end{itemize}
@@ -302,14 +328,16 @@ explored unhindered.
 
 \section{Maintaining Quality}
 
-Our final criterion concerns the ``quality'' of the selected subsets. This
-depends crucially on how we define whether a property is ``interesting''. We can
-use the same ground truth definition as our Theory Exploration Benchmark: a
-property is ``interesting'' if it appears in a particular corpus (in our case
-TIP~\cite{claessen2015tip}), and ``uninteresting'' if not. Whilst na\"ive, this
-approach allows the criterion to be quantified: the quality of the selected
-subsets is the proportion of the whole signature's interesting properties that
-also apply to the subsets taken individually.
+Our final criterion \iffalse TODO: Alison: This looks odd since you haven't
+mentioned criteria before \fi concerns the ``quality'' of the selected
+subsets. This depends crucially on how we define whether a property is
+``interesting''. We can use the same ground truth definition as our Theory
+Exploration Benchmark: a property is ``interesting'' if it appears in a
+particular corpus (in our case TIP~\cite{claessen2015tip}), and
+``uninteresting'' if not. Whilst na\"ive, this approach allows the criterion to
+be quantified: the quality of the selected subsets is the proportion of the
+whole signature's interesting properties that also apply to the subsets taken
+individually.
 
 Since signature selection is largely independent of which tool we choose to
 explore the resulting subsets, we do not require that such exploration actually
@@ -365,10 +393,10 @@ they are less prone to extremes).
   \caption{The average quality (proportion of ground-truth properties available)
     when splitting signatures sampled using the Theory Exploration Benchmark
     into subsets. Each plot shows division into a different number of subsets.
-    The shaded area is bounded by the optimal and pessimal methods, which are
-    can only produce $N$ subsets for signatures of size $\geq N$. Grey lines
-    show pseudorandom selection, for comparison; these extend into smaller
-    signature sizes since empty subsets are permitted.}
+    The shaded area is bounded by the optimal and pessimal methods, which can
+    only produce $N$ subsets for signatures of size $\geq N$. Grey lines show
+    pseudorandom selection, for comparison; these extend into smaller signature
+    sizes since empty subsets are permitted.}
   \label{fig:bounds}
 \end{figure}
 
@@ -416,6 +444,13 @@ suitable numbers for referenced expressions.
 The results of this method are shown in Figure~\ref{fig:bucketing}, along with
 the pseudorandom method as a control. The results of clustering turn out to be
 no better than random; in fact the curves show surprisingly similar patterns.
+\iffalse
+TODO: Alison: Does this translate into a recommendation (e.g. not to
+use clustering)? There should be some discussion of this - if not here then
+point to another chapter where you discuss these results
+
+TODO: Alison: Needs a summary section
+\fi
 
 \iffalse
 % TODO
