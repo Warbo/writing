@@ -2,11 +2,13 @@
 \label{sec:theoryexploration}
 
 (Automated) Theory Exploration (TE) is the task of taking a \emph{signature}
-of definitions in some formal system (for example a programming language) and
+of definitions \iffalse TODO: Alison Some tools generate their own definitions
+\fi in some formal system (for example a programming language) and
 automatically generating a set of formal statements (properties) involving
 those definitions. These may be conjectures or theorems (proven either by
 sending conjectures to an automated theorem prover, or by having the generating
-procedure proceed in logically sound steps). These statements must also be
+procedure proceed in logically sound steps from a set of axioms). These
+statements should also be
 ``interesting'' in some way, to rule out unhelpful trivialities such as
 iterating a pattern over and over (e.g. \hs{x + 0 = x}, \hs{(x + 0) + 0 = x},
 \dots).
@@ -19,28 +21,30 @@ has been tackled extensively in the literature~\cite{colton2000notion}.
 % END TOTO
 
 The choice of appropriate methods can differ according to the underlying logic,
-etc. that is in use, so in this work we ground ourselves by applying TE to
+etc. that is in use: in this work we ground ourselves by applying TE to
 discovering properties of pure functional software libraries, mostly in the
 Haskell programming language. This also gives our results immediate utility to
-software engineering. We ignore the issue of \emph{proving} such conjectures,
-deferring that task to existing tools (such as \hipspec{}).
+software engineering. We focus on the generation of interesting conjectures; to
+\emph{prove} such conjectures, we defer to existing tools (such as \hip{} and
+\hipspec{}).
 
 The method of conjecture generation is a key characteristic of any theory
 exploration system, although all existing implementations rely on brute force
 enumeration to some degree. We focus on \quickspec{}~\cite{QuickSpec}, which
-conjectures equations about Haskell code. We have used version 1 of
-\quickspec{} in our experiments, due to its availability, stability and tooling
-integration; hence references to \quickspec{} are to version 1 unless stated
-otherwise. At the time of writing there is a \quickspec{} version 2 available,
-which has a much improved generation procedure which can be significantly faster
-than its predecessor. Whilst \quickspec{} 2 has advanced the state of the art in
-theory exploration, our preliminary experience has found that it still suffers
-the scaling issues we identify in this work\footnote{We encountered memory
-  exhaustion when trying to run some of the examples included with the
-  \quickspec{} 2 source code; let alone auto-generated signatures.} Since
-\quickspec{} 2 has less integration with the tooling we have used, we leave a
-more thorough analysis of it (and related systems such as \speculate{}) for
-future work, pending the necessary infrastructure changes that would require.
+conjectures equations about Haskell code. We have used version 1 of \quickspec{}
+in our experiments, due to its availability, stability and tooling integration;
+hence references to \quickspec{} are to version 1 unless stated otherwise. At
+the time of writing \iffalse TODO: Alison: Include date \fi there is a
+\quickspec{} version 2 available, which has a much improved generation procedure
+which can be significantly faster than its predecessor. Whilst \quickspec{} 2
+has advanced the state of the art in theory exploration, our preliminary
+experience has found that it still suffers the scaling issues we identify in
+this work\footnote{Not only did we experience failures with our own experiments,
+  we also suffered memory exhaustion when trying to run some of the examples
+  included with the \quickspec{} 2 source code.} Since \quickspec{} 2 has less
+integration with the tooling we have used, we leave a more thorough analysis of
+it (and related systems such as \speculate{}) for future work, pending the
+necessary infrastructure changes that would require.
 
 \begin{figure}
   \centering
