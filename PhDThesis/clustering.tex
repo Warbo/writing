@@ -1,9 +1,32 @@
 \chapter{Similarity and Clustering}
 \label{sec:recurrentclustering}
 
+% TODO: Say what's in this chapter
+In this chapter we consider how the contents of a given signature can be
+analysed, such that subsequent exploration can be performed more efficiently. We
+frame this analysis as a task of \emph{unsupervised machine learning}, and
+describe how well-known \emph{clustering algorithms} can utilise the syntax of
+definitions to determine their similarity. This requires a detailed description
+of Haskell definition syntax, in particular of the ``Core'' intermediate
+language of the GHC compiler. We identify the difficulty posed by references,
+and how these can be made less opaque through the use of \emph{recurrent
+  clustering}.
+
+\section{Syntax}
+
 To improve the performance of theory exploration tools, we need to avoid
-brute-force search in favour of a more informed strategy. This, in turn,
-requires more information about the terms in the given signature. One
+brute-force search in favour of a more informed strategy.
+\iffalse
+TODO: Alison: This makes it sound as though current TE tools all use brute force
+(whereas all the tools I know already use informed strategies).
+MY THOUGHTS: ``more informed'' is a bit of weasel-wording from me; implying that
+they're not informed and that we're making them informed; whereas they're
+actually already somewhat informed, and we're trying to add to that. I agree
+that this weasel-wording should be replaced!
+\fi
+This, in turn,
+requires more information \iffalse TODO: Alison: More than what? \fi about the
+terms in the given signature. One
 generally available source of information is the syntax of a term's definition.
 
 Unfortunately these definitions are over-complicated due to the relatively large
@@ -14,10 +37,10 @@ abstraction via \hs{f x = ...} or \hs{f = \x -> ...}, etc.). This obscures the
 simplicity of the lambda calculus underlying the language, and more importantly
 it makes syntactic analysis less useful for our purposes by drawing distinctions
 between semantically identical terms. Since theory exploration is concerned only
-with semantics (e.g. telling us how code actually behaves), we perform our
-analyses on the syntax of the \emph{GHC Core} language instead.
+with semantics (telling us how code actually behaves), we perform our analyses
+on the simpler syntax of the \emph{GHC Core} language instead.
 
-\section{GHC Core}\label{sec:core}
+\subsection{GHC Core}\label{sec:core}
 \label{sec:ghccore}
 
 \begin{figure}
@@ -54,7 +77,7 @@ analyses on the syntax of the \emph{GHC Core} language instead.
   \end{tabular}
 
   \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote
-    repetition and grouping, respectively. Other forms of literal, like machine
+    repetition and grouping, respectively \iffalse TODO: Alison: Include examples? \fi. Other forms of literal, like machine
     words, are treated in a similar way and have been omitted for brevity.}
   \label{fig:coresyntax}
 \end{figure}
@@ -69,6 +92,10 @@ Figure~\ref{fig:coresyntax}.
 \begin{figure}
   \begin{subfigure}[haskell]{\textwidth}
     \underline{\texttt{Haskell definitions}}
+    \iffalse
+    TODO: Alison: Big space
+    MY THOUGHTS: I wanted to align things more neatly...
+    \fi
     \begin{haskell}
 plus    Z  y = y
 plus (S x) y = S      (plus x y)
@@ -142,7 +169,7 @@ Lam "a" (Case (Var (Local "a"))
     \end{small}
   \end{subfigure}
   \caption{Example Haskell functions and their translations into the Core syntax
-    of Figure \ref{fig:coresyntax}. Notice the introduction of explicit
+    of Figure~\ref{fig:coresyntax}. Notice the introduction of explicit
     $\lambda$ abstractions (\texttt{Lam}) and the use of \texttt{Case} to
     represent piecewise definitions. Fresh variables are chosen arbitrarily
     as \texttt{"a"}, \texttt{"b"}, etc.}
@@ -159,16 +186,18 @@ the definitions of \hs{odd} and \hs{even} being identical except for the
 identifiers. It is this close correspondence which allows us to analyse Core
 expressions in place of their more complicated Haskell source.
 
-As a further simplification, we also replace data constructors in definitions
-with normal functions, e.g. replacing occurrences of a constructor
-\hs{S :: Nat -> Nat} with a function \hs{s} defined as \hs{s x = S x} (this is
-known as the $\eta$-expansion of \hs{S}). We do this to remove more distinctions
-from the syntax, and also to reduce cross-language differences (in particular,
-the Isabelle language used by the \isascheme{}, \isacosy{} and \hipster{} theory
-exploration systems treats constructors in a different way to Haskell, so having
-constructors in our data would complicate comparisons).
+Note that in test data such as our Theory Exploration Benchmark, data
+constructors in definitions are replaced with normal functions, e.g. replacing
+occurrences of a constructor \hs{S :: Nat -> Nat} with a function \hs{s} defined
+as \hs{s x = S x} (this is known as the $\eta$-expansion of \hs{S}). This
+removes even more distinctions from the syntax, and also reduces
+cross-language differences (in particular, the Isabelle language used by the
+\isascheme{}, \isacosy{} and \hipster{} theory exploration systems treats
+constructors in a different way to Haskell, so removing constructors from our
+data simplifies cross-language comparisons).
 
 \section{Feature Extraction}
+\label{sec:featureextraction}
 
 Raw syntax trees, even in Core form, are difficult to analyse due to their
 recursive structure, use of discrete labels and heavy reliance on references.
@@ -181,118 +210,16 @@ The process of turning raw data into feature vectors is called \emph{feature
 proposed in~\cite{DBLP:journals/corr/HerasK14,heras2013proof}, since this
 handles recursive tree structures, resolves references and produces numeric
 values. We suggest a new recurrent clustering and feature extraction algorithm
-for Haskell (shown in Algorithm \ref{alg:recurrent}) and compare its similarity
+for Haskell (shown in Algorithm~\ref{alg:recurrent}) and compare its similarity
 and differences to the existing approaches of \textsc{ML4PG} and
 \textsc{ACL2(ml)}.
 
 We describe our algorithm in two stages: the first transforms the nested
 structure of expressions into a flat vector representation; the second converts
 the discrete symbols of Core syntax into features (real numbers), which we will
-denote using the function $\phi$. Before introducing our algorithm, we briefly
-describe \emph{clustering}, and its use in \emph{recurrent clustering}.
+denote using the function $\phi$.
 
-\subsection{Clustering}
-
-Clustering is an unsupervised machine learning task for grouping $n$ data points
-using a similarity metric. There are many variations on this theme, but in our
-case we make the following choices:
-
-\begin{itemize}
-\item For simplicity, we use the ``rule of thumb'' given in
-  \cite[pp. 365]{mardia1979multivariate} to fix the number of clusters at
-  $k = \lceil \sqrt{\frac{n}{2}} \rceil$.
-\item Data points will be $d$-dimensional feature vectors, as defined above.
-\item We will use euclidean distance (denoted $e$) as our similarity metric.
-\item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm
-  \cite{lloyd1982least}.
-\end{itemize}
-
-We choose k-means because it is a standard approach and we are more concerned
-with the application of feature extraction to Haskell and its use in theory
-exploration, rather than precise tuning of learning algorithms. There are many
-other clustering algorithms we could use, such as \emph{expectation
-  maximisation}, but experiments with \textsc{ML4PG} have shown little
-difference in their results; it seems that the quality of the features is the
-bottleneck to learning, so there is no reason to avoid a fast algorithm like
-k-means. We use a Haskell implementation provided by the package
-\hPackage{k-means}.
-
-Since k-means is iterative, we will use function notation to denote time steps,
-so $x(t)$ denotes the value of $x$ at time $t$. We denote the clusters as $C^1$
-to $C^k$. As the name suggests, k-means uses the mean value of each cluster,
-which we denote as $\vect{m}^1$ to $\vect{m}^k$, hence:
-
-\begin{equation*}
-  m^i_j(t) = \mean{C^i_j}(t) = \frac{\sum_{\vect{x} \in C^i(t)} x_j}{|C^i(t)|}
-    \quad \text{for $t > 0$}
-\end{equation*}
-
-Before k-means starts, we must choose \emph{seed} values for
-$\vect{m}^i(0)$. Many methods have been proposed for choosing these values
-\cite{arthur2007k}. For simplicity, we will choose values randomly from our
-data set $S$; this is known as the Forgy method.
-
-The elements of each cluster $C^i(t)$ are those data points closest to the mean
-value at the previous time step:
-
-\begin{equation*}
-  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x},
-                                                        \vect{m}^j(t-1)) \}
-    \quad \text{for $t > 0$}
-\end{equation*}
-
-As $t$ increases, the clusters $C^i$ move from their initial location around the
-``seeds'', to converge on a local minimum of the ``within-cluster sum of squared
-error'' objective:
-
-\begin{equation} \label{eq:kmeansobjective}
-  \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
-\end{equation}
-
-Many conservative improvements can be made to the standard k-means algorithm
-described above. For example, a more efficient approach like
-\emph{yinyang k-means}~\cite{conf/icml/DingZSMM15} could make larger input sizes
-more practical to cluster; the \emph{k-means++}
-approach~\cite{arthur2007k, bahmani2012scalable} can be used to more carefully
-select the ``seed'' values for the first timestep; and the \emph{x-means}
-algorithm~\cite{pelleg2000x} is able to estimate how many clusters to use
-(instead of relying on our ``rule of thumb''). However, like the choice of
-k-means versus other clustering algorithms, these algorithmic improvements would
-need higher quality data than we are capable of producing in these early
-experiments.
-
-\subsubsection{Recurrent Clustering}
-
-\emph{Recurrent clustering} has been implemented in the
-ML4PG tool for analysing Coq proofs~\cite{journals/corr/abs-1212-3618} and
-\textsc{ACL2(ml)} for ACL2~\cite{heras2013proof}. Both approaches transform
-syntax trees into fixed-size matrices, then concatenate the rows of these
-matrices to produce feature vectors. \textsc{ACL2(ml)} produces matrices by
-\emph{summarising} information about the tree; for example, one column counts
-the number of variables appearing at each tree level, others count the number of
-function symbols which are nullary, unary, binary, etc. In contrast, the
-algorithm of ML4PG converts tokens of the syntax tree directly into numbers,
-arranging them in the matrix based on their position in the syntax tree. It is
-this latter algorithm that we adapt for analysing GHC Core expressions.
-
-The key to recurrent clustering is its treatment of identifiers. From a purely
-symbolic perspective, they are atomic: two identifiers can either be identical
-or distinct. Consider the \hs{odd} and \hs{even} functions in
-Figure~\ref{fig:coreexample}, which differ only in their choice of identifiers.
-These functions are clearly different (opposite, in fact), so their identifiers
-should play a role in determining their similarity. Yet these distinctions, e.g.
-between \hs{True} and \hs{False}, seem intuitively small relative to the
-distinction between, for example, \hs{isEmpty} and \hs{isValidEmailAddress}.
-
-Recurrent clustering solves this dichotomy by introducing a finer granularity to
-the treatment of identifiers, by first clustering the definitions that they
-refer to. If two definitions appear in the same cluster, their identifiers will
-be denoted by similar numbers during subsequent feature extraction; if they
-appear in different clusters, their numbers will differ more during feature
-extraction. It is this use of clustering to determine features that makes the
-approach \emph{recurrecnt}.
-
-\subsection{Expressions to Vectors}
+\subsubsection{Expressions to Vectors}
 \label{sec:expressionstovectors}
 
 The first step of our feature extraction algorithm is to convert the tree
@@ -304,36 +231,36 @@ feature vectors. Different patterns of nesting can alter the ``shape'' of
 expressions, so simple traversals (breadth-first, depth-first, post-order, etc.)
 may cause features from equivalent sub-expressions to be mis-aligned. For
 example, consider the following Core expressions, which represent pattern-match
-clauses with different patterns but the same body (\hs{\vlocal{y}}):
+clauses with different patterns but the same body (\vlocal{y}):
 
-\begin{equation}\label{eq:xy}
+\begin{equation*}\label{eq:xy}
   \begin{array}{r@{}l@{}l@{}}
     X\ &=\ \CAlt\ (\CDataAlt\ \id{C})\ & (\vlocal{y}) \\
     Y\ &=\ \CAlt\ \CDefault\           & (\vlocal{y})
   \end{array}
-\end{equation}
+\end{equation*}
 
 If we traverse these expressions in breadth-first order, converting each token
 to a feature using some function $\phi$ (defined later) and padding to the same
 length with $0$, we would get the following feature vectors:
 
 \begin{small}
-  \begin{equation}
+  \begin{equation*}
     \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
       breadthFirst(X)\ &=\ (\feature{\CAlt},\
-                           &\feature{\CDataAlt},\
-                           &\feature{\CVar},\
-                           &\feature{\id{C}},\
-                           &\feature{\CLocal},\
-                           &\feature{\id{y}} &) \\
+                           \ &\feature{\CDataAlt},\
+                           \ &\feature{\CVar},\
+                           \ &\feature{\id{C}},\
+                           \ &\feature{\CLocal},\
+                           \ &\feature{\id{y}} &) \\
       breadthFirst(Y)\ &=\ (\feature{\CAlt},\
-                           &\feature{\CDefault},\
-                           &\feature{\CVar},\
-                           &\feature{\CLocal},\
-                           &\feature{\id{y}},\
-                           &0 &)
+                           \ &\feature{\CDefault},\
+                           \ &\feature{\CVar},\
+                           \ &\feature{\CLocal},\
+                           \ &\feature{\id{y}},\
+                           \ &0 &)
     \end{array}
-  \end{equation}
+  \end{equation*}
 \end{small}
 
 Here the features corresponding to the common sub-expression $\CLocal\ \id{y}$
@@ -354,7 +281,7 @@ mis-alignment from accumulating across different levels of nesting. Our method
 would align these features into the following vectors, if $c = 2$:
 
 \begin{small}
-  \begin{equation}\label{eq:flattened}
+  \begin{equation*}\label{eq:flattened}
     \begin{array}{r@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
       featureVec(X)\ &=\ (\feature{\CAlt},\
                          &0,\
@@ -373,7 +300,7 @@ would align these features into the following vectors, if $c = 2$:
                          &\feature{\id{y}},\
                          &0 &)
     \end{array}
-  \end{equation}
+  \end{equation*}
 \end{small}
 
 Here $\frac{1}{2}$ of the original 6 features align, which is more than
@@ -406,7 +333,7 @@ zeros compared to $breadthFirst$; raising their alignment to $\frac{5}{8}$.
                           $\feature{\id{n}}$ ]]]
   \end{scriptsize}
   \caption[Rose tree for odd]{\label{fig:rosetreeexample} Rose tree for the
-    expression \hs{odd} from Figure \ref{fig:coreexample}. Each (sub-) rose tree
+    expression \hs{odd} from Figure~\ref{fig:coreexample}. Each (sub-) rose tree
     is rendered with its feature at the node and sub-trees beneath.}
 \end{figure}
 
@@ -470,7 +397,7 @@ real code is low.
         \feature{\id{even}}  & \feature{\id{n}}        & 0                 & 0                   & 0               & 0
       \end{bmatrix}
     \end{equation*}
-    \caption{Matrix generated from Figure \ref{fig:rosetreeexample}, padded to 6 columns. Each level of nesting in the tree corresponds to a row in the matrix.}
+    \caption{Matrix generated from Figure~\ref{fig:rosetreeexample}, padded to 6 columns. Each level of nesting in the tree corresponds to a row in the matrix.}
     \label{fig:matrixexample}
 \end{figure}
 
@@ -512,10 +439,10 @@ $\feature{\CLam}$ and $\feature{\CCase}$, we can enumerate the possibilities and
 assign a value to each, in a similar way to~\cite{DBLP:journals/corr/HerasK14}
 in Coq. We use a constant $\alpha$ to separate these values from those of other
 tokens (e.g. identifiers), but the order is essentially
-arbitrary:~\footnote{In~\cite{DBLP:journals/corr/HerasK14}, ``similar'' Gallina
+arbitrary~\footnote{In~\cite{DBLP:journals/corr/HerasK14}, ``similar'' Gallina
   tokens like \coq{fix} and \coq{cofix} are grouped together to reduce
   redundancy; we do not group tokens, but we do put ``similar'' tokens close
-  together, such as \CLocal\ and \CGlobal.}
+  together, such as \CLocal\ and \CGlobal.}:
 
 \begin{equation} \label{eq:feature}
   \begin{aligned}
@@ -561,31 +488,160 @@ e.g. using a scheme like G{\"o}del numbering, since this is essentially
 arbitrary and has no effect on their semantic meaning (referencing other
 expressions).
 
-Instead, we use the approach taken nu ML4PG and encode global identifiers
+Instead, we use the approach taken by ML4PG and encode global identifiers
 \emph{indirectly}, by looking up the expressions which they \emph{reference}:
 
 \begin{equation} \label{eq:globalfeature}
   \feature{g \in \mathcal{G}} =
     \begin{cases}
-      i + 3 \alpha \quad & \text{if $g \in C_i$} \\
+      i + 3 \alpha \quad & \text{if $g \in C^i$} \\
       f_{recursion}         & \text{otherwise}
     \end{cases}
 \end{equation}
 
-Where $C_i$ are our clusters (in some arbitrary order). This is where the
-recurrent nature of the algorithm appears: to determine the contents of $C_i$,
-we must perform k-means clustering \emph{during} feature extraction; yet that
-clustering step, in turn, requires that we perform feature extraction.
+Here $f_{recursion}$ is a constant value which is used for recursive calls, like
+those in the \hs{plus} and \hs{mult} definitions above. It will also appear in
+cases of mutual recursion, like the call to \hs{odd} within the definition of
+\hs{even} and \emph{vice versa}.
+
+$C$ contains the results (in some arbitrary order) of a \emph{clustering
+  algorithm} (described below in \S~\ref{sec:clustering}) applied to all of
+those definitions which are referenced non-recursively by this one. When we
+encounter such a reference, we look up which cluster that definition appeared
+in (denoted $C^i$), and use that index ($i$) as our feature value (using
+$\alpha$ to offset from other features as before).
+
+Defining the \emph{input} (feature vectors) for one definition in terms of the
+\emph{output} (clusters) of some other definitions gives rise to a
+\emph{recurrent clustering} algorithm, and blurs the boundary between feature
+extraction and clustering, which are normally distinct steps.
+
+\section{Clustering}
+\label{sec:clustering}
+
+Clustering is an unsupervised machine learning task for dividing $n$ data points
+into $k$ groups (``clusters'') such that points deemed similar a given metric
+tend to be grouped together. There are many variations on this theme, but in our
+case we make the following choices:
+
+\begin{itemize}
+\item For simplicity, we use the ``rule of thumb'' given in
+  \cite[pp. 365]{mardia1979multivariate} to fix the number of clusters at
+  $k = \lceil \sqrt{\frac{n}{2}} \rceil$.
+\item Data points will be $d$-dimensional feature vectors, as defined above in
+  \S~\ref{sec:featureextraction}.
+\item We will use euclidean distance (denoted $e$) as our similarity metric.
+\item We will use \emph{k-means} clustering, implemented by Lloyd's algorithm
+  \cite{lloyd1982least}.
+\end{itemize}
+
+\iffalse
+TODO: Alison: It would be good to have justification of the previous
+items as well.
+\fi
+
+We choose k-means because it is a standard approach \iffalse TODO: Alison: Is
+there a reference for this? \fi. There are many other clustering algorithms we
+could use, such as \emph{expectation maximisation}, but experiments with
+\textsc{ML4PG} have shown little difference in their results; \iffalse TODO:
+Alison: Whose experiments? Yours (include something in appendix?) Someone else's
+(reference)? MY THOUGHTS: Conversation with Katya; maybe check ML4PG papers, or
+omit \fi it seems that \iffalse TODO: Alison: a bit informal and vague \fi the
+quality of the features is the bottleneck to learning, so there is no reason to
+avoid a fast algorithm like k-means. We use a Haskell implementation provided by
+the package \hPackage{k-means}.
+
+Since k-means is iterative, we will use function notation to denote time steps,
+so $x(t)$ denotes the value of $x$ at time $t$. \iffalse TODO: Alison: Pick a
+tense and stick to it. I'd suggest the present tense throughout \fi We denote
+the clusters as $C^1$
+to $C^k$. As the name suggests, k-means uses the mean value of each cluster,
+which we denote as $\vect{m}^1$ to $\vect{m}^k$. The components of these vectors
+are treated as orthogonal, hence the $j$th component of $\vect{m}^i$ is the
+average of the $j$th components of all vectors in cluster $C^i$:
+
+\begin{equation*}
+  m^i_j(t) = \mean{C^i_j}(t) = \frac{\sum_{\vect{x} \in C^i(t)} x_j}{|C^i(t)|}
+    \quad \text{for $t > 0$}
+\end{equation*}
+
+Before k-means starts, we must choose \emph{seed} values for
+$\vect{m}^i(0)$. Many methods have been proposed for choosing these
+values~\cite{arthur2007k}. For simplicity, we will choose values randomly from
+our data set $S$; this is known as the Forgy method. \iffalse TODO: Alison: Any
+stronger justification? Why are the other methods not appropriate? \fi
+
+The elements of each cluster $C^i(t)$ are those data points closest to the mean
+value at the previous time step $\vect{m}^i(t-1)$:
+
+\begin{equation*}
+  C^i(t) = \{ \vect{x} \in S \mid i = \argmin\limits_j e(\vect{x},
+                                                        \vect{m}^j(t-1)) \}
+    \quad \text{for $t > 0$}
+\end{equation*}
+
+As $t$ increases, the clusters $C^i$ move from their initial location around the
+``seeds'', to converge on a local minimum of the ``within-cluster sum of squared
+error'' objective:
+
+\begin{equation} \label{eq:kmeansobjective}
+  \argmin\limits_C \sum_{i=1}^k \sum_{\vect{x} \in C^i} e(\vect{x}, \vect{m}^i)^2
+\end{equation}
+
+Many conservative improvements can be made to the standard k-means algorithm
+described above. For example, a more efficient approach like
+\emph{yinyang k-means}~\cite{conf/icml/DingZSMM15} could make larger input sizes
+more practical to cluster; the \emph{k-means++}
+approach~\cite{arthur2007k, bahmani2012scalable} can be used to more carefully
+select the ``seed'' values for the first timestep; and the \emph{x-means}
+algorithm~\cite{pelleg2000x} is able to estimate how many clusters to use
+(instead of relying on our ``rule of thumb''). However, like the choice of
+k-means versus other clustering algorithms, the benefits of more, higher-quality
+data seem greater than those offered by such algorithmic tweaking. \iffalse
+TODO: Also describe better reasons for avoiding these improvements, i.e. they
+are algorithmically complicated and require multiple passes over the input data
+\fi
+
+\subsubsection{Recurrent Clustering}
+
+\emph{Recurrent clustering} has been implemented in the
+ML4PG tool for analysing Coq proofs~\cite{journals/corr/abs-1212-3618} and
+\textsc{ACL2(ml)} for ACL2~\cite{heras2013proof}. Both approaches transform
+syntax trees into fixed-size matrices, then concatenate the rows of these
+matrices to produce feature vectors. \textsc{ACL2(ml)} produces matrices by
+\emph{summarising} information about the tree; for example, one column counts
+the number of variables appearing at each tree level, others count the number of
+function symbols which are nullary, unary, binary, etc. In contrast, the
+algorithm of ML4PG converts tokens of the syntax tree directly into numbers,
+arranging them in the matrix based on their position in the syntax tree. It is
+this latter algorithm that we have adapted for analysing GHC Core expressions.
+
+The key to recurrent clustering is its treatment of identifiers. From a purely
+symbolic perspective, they are atomic: two identifiers can either be identical
+or distinct. Consider the \hs{odd} and \hs{even} functions in
+Figure~\ref{fig:coreexample}, which differ only in their choice of identifiers.
+These functions are clearly different (opposite, in fact), so their identifiers
+should play a role in determining their similarity. Yet these distinctions, e.g.
+between \hs{True} and \hs{False}, seem intuitively small relative to the
+distinction between, for example, \hs{isEmpty} and \hs{isValidEmailAddress}.
+
+Recurrent clustering solves this dichotomy by introducing a finer granularity to
+the treatment of identifiers, by first clustering the definitions that they
+refer to. If two definitions appear in the same cluster, references to those
+definitions will be denoted by similar numbers during subsequent feature
+extraction; if they appear in different clusters, their numbers will differ more
+during feature extraction. It is this use of clustering to determine features
+that makes the approach \emph{recurrent}.
 
 For this recursive process to be well-founded, we perform a topological sort on
-declarations based on their dependencies (the expressions they reference). In
-this way, we can avoid looking up expressions which haven't been clustered
+definitions based on their dependencies (the definitions they reference). In
+this way, we can avoid looking up definitions which haven't been clustered
 yet. To handle mutual recursion we use Tarjan's algorithm~\cite{tarjan1972depth}
 to produce a sorted list of \emph{strongly connected components} (SCCs), where
 each SCC is a mutually-recursive sub-set of the declarations. If an identifier
 cannot be found amongst those clustered so far, it must appear in the same SCC
-as the expression we are processing; hence we give that identifier the constant
-feature value $f_{recursion}$.
+as the expression we are processing; hence we give that identifier a constant
+feature value denoted as $f_{recursion}$.
 
 \begin{algorithm}
   \begin{algorithmic}[1]
@@ -644,10 +700,10 @@ Algorithm~\ref{alg:recurrent}.
       \draw[edge, loop above] (mult)  to (mult);
     \end{tikzpicture}
 
-    \caption{Dependency graph for Figure \ref{fig:coreexample}. Loops indicate
+    \caption{Dependency graph for Figure~\ref{fig:coreexample}. Loops indicate
       recursive functions, double arrows indicate mutual recursion. Dashed lines
-      show references to data constructors, which we do not consider in this
-      work.}
+      show references to data constructors, which we ignore in this work
+      (replacing such references with $\eta$-expanded alternatives).}
     \label{fig:dagexample}
   \end{subfigure}
   \begin{subfigure}{\textwidth}
@@ -676,13 +732,13 @@ Algorithm~\ref{alg:recurrent}.
       \path [line] (parityset) -- (multset);
     \end{tikzpicture}
     \caption{One possible topological sorting of simply connected components for
-      Figure \ref{fig:dagexample} (ignoring constructors). \hs{even} and
+      Figure~\ref{fig:dagexample} (ignoring constructors). \hs{even} and
       \hs{odd} are mutually recursive, neither can appear before the other, so
-      they are grouped into one component and handled concurrently by Algorithm
-      \ref{alg:recurrent}.}
+      they are grouped into one component and handled concurrently by
+      Algorithm~\ref{alg:recurrent}.}
     \label{fig:sccexample}
   \end{subfigure}
-  \caption{Sorting functions from Figure \ref{fig:coreexample} into dependency order.}
+  \caption{Sorting functions from Figure~\ref{fig:coreexample} into dependency order.}
   \label{fig:dependencyexample}
 \end{figure}
 
@@ -729,44 +785,51 @@ We can then trace the execution of Algorithm~\ref{alg:recurrent} as follows:
 Even in this very simple example we can see a few features of our algorithm
 emerge. For example, \hs{odd} and \hs{even} will always appear in the same
 cluster, since they only differ in their choice of constructor names (which are
-discarded by $toTree$) and recursive calls (which are replaced by
+discarded by $toTree$) and recursive calls (which are both replaced by
 $f_{recursion}$).
 
 \section{Implementation}
 \label{sec:implementation}
 
 We provide an implementation of our recurrent clustering algorithm in a tool
-called \mlforhs{}. We obtain Core ASTs from Haskell packages using a plugin
-for the GHC compiler~\footnote{Available at
+called \mlforhs{}~\footnote{Available at
+  \url{https://github.com/warbo/ml4hsfe}}. We obtain Core ASTs from Haskell
+packages using a plugin for the GHC compiler~\footnote{Available at
   \url{https://github.com/warbo/ast-plugin}}, which emits a serialised version
 of each Core definition as it is being compiled. This approach is more robust
 than, for example, parsing source files, since it avoids the complications of
 preprocessors and language extensions altering the syntax.
 
-A post-processing stage determines which Core definitions can be used by
-\quickspec{}, based on their type, visibility (whether they are encapsulated inside
-their module or visible to importers), etc. For each definition, we simply use
-the GHCi interpreter to check if calling \quickspec{} with that argument is
-well-typed. This information, along with type signatures, arity, etc. are stored
+A post-processing stage determines which Core definitions are suitable for
+exploration, based on their visibility (whether they are encapsulated inside
+their module or visible to importers), whether a data generator is available,
+etc. This information, along with type signatures, arity, etc. are stored
 alongside the Core definitions in JSON format.
 
 The definitions are then sorted topologically, based on the non-local
 identifiers appearing in their ASTs, and feature vectors are constructed using a
-Haskell implementation of the approach described in \S
-\ref{sec:recurrentclustering}. Since the features associated with each
+Haskell implementation of the approach described in
+\S~\ref{sec:featureextraction}. Since the features associated with each
 identifier may vary between iterations (as the clusters change), we leave the
 raw identifiers in the vector so their features can be extracted in the correct
 context.
 
-We implement Algorithm \ref{alg:recurrent} as a simple shell script, which
-invokes Weka for clustering and associates each Core definition with a cluster
+We implement Algorithm~\ref{alg:recurrent} as a Haskell executable, which
+performs the clustering and associates each Core definition with a cluster
 number. These numbers are used to finish the deferred feature extraction of
 identifiers, the resulting feature vectors are clustered, and the process is
-repeated until all SCCs have been processed.
+repeated until all SCCs have been processed. Once the recurrent clustering is
+complete, we output a JSON array of the clusters (serialised in an arbitrary
+order).
 
-Once the recurrent clustering is complete, we generate a string of Haskell code
-for each of the final clusters, which will invoke \quickspec{} with a suitable
-signature. This involves:
+\iffalse
+% TODO: This seems less appropriate for this chapter, more suitable for
+% Signature Selection
+A separate application called \mlspec{} can read in this JSON, generate
+appropriate Haskell code to invoke \quickspec{} on each cluster individually,
+and evaluate that code with all appropriate dependencies installed. This
+decoupling allows our feature extraction algorithm to be used for other
+purposes, and allows alternative clustering involves:
 
 \begin{itemize}
 \item{Monomorphising}: If a value has polymorphic type, e.g. \hs{equal :: forall
@@ -805,24 +868,28 @@ signature. This involves:
 The equations resulting from evaluating these strings are collected and
 outputted as JSON values, to ease further processing (e.g. displaying in some
 form, sending to a theorem prover, etc.).
+\fi
 
 \section{Evaluation}
 \label{sec:evaluation}
 
-% TODO: Move recurrent clustering to its own chapter, with this as its
-% evaluation?
+\iffalse
+TODO: Alison: Next chapter? It's good to lead into the next chapter at the end
+of the previous ones.
+\fi
+
 We have applied our recurrent clustering algorithm to several scenarios, with
 mixed results. A major difficulty in evaluating these clusters is that we have
 no ``ground truth'', i.e. there is no objectively correct way to compare
-expressions. Instead, we provide a qualitative overview of the more interesting
+definitions. Instead, we provide a qualitative overview of the more interesting
 characteristics.
 
 As a simple example, we clustered (Haskell equivalents of) the running examples
-used to present ACL2(ml) \cite{heras2013proof}, shown in Figure
-\ref{fig:lisp}. These include tail-recursive and non-tail-recursive
+used to present \textsc{ACL2(ml)}~\cite{heras2013proof}, shown in
+Figure~\ref{fig:lisp}. These include tail-recursive and non-tail-recursive
 implementations of several functions. We expect those with similar
 \emph{structure} to be clustered together, rather than those which implement the
-same function. The results are shown in Figure \ref{fig:haskellcluster}, where
+same function. The results are shown in Figure~\ref{fig:haskellcluster}, where
 we can see the ``\hs{Tail}'' functions clearly distinguished, with little
 distinction between the tail recursive and na\"{\i}ve implementations.
 
@@ -871,7 +938,8 @@ the \hs{text} library).
 (defun fib-tail (n)
   (helper-fib n 0 1))
   \end{common-lisp}
-  \caption{Common Lisp functions, both tail-recursive and non-tail-recursive.}
+  \caption{Common Lisp functions used with \textsc{ACL2(ml)}, both
+    tail-recursive and non-tail-recursive.}
   \label{fig:lisp}
 \end{figure}
 
@@ -958,6 +1026,36 @@ When clustering the \hs{yesod} Web framework, the clustering did seem to match
 our intuitions, in particular since all 15 of Yesod's MIME type identifiers
 appeared in the same cluster.
 
+\iffalse
+Since we are working in the domain of Haskell programs, an abundant source of
+statements are available in the form of \emph{tests}. For manually-written
+tests, the effort required to write them implies that they must be of some
+interest to their author. Many forms of test are \emph{not} suitable for our
+purposes, such as \emph{unit tests} which are always trivially provable by
+$\beta$-reduction; or \emph{integration tests}, which depend on the behaviour of
+the external environment. One reason to study Haskell is its widespread use of
+\emph{property checking}, which does give us useful data. Many Haskell property
+checkers exist, based on random testing
+(\quickcheck{}~\cite{claessen2011quickcheck} and
+\smartcheck{}~\cite{pike2014smartcheck}), enumeration
+(\smallcheck{}~\cite{runciman2008smallcheck}), observation
+(\lazysmallcheck{}~\cite{reich2013advances}) and logic programming
+(\sparsecheck{}~\cite{sparsecheck}).
+
+Thankfully the major differences between these systems are in the way they
+instantiate test arguments; their representations of properties are largely the
+same (modulo renaming of functions and types).
+
+Here we consider the 10 most-downloaded packages from \hackage{} (as of
+2015-10-30) which have property tests; these are \texttt{warp}, \texttt{aeson},
+\texttt{text}, \texttt{lens}, \texttt{conduit}, \texttt{pandoc},
+\texttt{attoparsec}, \texttt{scientific}, \texttt{yesod-core} and
+\texttt{blaze-html}.
+
+% TODO: Analysis
+\fi
+
+\iffalse
 Whilst recurrent clustering has produced results which merit further
 investigation, the application to theory exploration has yet to be tested
 empirically. This is due to \quickspec{}'s use of \quickcheck{}'s \hs{Arbitrary} type
@@ -998,15 +1096,20 @@ The following less-serious problems were also encountered while applying
   of regular Haskell identifiers: a transformation layer would be required,
   along with explicit type annotations to avoid ambiguity.
 \end{itemize}
+\fi
 
-It seems like this recurrent clustering method has promise, although it will
+It seems like this recurrent clustering method has promise\iffalse TODO: Alison: Informal, vague \fi, although it will
 require a more thorough exploration of the parameters to obtain more intuitively
 reliable results. These clusters can then be used in several ways to perform
 theory exploration; the most na\"{\i}ve way being to explore each cluster as
-\quickspec{} signature in its own right. \mlforhs{} already provides this
-functionality, although the lack of test generators severely limits what can be
-discovered.
+\quickspec{} signature in its own right, which we investigate as a potential
+solution to the Signature Selection problem.
 
+\iffalse
+TODO: Alison: Next chapter? It's good to lead into the next chapter at the end of the previous ones.
+\fi
+
+\iffalse
 As alluded to previously, we also have the opportunity to reason by
 \emph{analogy}. Similar to the work on ACL2(ml) \cite{heras2013proof}, we could
 produce a general ``scheme'' from each equation we find (either through \quickspec{}
@@ -1018,7 +1121,9 @@ existing theorem statements in such a way would also increase the chance of any
 result being considered interesting; since it's likely that the unmodified
 statement was deemed interesting, and the new result would not in general follow
 as a simple logical consequence.
+\fi
 
+\iffalse
 \subsection{Recurrent Clustering}
 \label{sec:clusteringexpressions}
 
@@ -1059,3 +1164,5 @@ face of language evolution. Another intriguing possibility is to extend the
 recurrent nature of our algorithm to make use of the discovered properties
 during clustering; for example, by treating the discovered equations as rewrite
 rules to reduce the ASTs prior to feature extraction.
+\fi
+W
