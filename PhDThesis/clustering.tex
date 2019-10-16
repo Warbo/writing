@@ -1,7 +1,9 @@
 \chapter{Similarity and Clustering}
 \label{sec:recurrentclustering}
 
-% TODO: Say what's in this chapter
+\iffalse TODO: Alison: Each chapter should have a description at the start (see
+bucketing ``in this chapter'') \fi
+
 In this chapter we consider how the contents of a given signature can be
 analysed, such that subsequent exploration can be performed more efficiently. We
 frame this analysis as a task of \emph{unsupervised machine learning}, and
@@ -14,20 +16,10 @@ and how these can be made less opaque through the use of \emph{recurrent
 
 \section{Syntax}
 
-To improve the performance of theory exploration tools, we need to avoid
-brute-force search in favour of a more informed strategy.
-\iffalse
-TODO: Alison: This makes it sound as though current TE tools all use brute force
-(whereas all the tools I know already use informed strategies).
-MY THOUGHTS: ``more informed'' is a bit of weasel-wording from me; implying that
-they're not informed and that we're making them informed; whereas they're
-actually already somewhat informed, and we're trying to add to that. I agree
-that this weasel-wording should be replaced!
-\fi
-This, in turn,
-requires more information \iffalse TODO: Alison: More than what? \fi about the
-terms in the given signature. One
-generally available source of information is the syntax of a term's definition.
+To improve the performance of theory exploration tools, we need to provide their
+search strategies with more than just type information about the terms in the
+given signature, rather than treating them as ``black boxes''. One generally
+available source of information is the syntax of a term's definition.
 
 Unfortunately these definitions are over-complicated due to the relatively large
 syntax of Haskell, which includes many convenience features (``syntactic
@@ -76,9 +68,9 @@ on the simpler syntax of the \emph{GHC Core} language instead.
     $\mathcal{D}$ & constructor identifiers
   \end{tabular}
 
-  \caption{Simplified syntax of GHC Core in BNF style. $[]$ and $(,)$ denote
-    repetition and grouping, respectively \iffalse TODO: Alison: Include examples? \fi. Other forms of literal, like machine
-    words, are treated in a similar way and have been omitted for brevity.}
+  \caption{Simplified syntax of GHC Core in BNF style. $[]$ denotes repetition
+    (zero or more occurrences). Other forms of literal, like machine words, are
+    treated in a similar way and have been omitted for brevity.}
   \label{fig:coresyntax}
 \end{figure}
 
@@ -92,13 +84,9 @@ Figure~\ref{fig:coresyntax}.
 \begin{figure}
   \begin{subfigure}[haskell]{\textwidth}
     \underline{\texttt{Haskell definitions}}
-    \iffalse
-    TODO: Alison: Big space
-    MY THOUGHTS: I wanted to align things more neatly...
-    \fi
     \begin{haskell}
 plus    Z  y = y
-plus (S x) y = S      (plus x y)
+plus (S x) y = S (plus x y)
 
 mult    Z  y = Z
 mult (S x) y = plus y (mult x y)
