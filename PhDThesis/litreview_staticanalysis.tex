@@ -27,10 +27,12 @@ and sifting through.
 
 Some of the simplest code improvement tools are known as \emph{linters}, after
 the \textsc{Lint} tool for the C programming language~\cite{Johnson78lint}.
-Linters are characterised by parsing the given code and looking for occurrences
-of certain syntax patterns, for example definitions which are never used, or
-``no-op'' constructs (e.g. \texttt{(x~<~0)} when \texttt{x} is of
-unsigned/non-negative type, making this comparison always false).
+Linters are standalone tools, characterised by parsing the given code and
+looking for occurrences of certain syntax patterns; for example definitions
+which are never used, ``no-op'' constructs (e.g. \texttt{if~(x~<~0)} when
+\texttt{x} is of unsigned/non-negative type) and expressions which are valid but
+usually used erroneously (e.g. \texttt{if (x = 1)} which performs assignment
+rather than comparison).
 
 A popular linter for Haskell is \textsc{HLint}~\cite{mitchell2014hlint}, which
 focuses mostly on simplifying code; for example by spotting use-cases for common
@@ -51,47 +53,37 @@ limited by the undecidability of the source language. Superoptimisers, such as
 Assistant'', developed to accompany \emph{Hacker's
   Delight}~\cite{warren2013hacker}) treat the given code as a specification, and
 perform an open-ended search through the space of all programs to find the
-optimal implementation according to some quality measure or cost model (often a
-branch- and effect-free subset of machine code is used, and measured by counting
-instructions or cycles).  Superoptimisers need some method to check whether a
-synthesised program implements the required specification, such as a test suite
-and/or a theorem prover.
+optimal implementation according to some quality measure or cost model.
 
-Proving correctness of machine code programs is helped by the uniform, finite
-nature of their domain (e.g. a fixed set of instructions, operating on a fixed
+Supercompilers are often restricted to a branch- and effect-free subset of
+machine code, where cost can be reasonably estimated by counting instructions or
+cycles. Higher-level languages require more elaborate estimation methods, such
+as cost semantics~\cite{danner2015denotational}: such models will still contain
+many parameters, some of which may be determined by empirical measurement,
+whilst others may depend on characteristics of the input data. Despite this
+drawback, pareto-optimal optimisations can still be identified, and either
+presented to the user or tested against a realistic data set (known as
+\emph{profile-guided optimisation}~\cite{TODO}).
+
+Superoptimisers also need some method to check whether a synthesised program
+implements the required specification, such as a test suite and/or a theorem
+prover. Proving correctness of machine code fragments is helped by the uniform,
+finite nature of their domain (a fixed set of instructions, operating on a fixed
 set of fixed-size registers). Higher level languages like Haskell are more
 difficult to reason about and measure, since their behaviour and efficiency may
-depend on unknown runtime parameters. For example, a higher-order function $f$
-accepting another function $g$ as an argument may choose to memoise calls to $g$
-in order to avoid evaluating identical calls multiple times; however, storing
-previous results requires more memory, and each input must be looked up in the
-memo table to see if it's been used before. Whether this is an optimisation or
-pessimisation depends on the runtime data at each call site, including the
-function argument (whether it's cheaper than performing a comparison) and the
-data it will be applied to (whether it actually contains any repeated values).
+depend on unknown runtime parameters. In particular, optimising higher-order
+functions is difficult in isolation, since many performance tradeoffs cannot be
+decided without more knowledge of the functions involved. For example, a cache
+of previous return values (known as a \emph{memo table}) can avoid re-computing
+repeated calls to a function; but whether this actually saves time, or is worth
+the memory penalty, depends on how long that function takes to calculate; and
+how often it will be called with same arguments.
+
 In addition to this uncertainty, each function's input domain may be infinite
 (such as the natural numbers), and programs may use abstract interfaces and
 datatypes with a variety of possible implementations (such as lists or key/value
 mappings). All these factors makes effective testing more difficult, and proofs
 potentially undecidable.
-
-We can reduce the amount of unknown parameters in a concrete program by
-propagating statically-known values, for example using
-\emph{supercompilation}~\cite{Turchin:1986:CS:5956.5957}; however this can
-dramatically increase code size, as each function may be duplicated into
-multiple specialised instances. Related techniques, like \emph{symbolic
-  execution} (a form of \emph{abstract interpretation}), allow approximate
-execution of code, where unknown runtime data is represented as opaque
-metavariables. Property- and model-checkers are similar, except they work
-empirically by performing multiple runs, instantiating metavariables with
-synthetic data (\quickcheck{} does this randomly, \smallcheck{} enumerates
-values, etc.).
-
-Efficiency can be calculated using techniques like cost
-semantics~\cite{danner2015denotational}, with constant factors determined
-through empirical testing. This cannot solve the problem of optimality depending
-on the characteristics of runtime data, but it can expose these dependencies as
-parameters allowing the user to select between pareto-optimal strategies.
 
 Even if these problems are mitigated, the biggest difficulty with
 superoptimisation remains: the length of time it takes to search such a
@@ -106,19 +98,109 @@ implementations in the limit~\cite{schkufza2013stochastic}; guiding such
 algorithms with \emph{learned} policies is also a promising area of
 study~\cite{mudigonda2017learning}.
 
-The open-ended search process of such superoptimisers is similar to application
-of mathematical theory exploration to software property discovery, especially
-when exploration is limited to equality properties (which is the case for
-\isacosy{} and \quickspec{}). Quality metrics like efficiency (e.g.
-relative instruction count) can be considered a subset of the interestingness
-criteria of theory exploration. The \emph{aims} of these analyses are in
-opposition, since theory exploration \emph{builds up} structure and abstraction
-latent in a set of definitions, whilst superoptimisation \emph{tears down} such
-layers to find minimal implementations; yet the practical necessity of
-superoptimising only small snippets at a time (e.g. to find ``peephole
-optimisations''~\cite{Bansal.Aiken:2006}) results in remarkably similar
-discovery processes.
+Rather than optimising individual units of code in isolation, we can instead
+work ``top down'' and perform \emph{whole program optimisation}.\iffalse TODO: Cite MLTon, Stalin,
+maybe others \fi In particular, for every function we may want to optimise, we
+know \emph{all} call sites of that function within the program, and hence avoid
+the need for a general solution. Statically-known values, including arguments to
+(higher-order) functions, can be propagated through the code using techniques
+like \emph{supercompilation}~\cite{Turchin:1986:CS:5956.5957}, and constant
+expressions can be ahead of time; however this can dramatically increase code
+size, as each function may be duplicated into multiple specialised instances.
+
+Related techniques, like \emph{symbolic execution} (a form of \emph{abstract
+  interpretation}), allow information to be statically deduced by tracing the
+behaviour of code using an alternative execution model, where unknown runtime
+data are represented as opaque metavariables. Property- and model-checkers are
+similar, except they work dynamically by performing multiple runs, instantiating
+metavariables with exhaustive or synthetic data (\quickcheck{} does this
+randomly, \smallcheck{} enumerates values, etc.).
+
+The most common code-improvement technique performed \emph{during execution} is
+Just In Time (JIT) compilation~\iffalse TODO: Cite \fi, which allows an
+interpreter to compile sections of code into a faster form (usually machine
+code). Since this compilation takes time, it is usually reserved for sections
+which are executed often enough to exceed some predefined threshold (e.g. 100).
+By focusing on such ``hot paths'', the up-front costs of compiling everything
+ahead of time are avoided; although compiled forms are kept only in memory,
+getting recompiled as needed on each program run. Compiling at runtime also
+allows specialisation with dynamically-known information; for example, inlining
+specific implementations of a procedure rather than performing dynamic dispatch
+(this is the problem higher-order functions discussed above). To avoid altering
+semantics, such dynamic specialisations must be accompanied by a conservative
+validity check (e.g. that the given arguments should use the procedure
+implementation we have compiled-in), falling back to the interpreter upon
+failure.
+
+A more speculative use of optimisation during runtime has been proposed by
+Hutter~\iffalse TODO: Cite \fi. As in a JIT-enabled interpreter, Hutter's
+algorithm begins by directly executing the given (unoptimised) program $p$ on
+the relevant input $x$ (this may be provided up front, or piecemeal throughout
+execution, e.g. as a stream of user interaction events). The variables $p_{fast}$
+and $t_{fast}$ are initialised to $p$ and $\infinity$ respectively, to indicate
+that $p$ is the fastest implementation we have so far, and we don't yet have an
+upper bound on its running time. Concurrently with the execution of $p$, two
+other processes are also started:
+
+\begin{itemize}
+\item Process A searches for proofs (in a pre-specified formal system) that some
+  program $p\prime$ is both semantically equivalent to $p$ and has a running
+  time bounded by some other program $t$, i.e. for all inputs $i$, the
+  time taken to compute $p\prime(i)$ is bounded by $t(i)$. A list is built up of
+  the $(p\prime, t)$ pairs found so far.
+\item Process B computes $t(x)$ for all of the bounds $t$ found so far by A.
+  Computations are interleaved via a schedule similar to Levin's universal
+  search algorithm~\iffalse TODO: Cite \fi, to prevent getting stuck on
+  non-halting programs. Whenever a calculation of some $t(x)$ finishes, it is
+  compared to $t_{fast}$: if smaller, $t_{fast}$ is set to $t(x)$, and $p_{fast}$ is
+  set to $p\prime$ (the program paired with this $t$).
+\end{itemize}
+
+The execution of $p_{fast}(x)$ (initially $p(x)$) is restarted at
+exponentially-spaced intervals: if the value of $p_{fast}$ gets updated,
+execution will switch to the new, provably-faster program at the next restart.
+Although wasteful, such restarting will only slow down execution by at most a
+factor of 2; whilst switching to an updated $p_{fast}$ may bring arbitrarily large
+speed-ups (depending on the problem). Since the proof search (process A) is
+independent of the input $x$, it only contributes a constant factor to the
+running time; although in the general case this factor will be exponential in
+the length of the proof.
+
+Hutter's algorithm is mostly of theoretical interest, being described as
+``another $O()$ warning showing, how important [to running time] factors, and
+even subdominant additive terms, are.''~\cite{TODO: Hutter, page 4}. Despite
+this caveat, the general framework is still useful to compare with the code
+improvement techniques described above. In particular, the use of open-ended
+search (process A) is similar to that of superoptimisation; although the former
+enumerates equivalence proofs and extracts programs from them, whilst the latter
+enumerates programs and attempts to prove (or approximately determine)
+equivalence. Likewise the speed estimation of process B is analogous to those
+employed by superoptimisation. JIT compilation can also be achieved within this
+framework, for example by including our desired optimisations in the axioms of
+the formal system (making proof search trivial), biasing the search algorithm to
+consider applications of these optimisations first, and including a simple cost
+model for the language. Switching to faster programs can also be made
+incremental, e.g. allowing (stateless) functions to be replaced individually
+without having to restart execution, just like in a JIT-enabled interpreter.
+
+The open-ended search through program and proof space performed by
+superoptimisation and Hutter's algorithm are similar to that of Theory
+Exploration (e.g. the discovery of equivalent expressions by \isacosy{} and
+\quickspec{}). One major difference is in \emph{end result} of these techniques:
+the latter tends to \emph{build up} structure and abstraction latent in a set of
+definitions, whilst the former tend to \emph{tear down} such layers to find
+minimal implementations.
+
+Another seeming contrast is that Theory Exploration has no ``target'', unlike
+optimisers. However, the practical necessity of limiting superoptimisers to only
+small snippets of code at a time has resulted in applications like finding
+``peephole optimisations''~\cite{Bansal.Aiken:2006}, whose scattershot nature is
+more akin to Theory Exploration than traditional compiler optimisation.
+
+In any case, efficiency (whether instruction count, small upper bounds, cost
+semantics, etc.) can be considered part of the interestingness criteria of
+Theory Exploration, and there are certainly opportunities to cross-pollinate
+techniques between these fields.
 
 % TODO: Evolutionary patches
-% TODO: Hutter search
 % TODO: Goedel machines
