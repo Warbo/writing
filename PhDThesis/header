@@ -47,12 +47,14 @@
 
 \newcommand{\astplugin}{\textsc{ASTPlugin}}
 \newcommand{\djinn}{\textsc{Djinn}}
+\newcommand{\goedelmachine}{\textsc{G\"odel Machine}}
 \newcommand{\hackage}{\href{http://hackage.haskell.org}{Hackage}}
 \newcommand{\hedgehog}{\textsc{Hedgehog}}
 \newcommand{\hip}{\textsc{Hip}}
 \newcommand{\hipspec}{\textsc{HipSpec}}
 \newcommand{\hipster}{\textsc{Hipster}}
 \newcommand{\hoogle}{\textsc{Hoogle}}
+\newcommand{\hsearch}{\textsc{Hsearch}}
 \newcommand{\isacosy}{\textsc{IsaCoSy}}
 \newcommand{\isascheme}{\textsc{IsaScheme}}
 \newcommand{\lazysmallcheck}{\textsc{Lazy SmallCheck}}

@@ -134,13 +134,14 @@ failure.
 
 A more speculative use of optimisation during runtime has been proposed by
 Hutter~\iffalse TODO: Cite \fi. As in a JIT-enabled interpreter, Hutter's
-algorithm begins by directly executing the given (unoptimised) program $p$ on
-the relevant input $x$ (this may be provided up front, or piecemeal throughout
-execution, e.g. as a stream of user interaction events). The variables $p_{fast}$
-and $t_{fast}$ are initialised to $p$ and $\infinity$ respectively, to indicate
-that $p$ is the fastest implementation we have so far, and we don't yet have an
-upper bound on its running time. Concurrently with the execution of $p$, two
-other processes are also started:
+algorithm (also referred \hsearch{}) begins by directly executing the given
+(unoptimised) program $p$ on the relevant input $x$ (this may be provided up
+front, or piecemeal throughout execution, e.g. as a stream of user interaction
+events). The variables $p_{fast}$ and $t_{fast}$ are initialised to $p$ and
+$\infinity$ respectively, to indicate that $p$ is the fastest implementation we
+have so far, and we don't yet have an upper bound on its running
+time. Concurrently with the execution of $p$, two other processes are also
+started:
 
 \begin{itemize}
 \item Process A searches for proofs (in a pre-specified formal system) that some
@@ -166,14 +167,14 @@ independent of the input $x$, it only contributes a constant factor to the
 running time; although in the general case this factor will be exponential in
 the length of the proof.
 
-Hutter's algorithm is mostly of theoretical interest, being described as
-``another $O()$ warning showing, how important [to running time] factors, and
-even subdominant additive terms, are.''~\cite{TODO: Hutter, page 4}. Despite
-this caveat, the general framework is still useful to compare with the code
-improvement techniques described above. In particular, the use of open-ended
-search (process A) is similar to that of superoptimisation; although the former
-enumerates equivalence proofs and extracts programs from them, whilst the latter
-enumerates programs and attempts to prove (or approximately determine)
+\hsearch{} is mostly of theoretical interest, being described as ``another $O()$
+warning showing, how important [to running time] factors, and even subdominant
+additive terms, are.''~\cite{TODO: Hutter, page 4}. Despite this caveat, the
+general framework is still useful to compare with the code improvement
+techniques described above. In particular, the use of open-ended search (process
+A) is similar to that of superoptimisation; although the former enumerates
+equivalence proofs and extracts programs from them, whilst the latter enumerates
+programs and attempts to prove (or approximately determine)
 equivalence. Likewise the speed estimation of process B is analogous to those
 employed by superoptimisation. JIT compilation can also be achieved within this
 framework, for example by including our desired optimisations in the axioms of
@@ -183,24 +184,41 @@ model for the language. Switching to faster programs can also be made
 incremental, e.g. allowing (stateless) functions to be replaced individually
 without having to restart execution, just like in a JIT-enabled interpreter.
 
-The open-ended search through program and proof space performed by
-superoptimisation and Hutter's algorithm are similar to that of Theory
-Exploration (e.g. the discovery of equivalent expressions by \isacosy{} and
-\quickspec{}). One major difference is in \emph{end result} of these techniques:
-the latter tends to \emph{build up} structure and abstraction latent in a set of
-definitions, whilst the former tend to \emph{tear down} such layers to find
-minimal implementations.
+The framework of the \goedelmachine{}~\cite{Schmidhuber:05icann} goes even
+further than \hsearch{}: rather than limiting optimisations to just the given
+program, it also searches for provable optimisations to \emph{itself}. In
+principle, this allows the search algorithm, execution schedule, etc. to all be
+optimised, replaced or even removed entirely, as long as a proof is found that
+it would be beneficial to do so. The \goedelmachine{} concept is framed in the
+language of reinforcement learning, with the goal of maximising``reward'' from
+some ``utility function'', but it is easily to recast in terms of improving
+efficiency: for example, choosing a utility function which provides a one-off
+reward of $\frac{1}{t}$ if a result provably-equivalent to the original
+program's is returned within $t$ steps; and 0 reward otherwise. The ability to
+provide a utility function separate from the initial implementation is also
+useful for specifying the desired task more declaratively: for example, if it is
+acceptable to deviate from the behaviour of the initial implementation, as long
+as some other criteria (given by the utility function) are satisfied. A relevant
+example might be altering a search algorithm to find more results faster, even
+if those aren't the same results that the original algorithm would have found.
 
-Another seeming contrast is that Theory Exploration has no ``target'', unlike
-optimisers. However, the practical necessity of limiting superoptimisers to only
-small snippets of code at a time has resulted in applications like finding
-``peephole optimisations''~\cite{Bansal.Aiken:2006}, whose scattershot nature is
-more akin to Theory Exploration than traditional compiler optimisation.
+The open-ended search through program and proof space performed by algorithms
+like superoptimisation, \hsearch{} and the \goedelmachine{} are similar to that
+of Theory Exploration (e.g. the discovery of equivalent expressions by
+\isacosy{} and \quickspec{}). One major difference is in \emph{end result} of
+these techniques: the latter tends to \emph{build up} structure and abstraction
+latent in a set of definitions, whilst the former tend to \emph{tear down} such
+layers to find direct, minimalistic implementations.
 
-In any case, efficiency (whether instruction count, small upper bounds, cost
-semantics, etc.) can be considered part of the interestingness criteria of
-Theory Exploration, and there are certainly opportunities to cross-pollinate
-techniques between these fields.
+Another seeming contrast is that Theory Exploration has no specific ``target'',
+unlike optimisers: it produces any properties found to match its
+``interestingness'' criteria. However, the practical necessity of limiting
+superoptimisers to only small snippets of code at a time has resulted in
+applications like finding ``peephole optimisations''~\cite{Bansal.Aiken:2006},
+whose scattershot nature is more akin to Theory Exploration than traditional
+compiler optimisation. Likewise, the improvement in efficiency of an
+optimisation (however that is measured or justified) contributes to its
+interestingness, and hence suitability as an outputs for Theory Exploration
+systems (especially in the use case of a programming assistant).
 
 % TODO: Evolutionary patches
-% TODO: Goedel machines
