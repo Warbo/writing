@@ -1,3 +1,4 @@
+% -*- mode: latex -*-
 \documentclass{book}
 
 \usepackage{algorithm}
