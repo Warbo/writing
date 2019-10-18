@@ -6,15 +6,15 @@ for \emph{discovering} software properties, rather than checking them), and only
 later applied more directly to fields like formal mathematics (e.g. via the
 \hipster{} tool for Isabelle/HOL). In particular, the logical domain used by
 \quickspec{} (inductive logic with higher-order functions) comes directly from
-its application to Haskell; and its search algorithm makes heavy use of the
+its application to Haskell; its search algorithm also makes heavy use of the
 \quickcheck{} property checker. The boundary between these two fields is hence
 rather fuzzy, and cross-pollination of techniques is a compelling target for
 research.
 
 Property checking attempts to establish the truth or falsity of a statement (a
 ``property''), usually involving components of a software system and, crucially,
-may contain free variables. \emph{Unit testing} is a common method of software
-quality assurance (outside of specialised domains like those which are
+which may contain free variables. \emph{Unit testing} is a common method of
+software quality assurance (outside of specialised domains like those which are
 life-critical), which can be characterised as proving \emph{existential}
 properties: each test includes concrete values for any variables, and checking
 is simply a matter of evaluating the code to get a boolean value (pass or fail).
