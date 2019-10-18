@@ -44,8 +44,14 @@ with { defs = rec {
       })
       ''
         function go {
-          pdflatex $DRAFT -interaction=batchmode -halt-on-error \
-                   --shell-escape "$@"
+          if pdflatex $DRAFT -interaction=batchmode -halt-on-error \
+                      --shell-escape "$1"
+          then
+            true
+          else
+            [[ -e "$1".log ]] && cat "$1".log
+            exit 1
+          fi
         }
 
         echo "SRC is '$src'" 1>&2
