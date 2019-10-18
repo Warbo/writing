@@ -44,12 +44,14 @@ with { defs = rec {
       })
       ''
         function go {
+          echo "Running round $2" 1>&2
           if pdflatex $DRAFT -interaction=batchmode -halt-on-error \
                       --shell-escape "$1"
           then
             true
           else
             [[ -e "$1".log ]] && cat "$1".log
+            echo "Failed to render $1 round $2" 1>&2
             exit 1
           fi
         }
@@ -59,11 +61,11 @@ with { defs = rec {
         ${env.commands or ""}
 
         DRAFT="-draftmode"
-        go     "$file"
+        go     "$file" 1
         [[ -e "Bibtex.bib" ]] && bibtex "$file"
-        go     "$file"
+        go     "$file" 2
         DRAFT=""
-        go     "$file"
+        go     "$file" 3
 
         cp "$file.pdf" "$out"
       '';
