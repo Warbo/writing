@@ -81,7 +81,7 @@ many parameters, some of which may be determined by empirical measurement,
 whilst others may depend on characteristics of the input data. Despite this
 drawback, pareto-optimal optimisations can still be identified, and either
 presented to the user or tested against a realistic data set (known as
-\emph{profile-guided optimisation}~\cite{TODO}).
+\emph{profile-guided optimisation}~\cite{hubicka2005profile}).
 
 Superoptimisers also need some method to check whether a synthesised program
 implements the required specification, such as a test suite and/or a theorem
@@ -117,12 +117,13 @@ algorithms with \emph{learned} policies is also a promising area of
 study~\cite{mudigonda2017learning}.
 
 Rather than optimising individual units of code in isolation, we can instead
-work ``top down'' and perform \emph{whole program optimisation}.\iffalse TODO: Cite MLTon, Stalin,
-maybe others \fi In particular, for every function we may want to optimise, we
-know \emph{all} call sites of that function within the program, and hence avoid
-the need for a general solution. Statically-known values, including arguments to
-(higher-order) functions, can be propagated through the code using techniques
-like \emph{supercompilation}~\cite{Turchin:1986:CS:5956.5957}, and constant
+work ``top down'' and perform \emph{whole program
+  optimisation}~\cite{weeks2006whole,siskind1999flow}. In particular, for every
+function we may want to optimise, we know \emph{all} call sites of that function
+within the program, and hence avoid the need for a general solution.
+Statically-known values, including arguments to (higher-order) functions, can be
+propagated through the code using techniques like
+\emph{supercompilation}~\cite{Turchin:1986:CS:5956.5957}, and constant
 expressions can be ahead of time; however this can dramatically increase code
 size, as each function may be duplicated into multiple specialised instances.
 
@@ -187,7 +188,7 @@ the length of the proof.
 
 \hsearch{} is mostly of theoretical interest, being described as ``another $O()$
 warning showing, how important [to running time] factors, and even subdominant
-additive terms, are.''~\cite{TODO: Hutter, page 4}. Despite this caveat, the
+additive terms, are.''~\cite[p. 4]{HUTTER:2002}. Despite this caveat, the
 general framework is still useful to compare with the code improvement
 techniques described above. In particular, the use of open-ended search (process
 A) is similar to that of superoptimisation; although the former enumerates
