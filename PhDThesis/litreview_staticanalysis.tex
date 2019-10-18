@@ -45,15 +45,33 @@ Whilst linting is a useful programming aid, and fast enough to apply regularly
 process: once the predetermined patterns are exhausted, no more improvements
 will be found.
 
-At the other end of the code improvement spectrum we find
-\emph{superoptimisers}~\cite{massalin1987superoptimizer}, which can take an
-arbitrarily long time to find improvements, but whose deductive power is only
-limited by the undecidability of the source language. Superoptimisers, such as
-\textsc{Souper}~\cite{sasnauskas2017souper} and \textsc{Aha!} (``A Hacker's
+To find project-specific improvements we need some description or specification
+of how our program \emph{should} behave, to judge proposed improvements against.
+Few projects have a complete formal specification, due to the prohibitive cost
+of creating, validating, verifying and maintaining such artefacts. Partial
+specifications, in the form of automated test suites, are more common. These
+have been used to automatically patch errors in code (i.e. altering code until
+its test suite passes), using methods from evolutionary
+computation~\cite{Forrest.Nguyen.Weimer.ea:2009,weimer2009automatically,Schulte.Forrest.Weimer:2010}.
+
+Optimisations treat \empg{the code itself} as a specification: formally
+describing the desired behaviour, but not prescribing the exact steps that
+should be taken to implement it. This allows different implementations to be
+used as long as the result is equivalent\footnote{Optimisation assumes that
+  extra efficiency is always desirable. In some areas that is not the case, such
+  as security-sensitive code, where speed ups may expose sensitive information
+  to timings attacks~\cite{kocher1996timing}.}. Taking this to the extreme gives
+rise to \emph{superoptimisation}~\cite{massalin1987superoptimizer}, which
+performs an open-ended search through the space of all programs to find those
+equivalent to the given code, which are also optimal according to some quality
+measure or cost model. Superoptimisers, such a
+s \textsc{Souper}~\cite{sasnauskas2017souper} and \textsc{Aha!} (``A Hacker's
 Assistant'', developed to accompany \emph{Hacker's
-  Delight}~\cite{warren2013hacker}) treat the given code as a specification, and
-perform an open-ended search through the space of all programs to find the
-optimal implementation according to some quality measure or cost model.
+  Delight}~\cite{warren2013hacker}), can take an arbitrarily long time to find
+improvements, but their optimisation power is limited only by the undecidability
+of the source language (optimisations which cannot be proven equivalent are
+necessarily ignored, like the uncomputable improvements demonstrated by
+Blum~\cite{blum1967machine}).
 
 Supercompilers are often restricted to a branch- and effect-free subset of
 machine code, where cost can be reasonably estimated by counting instructions or
