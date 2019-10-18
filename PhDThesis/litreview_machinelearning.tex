@@ -1,13 +1,44 @@
 \section{Machine Learning Applications in Mathematics, Logic and Programming
   Language Theory}
 
-Machine learning techniques, used for finding statistical patterns and numerical
-correlations in arbitrary data, are characterised by their statistical
-pattern-finding
+Machine Learning (ML) applies statistical techniques to find patterns in data.
+ML algorithms are numerical in nature, and often rely on assumptions such as
+continuity and differentiability. In contrast, the worlds of mathematical
+formulae, formal logic and computer programs are usually discrete and symbolic.
+This makes application of ML to these domains more difficult than, say, image
+processing.
 
-% TODO: AutoTuning
+One application of ML in these domains is to analyse real-world measurements
+parameterised by some discrete entity, such as time or power used to execute
+computer programs. Since flipping a single bit can cause arbitrarily large
+changes in program behaviour (if it is the scrutinee of a conditional, for
+example), such programs must be very similar for statistical patterns to emerge
+in their executions. In the case of \emph{auto-tuning}, many programs variants
+are measured, which all perform the same task in slightly different ways (e.g.
+using different compiler optimisations, or dividing work differently between
+hardware components); in this case the goal is to learn a predictive model of
+which variant performs best for a given input~\cite{ganapathi2009case}.
 
-% DeepTune analyses raw program text to predict the best options for an optimising
-% compiler. FIXME
+Whilst performance measurements are simple numeric values, the symbolic values
+need some conversion to become amenable to learning. This is usually performed
+by a \emph{feature extraction} step, which takes various measurements (e.g.
+counting occurrences of some element, assigning indices to different constants,
+etc.) and packs them into a vector for subsequent analysis. More recently, so
+called \emph{deep learning} systems have out performed those with manually
+chosen features. Deep learning doesn't actually avoid feature extraction, but
+its use of many ``layers'' of processing between the input and output makes the
+selection of those features less important. For example, the feature extraction
+in~\cite{cummins2017synthesizing} represents computer programs (after some
+normalisation to a consistent layout and naming scheme) as a sequence of
+individual characters, with each ASCII character replaced by a different number.
+Yet even this crude method is enough for the deep learning system that consumed
+these sequences to infer structure relevant for deciding whether it was better
+suited to running on a CPU or GPU. The \textsc{DeepTune} system encodes slightly
+more domain knowledge by tokenising language keywords, but is otherwise
+similar~\cite{cummins2017end}.
 
-% TODO Fuzzing AFL DeepSmith
+\emph{Generative models} are another useful application of ML techniques to
+symbolic systems. The \textsc{DeepSmith} system analyses a corpus of source code
+to build a model of the programming language, which can then generate realistic
+fragments of code, suitable for fuzz-testing compilers for that
+language~\cite{cummins2017deepsmith}.

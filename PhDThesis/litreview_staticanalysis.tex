@@ -1,16 +1,23 @@
 \section{Automated Software Improvement}
 
-Software for analysing and improving code can be roughly divided into two
-categories. Some contribute to the running of a program, such as (optimising)
-compilers, linkers and interpreters. These must produce correct, predictable,
+One obvious application of software properties discovered through Theory
+Exploration is to improve that software, for example by \emph{refactoring} (e.g.
+simplifying definitions) or \emph{optimising} (e.g. replacing a slow calculation
+with an equivalent fast one). Existing tools for analysing and improving code
+can be roughly divided into two categories. Some contribute to the running of a
+program, such as (optimising) compilers, linkers and
+interpreters\footnote{Optimisation has traditionally been the domain of
+  compilers, but the recent popularity of \emph{link time optimisation} and
+  \emph{just-in-time compilation} have brought the latter tools firmly under the
+  code improvement umbrella.}. These must produce correct, predictable,
 desirable results in a timely manner. For example, compiler optimisations should
 not alter program semantics, should provide monotonic improvements in the
 majority of cases (i.e. they should not be \emph{pessimisations}) and conditions
 under which they apply should be predictable enough to prevent spurious
 performance regressions when making seemingly innocuous
 refactorings~\cite{robison2001impact}. Optimisations in ahead-of-time (AOT)
-compilers must be fast enough to run during every build, and should have a large
-enough impact on the generated code's performance that they
+compilers/linkers must be fast enough to run during every build, and should have
+a large enough impact on the generated code's performance that they
 ``pay for themselves''~\cite{Franz1994}; for just-in-time (JIT) compilers such
 ideals become hard requirements, since any runtime transformation which doesn't
 pay for itself is, by definition, a pessimisation.
@@ -52,7 +59,11 @@ of creating, validating, verifying and maintaining such artefacts. Partial
 specifications, in the form of automated test suites, are more common. These
 have been used to automatically patch errors in code (i.e. altering code until
 its test suite passes), using methods from evolutionary
-computation~\cite{Forrest.Nguyen.Weimer.ea:2009,weimer2009automatically,Schulte.Forrest.Weimer:2010}.
+computation~\cite{Forrest.Nguyen.Weimer.ea:2009, weimer2009automatically,
+  Schulte.Forrest.Weimer:2010}. Such methods are necessarily standalone, since
+making such arbitrary changes to a program's behaviour without a full
+specification or user supervision has the potential to break the program in
+untested ways.
 
 Optimisations treat \emph{the code itself} as a specification: formally
 describing the desired behaviour, but not prescribing the exact steps that
@@ -64,13 +75,13 @@ used as long as the result is equivalent\footnote{Optimisation assumes that
 rise to \emph{superoptimisation}~\cite{massalin1987superoptimizer}, which
 performs an open-ended search through the space of all programs to find those
 equivalent to the given code, which are also optimal according to some quality
-measure or cost model. Superoptimisers, such a
-s \textsc{Souper}~\cite{sasnauskas2017souper} and \textsc{Aha!} (``A Hacker's
+measure or cost model. Superoptimisers, such as
+\textsc{Souper}~\cite{sasnauskas2017souper} and \textsc{Aha!} (``A Hacker's
 Assistant'', developed to accompany \emph{Hacker's
   Delight}~\cite{warren2013hacker}), can take an arbitrarily long time to find
 improvements, but their optimisation power is limited only by the undecidability
 of the source language (optimisations which cannot be proven equivalent are
-necessarily ignored, like the uncomputable improvements demonstrated by
+necessarily ignored, like the uncomputable speedups demonstrated by
 Blum~\cite{blum1967machine}).
 
 Superoptimisers are often restricted to a branch- and effect-free subset of
@@ -84,24 +95,26 @@ presented to the user or tested against a realistic data set (known as
 \emph{profile-guided optimisation}~\cite{hubicka2005profile}).
 
 Superoptimisers also need some method to check whether a synthesised program
-implements the required specification, such as a test suite and/or a theorem
-prover. Proving correctness of machine code fragments is helped by the uniform,
-finite nature of their domain (a fixed set of instructions, operating on a fixed
-set of fixed-size registers). Higher level languages like Haskell are more
-difficult to reason about and measure, since their behaviour and efficiency may
-depend on unknown runtime parameters. In particular, optimising higher-order
-functions is difficult in isolation, since many performance tradeoffs cannot be
-decided without more knowledge of the functions involved. For example, a cache
-of previous return values (known as a \emph{memo table}) can avoid re-computing
-repeated calls to a function; but whether this actually saves time, or is worth
-the memory penalty, depends on how long that function takes to calculate; and
-how often it will be called with same arguments.
+is equivalent to that given: either partially, like a test suite, or robustly
+via a theorem prover. Proving correctness of machine code fragments is helped by
+the uniform, finite nature of their domain (a fixed set of instructions,
+operating on a fixed set of fixed-size registers). Higher level languages like
+Haskell are more difficult to reason about and measure, since their behaviour
+and efficiency may depend on unknown runtime parameters. In particular,
+optimising higher-order functions is difficult in isolation, since many
+performance tradeoffs cannot be decided without more knowledge of the functions
+involved. For example, introducing a cache of previous return values (known as a
+\emph{memo table}) can avoid re-computing repeated calls to a function; but
+whether this actually saves time, or is worth the memory penalty, depends on how
+long that function takes to calculate and how often it will be called with same
+arguments.
 
-In addition to this uncertainty, each function's input domain may be infinite
-(such as the natural numbers), and programs may use abstract interfaces and
-datatypes with a variety of possible implementations (such as lists or key/value
-mappings). All these factors makes effective testing more difficult, and proofs
-potentially undecidable.
+In addition to this uncertainty, high level languages allow the input domain of
+a function to be infinite (such as the natural numbers or lists), and programs
+may use abstract interfaces and datatypes which either hide characteristics
+required for establishing equivalence or cost, or may permit \emph{multiple}
+implementations with varying characteristics. All these factors make effective
+testing more difficult, and proofs potentially undecidable.
 
 Even if these problems are mitigated, the biggest difficulty with
 superoptimisation remains: the length of time it takes to search such a
@@ -124,19 +137,24 @@ within the program, and hence avoid the need for a general solution.
 Statically-known values, including arguments to (higher-order) functions, can be
 propagated through the code using techniques like
 \emph{supercompilation}~\cite{Turchin:1986:CS:5956.5957}, and constant
-expressions can be ahead of time; however this can dramatically increase code
-size, as each function may be duplicated into multiple specialised instances.
+expressions can be computed ahead of time; however this can dramatically
+increase code size, as each function may be duplicated into multiple specialised
+instances. Link-time optimisation permits a limited form of inter-procedural
+optimisation (e.g. inlining function definitions which were abstract black-boxes
+during compilation), but generally avoids the more invasive optimisations found
+in compilers.
 
-Related techniques, like \emph{symbolic execution} (a form of \emph{abstract
-  interpretation}), allow information to be statically deduced by tracing the
-behaviour of code using an alternative execution model, where unknown runtime
-data are represented as opaque metavariables. Property- and model-checkers are
-similar, except they work dynamically by performing multiple runs, instantiating
-metavariables with exhaustive or synthetic data (\quickcheck{} does this
-randomly, \smallcheck{} enumerates values, etc.).
+Other methods to determine function usage and behaviour include \emph{symbolic
+  execution} (a form of \emph{abstract
+  interpretation}), which allow information to be statically deduced by tracing
+the behaviour of code using an alternative execution model, where unknown
+runtime data are represented as opaque metavariables. Property- and
+model-checkers are similar, except they work dynamically by performing multiple
+runs, instantiating metavariables with exhaustive or synthetic data
+(\quickcheck{} does this randomly, \smallcheck{} enumerates values, etc.).
 
 The most common code-improvement technique performed \emph{during execution} is
-Just In Time (JIT) compilation~\cite{aycock2003brief}, which allows an
+just-in-time (JIT) compilation~\cite{aycock2003brief}, which allows an
 interpreter to compile sections of code into a faster form (usually machine
 code). Since this compilation takes time, it is usually reserved for sections
 which are executed often enough to exceed some predefined threshold (e.g. 100).
@@ -164,16 +182,16 @@ started:
 
 \begin{itemize}
 \item Process A searches for proofs (in a pre-specified formal system) that some
-  program $p\prime$ is both semantically equivalent to $p$ and has a running
+  program $p'$ is both semantically equivalent to $p$ and has a running
   time bounded by some other program $t$, i.e. for all inputs $i$, the
-  time taken to compute $p\prime(i)$ is bounded by $t(i)$. A list is built up of
-  the $(p\prime, t)$ pairs found so far.
+  time taken to compute $p'(i)$ is bounded by $t(i)$. A list is built up of
+  the $(p', t)$ pairs found so far.
 \item Process B computes $t(x)$ for all of the bounds $t$ found so far by A.
   Computations are interleaved via a schedule similar to Levin's universal
   search algorithm~\cite{levin1984randomness,ming}, to prevent getting stuck on
   non-halting programs. Whenever a calculation of some $t(x)$ finishes, it is
   compared to $t_{fast}$: if smaller, $t_{fast}$ is set to $t(x)$, and $p_{fast}$ is
-  set to $p\prime$ (the program paired with this $t$).
+  set to $p'$ (the program paired with this $t$).
 \end{itemize}
 
 The execution of $p_{fast}(x)$ (initially $p(x)$) is restarted at
