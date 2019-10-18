@@ -136,7 +136,7 @@ metavariables with exhaustive or synthetic data (\quickcheck{} does this
 randomly, \smallcheck{} enumerates values, etc.).
 
 The most common code-improvement technique performed \emph{during execution} is
-Just In Time (JIT) compilation~\iffalse TODO: Cite \fi, which allows an
+Just In Time (JIT) compilation~\cite{aycock2003brief}, which allows an
 interpreter to compile sections of code into a faster form (usually machine
 code). Since this compilation takes time, it is usually reserved for sections
 which are executed often enough to exceed some predefined threshold (e.g. 100).
@@ -152,12 +152,12 @@ implementation we have compiled-in), falling back to the interpreter upon
 failure.
 
 A more speculative use of optimisation during runtime has been proposed by
-Hutter~\iffalse TODO: Cite \fi. As in a JIT-enabled interpreter, Hutter's
-algorithm (also referred \hsearch{}) begins by directly executing the given
-(unoptimised) program $p$ on the relevant input $x$ (this may be provided up
-front, or piecemeal throughout execution, e.g. as a stream of user interaction
-events). The variables $p_{fast}$ and $t_{fast}$ are initialised to $p$ and
-$\infty$ respectively, to indicate that $p$ is the fastest implementation we
+Hutter~\cite{HUTTER:2002}. As in a JIT-enabled interpreter, Hutter's
+algorithm (which we refer to as \hsearch{}) begins by directly executing the
+given (unoptimised) program $p$ on the relevant input $x$ (this may be provided
+up front, or piecemeal throughout execution, e.g. as a stream of user
+interaction events). The variables $p_{fast}$ and $t_{fast}$ are initialised to $p$
+and $\infty$ respectively, to indicate that $p$ is the fastest implementation we
 have so far, and we don't yet have an upper bound on its running
 time. Concurrently with the execution of $p$, two other processes are also
 started:
@@ -170,7 +170,7 @@ started:
   the $(p\prime, t)$ pairs found so far.
 \item Process B computes $t(x)$ for all of the bounds $t$ found so far by A.
   Computations are interleaved via a schedule similar to Levin's universal
-  search algorithm~\iffalse TODO: Cite \fi, to prevent getting stuck on
+  search algorithm~\cite{levin1984randomness,ming}, to prevent getting stuck on
   non-halting programs. Whenever a calculation of some $t(x)$ finishes, it is
   compared to $t_{fast}$: if smaller, $t_{fast}$ is set to $t(x)$, and $p_{fast}$ is
   set to $p\prime$ (the program paired with this $t$).
