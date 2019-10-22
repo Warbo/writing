@@ -241,12 +241,13 @@ import warnings
 warnings.filterwarnings('ignore', module='matplotlib')
 import matplotlib as mpl
 import numpy      as np
+from math import sqrt
 
 def figSize(widthFraction, height=None):
     textWidthPt = float(os.getenv('textWidth'))
     ptToInch    = 1.0 / 72.27
     textWidthIn = textWidthPt * ptToInch
-    goldMean    = (np.sqrt(5.0)-1.0) / 2.0
+    goldMean    = (sqrt(5.0)-1.0) / 2.0
     calcWidth   = widthFraction * textWidthIn
     calcHeight  = textWidthIn * ((goldMean * widthFraction) \
                                  if height is None else height)
@@ -441,8 +442,8 @@ def aggProp(system, sizes=None, agg=None, key=None, total=None):
 
         # Analytic values, calculated from our model
         anVar     = (p * (1.0 - p)) / count
-        anStddev  = math.sqrt(anVar)
-        anStderr  = anStddev / math.sqrt(count)
+        anStddev  = sqrt(anVar)
+        anStderr  = anStddev / sqrt(count)
 
         # Sample variability, calculated from our data.
         if len(totals) == 1:
@@ -465,7 +466,7 @@ def aggProp(system, sizes=None, agg=None, key=None, total=None):
             denom   = float(len(totals)) - 1.0
             sVar    = (sum([((float(correct) / tot) - p)**2 \
                             for tot, correct in zip(totals, corrects)])) / denom
-            sStddev = math.sqrt(sVar)
+            sStddev = sqrt(sVar)
 
         return {
             'bailed out'        : False,

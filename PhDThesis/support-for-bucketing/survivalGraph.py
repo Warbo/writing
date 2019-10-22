@@ -4,18 +4,33 @@ from os     import getenv
 from pandas import read_csv
 with open(getenv('csv'), 'r') as f:
     times = read_csv(f, header=0, index_col=0)
-
-label = getenv('label')
-
-del(getenv)
 del(read_csv)
+
+label       = getenv('label')
+textWidthPt = float(getenv('textWidth'))
+del(getenv)
+
+from math import sqrt
+
+def figSize(widthFraction, height=None):
+    ptToInch    = 1.0 / 72.27
+    textWidthIn = textWidthPt * ptToInch
+    goldMean    = (sqrt(5.0)-1.0) / 2.0
+    calcWidth   = widthFraction * textWidthIn
+    calcHeight  = textWidthIn * ((goldMean * widthFraction) \
+                                 if height is None else height)
+    return (calcWidth, calcHeight)
 
 from lifelines import KaplanMeierFitter
 import matplotlib.pyplot as plt
 
-def save(name, axes):
-    axes.get_figure().savefig(name + label + '.pdf')
-    axes.get_figure().savefig(name + label + '.pgf')
+def save(name, axes, size=None):
+    fig = axes.get_figure()
+    if size is not None:
+        (w, h) = size
+        fig.set_size_inches(figSize(w, h))
+    fig.savefig(name + label + '.pdf')
+    fig.savefig(name + label + '.pgf')
 
 axes = plt.subplot(111, label="stepped")
 kmf  = KaplanMeierFitter()

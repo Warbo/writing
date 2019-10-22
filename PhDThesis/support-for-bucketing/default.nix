@@ -28,7 +28,7 @@ rec {
     inherit (contents.all) readableToxic;
   };
 
-  survivalAnalysis = callPackage ./survival.nix { inherit basicTex; };
+  survivalAnalysis = callPackage ./survival.nix { inherit basicTex textWidth; };
   allSurvival      = survivalAnalysis { data  = data.data.result;
                                         label = "all"; };
   nontoxicSurvival = survivalAnalysis { data  = contents.nontoxic.samples;

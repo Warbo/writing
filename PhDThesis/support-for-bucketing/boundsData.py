@@ -71,11 +71,12 @@ warnings.filterwarnings('ignore', module='matplotlib')
 # Taken from http://bkanuka.com/articles/native-latex-plots
 import numpy      as np
 import matplotlib as mpl
+from math import sqrt
 def figSize(widthFraction, height=None):
     textWidthPt = float(os.getenv('textWidth'))
     ptToInch    = 1.0 / 72.27
     textWidthIn = textWidthPt * ptToInch
-    goldMean    = (np.sqrt(5.0)-1.0) / 2.0
+    goldMean    = (sqrt(5.0)-1.0) / 2.0
     calcWidth   = widthFraction * textWidthIn
     calcHeight  = textWidthIn * ((goldMean * widthFraction) \
                                  if height is None else height)
