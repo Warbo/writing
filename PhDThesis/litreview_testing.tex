@@ -48,8 +48,7 @@ property checking in Haskell, and has subsequently been ported to many other
 programming languages. \quickcheck{} generates input data \emph{randomly},
 either using explicit generators (via a function called \hs{forAll}), or by
 choosing a default generator for types implementing its \hs{Arbitrary}
-typeclass (the recent \texttt{hedgehog} package works in a similar way\iffalse
-\cite{TODO} \fi).
+typeclass (the recent \texttt{hedgehog} package works in a similar way).
 
 Random testing is effective at thoroughly exercising the branches of a program,
 since inputs may be quite large and cover many cases, especially for functions
