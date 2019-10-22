@@ -39,7 +39,7 @@ for s, grouped_df in times.groupby('size'):
         continue
     kmf.fit(grouped_df['time'], grouped_df['success'], label=str(s))
     axes = kmf.plot(ax=axes)
-save('stepped', axes)
+save('stepped', axes, size=(0.75, None))
 
 def crossValidate(name, fitter):
     from lifelines.utils import k_fold_cross_validation
