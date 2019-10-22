@@ -80,7 +80,7 @@ def figSize(widthFraction, height=None):
     calcWidth   = widthFraction * textWidthIn
     calcHeight  = textWidthIn * ((goldMean * widthFraction) \
                                  if height is None else height)
-    return (10, 10) #(calcWidth, calcHeight)
+    return (10, 10) # TODO: (calcWidth, calcHeight)
 
 mpl.rcParams.update({
     # 'pgf.texsystem' : 'pdflatex',
