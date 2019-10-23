@@ -69,9 +69,12 @@ ys = [f(x) for x in xs         ]
 
 ax = plt.plot(xs, ys)
 
+even = lambda x: x % 2 == 0
+
 plt.xlim((1,20))
 plt.ylim((0,1 ))
-plt.xticks(xs)
-plt.xlabel('size')
-plt.ylabel('failure proportion')
+plt.yticks([0.0, 0.25, 0.5, 0.75, 1.0])
+plt.xticks(list(filter(even, xs)))  # Reduce clutter
+plt.xlabel('Signature size')
+plt.ylabel('Failure proportion')
 save('timeouts', plt.gca(), size=(0.72, 0.72))
