@@ -41,6 +41,7 @@ for s, grouped_df in times.groupby('size'):
     axes = kmf.plot(ax=axes)
 axes.set_xlabel('Time (seconds)')
 axes.set_ylabel('Proportion still running')
+axes.legend(loc='upper right')
 save('stepped', axes, size=(0.72, 0.72))
 
 def crossValidate(name, fitter):
