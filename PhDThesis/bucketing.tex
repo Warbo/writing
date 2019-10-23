@@ -93,20 +93,35 @@ benchmark~\cite{claessen2015tip}), and how this is affected by their content.
 
 \begin{figure}
   \centering
-  \caption{Kaplan-Meier survival plot for running \quickspec{} on inputs
-    containing various numbers of definitions, sampled from TIP. The x axis
-    denotes running time, which we cut short after 300 seconds. The height of
-    each line shows the proportion of \quickspec{} runs which were still going
-    at that time (lower is better). First plot is for all TIP definitions,
-    second plot removes runs given ``toxic'' definitions.
-    \iffalse
-    TODO: Alison: The key needs further explanation (either here or in the caption)
-    TODO: Alison: Label the y axis (on both)
-    \fi}
   \scalebox{0.69}{\input{images/steppedall.pgf}}
   \scalebox{0.69}{\input{images/timeoutsall.pgf}}
   \scalebox{0.69}{\input{images/steppednontoxic.pgf}}
   \scalebox{0.69}{\input{images/timeoutsnontoxic.pgf}}
+
+  % NOTE: The list-of-figures description given as an optional argument to
+  % \caption is needed to allow multiple paragraphs without error.
+  \caption[Survival plots for \quickspec{} running on different sized
+  signatures.]{Running times when using \quickspec{} to explore signatures
+    sampled from the Theory Exploration Benchmark, The top row includes all
+    sampled signatures, whilst the second row excludes those containing ``toxic''
+    definitions.
+
+    \textbf{Left} Kaplan-Meier survival plots for exploring signatures sampled
+    from our TEB. Time runs horizontally, which we cut short after 300 seconds.
+    Each line tracks a population of signatures of a given size (shown in the
+    legend), as they're explored using \quickspec{}. The height of each line
+    shows the proportion of processes still running after that amount of time
+    (lower is better). Shaded regions denote 95\% confidence intervals.
+
+    \textbf{Right} Proportion of each population which timed out after 300
+    seconds, for signatures of different size. This corresponds to a slice
+    through the corresponding survival plot at the 300 second mark (if all of
+    the measured populations were included). Lines of best-fit use linear
+    regression, providing an estimate of the effect that ``toxic'' definitions
+    have on failure (timeout) rate.}
+    % TODO Put line slopes and error on graph
+    % TODO Bottom row should use a second set of samples (chosen to avoid toxic
+    % definitions), rather than just filtering down
   \label{fig:survival}
 \end{figure}
 
