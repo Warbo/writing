@@ -29,8 +29,8 @@ def save(name, axes, size=None):
     if size is not None:
         (w, h) = size
         fig.set_size_inches(figSize(w, h))
-    fig.savefig(name + label + '.pdf')
-    fig.savefig(name + label + '.pgf')
+    fig.savefig(name + label + '.pdf', bbox_inches='tight', pad_inches=0.0)
+    fig.savefig(name + label + '.pgf', bbox_inches='tight', pad_inches=0.0)
 
 axes = plt.subplot(111, label="stepped")
 kmf  = KaplanMeierFitter()
