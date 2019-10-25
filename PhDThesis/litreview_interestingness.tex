@@ -1,11 +1,13 @@
-\subsection{Interestingness}
+\section{Interestingness}
+\label{sec:interestingness}
 
-A major challenge when generating conjectures is choosing how to narrow down the
-resulting set to only those deemed ``interesting'', since this is an imprecise
+A major challenge when generating conjectures is choosing how to focus attention
+on only those deemed ``interesting'' (either by avoiding uninteresting search
+paths, and/or by filtering down the eventual output), since this is an imprecise
 term with many different interpretations. For example, all existing approaches
 agree that simple tautologies are ``uninteresting'', but differ when it comes to
-more complex statements.  Colton \etal{} surveyed tools for theory formation
-and exploration, and their associated notions of ``interestingness'' for
+more complex statements.  Colton~\etal{} surveyed tools for theory formation
+and exploration, and their associated notions of ``interestingness'', for
 concepts and conjectures~\cite{colton2000notion}. Six qualities were identified,
 which are applied to conjectured properties as follows:
 
@@ -34,7 +36,7 @@ whether the property justifies some rewrite rule, the difference in resource
 usage of the expressions involved, and how common those expressions are in real
 usage.
 
-% FIXME: This is original work, so should be in a different section
+% FIXME: This is original work, so should maybe be in a different section
 \begin{table}
   \centering
   \begin{tabular}{ |l|l|c|c|c|c|c|c| }
@@ -94,9 +96,9 @@ usage.
 
 We summarise the criteria in Table~\ref{table:colton} and state which were used
 in key ATF/MTE tools. The entries for AM, GT, Graffiti, \Bagai{} and HR are
-based on this survey (the latter is Colton's own tool). We extend this analysis
-to some more recent tools in the remaining rows (based on our understanding of
-their function): \quickspec{}~\cite{QuickSpec},
+based on this survey (the latter is Colton's own tool). The remaining rows are
+our extension of this analysis to the (higher-order) tools we have focused on
+(based on our understanding of their function): \quickspec{}~\cite{QuickSpec},
 \speculate{}~\cite{braquehais2017speculate},
 \isacosy{}~\cite{Johansson.Dixon.Bundy:conjecture-generation}
 and \isascheme{}~\cite{Montano-Rivas.McCasland.Dixon.ea:2012}.
@@ -154,6 +156,237 @@ quantitative comparison of recent MTE tools we have found in the literature.
 Our Theory Exploration Benchmark, described in section~\ref{sec:benchmark}, is
 essentially an extension of this approach, to a larger and more diverse set of
 examples.
+
+\subsection{Exploration in Theorem Proving}
+\label{sec:examples}
+
+Conjecture generation (automated or manual) is crucial when formally proving
+statements, such verifying software against its specification. This provides a
+concrete, empirical setting to determine what makes statements interesting (at
+least from a utilitarian point of view).
+
+\paragraph{Generalisation}
+
+\providecommand{\coq}[1]{\lstinline[language=ML]|#1|}
+
+When we \emph{generalise} a statement $S$, we obtain a new statement $S'$ of
+which $S$ is a special case. Although it seems counterintuitive, a generalised
+statement can sometimes be \emph{easier} to prove than the original. This arises
+often in inductive proofs (e.g. when reasoning about tail-recursive
+definitions~\cite{kapur2003automatic}), since the specific obligations which
+arise in the proof may be incompatible with the available inductive hypotheses.
+An informative example is given by Boyer and Moore of the associativity of
+multiplication in ACL2~\cite{boyer1983proof}:
+
+$$(x * y) * z = x * (y * z)$$
+
+During the course of the proof, the following obligation arises:
+
+\begin{equation}
+  \tag{conc3}
+  (y + (x * y)) * z = (y * z) + ((x * y) * z)
+  \label{eq:conc3}
+\end{equation}
+
+ACL2 automatically generalises \eqref{eq:conc3} by replacing the repeated
+sub-term $x * y$ with a fresh variable $w$:
+
+\begin{equation}
+  \tag{conc4}
+  (y + w) * z = (y * z) + (w * z)
+  \label{eq:conc4}
+\end{equation}
+
+This generalised form is clearly the distributivity law for multiplication and
+addition, which can be proved separately to the original goal of
+associativity. It would not be controversial to claim that this distributivity
+law is interesting in its own right (relative to associativity, at least), in
+addition to its usefulness in making this proof go through.
+
+% TODO: Describe the ACL2 heuristics
+
+Generality hence contributes to a conjecture's \emph{utility}, and also (by
+definition) to its \emph{applicability}. It is still important to balance
+against other concerns, since blindly generalising \emph{all} statements of
+proof obligations we come across would result in conjectures so strong that they
+are unprovable, or even false; which would make them much less interesting.
+
+\paragraph{Analogy}
+
+The interestingness of a statement can also be characterised by \emph{analogy}
+to existing interesting statements. By finding lemmas analogous to those of a
+different theory, we may be able to re-use proof tactics and other forms of
+meta-programming across both.
+
+Existing theory exploration systems have been successfully applied to this
+problem, however the use of pure exploration misses opportunities to
+\emph{focus} the search, since we know which lemmas are used in those theories
+where a technique succeeded. If we can find an analogy to map from such solved
+problems to a currently-unproven goal, we can infer the approximate form of the
+lemmas we require, and target these specifically.
+
+The approach taken by \textsc{ACL2(ml)} is to find lemmas which may be relevant
+to solving a goal $G$ by making analogies via unsupervised
+clustering~\cite{Heras.Komendantskaya.Johansson.ea:2013}. These clusters are
+used in two ways:
+
+\begin{itemize}
+\item First, we use the cluster $C_G$ containing $G$ to identify analogous
+  theorems.
+
+\item For each theorem $T \in C_G \setminus \{G\}$, we consider those symbols
+  $S_T$ which occur in $T$ but not in $G$. Our analogous lemmas are those used
+  to prove $T$, mutated such that symbols $s \in S_T$ are replaced by members of
+  the cluster $C_s$ containing $s$.
+\end{itemize}
+
+The interestingness of such generated lemmas derives from both the existence of
+the original lemma (which is presumably interesting enough to prove and
+subsequently explore), that of the target theorem it may help to prove, and the
+novelty provided by reframing existing concepts in a new domain. The running
+examples for demonstrating \textsc{ACL2(ml)} are equivalence theorems for
+tail-recursive and non-tail-recursive calculations\footnote{A tail-recursive
+  function can be executed in constant space using a loop, whereas recursion in
+  non-tail positions may require a growing number of stack frames or nested
+  closures.}), as well as the effect of repeating certain list operations:
+
+\begin{itemize}
+
+  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{fact-tail}(n) = \texttt{fact}(n)$ where \texttt{natp} is the predicate that $n$ is a natural number, whilst \texttt{fact-tail} and \texttt{fact} are tail-recursive and non-tail-recursive implementations of factorial, respectively.
+
+  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{power-tail}(n) = \texttt{power}(n)$,  where \texttt{power-tail} and \texttt{power} calculate powers of 2.
+
+  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{fib-tail}(n) = \texttt{fib}(n)$,  where \texttt{fib-tail} and \texttt{fib} calculate fibonacci numbers.
+
+  \item $\forall x, \texttt{nat-listp}(x) \rightarrow \texttt{sort}(\texttt{sort}(x)) = \texttt{sort}(x)$, for list-of-natural-numbers predicate \texttt{nat-listp} and list-sorting function \texttt{sort}.
+
+  \item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{rev}(\texttt{rev}(x)) = x$, where \texttt{true-listp} ensures that $x$ is a valid singly-linked list structure and \texttt{rev} is list reversal.
+
+  \item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{int}(x, x) = x$, where \texttt{int} is the intersection of lists (i.e. a list of elements common to each).
+
+\end{itemize}
+
+\paragraph{Auxiliary Lemmas} \label{sec:auxiliarylemmas}
+
+One consideration when generating conjectures is the difference between
+theorems, lemmas, corollaries, etc. From a logical point of view, these are all
+equivalent, and hence most proof assistants do not distinguish between
+them. However, their \emph{intention} may be different: in a sense, theorems are
+the interesting results; whilst lemmas are useful results, required for proving
+the theorems. Corollaries are consequences and special-cases of theorems, which
+are interesting enough to state separately, but not as much as a theorem.
+
+Some systems, like Coq, allow users to \emph{label} each statement as being a
+\coq{Theorem}, a \coq{Lemma}, etc. despite their internal representations being
+the same. This shows us immediately that lemmas outnumber theorems; in the Coq
+standard library there are over five times as many lemmas as theorems
+\footnote{Coq version \texttt{8.4pl6} contains (excluding comments) 1492
+  occurences of \coq{Theorem} and 7594 of \coq{Lemma} in its \texttt{theories/}
+  directory.}.
+
+% TODO: Analyse them
+
+% TODO: Theory exploration as lemma generation; give example from a HipSpec paper
+
+We can find a need for auxiliary lemmas, once again, in the context of
+tail-recursive functions. Consider proving the (pointwise) equality of the
+following Coq functions, defined for the Peano naturals \coq{Z} and \coq{S}:
+
+\begin{coqblock}
+Inductive Nat : Set := Z : Nat
+                     | S : Nat -> Nat.
+
+Fixpoint plus      (n m : Nat) := match n with
+                                      | Z    => m
+                                      | S n' => S (plus n' m)
+                                  end.
+
+Fixpoint plus_tail (n m : Nat) := match n with
+                                      | Z    => m
+                                      | S n' => plus_tail n' (S m)
+                                  end.
+\end{coqblock}
+
+These definitions are equivalent to the following Haskell:
+
+\begin{haskell}
+plus :: Nat -> Nat -> Nat
+plus      n  Z    = n
+plus      n (S m) = S (plus n m)
+
+plus_tail :: Nat -> Nat -> Nat
+plus_tail n  Z    = n
+plus_tail n (S m) = plus_tail (S n) m
+\end{haskell}
+
+Both of these functions implement addition, but the \coq{plus_tail} variant is
+tail-recursive. However, if we want to \emph{prove} that the definitions are
+(pointwise) equal, we run into difficulties. In particular, when the inductive
+step requires us to prove \coq{plus (S n) m = plus n (S m)} (which seems
+reasonable), we cannot make this go through using another inductive argument.
+
+\begin{coqblock}
+(* Solve equalities by beta-normalising both sides *)
+Ltac triv := try (simpl; reflexivity).
+
+(* Prove equivalence of plus and plus_tail *)
+Theorem equiv : forall n m, plus n m = plus_tail n m.
+  induction n; triv. (* Base case is trivial *)
+
+  (* Inductive case: plus (S n) m = plus_tail (S n) m *)
+  intro m.
+
+  (* Beta-reduce the right-hand-side (justification is trivial) *)
+  replace (plus_tail (S n) m) with (plus_tail n (S m)); triv.
+
+  (* Use induction hypothesis to replace plus_tail with plus *)
+  rewrite <- (IHn (S m)).
+\end{coqblock}
+
+Specifically, the \emph{conclusion} of a second inductive hypothesis is exactly
+the equation we need:
+
+\begin{coqblock}
+IHn' : (forall x, plus n' x = plus_tail n' x) -> plus (S n') m = plus n' (S m)
+\end{coqblock}
+
+Yet we cannot provide it with the argument it needs, as our original induction
+hypothesis is \emph{too specific} (it has too many \coq{S} constructors):
+
+\begin{coqblock}
+IHn : forall x, plus (S n') x = plus_tail (S n') x
+\end{coqblock}
+
+We are forced to abandon the proof, despite such a reasonable-looking
+intermediate goal.
+
+In fact, if we attempt to prove that goal \emph{separately}, we can use a
+straightforward argument by induction; even though it is actually
+\emph{stronger} due to the absence of the \coq{IHn} assumption:
+
+\begin{coqblock}
+Lemma gen n m : plus (S n) m = plus n (S m).
+  induction n; triv. (* Base case is trivial *)
+
+  (* Move all S constructors outside *)
+  simpl. rewrite <- IHn. simpl.
+
+  (* Trivial *)
+  reflexivity.
+Defined.
+\end{coqblock}
+
+Using this separate result as a lemma, the orignal pointwise equality is proven
+easily:
+
+\begin{coqblock}
+  rewrite (gen n m).
+  reflexivity.
+Defined.
+\end{coqblock}
+
+Hence demonstrating the utility, and therefore interestingness, of such
+auxilliary lemmas.
 
 % TODO Include Colton/Bundy et al
 

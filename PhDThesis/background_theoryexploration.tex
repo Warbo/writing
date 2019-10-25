@@ -2,23 +2,18 @@
 \label{sec:theoryexploration}
 
 (Automated) Theory Exploration (TE) is the task of taking a \emph{signature}
-of definitions \iffalse TODO: Alison Some tools generate their own definitions
-\fi in some formal system (for example a programming language) and
+of definitions in some formal system (for example a programming language) and
 automatically generating a set of formal statements (properties) involving
-those definitions. These may be conjectures or theorems (proven either by
-sending conjectures to an automated theorem prover, or by having the generating
-procedure proceed in logically sound steps from a set of axioms). These
-statements should also be
-``interesting'' in some way, to rule out unhelpful trivialities such as
-iterating a pattern over and over (e.g. \hs{x + 0 = x}, \hs{(x + 0) + 0 = x},
-\dots).
-
-\iffalse
-It is beyond the scope of this paper
-to define what makes a mathematical statement ``interesting'', but this problem
-has been tackled extensively in the literature~\cite{colton2000notion}.
-\fi
-% END TOTO
+those definitions\footnote{Some tools, such as \isascheme{}, also generate their
+  own definitions. This work does not focus on such functionality, treating it
+  instead under the umbrella of \emph{Concept Formation}.}. These may be
+conjectures or theorems (proven either by sending conjectures to an automated
+theorem prover, or by having the generating procedure proceed in logically sound
+steps from a set of axioms). These statements should also be ``interesting'' in
+some way, to rule out unhelpful trivialities such as iterating a pattern over
+and over (e.g. \hs{x + 0 = x}, \hs{(x + 0) + 0 = x}, \dots). We defer a more
+thorough treatment of what counts as ``interesting'' to
+\S~\ref{sec:interestingness}.
 
 The choice of appropriate methods can differ according to the underlying logic,
 etc. that is in use: in this work we ground ourselves by applying TE to
@@ -33,18 +28,17 @@ exploration system, although all existing implementations rely on brute force
 enumeration to some degree. We focus on \quickspec{}~\cite{QuickSpec}, which
 conjectures equations about Haskell code. We have used version 1 of \quickspec{}
 in our experiments, due to its availability, stability and tooling integration;
-hence references to \quickspec{} are to version 1 unless stated otherwise. At
-the time of writing \iffalse TODO: Alison: Include date \fi there is a
-\quickspec{} version 2 available, which has a much improved generation procedure
-which can be significantly faster than its predecessor. Whilst \quickspec{} 2
-has advanced the state of the art in theory exploration, our preliminary
-experience has found that it still suffers the scaling issues we identify in
-this work\footnote{Not only did we experience failures with our own experiments,
-  we also suffered memory exhaustion when trying to run some of the examples
-  included with the \quickspec{} 2 source code.} Since \quickspec{} 2 has less
-integration with the tooling we have used, we leave a more thorough analysis of
-it (and related systems such as \speculate{}) for future work, pending the
-necessary infrastructure changes that would require.
+hence references to \quickspec{} are to version 1 unless stated otherwise. As of
+2019 there is a \quickspec{} version 2 available, which has a much improved
+generation procedure which can be significantly faster than its predecessor.
+Whilst \quickspec{} 2 has advanced the state of the art in theory exploration,
+our preliminary experience has found that it still suffers the scaling issues we
+identify in this work\footnote{Not only did we experience failures with our own
+  experiments, we also suffered memory exhaustion when trying to run some of the
+  examples included with the \quickspec{} 2 source code.} Since \quickspec{} 2
+has less integration with the tooling we have used, we leave a more thorough
+analysis of it (and related systems such as \speculate{}) for future work,
+pending the necessary infrastructure changes that would require.
 
 \begin{figure}
   \centering
@@ -75,13 +69,13 @@ necessary infrastructure changes that would require.
   \label{fig:haskellteexample}
 \end{figure}
 
-\quickspec{} (version 1) is written in the Haskell programming language, and
-works with definitions which are also written in Haskell. A thorough description
-of Haskell, including its suitability for theory exploration, can be found
-in \S~\ref{sec:haskell}. For illustrative purposes, some simple Haskell
-definitions are shown in Figure~\ref{fig:haskellteexample}. \quickspec{} uses
-the following procedure to generate conjectures, which are both plausible (due
-to testing on many examples) and potentially interesting (due to being mutually irreducible):
+\quickspec{} is written in the Haskell programming language, and works with
+definitions which are also written in Haskell. A thorough description of
+Haskell, including its suitability for theory exploration, can be found in
+\S~\ref{sec:haskell}. For illustrative purposes, some simple Haskell definitions
+are shown in Figure~\ref{fig:haskellteexample}. \quickspec{} uses the following
+procedure to generate conjectures, which are both plausible (due to testing on
+many examples) and potentially interesting (due to being mutually irreducible):
 
 \begin{enumerate}
 \item Given a signature $\Sigma$ of typed expressions and set of variables $V$,
@@ -159,19 +153,42 @@ we construct $terms_{\hs{Nat}}$.
   \label{fig:qspecresult}
 \end{figure}
 
-The elements of $terms_{\hs{Nat}}$ will be grouped into five classes, one each
-for \hs{Nat}, \hs{Nat -> Nat}, \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool} and
-\hs{Bool}. As the variables \hs{a}, \hs{b} and \hs{c} are instantiated to
+The elements of $terms_{\hs{Nat}}$ will be grouped into five equivalence classes,
+one each for \hs{Nat}, \hs{Nat -> Nat}, \hs{Nat -> Nat -> Nat}, \hs{Nat -> Bool}
+and \hs{Bool}. As the variables \hs{a}, \hs{b} and \hs{c} are instantiated to
 various randomly-generated numbers, the differences between these terms will
-be discovered and the equivalence classes will be divided, until eventually
-the equations in Figure \ref{fig:qspecresult} are conjectured.
+be discovered. For example, the \hs{Nat} class will initially contain (among
+other things) the terms \hs{Z}, \hs{x} and \hs{plus x Z}; this will be split
+apart once \hs{x} is tested with a non-zero value, since the latter terms will
+not equal \hs{Z}. Since those latter terms will always be equal, for any value
+of \hs{x}, they will never be split apart. Eventually (after removing
+redundancies) the equations in Figure~\ref{fig:qspecresult} are conjectured.
+These may be output to the user for perusal, or for another system to process
+like the \hipspec{} automated theorem prover.
+
+Note that we must be able to generate values of a type in order to include
+variables of that type. Also, only equivalence classes whose element type can be
+compared are split and conjectured about in this way\footnote{Both random data
+  generators and comparison functions can be derived mechanically from algebraic
+  datatype declarations; hence why they are omitted from our example. Note that
+  care must be taken when generating recursive structures, as na\"ive recursion
+  may produce values whose expected size exceeds the machine's memory.}; in
+particular, functions (like \hs{odd} and \hs{even}) are first-class values, so
+they will be put in an equivalence class, but they will not be subject to
+testing and comparison since Haskell has no generic notion of function
+equality~\footnote{In fact \quickspec{} compares expressions using a total
+  ordering rather than equality; this is even more restrictive than requiring a
+  notion of equality, but reduces the number of required comparisons}.
+\quickspec{} can hence conjecture that two functions are pointwise-equal (e.g.
+\hs{f x == g x}) but it cannot conjecture that the functions themselves are
+equal (e.g. \hs{f == g}).
 
 Although complete, this enumeration approach is wasteful: many terms are
 unlikely to appear in theorems, which requires careful choice by the user of
 what to include in the signature. Here we know that addition and multiplication
 are closely related, and hence obey many algebraic laws; arbitrary definitions
-from a typical software library or proof development are unlikely to have be
-related so strongly.
+from a typical software library or proof development are unlikely to be related
+so strongly.
 
 \iffalse
 \quickspec{} (and \hipspec{}) is also compatible with Haskell's existing testing
@@ -186,38 +203,6 @@ testing \emph{particular} expressions to \emph{inventing} expressions to
 test. One of our aims is to understand the implications of this generalisation,
 the lessons that each can learn from the other's approach to term generation,
 and the consequences for testing and QA in general.
-\fi
-
-\iffalse
-% TODO: Work this into the example
-
-As an example, giving the definitions from Figure~\ref{fig:haskellteexample} to
-\quickspec{}, along with suitable comparison functions, random data generators and
-variables \hs{n :: Nat} and \hs{b :: Bool}, will give rise to an equivalence
-class for each type \hs{Nat}, \hs{Bool}, \hs{Nat -> Nat}, \hs{Nat -> Bool} and
-\hs{Bool -> Bool}. Testing will find unequal terms in some of these classes
-(such as the \hs{Bool} class containing \hs{True}, \hs{False}, \hs{b},
-\hs{not b}, \hs{odd n} and \hs{even n}, which are all mutually unequal), split
-them up, and repeat until no more splits are found. Equations are then generated
-between elements of non-singleton classes, such as $\{\text{\hs{odd n}},
-\text{\hs{not (even n)}}, \text{\hs{not (not (odd n))}}, \ldots\}$, and reduced
-to a minimal set (for example, discarding \hs{odd n == not (not (odd n))} as an
-instance of the more general \hs{b == not (not b)}). The remaining equations
-(including \hs{not (not b) == b} and \hs{not (odd n) == even n}, etc.) are
-output, either for the user to peruse or for another system to process, like the
-\hipspec{} automated theorem prover.
-
-Note that we must be able to generate values of a type in order to include
-variables of that type. Also, only equivalence classes whose element type can be
-compared are split and conjectured about in this way; in particular, functions
-(like \hs{odd} and \hs{even}) are first-class values, so they will be put in an
-equivalence class, but they will not be subject to testing and comparison since
-Haskell has no generic notion of function equality~\footnote{In
-  fact \quickspec{} compares expressions using a total ordering rather than equality;
-  this is even more restrictive than requiring a notion of equality, but reduces
-  the number of required comparisons}. \quickspec{} can hence conjecture that two
-functions are pointwise-equal (e.g. \hs{f x == g x}) but it cannot conjecture
-that the functions themselves are equal (e.g. \hs{f == g}).
 \fi
 
 % TODO
@@ -243,229 +228,3 @@ that the functions themselves are equal (e.g. \hs{f == g}).
 % Theory exploration: Buchberger, Moa in Isabelle, Koen in Haskell. Others?
 % Theorem proving: Well-trodden: first-order ATP, higher-order ITP, functional programming
 % Communication: Latex, Wikis, APIs, communicating with aliens
-
-% \section{Exploration in Theorem Proving}
-% \label{sec:examples}
-
-% Before exploring abstract definitions of interestingness, we can first consider
-% some scenarios which arise during formal proof where we are forced to generate
-% conjectures. An analysis of these situations, and the subsequent theorems they
-% produce, will contribute towards an empirical justification for what is
-% interesting (at least from a utilitarian point of view) and inform our later
-% exploration of the literature.
-
-% \subsection{Generalisation}
-
-% \providecommand{\coq}[1]{\lstinline[language=ML]|#1|}
-
-% When we \emph{generalise} a statement $S$, we obtain a new statement $S'$ of
-% which $S$ is a special case. Although it seems counterintuitive, a generalised
-% statement can sometimes be \emph{easier} to prove than the original. This arises
-% often in inductive proofs, since the specific obligations which arise in the
-% proof may be incompatible with the available inductive hypotheses.
-
-% However, we cannot blindly generalise \emph{all} obligations we encounter, since
-% \emph{over-generalising} results in obligations which are so strong that they
-% are unprovable, or even false. We must therefore rely on heuristics to guide the
-% generation of generalised conjectures, and hence perform a kind of exploration.
-
-% An informative example is given by Boyer and Moore of the associativity of
-% multiplication in ACL2 \cite{boyer1983proof}:
-
-% $$(x * y) * z = x * (y * z)$$
-
-% During the course of the proof, the following obligation arises:
-
-% \begin{equation}
-%   \tag{conc3}
-%   (y + (x * y)) * z = (y * z) + ((x * y) * z)
-%   \label{eq:conc3}
-% \end{equation}
-
-% ACL2 automatically generalises \eqref{eq:conc3} by replacing the repeated
-% sub-term $x * y$ with a fresh variable $w$:
-
-% \begin{equation}
-%   \tag{conc4}
-%   (y + w) * z = (y * z) + (w * z)
-%   \label{eq:conc4}
-% \end{equation}
-
-% This generalised form is clearly the distributivity law for multiplication and
-% addition, which can be proved separately to the original goal of
-% associativity. It would not be controversial to claim that this distributivity
-% law is interesting in its own right (relative to associativity, at least), in
-% addition to its usefulness in making this proof go through.
-
-% % TODO: Describe the ACL2 heuristics
-
-% Generalisation also occurs frequently when reasoning about \emph{tail-recursive}
-% definitions \cite{kapur2003automatic}. \footnote{A tail-recursive function can
-%   be executed in constant space using a loop, whereas recursion in non-tail
-%   positions may require a growing number of stack frames or nested closures. See
-%   \S \ref{sec:auxiliarylemmas} for example definitions of each type.}
-
-% \subsection{Analogy}
-
-% One way to characterise the interestingness of a statement is by \emph{analogy}
-% to existing interesting statements. By finding lemmas analogous to those of a
-% different theory, we may be able to re-use tactics and other forms of
-% meta-programming across both.
-
-% Existing theory exploration systems have been successfully applied to this
-% problem, however the use of pure exploration misses opportunities to
-% \emph{focus} the search, since we know which lemmas are used in those theories
-% where a technique succeeded. If we can find an analogy to map from such solved
-% problems to our unsolved goal, we can infer the approximate form of the lemmas
-% we require, and target these specifically.
-
-% The approach taken by \textsc{ACL2(ml)} is to find lemmas which may be relevant
-% to solving a goal $G$ by making analogies via unsupervised clustering
-% \cite{Heras.Komendantskaya.Johansson.ea:2013}. These clusters are used in two
-% ways:
-
-% \begin{itemize}
-% \item First, we use the cluster $C_G$ containing $G$ to identify analogous
-%   theorems.
-
-% \item For each theorem $T \in C_G \setminus \{G\}$, we consider those symbols
-%   $S_T$ which occur in $T$ but not in $G$. Our analogous lemmas are those used
-%   to prove $T$, mutated such that symbols $s \in S_T$ are replaced by members of
-%   the cluster $C_s$ containing $s$.
-% \end{itemize}
-
-% The running examples for demonstrating \textsc{ACL2(ml)} are equivalence
-% theorems for tail-recursive and non-tail-recursive calculations, as well as the
-% effect of repeating certain list operations:
-
-% \begin{itemize}
-
-%   \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{fact-tail}(n) = \texttt{fact}(n)$ where \texttt{natp} is the predicate that $n$ is a natural number, whilst \texttt{fact-tail} and \texttt{fact} are tail-recursive and non-tail-recursive implementations of factorial, respectively.
-
-%   \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{power-tail}(n) = \texttt{power}(n)$,  where \texttt{power-tail} and \texttt{power} calculate powers of 2.
-
-%   \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{fib-tail}(n) = \texttt{fib}(n)$,  where \texttt{fib-tail} and \texttt{fib} calculate fibonacci numbers.
-
-%   \item $\forall x, \texttt{nat-listp}(x) \rightarrow \texttt{sort}(\texttt{sort}(x)) = \texttt{sort}(x)$, for list-of-natural-numbers predicate \texttt{nat-listp} and list-sorting function \texttt{sort}.
-
-%   \item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{rev}(\texttt{rev}(x)) = x$, where \texttt{true-listp} ensures that $x$ is a valid singly-linked list structure and \texttt{rev} is list reversal.
-
-%   \item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{int}(x, x) = x$, where \texttt{int} is the intersection of lists (i.e. a list of elements common to each).
-
-% \end{itemize}
-
-% \subsection{Auxiliary Lemmas} \label{sec:auxiliarylemmas}
-
-% One consideration when generating conjectures is the difference between
-% theorems, lemmas, corollaries, etc. From a logical point of view, these are all
-% equivalent, and hence most proof assistants do not distinguish between
-% them. However, their \emph{intention} may be different: in a sense, theorems are
-% the interesting results; whilst lemmas are useful results, required for proving
-% the theorems.
-
-% Some systems, like Coq, allow users to \emph{label} each statement as being a
-% \coq{Theorem}, a \coq{Lemma}, etc. despite their internal representations being
-% the same. This shows us immediately that lemmas outnumber theorems; in the Coq
-% standard library there are over five times as many lemmas as theorems
-% \footnote{The latest version as of writing is \texttt{coq-8.4pl6} which, when
-%   excluding comments, includes 1492 occurences of \coq{Theorem} and 7594 of
-%   \coq{Lemma} in its \texttt{theories/} directory.}.
-
-% % TODO: Analyse them
-
-% % TODO: Theory exploration as lemma generation; give example from a HipSpec paper
-
-% We can find a need for auxiliary lemmas, once again, in the context of
-% tail-recursive functions. Consider proving the (pointwise) equality of the
-% following Coq functions, defined for the Peano naturals \coq{Z} and \coq{S}:
-
-% \begin{coqblock}
-% Inductive Nat : Set := Z : Nat
-%                      | S : Nat -> Nat.
-
-% Fixpoint plus      (n m : Nat) := match n with
-%                                       | Z    => m
-%                                       | S n' => S (plus n' m)
-%                                   end.
-
-% Fixpoint plus_tail (n m : Nat) := match n with
-%                                       | Z    => m
-%                                       | S n' => plus_tail n' (S m)
-%                                   end.
-% \end{coqblock}
-
-% \begin{haskell}
-% Haskell equivalent:
-
-% plus :: Nat -> Nat -> Nat
-% plus      n  Z    = n
-% plus      n (S m) = S (plus n m)
-
-% plus_tail :: Nat -> Nat -> Nat
-% plus_tail n  Z    = n
-% plus_tail n (S m) = plus_tail (S n) m
-% \end{haskell}
-
-% Both of these functions implement addition, but the \coq{plus_tail} variant is
-% tail-recursive. However, if we want to \emph{prove} that the definitions are
-% (pointwise) equal, we run into difficulties. In particular, when the inductive
-% step requires us to prove \coq{plus (S n) m = plus n (S m)} (which seems
-% reasonable), we cannot make this go through using another inductive argument.
-
-% \begin{coqblock}
-% (* Solve equalities by beta-normalising both sides *)
-% Ltac triv := try (simpl; reflexivity).
-
-% (* Prove equivalence of plus and plus_tail *)
-% Theorem equiv : forall n m, plus n m = plus_tail n m.
-%   induction n; triv. (* Base case is trivial *)
-
-%   (* Inductive case: plus (S n) m = plus_tail (S n) m *)
-%   intro m.
-
-%   (* Beta-reduce the right-hand-side (justification is trivial) *)
-%   replace (plus_tail (S n) m) with (plus_tail n (S m)); triv.
-
-%   (* Use induction hypothesis to replace plus_tail with plus *)
-%   rewrite <- (IHn (S m)).
-% \end{coqblock}
-
-% Specifically, the \emph{conclusion} of a second inductive hypothesis is exactly
-% the equation we need:
-
-% \begin{coqblock}
-% IHn' : (forall x, plus n' x = plus_tail n' x) -> plus (S n') m = plus n' (S m)
-% \end{coqblock}
-
-% Yet we cannot provide it with the argument it needs, as our original induction
-% hypothesis is \emph{too specific} (i.e. it has too many \coq{S} constructors):
-
-% \begin{coqblock}
-% IHn : forall x, plus (S n') x = plus_tail (S n') x
-% \end{coqblock}
-
-% We are forced to abandon the proof, despite such a reasonable-looking
-% intermediate goal.
-
-% In fact, if we attempt to prove that goal \emph{separately}, we can use a
-% straightforward argument by induction; even though it is actually
-% \emph{stronger} due to the absence of the \coq{IHn} assumption. Using this
-% separate result as a lemma, the pointwise equality is proven easily.
-
-% \begin{coqblock}
-% Lemma gen n m : plus (S n) m = plus n (S m).
-%   induction n; triv. (* Base case is trivial *)
-
-%   (* Move all S constructors outside *)
-%   simpl. rewrite <- IHn. simpl.
-
-%   (* Trivial *)
-%   reflexivity.
-% Defined.
-% \end{coqblock}
-
-% \begin{coqblock}
-%   rewrite (gen n m).
-%   reflexivity.
-% Defined.
-% \end{coqblock}
