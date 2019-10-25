@@ -13,7 +13,12 @@ rec {
   proportionsTsv = runCommand "proportions-rows.tsv"
     {
       buildInputs = [ jq lzip msgpack-tools ];
+
+      # FIXME: When bucketing and haskell-te are working, use the commented
+      # version
       data        = ./BIG_DATA/WITH_AVERAGES.msgpack.lzip;
+      #data        = "${bucketing.proportionExperiment.results.results
+      #               }/averageBucketProportions.msgpack.lz";
       extract     = ''
         to_entries | .[] | .key as $size        | .value |
         to_entries | .[] | .key as $method      | .value |
