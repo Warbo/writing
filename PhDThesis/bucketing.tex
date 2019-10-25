@@ -5,15 +5,15 @@ Despite the clever search strategies employed by theory exploration tools, they
 all rely on enumerating combinations of definitions in some way, which can cause
 infeasible running times for input signatures with more than around a dozen
 definitions (based on experiments with our Theory Exploration Benchmark, in
-\S~\ref{sec:benchmark}. To avoid this, users of these systems must carefully
+\S~\ref{sec:benchmark}). To avoid this, users of these systems must carefully
 select only small subsets of their definitions to explore at a time.
 
 We dub such cherry-picking the \emph{signature selection problem} for theory
 exploration, and we analyse its effect on the running time of theory exploration
-tools on the Theory Exploration Benchmark, and on the quality of the statements
-they are able to generate. An automated solution to this signature selection
-problem would accept a large number of definitions and efficiently select
-sub-sets which are both small enough to reasonably explore, whilst still
+tools on our Theory Exploration Benchmark (TEB), and on the quality of the
+statements they are able to generate. An automated solution to this signature
+selection problem would accept a large number of definitions and efficiently
+select sub-sets which are both small enough to reasonably explore, whilst still
 enabling interesting properties to be discovered.
 
 In this chapter we will:
@@ -21,15 +21,14 @@ In this chapter we will:
 \begin{enumerate}
 \item Define the \emph{signature selection problem} for theory exploration.
 \item Analyse the effect of signature selection on the quantity of desirable
-  properties attainable by theory exploration on the Theory Exploration
-  Benchmark problem set.
+  properties attainable by theory exploration on the TEB problem set.
 \item Identify the effect of ``toxic'' definitions on system performance, as
-  measured by the Theory Exploration Benchmark.
+  measured by the TEB.
+\item Recommend improvements for theory exploration systems, to avoid or
+  mitigate the problem of toxic definitions.
 \item Demonstrate how the signature selection problem is distinct from the
   well-known \emph{clustering problem} in machine learning, and how clustering
   algorithms cannot be directly applied to signature selection.
-\item Propose recommendations to take signature selection and toxic definitions
-  into account.
 \end{enumerate}
 
 \iffalse
@@ -116,9 +115,9 @@ benchmark~\cite{claessen2015tip}), and how this is affected by their content.
     \textbf{Right} Proportion of each population which timed out after 300
     seconds, for signatures of different size. This corresponds to a slice
     through the corresponding survival plot at the 300 second mark (if all of
-    the measured populations were included). Lines of best-fit use linear
-    regression, indicating the effect that ``toxic'' definitions have on failure
-    (timeout) rate.}
+    the measured populations were included). Lines of best-fit use least-squares
+    linear regression, indicating the effect that ``toxic'' definitions have on
+    failure (timeout) rate.}
     % TODO Put line slopes and error on graph
     % TODO Bottom row should use a second set of samples (chosen to avoid toxic
     % definitions), rather than just filtering down
@@ -132,17 +131,6 @@ didn't finish within our 300 second timeout\footnote{Chosen based on preliminary
   experiments, which showed little difference in survival between 300 seconds
   and 1 hour}.
 
-\iffalse
-\begin{figure}
-  \scalebox{0.45}{\input{images/timeoutsall.pgf}}
-  \scalebox{0.45}{\input{images/timeoutsnontoxic.pgf}}
-  \caption{Proportion of samples which timed out per size, with least-squares
-    linear regression. First plot is for all TIP definitions, second removes
-    runs given ``toxic'' definitions.}
-  \label{fig:tailsize}
-\end{figure}
-\fi
-
 The height of these ``tails'' is linearly correlated with the number of
 definitions in the signature, as shown in Figure~\ref{fig:tailsize}. One
 hypothesis to explain this is the existence of ``toxic'' definitions, whose
@@ -150,18 +138,16 @@ presence in the input always leads to the exploration failing (with larger
 inputs being more likely to have sampled a toxic definition).
 
 \begin{figure}
-  \scalebox{0.45}{\input{images/proportionsall.pgf}}
-  \scalebox{0.45}{\input{images/proportionsnontoxic.pgf}}
-  \caption{Definitions, ordered by the ratio of successes to failures of the
-    runs they appeared in. The first graph contains all TIP definitions, showing
+  \scalebox{0.69}{\input{images/proportionsall.pgf}}
+  \scalebox{0.69}{\input{images/proportionsnontoxic.pgf}}
+  \caption[]{Each bar is a definition from our Theory Exploration Benchmark,
+    showing the proportion of signatures they appeared in which were
+    successfully explored (green) compared to those which timed out (red).
+    Definitions are sorted from most successful to least. The left graph shows
+    all \input{text/proportions_graph_count_all.tex} TEB definitions explored, with five ``toxic'' definitions which always
+    failed. with s ratio of successes to failures of the runs they appeared in. The first graph contains all TIP definitions, showing
     ``toxic'' definitions which always failed. The second graph only contains
-    runs without any toxic definitions.
-    \iffalse
-    TODO: Alison: ? (ME: The green/red bar graphs appear as empty white boxes in
-    the PDF Alison sent over. Check how it's rendered!)
-    TODO: The x-axis ticks are crap (all overlapping); turn them off, put a
-    single label like ``Definitions (ordered by failure rate)''
-    \fi}
+    runs without any toxic definitions.}
   \label{fig:proportions}
 \end{figure}
 
@@ -316,34 +302,40 @@ Our analysis of signature contents on theory exploration performance leads us to
 two recommendations for signature selection methods:
 
 \begin{itemize}
-\item Avoid ``toxic'' definitions: those producing exponentially large outputs,
-  and/or taking many arguments (leading to a large number of combinations)
-  \iffalse TODO: Alison: Is it always obvious which are toxic? \fi. In
-  particular, tail-recursive functions which expose their accumulator argument
-  are harder to explore. \iffalse TODO: Alison: These should be in the
+\item Avoid, or de-prioritise, exploring definitions which appear ``toxic''.
+  We have not yet identified an \emph{a priori} toxicity test, but contributing
+  factors include the use of large/infinite types (such as numbers and lists),
+  recursion across multiple arguments and matching input/output types (i.e.
+  \emph{endomorphisms}, which can be combined in exponentially-many ways).
+  In particular, exposing the accumulator argument of a tail-recursive function
+  makes it harder to explore. \iffalse TODO: Alison: These should be in the
   contributions and further recommendations based on your other findings in this
   chapter \fi
 \item Smaller signatures are faster to explore, so should be preferred if
   possible.
 \end{itemize}
 
-It also seems prudent for theory exploration tools to limit time and memory
-usage, both at the global level (to abort if it becomes clear we are in the
-``long tail'') and at the level of individual evaluations. In particular such
-fine-grained limits can abort evaluation of toxic definitions, whilst still
-being lenient enough to allow the majority of non-toxic definitions to be
-explored unhindered.
+We also recommend that theory exploration systems allow limits to be placed on
+their time and memory usage: both at the global level, to abort if it becomes
+clear we are in the ``long tail'' (e.g. if the discovery rate approaches zero);
+and at the level of individual evaluations. The latter is more invasive, but
+provides robustness against the presence of toxic definitions: their evaluation
+will still drain resources for no benefit, but other (non-toxic) definitions
+will continue to be explored, which would not be the case with a global abort.
+
+More elaborate alternatives could also be pursued, like dynamic scheduling to
+prioritise exploring definitions with the highest discovery rate.
 
 \section{Maintaining Quality}
 
-Our final criterion \iffalse TODO: Alison: This looks odd since you haven't
-mentioned criteria before \fi concerns the ``quality'' of the selected
-subsets. This depends crucially on how we define whether a property is
-``interesting''. We can use the same ground truth definition as our Theory
-Exploration Benchmark: a property is ``interesting'' if it appears in a
-particular corpus (in our case TIP~\cite{claessen2015tip}), and
-``uninteresting'' if not. Whilst na\"ive, this approach allows the criterion to
-be quantified: the quality of the selected subsets is the proportion of the
+Regardless of how fast a signature is to explore, we must also be concerned with
+the ``quality'' of the output when selecting its contents. This depends
+crucially on how we define whether a property is ``interesting''. We can use the
+same ground truth definition as our Theory Exploration Benchmark: a property is
+``interesting'' if it appears in a particular corpus (in our case
+TIP~\cite{claessen2015tip}), and ``uninteresting'' if not. Whilst na\"ive, this
+approach is quantified and measurable: the quality of the subset of definitions
+chosen to explore is the proportion of the
 whole signature's interesting properties that also apply to the subsets taken
 individually.
 
@@ -356,18 +348,19 @@ and distributivity properties to be ``interesting''. A subset containing both
 would be a high quality selection, since all of these properties are
 \emph{available} to find, even if our chosen tool doesn't spot them. In
 contrast, splitting addition and multiplication into \emph{separate} subsets is
-lower quality, since this stops \emph{any} tool from finding the distributivity
+lower quality, as this prevents \emph{any} tool finding the distributivity
 property (since it involves both definitions).
 
 To understand the quality impact of limiting ourselves to such subsets, we
-applied four signature selection methods to signatures sampled from the Theory
-Exploration Benchmark. Signatures varied in size from a single definition up to
-100; for each size, we sampled 100 signatures.
+devised four signature selection methods and applied them to signatures sampled
+from TEB. We varied the size of signatures from a single definition up to 100;
+for each size, we sampled 100 signatures.
 
 All four methods were forced to place each definition in exactly one subset, to
 focus on the effect of splitting apart definitions rather than e.g. duplicating
-definitions across several subsets or dropping some entirely. The tested methods
-are:
+definitions across several subsets or dropping some entirely (practical
+implementations will not have these constraints, but it is important here to
+avoid gaming our evaluation). The tested methods are:
 
 \begin{itemize}
 \item \textbf{Optimal}: Uses knowledge of the ground truth to choose equal sized
@@ -412,14 +405,12 @@ Figure~\ref{fig:bounds} shows the impact of selection (specifically, dividing
 definitions between subsets, with no skipping or duplication) on the proportion
 of interesting properties that remain available for subsequent theory
 exploration tools to discover. The shaded region shows the difference between
-(average) quality, with optimal and pessimal selections starting out equal (when
-dividing signatures of $N$ definitions into $N$ subsets, where there is no
-choice other than putting each definition on its own) but quickly diverging as
-choices become available. Note that the optimal and pessimal methods are
-constrained to avoid empty or unequally-distributed sets, so they cannot divide
-up a signature of size $N$ into more than $N$ subsets. Pseudorandom selection is
-shown as a grey line, and although the cardinality of its subsets is not
-constrained, it nevertheless appears consistently between the bounds.
+the average quality of optimal and pessimal methods. These always start equal
+(when dividing signatures of $N$ definitions into $N$ subsets, which can only be
+done in one way) but quickly diverging as choices become available. The average
+quality of pseudorandom selection is shown as a grey line, and although the
+cardinality of its subsets is not constrained, it nevertheless appears
+consistently between the bounds.
 
 Two trends are visible in these charts: firstly the bounded region trends
 upwards as the signature size increases, which is promising for the application
