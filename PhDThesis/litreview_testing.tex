@@ -100,15 +100,14 @@ The \smallcheck{} framework takes a different approach: \emph{enumerating}
 values (either using a user-provided enumeration function or using its
 \hs{Serial} typeclass), rather than generating values
 randomly~\cite{runciman2008smallcheck} (a similar approach is also followed by
-the \texttt{testing-feat} package \iffalse \cite{}TODO} \fi). In the
-\hs{Tree} example this might check \hs{Leaf}, then \hs{Node Leaf
-  Leaf}, then \hs{Node (Node Leaf Leaf) Leaf}, and so on. Enumerating in
-order of ``size'' ensures that counterexamples are always small, that tests are
-not repeated with the same values and that memory is not exhausted (since the
-stopping condition will trigger long before the enumeration reaches such large
-values). The disadvantage is that large inputs (which exercise properties,
-especially recursive ones, the most) may occur so late in the enumeration that
-testing never reaches them.
+the \texttt{testing-feat} package). In the \hs{Tree} example this might check
+\hs{Leaf}, then \hs{Node Leaf Leaf}, then \hs{Node (Node Leaf Leaf) Leaf}, and
+so on. Enumerating in order of ``size'' ensures that counterexamples are always
+small, that tests are not repeated with the same values and that memory is not
+exhausted (since the stopping condition will trigger long before the enumeration
+reaches such large values). The disadvantage is that large inputs (which
+exercise properties, especially recursive ones, the most) may occur so late in
+the enumeration that testing never reaches them.
 
 The \lazysmallcheck{} framework is similar in spirit to
 \smallcheck{}, but utilises Haskell's lazy evaluation to avoid generating
