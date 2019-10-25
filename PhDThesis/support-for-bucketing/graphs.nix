@@ -1,5 +1,5 @@
 { basicTex, bucketing, callPackage, gnuplot, jq, lzip, msgpack-tools,
-  nixpkgs1609, rpl, runCommand, textWidth, wrap, writeScript }:
+  nixpkgs1609, rpl, runCommand, runner, textWidth, wrap, writeScript }:
 
 with builtins;
 rec {
