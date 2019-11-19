@@ -28,30 +28,26 @@ particular importance for theory exploration.
 \subsection{Probability of Statements}
 
 An important property of a logical formula (in general, and in particular with
-regards to interestingness) is its truth value. Although we may be able to
-determine some truth values exactly, e.g. via deduction, it may only be possible
-(or more efficient) to \emph{approximate} truth values. One straightforward
-approximation is to adopt \emph{probabilities}, where we assign probability $1$
-to formulae which are known to be true (e.g. axioms), $0$ to formulae known to
-be false, and intermediate values to those which are not known.
+regards to interestingness) is its truth value. Although we may sometimes be
+able to determine truth values exactly, e.g. via deduction, for many formulae it
+may only be possible (or practical) to \emph{approximate} their truth value. One
+straightforward approximation is to adopt \emph{probabilities}, where we assign
+probability $1$ to formulae which are known to be true (e.g. axioms), $0$ to
+formulae known to be false, and intermediate values to those which are not
+known~\cite{Hutter.Lloyd.Ng.ea:2013}. For example, the truth value of universal
+statements (e.g. ``all ravens are black'') cannot be deduced from non-exhaustive
+examples (e.g. real-world observations of raven colours), but various induction
+methods may infer an (approximate) truth value~\cite{10.1093/mind/LIV.214.97}.
 
-This can be useful for ``knowledge bases'' of non-logical axioms (e.g. the
-observed colours of Hempel's ravens~\cite{10.1093/mind/LIV.214.97} \iffalse
-TODO: Alison: Maybe a bit of explanation here \fi), and allows the probability of
-universal statements to be inferred from non-exhaustive
-cases~\cite{Hutter.Lloyd.Ng.ea:2013}. However, inferring consistent
-probabilities requires \emph{logical omniscience}: knowledge of all the logical
-consequences of the chosen axioms. This is unfortunate, since it is precisely
-what we are trying to avoid by approximating with probabilities.
-
-Avoiding this requirement for logical omniscience has given rise to the field of
-\emph{bounded rationality}, where reasoning (deduction, induction, etc.) is
+One difficulty with approximate truth values is maintaining consistency without
+requiring \emph{logical omniscience} (knowledge of all the logical consequences
+of the chosen axioms). Avoiding logical omniscience has given rise to the field
+of \emph{bounded rationality}, where reasoning (deduction, induction, etc.) is
 subject to some computational constraints. For example, the ``logical inductor''
 of~\cite{garrabrant2016logical} avoids assigning particular probabilities to
 formal statements, and instead produces a \emph{sequence} of successive
-approximate probabilities, each computable with finite (though
-doubly-exponential!) resources. These approximations are only guaranteed to be
-consistent in the limit.
+approximate probabilities, each computable with finite resources (albeit very
+inefficiently), and guaranteed to be \emph{eventually consistent}.
 
 The probability of a statement can affect its interestingness in a few ways.
 Statements whose probability is very close to $0$ or $1$ may be considered
@@ -60,6 +56,19 @@ refutable via known facts). Those closer to $\frac{1}{2}$ may be considered more
 interesting; although in a bounded rationality context this may simply indicate
 the requirement for some routine (but lengthy) computation: for example stating
 that the $n$th bit of $\pi$ is a zero, for some large $n$.
+
+To avoid such trivially-easy and infeasibly-difficult statements (which we may
+consider uninteresting) we can instead consider the \emph{variance}
+(disagreement) between \emph{multiple} approximate truth values (similar to the
+problem solvers of~\cite{fernando2013design1, fernando2013design2}). Those
+statements which are assigned similar truth values by a variety of methods may
+be considered less interesting, as they are either easy enough to infer by all
+of our methods, or too hard for any of them (the stability of a single method's
+prediction over time would serve a similar role). One benefit of this
+application is that the approximation methods do not have to be particularly
+capable; in fact choosing ``superhuman'' algorithms would be \emph{less} useful
+in this context, since they would agree on the triviality of many statements we
+might consider interesting.
 
 \iffalse
 \subsection{Interestingness in Concept Formation}
