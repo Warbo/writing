@@ -1,4 +1,4 @@
-{ basicTex, bucketing, callPackage, gnuplot, jq, lzip, msgpack-tools,
+{ basicTex, bucketingSrc, callPackage, gnuplot, jq, lzip, msgpack-tools,
   nixpkgs1609, rpl, runCommand, runner, textWidth, wrap, writeScript }:
 
 with builtins;
@@ -13,12 +13,8 @@ rec {
   proportionsTsv = runCommand "proportions-rows.tsv"
     {
       buildInputs = [ jq lzip msgpack-tools ];
-
-      # FIXME: When bucketing and haskell-te are working, use the commented
-      # version
-      data        = ./BIG_DATA/WITH_AVERAGES.msgpack.lzip;
-      #data        = "${bucketing.proportionExperiment.results.results
-      #               }/averageBucketProportions.msgpack.lz";
+      data        = "${bucketingSrc
+        }/experiment-results/89132d7/averageBucketProportions.msgpack.lz";
       extract     = ''
         to_entries | .[] | .key as $size        | .value |
         to_entries | .[] | .key as $method      | .value |
@@ -33,12 +29,12 @@ rec {
     }
     ''lzip -d < "$data" | msgpack2json | jq -r "$extract" > "$out"'';
 
-  bounds = bucketing.bucketBounds;
+  bounds = "${bucketingSrc}/experiment-results/89132d7/bucketBounds.json.lz";
 
   boundsGraph = runCommand "bounds-graph"
     {
       inherit bounds;
-      buildInputs = [ gnuplot jq ];
+      buildInputs = [ gnuplot jq lzip ];
       runner      = wrap {
         name  = "boundsData.py";
         file  = ./boundsData.py;
@@ -58,7 +54,7 @@ rec {
     ''
       mkdir "$out"
       cd "$out"
-      "$runner" < "$bounds"
+      lzip -d < "$bounds" | "$runner"
     '';
 
   bucketingGraph = runCommand "bucketing-graphs"
