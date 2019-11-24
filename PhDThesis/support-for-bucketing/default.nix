@@ -11,8 +11,8 @@ rec {
   # Implements hashspec (pseudorandom) and MLSpec (recurrent clustering)
   bucketingSrc = fetchgit {
     url    = http://chriswarbo.net/git/bucketing-algorithms.git;
-    rev    = "9c13a24";
-    sha256 = "0z0b4534a5ziyw3486x9y7vqp6jnv53dg6axygzdnv77qmfy6fka";
+    rev    = "1efc1a3";
+    sha256 = "10i89hfn8yr64dqx25k982z7n78cacbbagxfg3ac9b7p0d5wkz53";
   };
 
   bucketing = import "${bucketingSrc}";
