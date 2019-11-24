@@ -39,22 +39,24 @@ usage.
 % FIXME: This is original work, so should maybe be in a different section
 \begin{table}
   \centering
-  \begin{tabular}{ |l|l|c|c|c|c|c|c| }
-    \hline
-    \multirow{2}{*}{\textbf{Program}}                      &
-    \multirow{2}{*}{\textbf{Conjecture Types}}             &
-    \multicolumn{6}{c|}{\textbf{Interestingness Measures}} \\ \hhline{~~------}
-    \tRow{             &                     & \iE & \iN & \iS & \iA & \iC & \iU}
-    \tRow{AM           & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
-    \tRow{GT           & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
-    \tRow{Graffiti     & \tINE               &   X &   X &   X &     &   X &   X}
-    \tRow{\Bagai{}     & \tNE                &     &   X &     &   X &   X &    }
-    \tRow{HR           & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
-    \tRow{\quickspec{} & \tEQ                &   X &   X &     &   X &   X &    }
-    \tRow{\speculate{} & \tCON\ \tEQ / \tINE &   X &   X &     &   X &   X &    }
-    \tRow{\isacosy{}   & \tEQ                &   X &   X &     &   X &   X &   X}
-    \tRow{\isascheme{} & \tEQ                &   X &   X &     &   X &   X &   X}
-  \end{tabular}
+  \scalebox{0.9}{
+    \begin{tabular}{ |l|l|c|c|c|c|c|c| }
+      \hline
+      \multirow{2}{*}{\textbf{Program}}                      &
+      \multirow{2}{*}{\textbf{Conjecture Types}}             &
+      \multicolumn{6}{c|}{\textbf{Interestingness Measures}} \\ \hhline{~~------}
+      \tRow{             &                     & \iE & \iN & \iS & \iA & \iC & \iU}
+      \tRow{AM           & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
+      \tRow{GT           & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
+      \tRow{Graffiti     & \tINE               &   X &   X &   X &     &   X &   X}
+      \tRow{\Bagai{}     & \tNE                &     &   X &     &   X &   X &    }
+      \tRow{HR           & \tIFF, \tIMP, \tNE  &   X &   X &   X &   X &   X &   X}
+      \tRow{\quickspec{} & \tEQ                &   X &   X &     &   X &   X &    }
+      \tRow{\speculate{} & \tCON\ \tEQ / \tINE &   X &   X &     &   X &   X &    }
+      \tRow{\isacosy{}   & \tEQ                &   X &   X &     &   X &   X &   X}
+      \tRow{\isascheme{} & \tEQ                &   X &   X &     &   X &   X &   X}
+    \end{tabular}
+  }
   \caption{Classification of MTE tools from~\cite{colton2000notion}, extended
     to include four more recent tools. The interestingness measures are
     \iE{}mpirical plausibility, \iN{}ovelty, \iS{}urprisingness,
