@@ -56,34 +56,21 @@ failureProp = list(map(prop('failures' ), rows))
 
 import matplotlib.pyplot as plt
 
-barWidth = 0.85
-r        = [x for x in range(0, len(names))]
+r    = [x for x in range(0, len(names))]
+plot = lambda color, prop, **kwargs: plt.bar(r, prop,
+                                             color=color, edgecolor='none',
+                                             width=0.5, **kwargs)
 
-# Create green Bars
-plt.bar(r, successProp,                     color='#00ff00', edgecolor='white', width=barWidth)
-# Create orange Bars
-plt.bar(r, failureProp, bottom=successProp, color='#ff0000', edgecolor='white', width=barWidth)
+plot('#00ff00', successProp                    )
+plot('#ff0000', failureProp, bottom=successProp)
+del(plot)
 
 # Custom x axis
-plt.xticks(r, names)
-plt.xlabel("Name")
+plt.xticks([])
+plt.xlim(-0.5, len(names)-0.5)  # https://stackoverflow.com/a/46798215/884682
+plt.xlabel("Definition")
 
-#ax = plt.subplot(111)
-#ax.bar(names, successes, width=0.3, color='g', align='center')
-#ax.bar(names, failures , width=0.3, color='r', align='center')
-#ax.xaxis_date()
+plt.ylim(0.0, 1.0)
+plt.ylabel('Halt/timeout ratio')
 
-#plt.bar([ row['name'     ]                   for row in rows],
-#        [[row['successes'], row['failures']] for row in rows])
-
-#plt.xlim((1,20))
-#plt.ylim((0,1 ))
-#plt.xticks(xs)
-plt.xlabel('Name')
-plt.ylabel('Occurrences')
-plt.title('Name distribution between successful and failed runs')
-
-#ax.set_xlabel('Name')
-#ax.set_ylabel('Occurrences')
-#ax.set_title('Name distribution between successful and failed runs')
 save('proportions', plt.gca(), size=(0.72, 0.72))
