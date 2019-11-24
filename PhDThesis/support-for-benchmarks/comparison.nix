@@ -43,12 +43,12 @@ rec {
 
   tabulatedPrecRec = runCommand "tabulated-prec-rec"
     {
-      script = wrap {
+      script = with { py = python3.withPackages (p: [ p.statsmodels ]); }; wrap {
         name   = "tabulate.py";
-        paths  = [ (python3.withPackages (p: [ p.statsmodels ])) ];
+        paths  = [ py ];
         vars   = { inherit isacosyData quickspecData; };
         script = ''
-          #!/usr/bin/env python3
+          #!${py}/bin/python3
           import sys
           msg = lambda x: sys.stderr.write(repr(x) + '\n')
 

@@ -232,7 +232,7 @@ with rec {
       FIDDLESOURCE = "${wrap {
         name   = "disable-appendices";
         script = ''
-          #!/usr/bin/env bash
+          #!${bash}/bin/bash
           set -e
 
           # Disables appendices, so we can count pages without them
