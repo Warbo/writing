@@ -23,15 +23,285 @@ the target domain, which is more ambitious and open-ended than supervised
 learning but also much harder to define, measure and optimise. Examples of this
 are prediction and compression tasks such as auto-encoders
 (learned compressor/decompressor pairs, rewarded by how well they preserve data
-through a round-trip) and adversarial or co-evolution tasks (coupled systems
-where each is rewarded by exploiting mis-prediction in the others).
+through a ``round trip'' compression-then-decompression) and adversarial or
+co-evolution tasks (coupled systems where each is rewarded by exploiting
+mis-prediction in the others).
+
+We focus on the application of statistical machine learning algorithms to
+\emph{languages}, such as logical statements or programming languages, This is
+made particularly difficult due to the ubiquity of recursive structures, from
+inductive datatypes, to recursive function definitions; from theorem statements,
+to proof objects. Such nested structures may extend to arbitrary depth, which
+makes them difficult to represent in the fixed numerical terms expected by most
+machine learning algorithms.
 
 \subsection{Feature Extraction}
 
-One major difficulty when applying statistical machine learning algorithms to
-\emph{languages}, such as Haskell, is the appearance of recursive
-structures. This can lead to nested expressions of arbitrary depth, which are
-difficult to compare in numerical ways. One common approach to this problem is
+\emph{Feature extraction} is a common pre-processing step for machine learning
+(ML). Rather than feeding ``raw'' data straight into our ML algorithm, we only
+learn a sample of \emph{relevant} details, known as \emph{features}. This has
+two benefits:
+
+\begin{itemize}
+\item \emph{Feature vectors} (ordered sets of features) are chosen to be more
+  compact than the data they're extracted from: feature extraction is
+  \emph{lossy compression}. This reduces the size of the ML problem, improving
+  efficiency (e.g. running time).
+\item We avoid learning irrelevant details such as the encoding system used,
+  improving \emph{data} efficiency (the number of samples required to spot a
+  pattern).
+\item Feature vectors are designed to have a fixed size, i.e. they will all have
+  length (or \emph{dimension}) $d$. Many machine learning algorithms only work
+  with inputs of a uniform size; feature extraction allows us to use these
+  algorithms in domains where the size of each input is not known, may vary or
+  may even be unbounded. For example, element-wise comparison of feature vectors
+  is trivial (compare the $i$th elements for $1 \leq i \leq d$); for expressions
+  this is not so straightforward, as their nesting may give rise to very
+  different shapes.
+\item Unlike our expressions, which are discrete, we can continuously transform
+  one feature vector into another. This allows operations like averaging,
+  interpolation and gradient \emph{gradient descent} to be used, which are not
+  suitable for discrete terms.
+\end{itemize}
+
+As an example, say we want to learn relationships between the following program
+fragments:
+
+\begin{haskell}
+data Maybe a = Nothing | Just a
+
+data Either a b = Left a | Right b
+\end{haskell}
+
+We might hope our algorithm discovers relationships like:
+
+\begin{itemize}
+  \item Both are valid Haskell code.
+  \item Both describe datatypes.
+  \item Both datatypes have two constructors.
+  \item \hs{Either} is a generalisation of \hs{Maybe} (we can define \hs{Maybe a
+      = Either () a} and \hs{Nothing = Left ()}).
+  \item There is a symmetry in \hs{Either}: \hs{Either a b} is equivalent to
+    \hs{Either b a} if we swap occurences of \hs{Left} and \hs{Right}.
+  \item It is trivial to satisfy \hs{Maybe} (using \hs{Nothing}).
+  \item It is not trivial to satisfy \hs{Either}; we require an \hs{a} or a
+    \hs{b}.
+\end{itemize}
+
+However, this is too optimistic. Without our domain-knowledge of Haskell, an ML
+algorithm cannot impose any structure on these fragments, and will treat them as
+strings of bits. Our high-level hopes are obscured by low-level details: the
+desirable patterns of Haskell types are mixed with undesirable patterns of ASCII
+bytes, of letter frequency in English words, and so on.
+
+In theory we could throw more computing resources and data at a problem (this is
+precisely what \emph{deep learning} techniques do), but available hardware and
+corpora are always limited. Instead, feature extraction lets us narrow the ML
+problem to what we, with our domain knowlege, consider important.
+
+There is no \emph{fundamental} difference between raw representations and
+features: the identity function is a valid feature extractor. Likewise, there is
+no crisp distinction between feature extraction and machine learning: a
+sufficiently-powerful learner doesn't require feature extraction, and a
+sufficiently-powerful feature extractor doesn't require any learning!
+\footnote{Consider a classification problem, to assign a label $l \in L$ to each
+  input. If we only extract a single feature $f \in L$, we have solved the
+  classification problem without using a separate learning step.}
+
+Rather, the terms are distinguished for purely \emph{practical} reasons: by
+separating feature extraction from learning, we can distinguish straightforward,
+fast data transformation (feature extraction) from complex, slow statistical
+analysis (learning). This allows for modularity, separation of concerns, and in
+particular allows ``off-the-shelf'' ML to be re-used across a variety of
+different domains. Even with no domain knowledge, feature extraction can still
+be used to improve efficiency by compressing the input (for example using
+\emph{autoencoding}).
+
+\subsubsection{Truncation and Padding}
+
+The simplest way to limit the size of recursive structures is to truncate
+anything larger than a particular size (and pad anything smaller). This is the
+approach taken by ML4PG~\cite{journals/corr/abs-1302-6421}, which limits itself
+to trees with at most 10 levels and 10 elements per level; each tree is
+converted to a $30 \times 10$ matrix (3 values per tree node) and learning
+takes place on these normalised representations.
+
+Truncation is unsatisfactory in the way it balances \emph{data} efficiency with
+\emph{time} efficiency. Specifically, truncation works best when the input data
+contains no redundancy and is arranged with the most significant data first (in
+a sense, it is ``big-endian''). The less these assumptions hold, the less we can
+truncate. Since many ML algorithms scale poorly with input size, it is important
+to truncate aggressively, but there may be useful information deep in the trees
+which would be discarded.
+
+\subsubsection{Dimension Reduction}
+
+A more sophisticated approach to the problem of reducing input size is to view
+it as a \emph{dimension reduction} technique: our inputs can be modelled as
+points in a high-dimensional space, which we want to project into a
+lower-dimensional space.
+
+Truncation is a trivial dimension reduction technique: take the first $N$
+coordinates. More sophisticated projection functions, such as Principle
+Component Analysis (PCA) consider the \emph{distribution} of the points, and
+project with the hyperplane which preserves as much of the variance as possible
+(or, equivalently, reduces the \emph{mutual information} between the points).
+
+Dimension reduction can also be approached as an unsupervised ML task (even if
+the data are labelled for a supervised
+task~\cite{Oveisi.Oveisi.Erfanian.ea:2012}). One popular approach is the
+\emph{autoencoder}, which transforms training data into smaller feature vectors
+and back again, whilst trying to minimise reconstruction error. Such compressed
+representations can be used as feature vectors for subsequent learning
+tasks. More semantically-meaningful features can be found using
+\emph{variational autoencoding}~\cite{kingma2013auto}, which add a stochastic
+sampling step before decoding, forcing similar data to produce similar vectors.
+
+Since these techniques are effectively ML algorithms in their own right, they
+suffer some of the same difficulties we encounter with recursive expressions:
+
+\begin{itemize}
+  \item They operate \emph{offline}, requiring all input points up-front
+  \item All input points must have the same dimensionality
+\end{itemize}
+
+Sophisticated dimension reduction is still useful for \emph{compressing} large,
+redundant features into smaller, information-dense representations, and as such
+provides a good complement to more flexible but less informative techniques. For
+example, we might truncate (and pad) tree structures into large, sparse vectors
+of a fixed size; then use PCA to pick only a few of the most informative
+dimensions to constitute our resulting feature vectors.
+
+The requirement for offline ``batch'' processing is more difficult to overcome,
+since any learning performed for feature extraction will interfere with the
+core learning algorithm that's consuming these features (this is why deep
+learning is often done greedily).
+
+\subsubsection{Distributed Representations}
+
+A \emph{distributed representation} does not isolate each semantic feature (for
+example, presence of absence of some lexeme) to separate, independent elements
+of a feature vector. Instead, features are represented as \emph{patterns} across
+multiple elements: each feature uses many elements and each element contributes
+to many features~\cite{hinton1984distributed}. Such encodings provide simple
+mechanisms to represent \emph{combinations} of features (combining their
+patterns element-wise), \emph{partial} features (presence of the pattern across
+a subset of its elements) and \emph{generalisation} (patterns which are present
+as sub-patterns of multiple features).
+
+The compressed representations learned by autoencoders are distributed
+representations, and are usually continuous. A discrete alternative is to use
+\emph{hashing}, which can also be learned (e.g. using \emph{random
+forests}~\cite{vens2011random}).
+
+Particularly relevant to our work is the ability for distributed representations
+to approximate recursive data such as syntax trees. This is achieved by defining
+(or learning) functions to \emph{combine} the representations of parts into
+those of composite objects, to \emph{test} whether or not a given feature vector
+represents a composite object, and to \emph{project} composite representations
+back into those of their constituents. For example, if $c$ and $d$ are the
+compression and decompression routines of an auto-encoder for non-recursive
+data, we can define an auto-encoder ($c'$ and $d'$) for binary trees in terms
+of a combining function $\bigoplus$, a predicate $\texttt{node?}$ and projection
+functions $\pi_{left}}$ and $\pi_{right}}$ as follows:
+
+\begin{equation*}
+  c'(x) = \begin{cases}
+            c'(a) \bigoplus c'(b) & \text{if $x = \texttt{node}(a, b)$}
+            c(x)                  & \text{otherwise}
+          \end{cases}
+
+  d'(x) = \begin{cases}
+            \texttt{node}(d'(\pi_{left }(x)),
+                          d'(\pi_{right}(x))) & \text{if \texttt(node?)(x)}
+            d(x)                            & \text{otherwise}
+          \end{cases}
+\end{equation*}
+
+With a suitable distance function between trees (e.g. edit distance), we can
+learn $c$, $d$, \texttt{node?} and $\bigoplus$ together in an unsupervised
+manner, by minimising the round trip error on a training corpus. The resulting
+$c'$ function can then directly encode recursive data to fixed-size feature
+vector. Analogous constructions can be applied to different recursive
+structures.
+
+\subsection{Sequences}
+
+To handle input of variable size, such as natural or formal language, research
+attention has been given to the handling of \emph{sequences}. This is a lossless
+approach, which splits the input into fixed-size \emph{chunks} (e.g. splitting
+text into a sequence of characters), which are fed into an appropriate ML
+algorithm one at a time. The sequence is terminated by a sentinel; an
+``end-of-sequence'' marker which, by construction, is distinguishable from the
+data chunks. Tradeoffs can be made between chunk size and sequence length; for
+example, treating code as a sequence of
+characters~\cite{cummins2017synthesizing} or lexer tokens~\cite{cummins2017end}.
+
+Not all ML algorithms can be adapted to accept sequences. One notable approach
+is to use \emph{recurrent (artificial) neural networks} (RNNs), which allow
+arbitrary connections between nodes, including cycles. Compared to
+\emph{feed-forward} (FF) neural networks, which are acyclic, the \emph{future
+  output} of a RNN may depend arbitrarily on its \emph{past inputs} (in fact,
+RNNs are universal computers).
+
+The main problem with RNNs, compared to the more widely-used FF approach, is the
+difficulty of training them. If we extend the standard backpropagation algorithm
+to handle cycles, we get the \emph{backpropagation through time}
+algorithm~\cite{werbos1990backpropagation}. However, this suffers a problem
+known as the \emph{vanishing gradient}: error values decay exponentially as they
+propagate back through the cycles, which prevents effective learning of delayed
+dependencies, undermining the main advantage of RNNs. The vanishing gradient
+problem is the subject of current research, with countermeasures including
+\emph{neuroevolution} (using evolutionary computation techniques to complement
+or replace backpropagation) and \emph{gated neurons} (which are selectively
+updated, and hence resilient to spurious overwriting; the most common example
+being \emph{long short-term memory} (LSTM)~\cite{hochreiter1997long}).
+
+An alternative to introducing recurrent connections is the use of
+\emph{attention}~\cite{vaswani2017attention}. In a (typically FF) neural network
+with attention, the network is given a chunk of the input and, in addition to
+its usual output, also produces some ``attention'' information specifying which
+chunks of the input should be provided next. The network is run again, but with
+the input adjusted using this attention information; more output is produced,
+along with new attention information, and so on. Such networks do not need to
+``remember'' long-distance relationships, whether by recurrent connections or
+gated nodes; they instead use the same input over and over again, but use their
+``attention'' to emphasise those parts which are relevant to upcoming
+output and hence should be taken into account when computing it.
+
+\subsubsection{Recursive Structure}
+
+Using sequences to represent recursive data is problematic: if we want our
+learning algorithm to exploit structure (such as the depth of a token), it will
+need to discover how to parse the sequences for itself, which is wasteful since
+we already have a parsed representation to begin with. The
+\emph{back-propagation through structure} approach~\cite{goller1996learning} is
+a more direct solution to this problem, using FF neural networks to learn
+recursive distributed representations~\cite{pollack1990recursive} which
+correspond to the recursive structure of the inputs. Such distributed
+representations can also be used for sequences, which we can use to encode
+sub-trees when the branching factor of nodes is not
+uniform~\cite{kwasny1995tail}. Recursive structure can also be gated inside
+LSTM cells~\cite{zhu2015long}.
+
+A simpler alternative for generating recursive distributed representations is to
+use circular convolution \cite{conf/ijcai/Plate91}. Although promising results
+are shown for its use in \emph{distributed tree kernels}
+\cite{zanzotto2012distributed}, our preliminary experiments in applying
+circular convolution to functional programming expressions found most of the
+information to be lost in the process; presumably as the expressions are too
+small.
+
+\emph{Kernel methods} have also been applied to structured information, for
+example in \cite{Gartner2003} the input data (including sequences, trees and
+graphs) are represented using \emph{generative models}, such as hidden Markov
+models, of a fixed size suitable for learning. Many more applications of kernel
+methods to structured domains are given in \cite{bakir2007predicting}, which
+could be used to learn more subtle relations between expressions than recurrent
+clustering alone.
+
+
+ One common approach to this problem is
 to represent such structures as \emph{sequences}. \emph{Recurrent neural
   networks} (RNNs) are a popular choice for processing sequences, especially
 when combined with mechanisms such as \emph{long short-term memory} (LSTM) for
@@ -45,24 +315,5 @@ Whilst neural networks have been applied directly to recursive structures
 popular approach is to use \emph{kernel methods}
 \cite{bakir2007predicting}. These are promising as a more principled alternative
 to our current hand-crafted translation of ASTs to vectors.
-
-\subsubsection{Distributed Representations}
-
-A \emph{distributed representation} does not isolate each semantic feature (for
-example, presence of absence of some lexeme) to separate, independent
-``computing elements'' (e.g. memory locations, such as the elements of a feature
-vector). Instead, features are represented as \emph{patterns} across multiple
-elements: each feature uses many elements and each element contributes to many
-features~\cite{hinton1984distributed}. Such encodings provide simple mechanisms
-to represent \emph{combinations} of features (combining their patterns
-element-wise), \emph{partial} features (presence of the pattern across a subset
-of its elements) and \emph{generalisation} (patterns which are present as
-sub-patterns of multiple features).
-
-% Distributed representations may be learned from data, for example by
-% \emph{auto-encoding}; or they may be calculated ``from whole cloth'' using
-% techniques like hashing. We are particularly interested in distributed
-% representations for storing structured data (like syntax trees) in fixed-length
-% feature vectors.
 
 \input{background_clustering.tex}

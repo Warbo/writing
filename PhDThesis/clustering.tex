@@ -850,6 +850,16 @@ form, sending to a theorem prover, etc.).
 \label{sec:evaluation}
 
 \iffalse
+Here we consider the 10 most-downloaded packages from \hackage{} (as of
+2015-10-30) which have property tests; these are \texttt{warp}, \texttt{aeson},
+\texttt{text}, \texttt{lens}, \texttt{conduit}, \texttt{pandoc},
+\texttt{attoparsec}, \texttt{scientific}, \texttt{yesod-core} and
+\texttt{blaze-html}.
+
+% TODO: Analysis
+\fi
+
+\iffalse
 TODO: Alison: Next chapter? It's good to lead into the next chapter at the end
 of the previous ones.
 \fi
@@ -1002,36 +1012,9 @@ exceptions which became separate for reasons which are still unclear.
 
 When clustering the \hs{yesod} Web framework, the clustering did seem to match
 our intuitions, in particular since all 15 of Yesod's MIME type identifiers
-appeared in the same cluster.
-
-\iffalse
-Since we are working in the domain of Haskell programs, an abundant source of
-statements are available in the form of \emph{tests}. For manually-written
-tests, the effort required to write them implies that they must be of some
-interest to their author. Many forms of test are \emph{not} suitable for our
-purposes, such as \emph{unit tests} which are always trivially provable by
-$\beta$-reduction; or \emph{integration tests}, which depend on the behaviour of
-the external environment. One reason to study Haskell is its widespread use of
-\emph{property checking}, which does give us useful data. Many Haskell property
-checkers exist, based on random testing
-(\quickcheck{}~\cite{claessen2011quickcheck} and
-\smartcheck{}~\cite{pike2014smartcheck}), enumeration
-(\smallcheck{}~\cite{runciman2008smallcheck}), observation
-(\lazysmallcheck{}~\cite{reich2013advances}) and logic programming
-(\sparsecheck{}~\cite{sparsecheck}).
-
-Thankfully the major differences between these systems are in the way they
-instantiate test arguments; their representations of properties are largely the
-same (modulo renaming of functions and types).
-
-Here we consider the 10 most-downloaded packages from \hackage{} (as of
-2015-10-30) which have property tests; these are \texttt{warp}, \texttt{aeson},
-\texttt{text}, \texttt{lens}, \texttt{conduit}, \texttt{pandoc},
-\texttt{attoparsec}, \texttt{scientific}, \texttt{yesod-core} and
-\texttt{blaze-html}.
-
-% TODO: Analysis
-\fi
+appeared in the same cluster. Although promising, a more thorough exploration of
+the parameters would be needed to obtain more intuitively reliable results (at
+the risk of over-fitting).
 
 \iffalse
 Whilst recurrent clustering has produced results which merit further
@@ -1076,12 +1059,10 @@ The following less-serious problems were also encountered while applying
 \end{itemize}
 \fi
 
-It seems like this recurrent clustering method has promise\iffalse TODO: Alison: Informal, vague \fi, although it will
-require a more thorough exploration of the parameters to obtain more intuitively
-reliable results. These clusters can then be used in several ways to perform
-theory exploration; the most na\"{\i}ve way being to explore each cluster as
-\quickspec{} signature in its own right, which we investigate as a potential
-solution to the Signature Selection problem.
+These clusters can then be used in several ways to perform theory exploration;
+the most na\"{\i}ve way being to explore each cluster as \quickspec{} signature
+in its own right, which we investigate as a potential solution to the Signature
+Selection problem in \S~\ref{sec:signatureselection}.
 
 \iffalse
 TODO: Alison: Next chapter? It's good to lead into the next chapter at the end of the previous ones.

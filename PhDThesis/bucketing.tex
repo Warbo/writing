@@ -308,9 +308,7 @@ two recommendations for signature selection methods:
   recursion across multiple arguments and matching input/output types (i.e.
   \emph{endomorphisms}, which can be combined in exponentially-many ways).
   In particular, exposing the accumulator argument of a tail-recursive function
-  makes it harder to explore. \iffalse TODO: Alison: These should be in the
-  contributions and further recommendations based on your other findings in this
-  chapter \fi
+  makes it harder to explore.
 \item Smaller signatures are faster to explore, so should be preferred if
   possible.
 \end{itemize}
@@ -435,10 +433,11 @@ selection methods.
 The signature selection problem is superficially similar to the
 \emph{clustering} problem in machine learning: grouping data points based on
 their similarity across multiple dimensions. To investigate this potential
-relationship we created a signature selection method based on a \emph{recurrent
-  clustering} algorithm for Haskell code: this flattens syntax trees into
-vectors, substitutes fixed numbers for keywords and recurses to determine
-suitable numbers for referenced expressions.
+relationship we created a signature selection method using the \emph{recurrent
+  clustering} algorithm for Haskell code described in
+\S~\ref{sec:recurrentclustering}: this flattens syntax trees into vectors,
+substitutes fixed numbers for keywords and recurses to determine suitable
+numbers for referenced expressions.
 
 The results of this method are shown in Figure~\ref{fig:bucketing}, along with
 the pseudorandom method as a control. The results of clustering turn out to be

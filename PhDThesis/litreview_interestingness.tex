@@ -173,7 +173,11 @@ When we \emph{generalise} a statement $S$, we obtain a new statement $S'$ of
 which $S$ is a special case. Although it seems counterintuitive, a generalised
 statement can sometimes be \emph{easier} to prove than the original. This arises
 often in inductive proofs (e.g. when reasoning about tail-recursive
-definitions~\cite{kapur2003automatic}), since the specific obligations which
+definitions~\cite{kapur2003automatic}\footnote{Tail-recursive functions are
+  desirable due to their constant space usage, unlike recursion in non-tail
+  positions which requires a growing number of stack frames or nested closures.
+  Reasoning about non-tail recursive definitions is often simpler, since they
+  don't expose accumulator arguments, so equivalence ), since the specific obligations which
 arise in the proof may be incompatible with the available inductive hypotheses.
 An informative example is given by Boyer and Moore of the associativity of
 multiplication in ACL2~\cite{boyer1983proof}:
@@ -207,7 +211,7 @@ addition to its usefulness in making this proof go through.
 
 Generality hence contributes to a conjecture's \emph{utility}, and also (by
 definition) to its \emph{applicability}. It is still important to balance
-against other concerns, since blindly generalising \emph{all} statements of
+against other concerns, since blindly generalising \emph{all} statements or
 proof obligations we come across would result in conjectures so strong that they
 are unprovable, or even false; which would make them much less interesting.
 
@@ -216,14 +220,10 @@ are unprovable, or even false; which would make them much less interesting.
 The interestingness of a statement can also be characterised by \emph{analogy}
 to existing interesting statements. By finding lemmas analogous to those of a
 different theory, we may be able to re-use proof tactics and other forms of
-meta-programming across both.
-
-Existing theory exploration systems have been successfully applied to this
-problem, however the use of pure exploration misses opportunities to
-\emph{focus} the search, since we know which lemmas are used in those theories
-where a technique succeeded. If we can find an analogy to map from such solved
-problems to a currently-unproven goal, we can infer the approximate form of the
-lemmas we require, and target these specifically.
+meta-programming across both. In this case an analogy would map from a solved
+problem to a currently-unproven goal, and applying this map to the lemmas
+appearing in the existing proof allows us to infer the approximate form of the
+lemmas required for the new theorem.
 
 The approach taken by \textsc{ACL2(ml)} is to find lemmas which may be relevant
 to solving a goal $G$ by making analogies via unsupervised
@@ -245,10 +245,8 @@ the original lemma (which is presumably interesting enough to prove and
 subsequently explore), that of the target theorem it may help to prove, and the
 novelty provided by reframing existing concepts in a new domain. The running
 examples for demonstrating \textsc{ACL2(ml)} are equivalence theorems for
-tail-recursive and non-tail-recursive calculations\footnote{A tail-recursive
-  function can be executed in constant space using a loop, whereas recursion in
-  non-tail positions may require a growing number of stack frames or nested
-  closures.}), as well as the effect of repeating certain list operations:
+tail-recursive and their non-tail-recursive counterparts, as well as the effect
+of repeating certain list operations:
 
 \begin{itemize}
 
@@ -390,9 +388,163 @@ auxilliary lemmas.
 
 % TODO Include Colton/Bundy et al
 
-% TODO Include something about intrinsic motivation, compression progress,
+\subsection{Tests}
+
+Since we are working in the domain of Haskell programs, an abundant source of
+statements are available in the form of \emph{tests}. For manually-written
+tests, the effort required to write them implies that they must be of some
+interest to their author. Many forms of test are \emph{not} suitable for our
+purposes, such as \emph{unit tests} which are always trivially provable by
+$\beta$-reduction; or \emph{integration tests}, which depend on the behaviour of
+the external environment. One reason to study Haskell is its widespread use of
+\emph{property checking}, which does give us useful data in the form of
+universally quantified statements. Many Haskell property checkers exist, based
+on random testing (\quickcheck{}~\cite{claessen2011quickcheck} and
+\smartcheck{}~\cite{pike2014smartcheck}), enumeration
+(\smallcheck{}~\cite{runciman2008smallcheck}), observation
+(\lazysmallcheck{}~\cite{reich2013advances}) and logic programming
+(\sparsecheck{}~\cite{sparsecheck}).
+
+Thankfully the major differences between these systems are in the way they
+instantiate test arguments; their representations of properties are largely the
+same (modulo renaming of functions and types): as Haskell functions with free
+variables encoded as function arguments.
+
+\subsection{Artificial Curiosity} \label{sec:intrinsic}
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=0.75]
+      % The image, for reference
+      % \node[anchor=south west,inner sep=0] at (0,0) {\includegraphics[width=\textwidth]{wundt.png}};
+
+      % Axes
+      \draw[black,ultra thick,->] (1,0.8) -- (1,  9)   node[midway, above, sloped] {HEDONIC VALUE};     % y axis
+      \draw[black,ultra thick,->] (1,4)   -- (11, 4);                                                   % x axis
+      \path                       (1,0.8) -- (11, 0.8) node[midway, below]         {AROUSAL POTENTIAL}; % x axis label
+
+      % Curve. The numbers come from tracing over wundt.png
+      \draw[black,ultra thick] (3, 4)
+           to[out=0,   in=240] (5.05, 6)
+           to[out=60,  in=180] (6.5,  8.2)
+           to[out=0,   in=105] (8.1,  6)
+           to[out=-75, in=120] (8.8,  4)
+           to[out=-60, in=150] (11.4, 0.8);
+
+      % This version is closer, but a little jagged
+      \iffalse
+      \draw[black,ultra thick] (3, 4)
+           to[out=0,   in=240] (5.05, 6)
+           to[out=60,  in=225] (6,    8)
+           to[out=45,  in=180] (6.5,  8.2)
+           to[out=0,   in=135] (7.2,  8)
+           to[out=-45, in=105] (8.1,  6)
+           to[out=-75, in=120] (8.8,  4)
+           to[out=-60, in=150] (11.4, 0.8);
+      \fi
+  \end{tikzpicture}
+
+  \caption{The Wundt curve, reproduced from~\cite{berlyne1970novelty}. The axes
+    ``hedonic value'' and ``arousal potential'' are described as covering
+    \textquote{reward value\dots preference or pleasure}, and \textquote{all the
+      stimulus properties that tend to raise arousal, including novelty and
+      complexity}, respectively.}
+  \label{fig:wundt}
+\end{figure}
+
+Another perspective on what is ``interesting'' comes from the artificial
+intelligence tasks of optimisation and reinforcement learning. Common pitfalls
+for such systems are highly non-convex problems (trapping optimisers in local
+minima), and sparse information (such as flat gradients; or highly delayed
+rewards, like a single win/lose reward at the end of a game). To mitigate these problems, various forms of internally-generated (or \emph{intrinsic}) rewards
+can be incorporated into a system. Such schemes provide reward for interesting
+discoveries, which encourages exploration in lieu of external direction, and are
+known as \emph{Artificial Curiosity}~\cite{schmidhuber2006developmental} (AC).
+
+The unifying principle of AC methods is to force systems away from data which
+are not amenable to learning; either because they are so familiar that there is
+nothing left to learn, or so unfamiliar that they are unintelligible. The
+resulting behaviour is characterised by the \emph{Wundt curve} (shown in Figure \ref{fig:wundt}) \footnote{In practice, many measures
+  avoid negative values for simplicity, in which cases we replace all negative
+  points on the curve with zero.}, which has been used in psychology to explain
+human aesthetics and preferences \cite{berlyne1970novelty}. This same behaviour
+may be applicable to the theorems produced by a theory exploration system.
+
+We can divide AC approaches into two groups: those which make \emph{explicit}
+use of interestingness, learning from signals which follow a Wundt curve; whilst
+\emph{implicit} approaches modify the \emph{output} of their learning
+algorithm(s), to engineer the overall system behaviour to follow a Wundt curve
+as an emergent property.
+
+A framework encompassing many examples of the explicit approach is given
+in~\cite{oudeyer2007intrinsic} in the context of reinforcement learning; for
+comparison, many similar measures are surveyed in a data mining context
+in~\cite{geng2006interestingness}. Many more reinforcement learning examples can
+be found in~\cite{Kaplan2006, Lipson2007, Luciw2011, Macedo2000,
+  Ramik.Sabourin.Madani:2013, Roa.Kruijff.Jacobsson:2009, Schmidhuber:1991,
+  oudeyer2004intelligent}; whilst more general descriptions are given
+in~\cite{Schaul.Sun.Wierstra.ea:2011, Scott1989, maher2008achieving}, which may
+be more amenable to Theory Exploration setting.
+
+Many of these reward signals are based on information theory, with a prominent
+example being \emph{compression progress}: given a compressed representation of
+our previous observations, the ``progress'' is the space saved if we include the
+current observation. Observations which are incompressible or trivially
+compressible don't save any space, whilst observations which provide new
+insights into the structure of past experience can provide a space saving when
+compressed together. This seems particularly relevant for identifying
+interesting theorems: those new theorems (``observations'') which shorten the
+proofs of previously discovered theorems may be more general, more powerful and
+therefore more \emph{interesting}. In fact this is very similar to
+\quickspec{}'s interestingness criterion.
+
+Another example of explicit Artificial Curiosity is given
+in~\cite{Hester.Stone:2012}, where world states which cause \emph{disagreement}
+among a population of decision trees (a \emph{random
+  forest}~\cite{randomforests}) are considered interesting. Since the models
+make stochastic predictions, the disagreement follows a Wundt curve as the
+complexity of state transitions increases: for parts of the state space which
+have been fully learned, the models will agree on accurate predictions; for
+parts which are unlearnable, the models cannot infer any structure, and will
+converge to reporting the same average value. Whilst the latter predictions may
+not be \emph{accurate}, they will be \emph{in agreement}, hence pushing down the
+interestingness of states which are too complex.
+
+Many examples of the implicit case are based on \emph{coevolution}: rewarding
+one part of the system for exploiting another part, and vice versa. In~\cite{Schmidhuber1999} a pair of learning algorithms place virtual ``bets''
+on the outcome of actions, and the winner is rewarded at the expense of the
+loser. Due to the risk involved, each algorithm will only bet when it is
+confident in its prediction, and bets will only be actioned when each algorithm
+is confident in a \emph{different} outcome. The overall behaviour of this system
+is therefore similar to the explicit measure of disagreement used in the random
+forest example.
+
+More recent work on \emph{Generative Adversarial Networks} (GANs) trains a
+``discriminator'' program to distinguish real training examples (usually images)
+from synthetic data made by a ``generator'' program. Both programs are
+differentiable (usually some type of Artificial Neural Network), so the coupling
+between the generator's output and the discriminator's input can be used not
+only to feed synthetic data ``forwards'', but also to back-propagate the
+discriminator's errors (which it is trying to minimise) into the generator
+(which then tries to maximise, exploiting the discriminator by synthesising more
+realistic data).
+
+Another example of implicit AC is the ``darwinian brain'' of Fernando et
+al.~\cite{fernando2013design1, fernando2013design2}. This coevolves a
+population of problem generators and problem solvers, rewarding the solvers
+based on their speed, and rewarding the generators based on the \emph{variance}
+of the solvers' speed. This avoids trivial problems (which all solvers can
+quickly overcome) and complex problems (which no solver can manage), and focuses
+on those with the most possibility for learning. The role of problem generator
+is similar to that of Theory Exploration tools, with solvers being Automated
+Theorem Provers.
+
+% TODO Include something about
 % variance among experts (decision tree stuff as well as more established
 % splitting functions stuff)
+
+% TODO: Also mention the intrinsic reward idea about easily accessible regions
+% (e.g. balancing a pole because it's easier to get from there to anywhere else)
 
 % TODO Make sure we mention the recent reinforcement learning task that includes
 % a constantly-changing "TV" in the 3D world, shown in some TwoMinutePapers

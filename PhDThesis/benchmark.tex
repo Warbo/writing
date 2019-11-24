@@ -587,8 +587,9 @@ names as the ground truth, rather than some language-specific variant.
 
 We benchmarked \quickspec{} version 0.9.6, a tool written in Haskell for
 conjecturing equations involving Haskell functions, described in more detail in
-$\S$\ref{sec:existing-tools}. In order to thoroughly benchmark \quickspec{}, we
-need to automate some of the decisions which are normally left up to the user:
+$\S$\ref{sec:theoryexploration}. In order to thoroughly benchmark \quickspec{},
+we need to automate some of the decisions which are normally left up to the
+user:
 
 \begin{sloppypar}
   \begin{itemize}
@@ -619,7 +620,7 @@ need to automate some of the decisions which are normally left up to the user:
   \input{quickspectime.pgf}
   \caption{Running times of \quickspec{} on theories sampled from TIP. Each point
     is a successful run (spread out horizontally to reduce overlaps). Red
-    crosses show runs which timed out, which occurred for every size. Each size
+    circles show runs which timed out, which occurred for every size. Each size
     has 31 runs total, except for size 1 (14 runs) and size 2 (30 runs) due to
     sampling restrictions. Box plots show inter-quartile range, which reaches
     the timeout for sizes above 8. Medians are marked with a line and remain
@@ -636,7 +637,7 @@ need to automate some of the decisions which are normally left up to the user:
     sample size (average of the ratios) and errorbars show the sample standard
     deviation. Mean precision steadily reduces from around $0.5$ at size 1 to
     around $0.1$ for size 20, whilst mean recall remains roughly flat between
-    $0.2$ and $0.5$"}
+    $0.2$ and $0.5$}
   \label{fig:quickspec_precRec}
 \end{figure}
 
@@ -719,7 +720,7 @@ make our benchmark applicable to \isacosy{}:
   \input{isacosytime.pgf}
   \caption{Running times of \isacosy{} on theories sampled from TIP. Each point
     is a successful run (spread out horizontally to reduce overlaps). Red
-    crosses are failed runs, caused by timeouts or out-of-memory. All runs of
+    circles are failed runs, caused by timeouts or out-of-memory. All runs of
     size 1 succeeded, whilst nothing succeeded above size 6. Each size has 31
     runs total, except for size 1 (14 runs) and size 2 (30 runs) due to sampling
     restrictions. Box plots show inter-quartile range, which grows with size,
