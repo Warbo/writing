@@ -1,4 +1,4 @@
-{ basicTex, data, lib, python3, runCommand, wrap, writeScript }:
+{ basicTex, data, lib, python3, runCommand, textWidth, wrap, writeScript }:
 
 with builtins;
 with lib;
@@ -61,7 +61,7 @@ rec {
 
     proportions = runCommand "content-failure-proportions"
       {
-        inherit csv name;
+        inherit csv name textWidth;
         script = wrap {
           name  = "contentsGraph.py";
           file  = ./contentsGraph.py;

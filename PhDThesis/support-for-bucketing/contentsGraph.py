@@ -2,16 +2,32 @@
 from os  import getenv
 from csv import DictReader
 
-label = getenv('name')
+label       = getenv('name')
+textWidthPt = float(getenv('textWidth'))
 
 def msg(x):
     from sys import stderr
     stderr.write(repr(x))
     stderr.flush()
 
-def save(name, axes):
-    axes.get_figure().savefig(name + label + '.pdf')
-    axes.get_figure().savefig(name + label + '.pgf')
+from math import sqrt
+
+def figSize(widthFraction, height=None):
+    ptToInch    = 1.0 / 72.27
+    textWidthIn = textWidthPt * ptToInch
+    goldMean    = (sqrt(5.0)-1.0) / 2.0
+    calcWidth   = widthFraction * textWidthIn
+    calcHeight  = textWidthIn * ((goldMean * widthFraction) \
+                                 if height is None else height)
+    return (calcWidth, calcHeight)
+
+def save(name, axes, size=None):
+    fig = axes.get_figure()
+    if size is not None:
+        (w, h) = size
+        fig.set_size_inches(figSize(w, h))
+    fig.savefig(name + label + '.pdf', bbox_inches='tight', pad_inches=0.0)
+    fig.savefig(name + label + '.pgf', bbox_inches='tight', pad_inches=0.0)
 
 with open(getenv('csv'), 'r') as f:
     counts = DictReader(f)
@@ -28,6 +44,10 @@ rows.sort(key=lambda x: x['successes'] / (x['successes'] + x['failures']),
 names     = [row['name'     ] for row in rows]
 successes = [row['successes'] for row in rows]
 failures  = [row['failures' ] for row in rows]
+
+# Store how many names we found, so it can be spliced into the document
+with open('proportions_graph_count_' + label + '.tex', 'w') as f:
+    f.write(str(len(names)))
 
 prop = lambda key: lambda row: row[key] / (row['successes'] + row['failures'])
 
@@ -66,4 +86,4 @@ plt.title('Name distribution between successful and failed runs')
 #ax.set_xlabel('Name')
 #ax.set_ylabel('Occurrences')
 #ax.set_title('Name distribution between successful and failed runs')
-save('proportions', plt.gca())
+save('proportions', plt.gca(), size=(0.72, 0.72))
