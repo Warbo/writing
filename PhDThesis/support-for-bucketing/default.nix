@@ -1,8 +1,6 @@
 { textWidth ? "345.0" }:
 with builtins;
-with {
-  inherit (import ../../resources) bibtex nixpkgs styles;
-};
+with { inherit (import ../../resources) bibtex nixpkgs styles; };
 with nixpkgs;
 with lib;
 rec {
@@ -72,8 +70,8 @@ rec {
   nontoxicSurvival = survivalAnalysis { data  = contents.nontoxic.samples;
                                         label = "nontoxic"; };
 
-  # Extract graphs from the above analyses
-  images = runCommand "bucketing-images"
+  # Extract content (graphs, etc.) from the above analyses
+  content = runCommand "bucketing-content"
     {
       ds = [
         contents.all.proportions
@@ -84,16 +82,33 @@ rec {
         nontoxicSurvival.timeoutGraph
         graphs.boundsGraph
         graphs.bucketingGraph
+        #graphs.clustering-vs-random
       ];
     }
     ''
-      mkdir "$out"
+      mkdir -p "$out/images"
+      mkdir -p "$out/text"
       for D in $ds
       do
         find "$D" -type f | while read -r F
         do
           NAME=$(basename "$F")
-          cp -v "$F" "$out/$NAME"
+          case "$NAME" in
+            *.pgf);&
+            *.pdf);&
+            *.png)
+              cp -v "$F" "$out/images/$NAME"
+              ;;
+
+            *.tex)
+              cp -v "$F" "$out/text/$NAME"
+              ;;
+
+            *)
+              echo "Error, don't know where to put '$F'" 1>&2
+              exit 1
+              ;;
+          esac
         done
       done
     '';
@@ -135,7 +150,7 @@ rec {
     name  = "render-bucketing-paper";
     paths = [ fullTex gnumake ];
     vars  = {
-      inherit bibtex images;
+      inherit bibtex content;
 
       go = wrap {
         name   = "go";
@@ -163,10 +178,14 @@ rec {
     script = ''
       #!${bash}/bin/bash
       set -e
-      cp -r "$source" ./src
-      chmod -R +w     ./src
+      cp -r  "$source" ./src
+      chmod -R +w      ./src
       cp     "$bibtex" ./src/Bibtex.bib
-      cp -rL "$images" ./src/images
+
+      for D in "$content"/*
+      do
+        cp -rL "$D" ./src/"$(basename "$D")"
+      done
 
       for STYLE in $styles
       do

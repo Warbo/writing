@@ -130,7 +130,10 @@ with { defs = rec {
             cp -rs "$D"/* ./
           done
 
-          ln -s "${bucketingSupport.images}" ./images
+          for D in "${bucketingSupport.content}"/*
+          do
+            ln -s "$D" ./"$(basename "$D")"
+          done
 
           ln -sv "${bibtex}" ./Bibtex.bib
 
