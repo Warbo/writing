@@ -20,8 +20,8 @@ with rec {
       # version of nix-helpers (which saves having to repeat ourselves).
       packages-src = fetchgit {
         url    = http://chriswarbo.net/git/warbo-packages.git;
-        rev    = "4a7075b";
-        sha256 = "1263li5lc8fkhblzsbw1d7bchsnwprknk5xnajkkxcbikzczi3i4";
+        rev    = "a9e7165";
+        sha256 = "0bkn71apjw108grj0s0bpqnvxhgg29j2rm5khsa7pp05ir1g4r8m";
       };
 
       # This defines helper functions for Nix.
