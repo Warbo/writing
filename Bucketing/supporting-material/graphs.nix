@@ -9,7 +9,7 @@ rec {
       exit 1
     '';
 
-  bounds = bucketing.bucketBounds;
+  bounds = "${bucketingSrc}/experiment-results/89132d7/bucketBounds.json.lz";
 
   boundsGraph = runCommand "bounds-graph"
     {
@@ -40,8 +40,8 @@ rec {
   graphs = runCommand "bucketing-graphs"
     {
       buildInputs = [ gnuplot jq lzip msgpack-tools rpl ];
-      #data        = ./SMALL_DATA/averageBucketProportions.msgpack.lz;
-      data        = ./BIG_DATA/WITH_AVERAGES.msgpack.lzip;
+      data        = "${bucketingSrc
+        }/experiment-results/89132d7/averageBucketProportions.msgpack.lz";
       extract     = ''
         to_entries | .[] | .key as $size | .value |
           to_entries | .[] | .key as $method | .value |
