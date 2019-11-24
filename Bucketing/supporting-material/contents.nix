@@ -1,26 +1,21 @@
-{ basicTex, data, lib, python3, runCommand, writeScript }:
+{ basicTex, data, foldAttrs', lib, python3, runCommand, writeScript }:
 
 with builtins;
 with lib;
 rec {
-  # TODO: Does this exist in nixpkgs somewhere? If not, move to nix-helpers
-  foldAttrs = f: init: attrs: fold (name: f name (getAttr name attrs))
-                                   init
-                                   (attrNames attrs);
-
   processSamples = {name, samples}: rec {
     inherit name samples;
 
-    names = foldAttrs (size: reps: got:
-                        foldAttrs (rep: data: got:
+    names = foldAttrs' (size: reps: got:
+                        foldAttrs' (rep: data: got:
                                     unique (got ++ data.sample))
                                   got
                                   reps)
                       []
                       samples;
 
-    count = name: foldAttrs (size: reps: got:
-                              foldAttrs (rep: data: got:
+    count = name: foldAttrs' (size: reps: got:
+                              foldAttrs' (rep: data: got:
                                           if elem name data.sample
                                              then {
                                                successes =
@@ -49,7 +44,7 @@ rec {
     # definitions.
     readableToxic = map deHex toxic;
 
-    tabulated = foldAttrs (name: { fails, successes }: got: got ++ [
+    tabulated = foldAttrs' (name: { fails, successes }: got: got ++ [
                             [ name (toString successes) (toString fails) ]
                           ])
                           [ [ "name" "successes" "failures" ] ]
