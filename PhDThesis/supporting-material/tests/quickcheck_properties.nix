@@ -30,25 +30,30 @@ with rec {
     concatStringsSep "\n"
       (tail (init (dropSuffix [] (dropPrefix lines))));
 
-  runner = { sentinel, tests }: runCommand "quickcheck-${sentinel}" {} (wrap {
-    name   = "quickchecker-${sentinel}";
-    paths  = [ (haskellPackages.ghcWithPackages (h: [
-                 h.directory h.QuickCheck ])) ];
-    script = ''
-      #!/usr/bin/env runhaskell
-      import System.Directory
-      import System.Environment
-      import Test.QuickCheck
+  runner = { sentinel, tests }:
+    with {
+      hs = haskellPackages.ghcWithPackages (h: [
+        h.directory h.QuickCheck
+      ]);
+    };
+    runCommand "quickcheck-${sentinel}" {} (wrap {
+      name   = "quickchecker-${sentinel}";
+      paths  = [ hs ];
+      script = ''
+        #!${hs}/bin/runhaskell
+        import System.Directory
+        import System.Environment
+        import Test.QuickCheck
 
-      ${if sentinel == "unit" then "" else chop "abs"}
+        ${if sentinel == "unit" then "" else chop "abs"}
 
-      ${chop sentinel}
+        ${chop sentinel}
 
-      main = do
-        ${concatMapStringsSep " >> " (t: "quickCheck " + t) tests}
-        getEnv "out" >>= createDirectory
-    '';
-  });
+        main = do
+          ${concatMapStringsSep " >> " (t: "quickCheck " + t) tests}
+          getEnv "out" >>= createDirectory
+      '';
+    });
 };
 mapAttrs (sentinel: tests: runner { inherit sentinel tests; }) {
   unit         = [ "fact_base" "fact_increases" "fact_div"            ];

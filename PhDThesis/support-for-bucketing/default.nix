@@ -140,7 +140,7 @@ rec {
       go = wrap {
         name   = "go";
         script = ''
-          #!/usr/bin/env bash
+          #!${bash}/bin/bash
           set -e
           DRAFT='-draftmode'
           [[ "$FINAL" -eq 1 ]] && DRAFT=""
@@ -161,7 +161,7 @@ rec {
       styles = concatStringsSep " " (attrValues styles);
     };
     script = ''
-      #!/usr/bin/env bash
+      #!${bash}/bin/bash
       set -e
       cp -r "$source" ./src
       chmod -R +w     ./src

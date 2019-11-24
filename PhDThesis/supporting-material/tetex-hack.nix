@@ -1,4 +1,4 @@
-{ mkBin, perl, runCommand, tetex }:
+{ bash, mkBin, perl, runCommand, tetex }:
 
 runCommand "tetex-hack"
   {
@@ -7,7 +7,7 @@ runCommand "tetex-hack"
       name   = "dvipng";
       paths  = [ perl tetex ];
       script = ''
-        #!/usr/bin/env bash
+        #!${bash}/bin/bash
         set -e
         if [[ "x$1" = "x-version" ]]
         then
