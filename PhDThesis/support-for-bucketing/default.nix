@@ -1,4 +1,4 @@
-{ textWidth }:
+{ textWidth ? "345.0" }:
 with builtins;
 with {
   inherit (import ../../resources) bibtex nixpkgs styles;
@@ -56,10 +56,10 @@ rec {
 
   # Raw and analysed data
   graphs   = callPackage ./graphs.nix {
-    inherit basicTex bucketing runner textWidth;
+    inherit basicTex bucketingSrc runner textWidth;
   };
   data     = callPackage ./data.nix     { inherit haskellTESrc;  };
-  contents = callPackage ./contents.nix { inherit basicTex data; };
+  contents = callPackage ./contents.nix { inherit basicTex data textWidth; };
   toxic    = callPackage ./toxic        {
     inherit haskellTE;
     inherit (contents.all) readableToxic;
