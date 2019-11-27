@@ -153,4 +153,8 @@ rec {
       mkdir "$out"
       cp *.png "$out"
     '';
+
+  clustering-vs-random = callPackage ./clustering_vs_random {
+    inherit basicTex bucketingSrc runner textWidth;
+  };
 }
