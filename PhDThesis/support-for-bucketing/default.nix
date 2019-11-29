@@ -82,7 +82,7 @@ rec {
         nontoxicSurvival.timeoutGraph
         graphs.boundsGraph
         graphs.bucketingGraph
-        #graphs.clustering-vs-random
+        graphs.clustering-vs-random.graph
       ];
     }
     ''

@@ -382,9 +382,9 @@ divide signatures of size $N$ into more than $N$ subsets (since there are not
 enough definitions to populate every subset without duplicating).
 
 The pseudorandom and clustering implementations are more realistic, since they
-do not use any information from the ground truth. These methods may also leave
-some of their subsets empty (since, unlike the optimal and pessimal methods,
-they are less prone to extremes).
+do not use any information from the ground truth. We also permit these methods
+to leave some of their subsets empty (since, unlike the optimal and pessimal
+methods, they are less prone to extremes).
 
 \begin{figure}
   % \input{images/bounds.pgf}
@@ -420,13 +420,14 @@ and optimal results shows the potential gains to be made by smarter signature
 selection methods.
 
 \begin{figure}
-  % \input{images/bucketing}
-  \includegraphics[width=\textwidth]{images/bucketing.png}
-  \caption{Comparison of subset quality when selected by recurrent clustering
-    (solid lines) versus pseudorandom selection (dashed lines). Darker lines
-    show division into a greater number of subsets (between 1 and 20). The solid
-    and dashed lines follow each other closely, indicating that clustering
-    performs no better than random at signature selection.}
+  % \input{images/bucketed}
+  \includegraphics[width=\textwidth]{images/bucketed.png}
+  \caption{Quality evaluation of bucketing via recurrent clustering. Each plot
+    uses a fixed number of buckets (5, 10, 15 or 20) and shows the number of
+    extra theorems available when clusters are used as buckets, compared to a
+    pseudorandom control. The difference is not statistically significant. There
+    is a slight upward trend for larger sizes, but this is relatively small
+    compared to the corresponding increase in total theorems available.}
   \label{fig:bucketing}
 \end{figure}
 
@@ -437,11 +438,18 @@ relationship we created a signature selection method using the \emph{recurrent
   clustering} algorithm for Haskell code described in
 \S~\ref{sec:recurrentclustering}: this flattens syntax trees into vectors,
 substitutes fixed numbers for keywords and recurses to determine suitable
-numbers for referenced expressions.
+numbers for referenced expressions. These vectors are clustered based on their
+euclidean distance, using a \emph{k-means} algorithm, and these clusters are
+chosen as our buckets.
 
-The results of this method are shown in Figure~\ref{fig:bucketing}, along with
-the pseudorandom method as a control. The results of clustering turn out to be
-no better than random; in fact the curves show surprisingly similar patterns.
+The results of this method are shown in Figure~\ref{fig:bucketing}, which plots
+the difference between bucketing based on this clustering approach, compared to
+simply choosing buckets pseudorandomly (as a control). The results of clustering
+are statistically indistinguishable from random.\footnote{Wilcoxon's signed-rank
+  test finds no significant difference for most of the plotted points; whilst
+  not a rigorous comparison (hence its ommission), this is nevertheless a clear
+  indication of their similarity.}
+
 \iffalse
 TODO: Alison: Does this translate into a recommendation (e.g. not to
 use clustering)? There should be some discussion of this - if not here then
