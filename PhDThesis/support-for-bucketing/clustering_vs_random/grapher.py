@@ -142,6 +142,6 @@ suplabels(x='Sample size', y='Extra theorems (vs random)')
 
 # Saving
 
-plt.savefig('bucketing.png', bbox_inches='tight', pad_inches=0.0)
-plt.savefig('bucketing.pdf', bbox_inches='tight', pad_inches=0.0)
-plt.savefig('bucketing.pgf', bbox_inches='tight', pad_inches=0.0)
+plt.savefig('bucketed.png', bbox_inches='tight', pad_inches=0.0)
+plt.savefig('bucketed.pdf', bbox_inches='tight', pad_inches=0.0)
+plt.savefig('bucketed.pgf', bbox_inches='tight', pad_inches=0.0)
