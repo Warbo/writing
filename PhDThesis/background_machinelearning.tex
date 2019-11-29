@@ -40,7 +40,7 @@ machine learning algorithms.
 \emph{Feature extraction} is a common pre-processing step for machine learning
 (ML). Rather than feeding ``raw'' data straight into our ML algorithm, we only
 learn a sample of \emph{relevant} details, known as \emph{features}. This has
-two benefits:
+a few benefits:
 
 \begin{itemize}
 \item \emph{Feature vectors} (ordered sets of features) are chosen to be more
@@ -298,21 +298,5 @@ models, of a fixed size suitable for learning. Many more applications of kernel
 methods to structured domains are given in \cite{bakir2007predicting}, which
 could be used to learn more subtle relations between expressions than recurrent
 clustering alone.
-
-
- One common approach to this problem is
-to represent such structures as \emph{sequences}. \emph{Recurrent neural
-  networks} (RNNs) are a popular choice for processing sequences, especially
-when combined with mechanisms such as \emph{long short-term memory} (LSTM) for
-preserving information across long sequences \cite{hochreiter1997long}. Such
-systems have been used, for example, to parse and execute computer programs
-\cite{zaremba2014learning}. However, learning to parse sequences seems
-inefficient considering that we already have correctly-parsed ASTs.
-
-Whilst neural networks have been applied directly to recursive structures
-\cite{goller1996learning}, including using LSTM \cite{zhu2015long}, a more
-popular approach is to use \emph{kernel methods}
-\cite{bakir2007predicting}. These are promising as a more principled alternative
-to our current hand-crafted translation of ASTs to vectors.
 
 % FIXME: Include clustering

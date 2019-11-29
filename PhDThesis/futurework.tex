@@ -1,4 +1,4 @@
-\section{Future Work}
+\chapter{Future Work}
 \label{sec:future}
 
 Our use of clustering to pre-process \quickspec{} signatures has required many
@@ -8,7 +8,7 @@ further. In addition, there are other ways in which machine learning could aid
 theory exploration besides our relevance filter technique. Below, we elaborate
 on the details, background and motivation for these choices.
 
-\subsection{Clustering Extensions}
+\section{Clustering Extensions}
 \label{sec:preprocessing}
 
 The most glaring omission in our algorithm is its disregard for types. By
@@ -44,14 +44,14 @@ loop between the theory exploration phase and the clustering phase, to more
 directly base the similarity of expressions on whether they (are predicted to)
 occur together in equations.
 
-\subsection{Theory Exploration Extensions}
+\section{Theory Exploration Extensions}
 
 Our current approach is a rather conservative change to the existing theory
 exploration approaches, as it is essentially a wrapper around \quickspec{}.
 There is potential for more radical changes to be made, which alter the search
 process itself.
 
-\subsubsection{Variable Instantiation}
+\subsection{Variable Instantiation}
 
 \quickcheck{} is certainly the most popular property checker for Haskell, which
 motivates its use in \quickspec{} to instantiate variables to random
@@ -124,7 +124,7 @@ for automated theorem provers. \hipspec{} currently uses the GHC API to transfor
 Core within its own process, however that approach suffers from the problems
 described in \S~\ref{sec:astplugin}.
 
-\subsubsection{Interestingness}
+\subsection{Interestingness}
 
 If we do succeed in producing a fast theory exploration system, which chooses
 productive combinations of terms and finds a large number of properties, we
@@ -139,7 +139,7 @@ direct consequences of others, and keep all the rest. Different, and more
 sophisticated notions of interestingness have been widely studied in other
 fields, which may be applied in the context of theory exploration.
 
-\paragraph{Concept Formation} \label{sec:conceptformation} \leavevmode \newline
+\subsubsection{Concept Formation} \label{sec:conceptformation} \leavevmode \newline
 
 One directly applicable area to consider is \emph{concept formation}, which
 considers the (automatic) generation of new definitions and axioms. Unlike
@@ -166,8 +166,7 @@ Graffiti~\cite{delavina2005some, delavina2005graffiti} and
 HR~\cite{colton1999automatic, colton2000agent} could be used alongside those of
 \quickspec{}.
 
-\paragraph{Artificial Curiosity} \label{sec:curiosity} \leavevmode \newline
-
+\subsubsection{Artificial Curiosity} \label{sec:curiosity} \leavevmode \newline
 
 \paragraph{Evolutionary Computation} \leavevmode \newline
 

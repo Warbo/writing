@@ -15,15 +15,23 @@ of formal systems. This problem has been tackled from various directions for a
 variety of reasons; here we summarise those contributions which are of
 particular importance for theory exploration.
 
-\iffalse
 \subsection{Clustering}
 \label{sec:clustering}
 
-% TODO: ML4PG
-\cite{journals/corr/abs-1212-3618}
-% TODO: ACL2(ml) (also examples section)
-\cite{heras2013proof}
-\fi
+The most relevant related work for our recurrent clustering approach is
+\mlforpg{}~\cite{journals/corr/abs-1212-3618}. This clusters expressions in the
+Coq proof assistant, for presenting to the user (e.g. if they are stuck on a
+proof, it may be useful to read ``similar'' proofs). Like our approach, this
+transforms syntax trees into a matrix of values, which is then flattened into a
+vector. We use the same idea of clustering referred-to definitions in order to
+attain transitive similarity; however, our approach must also handle mutual
+recursion (which is much more restricted in Coq, and hence unsupported by
+\mlforpg{}).
+
+The other prior work for recurrent clustering is\aclml{}~\cite{heras2013proof},
+which is similar to \mlforpg{} but applies to ACL2 (Common Lisp) and is hence
+untyped. The algorithm also differs, since it \emph{summarises} trees, rather
+than directly encoding them to vector elements.
 
 \subsection{Probability of Statements}
 

@@ -190,41 +190,32 @@ are closely related, and hence obey many algebraic laws; arbitrary definitions
 from a typical software library or proof development are unlikely to be related
 so strongly.
 
-\iffalse
-\quickspec{} (and \hipspec{}) is also compatible with Haskell's existing testing
+\subsection{Related Fields}
+
+\quickspec{} (and \hipspec{}) grew out of software engineering tools like
+\quickcheck{}, and they are in fact compatible with Haskell's existing testing
 infrastructure, such that an invocation of \texttt{cabal test} can run these
 tools alongside more traditional QA tools like \quickcheck{}, \textsc{HUnit} and
 \textsc{Criterion}.
 
-In fact, there are similarities between the way a TE system like \quickspec{} can
-generalise from checking \emph{particular} properties to \emph{inventing} new
+There are similarities between the way a TE system like \quickspec{} can
+generalise from checking \emph{particular} properties to \emph{generating} new
 ones, and the way counterexample finders like \quickcheck{} can generalise from
-testing \emph{particular} expressions to \emph{inventing} expressions to
-test. One of our aims is to understand the implications of this generalisation,
-the lessons that each can learn from the other's approach to term generation,
-and the consequences for testing and QA in general.
-\fi
+testing \emph{particular} expressions to generating expressions to test.
 
-% TODO
-%%%%% THE BELOW SEEMS TO BE INTERESTINGNESS?
+\emph{Experimental mathematics} is related to theory exploration, in that both
+seek to use empirical methods to discover high-level properties of
+well-specified formal systems. The theory is itself may be a scientific model,
+in which case theory exploration becomes part of the scientific method; in
+particular, finding ``testable predictions'' (e.g. equations relating measurable
+quantities, which can be experimentally tested) is a special case of theory
+exploration's search for ``interesting conjectures''.
 
-%\begin{description}
-%\item{Interestingness} Various alternative interestingness criteria have been
-%  proposed, which we survey in \S \ref{sec:relatedwork}. Augmenting or replacing
-%  the criteria may be useful, for example to distinguish useful relationships
-%  from incidental coincidences; or to prevent surprising, insightful equations
-%  from being discarded because they can be simplified.
-%\end{description}
-
-% Theory exploration is similar to \emph{experimental mathematics}
-
-% - Relation to Science
-%  - Testable/falsifiable hypotheses are like evaluable terms (or, more generally, conjectures which can be decided, using a reasonable amount of resources).
-% - Relation to AI tasks: exploring surroundings, etc.
-
-% - Statistics is another area that's less straightforward than normal numerical computing, since there is subjectivity and judgement involved in the answering of questions.
-
-% Theory formation: Alison? Others.
-% Theory exploration: Buchberger, Moa in Isabelle, Koen in Haskell. Others?
-% Theorem proving: Well-trodden: first-order ATP, higher-order ITP, functional programming
-% Communication: Latex, Wikis, APIs, communicating with aliens
+\emph{Theory formation} and \emph{concept formation} go beyond mere exploration;
+inventing new definitions, which can give rise to subsequent properties. This
+gives rise to a feedback loop: concepts are ``interesting'' if they have
+``interesting'' properties, whilst properties are ``interesting'' due to the
+concepts they involve. This gives rise to some deep philosophical questions
+about the nature of mathematics, but is so open-ended that it can be difficult
+to apply to day-to-day tasks; hence why we generally avoid invention systems
+in this work.
