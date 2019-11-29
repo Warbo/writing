@@ -20,12 +20,14 @@ In this chapter we will:
 
 \begin{enumerate}
 \item Define the \emph{signature selection problem} for theory exploration.
-\item Analyse the effect of signature selection on the quantity of desirable
-  properties attainable by theory exploration on the TEB problem set.
 \item Identify the effect of ``toxic'' definitions on system performance, as
   measured by the TEB.
-\item Recommend improvements for theory exploration systems, to avoid or
-  mitigate the problem of toxic definitions.
+\item Recommend improvements for theory exploration systems, such as
+  resource-bounding of individual evaluations, to avoid or mitigate the
+  problem of toxic definitions.
+\item Analyse the effect of signature selection on the quality of discovered
+  results, by measuring how many desirable properties of a benchmark problem
+  (TEB) remain discoverable after splitting into multiple small signatures.
 \item Demonstrate how the signature selection problem is distinct from the
   well-known \emph{clustering problem} in machine learning, and how clustering
   algorithms cannot be directly applied to signature selection.
@@ -140,14 +142,15 @@ inputs being more likely to have sampled a toxic definition).
 \begin{figure}
   \scalebox{0.69}{\input{images/proportionsall.pgf}}
   \scalebox{0.69}{\input{images/proportionsnontoxic.pgf}}
-  \caption[]{Each bar is a definition from our Theory Exploration Benchmark,
-    showing the proportion of signatures they appeared in which were
-    successfully explored (green) compared to those which timed out (red).
+  \caption[]{Each vertical bar is a definition from our Theory Exploration
+    Benchmark (TEB), showing the proportion of signatures they appeared in which
+    were successfully explored (green) compared to those which timed out (red).
     Definitions are sorted from most successful to least. The left graph shows
-    all \input{text/proportions_graph_count_all.tex} TEB definitions explored, with five ``toxic'' definitions which always
-    failed. with s ratio of successes to failures of the runs they appeared in. The first graph contains all TIP definitions, showing
-    ``toxic'' definitions which always failed. The second graph only contains
-    runs without any toxic definitions.}
+    all \input{text/proportions_graph_count_all.tex} TEB definitions explored,
+    where five ``toxic'' definitions always failed. In comparison, the right
+    graph ignores signatures containing those five definitions; the much higher
+    proportion of success highlights the disproportionate impact a few toxic
+    definitions can have.}
   \label{fig:proportions}
 \end{figure}
 
@@ -390,12 +393,13 @@ methods, they are less prone to extremes).
   % \input{images/bounds.pgf}
   \includegraphics[width=\textwidth]{images/bounds.png}
   \caption{The average quality (proportion of ground-truth properties available)
-    when splitting signatures sampled using the Theory Exploration Benchmark
-    into subsets. Each plot shows division into a different number of subsets.
-    The shaded area is bounded by the optimal and pessimal methods, which can
-    only produce $N$ subsets for signatures of size $\geq N$. Grey lines show
-    pseudorandom selection, for comparison; these extend into smaller signature
-    sizes since empty subsets are permitted.}
+    when selecting subsets of definitions sampled from the Theory Exploration
+    Benchmark. Each plot shows division into a different number of subsets.
+    The shaded area is bounded by the optimal and pessimal methods, whose
+    constraints prevent selecting $N$ signatures if there are fewer than $N$
+    definitions to pick from. Grey lines show pseudorandom selection for
+    comparison; these are unconstrained, so extend into smaller signature
+    sizes.}
   \label{fig:bounds}
 \end{figure}
 
@@ -422,12 +426,13 @@ selection methods.
 \begin{figure}
   % \input{images/bucketed}
   \includegraphics[width=\textwidth]{images/bucketed.png}
-  \caption{Quality evaluation of bucketing via recurrent clustering. Each plot
-    uses a fixed number of buckets (5, 10, 15 or 20) and shows the number of
-    extra theorems available when clusters are used as buckets, compared to a
-    pseudorandom control. The difference is not statistically significant. There
-    is a slight upward trend for larger sizes, but this is relatively small
-    compared to the corresponding increase in total theorems available.}
+  \caption{Evaluating the quality of selecting signatures using recurrent
+    clustering. Each plot uses a fixed number of subsets (5, 10, 15 or 20) and
+    shows the number of extra theorems available when clusters are used as these
+    subsets, compared to a pseudorandom control. The difference is not
+    statistically significant. There is a slight upward trend for larger sizes,
+    but this is relatively small compared to the corresponding increase in total
+    theorems available.}
   \label{fig:bucketing}
 \end{figure}
 
@@ -440,23 +445,56 @@ relationship we created a signature selection method using the \emph{recurrent
 substitutes fixed numbers for keywords and recurses to determine suitable
 numbers for referenced expressions. These vectors are clustered based on their
 euclidean distance, using a \emph{k-means} algorithm, and these clusters are
-chosen as our buckets.
+chosen as the subsets to explore separately.
 
 The results of this method are shown in Figure~\ref{fig:bucketing}, which plots
-the difference between bucketing based on this clustering approach, compared to
-simply choosing buckets pseudorandomly (as a control). The results of clustering
-are statistically indistinguishable from random.\footnote{Wilcoxon's signed-rank
+the difference between selecting clusters of definitions, compared to simply
+choosing pseudorandomly (as a control). The results of clustering are
+statistically indistinguishable from random.\footnote{Wilcoxon's signed-rank
   test finds no significant difference for most of the plotted points; whilst
   not a rigorous comparison (hence its ommission), this is nevertheless a clear
-  indication of their similarity.}
+  indication of their similarity.} Despite this, two trends are apparent: a
+slight increase in clustering's (relative) quality as the sample size increases,
+and a decrease in variance as the number of subsets is increased. The variance
+may be explained by the larger number of permutations available when using more
+subsets, which decreases the chance of finding an outlier (either good \emph{or}
+bad). The absolute increase in theorems found by clustering for large sizes, if
+real, is dwarfed by the corresponding increase in the ground truth (the total
+number of theorems available, without selecting subsets); the quality difference
+between these selection methods as a \emph{proportion} of the ground truth
+actually \emph{decreases} for larger sizes.
 
-\iffalse
-TODO: Alison: Does this translate into a recommendation (e.g. not to
-use clustering)? There should be some discussion of this - if not here then
-point to another chapter where you discuss these results
+\section{Summary}
 
-TODO: Alison: Needs a summary section
-\fi
+We have identified the \emph{signature selection problem} for theory
+exploration, which narrows the available definitions (e.g. from a software
+library) down to a subset fast enough to explore. This must currently be solved
+by the user, which imposes a knowledge burden (reducing TE's utility as an aid
+to learning) and limits how novel or surprising the discovered properties can
+be.
+
+We have demonstrated the effect of signature size (and hence the importance of
+selection) on the time taken to explore, in particular noting the ``heavy tail''
+of explorations timing out, which increases linearly with signature size. We
+have attributed this to ``toxic'' definitions, whose presence in a signature
+will exhaust the allocated time and/or memory. To mitigate this problem, and
+hence reduce the severity of signature selection, we recommend a more
+fine-grained approach to resource management and/or scheduling: by limiting the
+resources of individual tests, evaluation of toxic definitions can be terminated
+without having to abort the whole exploration run.
+
+We have shown the impact of signature selection on the quality of discoverable
+properties, by sampling sets of definitions from the Theory Exploration
+Benchmark and comparing how many of their associated theorems become impossible
+to discover (due to their definitions being separated) as these sets are
+subdivided by different selection methods. Optimal selection (calculated with
+knowledge of the benchmark theorems) retains a large proportion of the desired
+output, showing the potential to maintain high quality. Pseudorandom selection
+is found to be closer to pessimal, and selecting based on similarity (determined
+via an unsupervised machine learning algorithm) performs no different to random.
+
+Automated signature selection is hence an important problem, requiring further
+research to establish if, and how, the potential benefits can be reaped.
 
 \iffalse
 % TODO
