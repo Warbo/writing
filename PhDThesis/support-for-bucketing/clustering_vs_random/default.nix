@@ -7,7 +7,7 @@ with rec {
     name  = "pairwise-clustering-hash";
     file  = ./pairwiseData.py;
     paths = [
-      basicTex
+      basicTex  # FIXME: Remove this, although it'll cause a rebuild (overnight?)
       (python3.withPackages (p: [ p.ijson p.scipy ]))
     ];
     vars = { inherit wilcoxon; };
@@ -68,7 +68,7 @@ with rec {
   graph = run {
     name  = "pairwise-graph";
     file  = ./grapher.py;
-    paths = [ (python3.withPackages (p: [ p.matplotlib ])) ];
+    paths = [ basicTex (python3.withPackages (p: [ p.matplotlib ])) ];
     vars  = { inherit processed textWidth; };
   };
 };
