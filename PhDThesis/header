@@ -45,6 +45,7 @@
 
 %% System names
 
+\newcommand{\aclml}{\textsc{ACL2(ml)}}
 \newcommand{\astplugin}{\textsc{ASTPlugin}}
 \newcommand{\djinn}{\textsc{Djinn}}
 \newcommand{\goedelmachine}{\textsc{G\"odel Machine}}
@@ -61,6 +62,7 @@
 \newcommand{\leancheck}{\textsc{LeanCheck}}
 \newcommand{\magichaskeller}{\textsc{MagicHaskeller}}
 \newcommand{\mlforhs}{ML4HS}
+\newcommand{\mlforpg}{ML4PG}
 \newcommand{\mlspec}{\textsc{MLSpec}}
 \newcommand{\mucheck}{\textsc{MuCheck}}
 \newcommand{\quickcheck}{\textsc{QuickCheck}}

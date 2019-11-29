@@ -1,18 +1,32 @@
 \chapter{Similarity and Clustering}
 \label{sec:recurrentclustering}
 
-\iffalse TODO: Alison: Each chapter should have a description at the start (see
-bucketing ``in this chapter'') \fi
-
 In this chapter we consider how the contents of a given signature can be
-analysed, such that subsequent exploration can be performed more efficiently. We
-frame this analysis as a task of \emph{unsupervised machine learning}, and
-describe how well-known \emph{clustering algorithms} can utilise the syntax of
-definitions to determine their similarity. This requires a detailed description
-of Haskell definition syntax, in particular of the ``Core'' intermediate
-language of the GHC compiler. We identify the difficulty posed by references,
-and how these can be made less opaque through the use of \emph{recurrent
-  clustering}.
+analysed syntactically, to aid theory exploration systems (either by improving
+efficiency, or finding more interesting properties). Inspired by the approaches
+of \aclml{} and \mlforpg{}, we frame this analysis as a task of
+\emph{unsupervised machine learning}, and describe how well-known
+\emph{clustering algorithms} can utilise the syntax of definitions to determine
+their similarity. This requires a detailed description of Haskell syntax, in
+particular we use the ``Core'' intermediate language of the GHC compiler. We
+identify the difficulty posed by references, and how these can be made less
+opaque through the use of \emph{recurrent clustering}.
+
+Our main contribution is a recurrent clustering method to determine the
+syntactic similarity of Haskell definitions, which is transitive across
+references (e.g. the similarity between definitions \hs{A} and \hs{B}, which
+reference definitions \hs{C} and \hs{D} respectively, is correlated to the
+similarity between \hs{C} and \hs{D}). We also provide an iterative
+algorithm, which is more efficient than a straightforward (na\"ive)
+implementation of the defined recurrence relation. We have made a prototype of
+our system available, including a plugin for the \textsc{GHC} compiler to
+enable end-to-end automation, taking a standard Haskell package and producing
+clusters of definitions; these may subsequently be explored, e.g. via
+\quickspec{}, which we investigate further in \S~\ref{sec:signatureselection}.
+
+Without an independent ``gold standard'' to compare our results against, we
+instead perform a qualitative analysis; using (translations of) examples from
+\aclml{} and real Haskell packages.
 
 \section{Syntax}
 
@@ -1124,4 +1138,5 @@ recurrent nature of our algorithm to make use of the discovered properties
 during clustering; for example, by treating the discovered equations as rewrite
 rules to reduce the ASTs prior to feature extraction.
 \fi
-W
+
+% FIXME

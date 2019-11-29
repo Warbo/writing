@@ -452,17 +452,18 @@ the difference between selecting clusters of definitions, compared to simply
 choosing pseudorandomly (as a control). The results of clustering are
 statistically indistinguishable from random.\footnote{Wilcoxon's signed-rank
   test finds no significant difference for most of the plotted points; whilst
-  not a rigorous comparison (hence its ommission), this is nevertheless a clear
-  indication of their similarity.} Despite this, two trends are apparent: a
-slight increase in clustering's (relative) quality as the sample size increases,
-and a decrease in variance as the number of subsets is increased. The variance
-may be explained by the larger number of permutations available when using more
-subsets, which decreases the chance of finding an outlier (either good \emph{or}
-bad). The absolute increase in theorems found by clustering for large sizes, if
-real, is dwarfed by the corresponding increase in the ground truth (the total
-number of theorems available, without selecting subsets); the quality difference
-between these selection methods as a \emph{proportion} of the ground truth
-actually \emph{decreases} for larger sizes.
+  not a rigorous overall comparison (hence its ommission), this is nevertheless
+  a clear indication of their similarity.} Despite this, two trends are
+apparent: a slight increase in clustering's (relative) quality as the sample
+size increases, and a decrease in variance as the number of subsets is
+increased. The variance may be explained by the larger number of permutations
+available when using more subsets, which decreases the chance of finding an
+outlier (either good \emph{or} bad). The absolute increase in theorems found by
+clustering for large sizes, if real, is dwarfed by the corresponding increase in
+the ground truth (the total number of theorems available, without selecting
+subsets); the quality difference between these selection methods as a
+\emph{proportion} of the ground truth actually \emph{decreases} for larger
+sizes.
 
 \section{Summary}
 
@@ -478,23 +479,25 @@ selection) on the time taken to explore, in particular noting the ``heavy tail''
 of explorations timing out, which increases linearly with signature size. We
 have attributed this to ``toxic'' definitions, whose presence in a signature
 will exhaust the allocated time and/or memory. To mitigate this problem, and
-hence reduce the severity of signature selection, we recommend a more
+hence the severity of signature selection's pruning, we recommend a more
 fine-grained approach to resource management and/or scheduling: by limiting the
 resources of individual tests, evaluation of toxic definitions can be terminated
 without having to abort the whole exploration run.
 
-We have shown the impact of signature selection on the quality of discoverable
-properties, by sampling sets of definitions from the Theory Exploration
+We have shown the impact of signature selection on the quality of theory
+exploration output, by sampling sets of definitions from the Theory Exploration
 Benchmark and comparing how many of their associated theorems become impossible
 to discover (due to their definitions being separated) as these sets are
 subdivided by different selection methods. Optimal selection (calculated with
 knowledge of the benchmark theorems) retains a large proportion of the desired
 output, showing the potential to maintain high quality. Pseudorandom selection
 is found to be closer to pessimal, and selecting based on similarity (determined
-via an unsupervised machine learning algorithm) performs no different to random.
+via an unsupervised machine learning algorithm) performs no different than
+random.
 
-Automated signature selection is hence an important problem, requiring further
-research to establish if, and how, the potential benefits can be reaped.
+Automated signature selection is hence an important unsolved problem, requiring
+further research to establish if, and how, the potential benefits shown by our
+oracle-assisted algorithms can be reaped.
 
 \iffalse
 % TODO
@@ -528,29 +531,3 @@ clusters $k$, we use the ``rule of thumb'' given in
 \cite[pp. 365]{mardia1979multivariate} of clustering $n$ data points into
 $k = \lceil \sqrt{\frac{n}{2}} \rceil$ clusters.
 \fi
-
-%\section{Experiments}
-
-% TODO: This was taken from the Background section, so probably doesn't fit here
-% without some fiddling.
-% TODO: Describe all of our experimental setups:
-%
-%  - The use of the TEBenchmark methodology for running QSpec, including the
-%    sampling process
-%
-%  - Running our recurrent signature selection algorithm on samples from TEBenchmark,
-%    including how we picked the sizes
-%
-%  - The definition of HashSpec and its use as control; how we ran all of the
-%    same samples through it
-%
-%  - The use of optimal and pessimal oracles, defined via constraint
-%    satisfaction. How we it was only feasible to run these up to size 10 (11?)
-
-%We follow the tradition of prior practitioners and use an existing corpus of
-%theorems as a \emph{ground truth} against which to compare results. To analyse
-%behaviour on large inputs (i.e. those for which exploration is currently
-%infeasible), as required to study the effects of signature selection, we have
-%used the Theory Exploration Benchmark of section~\ref{sec:tebenchmark}, which is
-%based on the Tons of Inductive Problems (TIP) problem set for theorem
-%provers~\cite{claessen2015tip}.
