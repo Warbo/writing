@@ -211,10 +211,18 @@ The process of turning raw data into feature vectors is called \emph{feature
   extraction}, and we adapt the methodology of \emph{recurrent clustering}
 proposed in~\cite{DBLP:journals/corr/HerasK14,heras2013proof}, since this
 handles recursive tree structures, resolves references and produces numeric
-values. We suggest a new recurrent clustering and feature extraction algorithm
-for Haskell (shown in Algorithm~\ref{alg:recurrent}) and compare its similarity
-and differences to the existing approaches of \textsc{ML4PG} and
-\textsc{ACL2(ml)}.
+values. There are two recurrent clustering approaches in the literature: those
+of \mlforpg{} and \aclml{}. The former produces features which \emph{summarise}
+the elements of a syntax tree: providing, for each level of the tree, the number
+of variables, nullary symbols, unary symbols, etc. In contrast, that of
+\mlforpg{} maps the elements of a syntax tree to distinct cells in a matrix,
+then flattens the matrix into a vector.
+
+Our approach, shown in Algorithm~\ref{alg:recurrent}, follows that of
+\mlforpg{}, but can additionally handle mutually-recursive definitions. We
+ignore types, since obtaining the type of each component of a Core definition is
+more difficult than in Coq (\mlforpg{} queries the current
+\textsc{Proof General} state inside Emacs), and is left for future work.
 
 We describe our algorithm in two stages: the first transforms the nested
 structure of expressions into a flat vector representation; the second converts
@@ -812,71 +820,14 @@ repeated until all SCCs have been processed. Once the recurrent clustering is
 complete, we output a JSON array of the clusters (serialised in an arbitrary
 order).
 
-\iffalse
-% TODO: This seems less appropriate for this chapter, more suitable for
-% Signature Selection
-A separate application called \mlspec{} can read in this JSON, generate
-appropriate Haskell code to invoke \quickspec{} on each cluster individually,
-and evaluate that code with all appropriate dependencies installed. This
-decoupling allows our feature extraction algorithm to be used for other
-purposes, and allows alternative clustering involves:
-
-\begin{itemize}
-\item{Monomorphising}: If a value has polymorphic type, e.g. \hs{equal :: forall
-    t. t -> t -> Bool}, we must choose a concrete representation to use (in this
-  case for \hs{t}), in order to know which random generator to use. We take the
-  approach used in \quickcheck{} by attempting to instantiate all type variables to
-  \hs{Integer}. Any values where this is invalid, such as those with
-  incompatible class constraints (e.g. \hs{forall t. IsString t => t}, where
-  \hs{Integer} does not implement \hs{IsString}) will not be included in the
-  signature (this is checked at the AST post-processing stage).
-
-\item{Qualifying}: All names are \emph{qualified} (prefixed by their module's
-  name), to avoid most ambiguity. There is still the possibility that multiple
-  packages will declare modules of the same name, although this is rare as it
-  causes problems for any Haskell programmer trying to use those modules. In
-  such cases the exploration process simply aborts.
-
-\item{Appending variables}: Once a \quickspec{} theory has been defined containing
-  all of the given terms, we inspect the types it references and append three
-  variables for each to the theory (enough to discover laws such as
-  associativity, but not too many to overflow the limit of \quickspec{}'s exhaustive
-  search).
-
-\item{Sandboxing}: One difficulty with Haskell's packaging infrastructure is
-  that all required packages and modules must be provided up-front, usually by
-  specification in a Cabal file. Since \mlspec{} builds signatures
-  \emph{dynamically}, depending on the cluster information it is given, we do
-  not know what packages it may need. To work around this problem, we evaluate
-  these strings of Haskell using a custom library called \texttt{nix-eval}. This
-  uses the Nix package manager to obtain all of the required packages and make
-  them available to GHC, and is described further in
-  Appendix~\ref{sec:nix-eval}.
-
-\end{itemize}
-
-The equations resulting from evaluating these strings are collected and
-outputted as JSON values, to ease further processing (e.g. displaying in some
-form, sending to a theorem prover, etc.).
-\fi
+These clusters can be fed into an augmented version of \quickspec{}, which makes
+decisions such as monomorphising types, choosing variables, etc. and is
+described further in \S~\ref{sec:implementation}. The utility of splitting up
+large signatures into smaller parts like this is the ``signature selection
+problem'', which we investigate in \S~\ref{sec:signatureselection}.
 
 \section{Evaluation}
 \label{sec:evaluation}
-
-\iffalse
-Here we consider the 10 most-downloaded packages from \hackage{} (as of
-2015-10-30) which have property tests; these are \texttt{warp}, \texttt{aeson},
-\texttt{text}, \texttt{lens}, \texttt{conduit}, \texttt{pandoc},
-\texttt{attoparsec}, \texttt{scientific}, \texttt{yesod-core} and
-\texttt{blaze-html}.
-
-% TODO: Analysis
-\fi
-
-\iffalse
-TODO: Alison: Next chapter? It's good to lead into the next chapter at the end
-of the previous ones.
-\fi
 
 We have applied our recurrent clustering algorithm to several scenarios, with
 mixed results. A major difficulty in evaluating these clusters is that we have
@@ -1030,93 +981,6 @@ appeared in the same cluster. Although promising, a more thorough exploration of
 the parameters would be needed to obtain more intuitively reliable results (at
 the risk of over-fitting).
 
-\iffalse
-Whilst recurrent clustering has produced results which merit further
-investigation, the application to theory exploration has yet to be tested
-empirically. This is due to \quickspec{}'s use of \quickcheck{}'s \hs{Arbitrary} type
-class to generate random values for instantiating variables. Whilst we can
-automatically define \quickspec{} theories and invoke them with \hs{nix-eval}, not
-all types have \hs{Arbitrary} instances; those without cannot be given any
-variables in our signature, which severely limits the possible combinations
-which can be explored. In many cases, no variables can be included at all,
-leaving just equations involving constants. This has so far prevented us from
-measuring the direct impact on \quickspec{} performance, either directly by
-exploring the sub-sets identified through recurrent clustering, or indirectly by
-comparing the equations generated by a full brute-force search to our recurrent
-clusters: those equations relating terms from different clusters would not be
-discovered by our method. It is this ratio of equations found through brute
-force to those found after narrowing-down by clusters which is one of our key
-objectives to maximise at this stage; until we begin to pursue the
-\emph{interestingness} of the properties.
-
-The following less-serious problems were also encountered while applying
-\mlforhs{} to \hackage{} packages:
-
-\begin{itemize}
-\item Some packages, such as \texttt{warp} and \texttt{conduits}, get no
-  declarations to cluster. This is because they make all of their declarations
-  privately, e.g. in ``internal'' modules, then use separate modules to export
-  the public declarations. GHC's renaming phase makes all references to such
-  exports canonical, by pointing them to the private declarations. This forces
-  us to ignore such declarations, as \quickspec{} will not be able to access them.
-
-\item Since we do not support type-level entities, we ignore type
-  classes. Unfortunately, this also means ignoring any value-level bindings (AKA
-  ``methods'') which occur in a type class instance. Instead of being clustered,
-  these result in references getting $f_{recursion}$ features. This is
-  especially noticable in libraries like \hs{scientific}, where only the
-  functions for constructing and destructing numbers in scientific notation are
-  clustered; all of the arithmetic is defined in type classes. One difficulty
-  with supporting methods is that their namespace in Core is disjoint from that
-  of regular Haskell identifiers: a transformation layer would be required,
-  along with explicit type annotations to avoid ambiguity.
-\end{itemize}
-\fi
-
-These clusters can then be used in several ways to perform theory exploration;
-the most na\"{\i}ve way being to explore each cluster as \quickspec{} signature
-in its own right, which we investigate as a potential solution to the Signature
-Selection problem in \S~\ref{sec:signatureselection}.
-
-\iffalse
-TODO: Alison: Next chapter? It's good to lead into the next chapter at the end of the previous ones.
-\fi
-
-\iffalse
-As alluded to previously, we also have the opportunity to reason by
-\emph{analogy}. Similar to the work on ACL2(ml) \cite{heras2013proof}, we could
-produce a general ``scheme'' from each equation we find (either through \quickspec{}
-or by data mining test suites); like Isabelle approaches have shown
-\cite{Montano-Rivas.McCasland.Dixon.ea:2012}, these schemes could then be
-instantiated to a variety of similar values, in an attempt to find new theorems
-which are analogues of existing results from a different context. ``Mutating''
-existing theorem statements in such a way would also increase the chance of any
-result being considered interesting; since it's likely that the unmodified
-statement was deemed interesting, and the new result would not in general follow
-as a simple logical consequence.
-\fi
-
-\iffalse
-\subsection{Recurrent Clustering}
-\label{sec:clusteringexpressions}
-
-Our recurrent clustering algorithm is similar to that of ML4PG, as our
-transformation maps the elements of a syntax tree to distinct cells in a
-matrix. In contrast, the matrices produced by ACL2(ml) \emph{summarise} the tree
-elements: providing, for each level of the tree, the number of variables,
-nullary symbols, unary symbols, etc.
-
-Unlike ML4PG, our algorithm can handle mutually-recursive definitions, but it
-also ignores types. This is because obtaining the type of each component of a
-Core definition is more difficult than in ML4PG (which queries the current
-\textsc{Proof General} state), and is left for future work.
-
-The way we \emph{use} our clusters to inform theory exploration is actually more
-similar to that of ACL2(ml) than ML4PG. ML4PG can either present clusters to the
-user for inspection, or produce automata for recreating proofs. In ACL2(ml), the
-clusters are used to restrict the search space of a proof search, much like we
-restrict the scope of theory exploration.
-
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
 
@@ -1126,17 +990,30 @@ out of many alternatives which could be investigated to push this work further.
 
 The most obvious next step is to incorporate types. Types contain valuable
 information about an expression, and would allow us to distinguish between
-constructors. Since our algorithm closely follows that of ML4PG, which
+constructors. Since our algorithm closely follows that of \mlforpg{}, which
 \emph{does} support types, the only barrier is the practical issue of
 propagating annotations through all of the Core definitions.
 
 More speculative directions include the use of \emph{learned} representations,
-rather than our hand-crafted features \cite{bengio2013representation}. This
+rather than our hand-crafted features~\cite{bengio2013representation}. This
 would provide an interesting comparison, as well as being more robust in the
 face of language evolution. Another intriguing possibility is to extend the
 recurrent nature of our algorithm to make use of the discovered properties
 during clustering; for example, by treating the discovered equations as rewrite
-rules to reduce the ASTs prior to feature extraction.
-\fi
+rules to reduce the ASTs prior to feature extraction. Version 2 of \quickspec{}
+already constructs such rewrite rules (via the Knuth-Bendix completion
+algorithm) to determine whether a generated expression reduces to an existing
+equivalence class.
 
-% FIXME
+Similarity measures like ours have other applications, such as the opportunity
+to reason by \emph{analogy}. Similar to the work on
+\aclml{}~\cite{heras2013proof}, we could produce a general ``scheme'' from each
+equation we find (either through \quickspec{}, or by other means like data
+mining benchmarks and test suites); like Isabelle approaches have shown
+\cite{Montano-Rivas.McCasland.Dixon.ea:2012}, these schemes could then be
+instantiated to a variety of ``similar'' values, in an attempt to find new
+theorems which are analogues of existing results from a different context.
+Such ``mutations'' of existing theorem statements increases the chance of any
+result being considered interesting; since it's likely that the unmodified
+statement was deemed interesting, and the new result would not in general follow
+as a simple logical consequence.
