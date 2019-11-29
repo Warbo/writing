@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import sys
-err = lambda x: sys.stderr.write(x + '\n')
+def err(x):
+    sys.stderr.write(x + '\n')
+    sys.stderr.flush()
 
 def genReps():
     '''Generator which yields reps parsed from stdin.
@@ -38,27 +40,22 @@ def genReps():
                 yield {'size': size, 'rep': rep, 'bucketed': builder.value[1],
                        **builder.value[0]}
 
-theoremProportion = lambda truth, bucket: len(bucket['theorems']) / len(truth)
-
 def justTotals(rep):
+    '''Count how many theorems were found for each method and count; discard the
+    actual names, to save space.'''
     theorems = len(rep['sampleTheorems'])
-    result   = {'size': rep['size']}
+    result   = {'size': rep['size'], 'theorems':theorems}
     for method in rep['bucketed']:
         result[method] = {}
         for count in rep['bucketed'][method]:
             result[method][count] = \
-                len(rep['bucketed'][method][count]['theorems']) #/ theorems
+                len(rep['bucketed'][method][count]['theorems'])
     return result
 
 # Read all reps, keeping just the proportion of theorems for each bucketing
 sizes = {}
-rem = 100
 for rep in genReps():
     if rep['size'] not in sizes:
-        rem -= 1
-        if rem < 95:
-            break
-        err(repr(rem))
         sizes[rep['size']] = []
     sizes[rep['size']].append(justTotals(rep))
 
@@ -68,33 +65,83 @@ del(getenv)
 
 i2b = lambda i: bytes(str(i), encoding='utf-8')
 
-import re
-numRE = re.compile('[0-9][0-9.]*')
-pRE   = re.compile('p-value *= *[0-9.]*')
-
-import subprocess
-
-def wilcoxon(old, new):
+def wilcoxon(given):
     '''Perform Wilcoxon signed rank test. The SciPy version isn't exact, so we
-    call out to R (urgh).'''
-    if all([x == y for (x, y) in zip(old, new)]):
-        # We can't do the test if there are no differences
-        return None
+    call out to R (urgh). To keep down overheads, we make one call containing
+    all of our data, rather than one per test.'''
 
-    csv    = b'\n'.join([i2b(x) + b',' + i2b(y) \
-                         for (x, y) in zip(old, new)])
-    result = subprocess.run([r],
-                            input=csv,
+    # This will contain our results; initially with dummy sentinel values, then
+    # filled in based on the results
+    pValues = []
+
+    # This contains the lines of text to send into R's stdin
+    data = []
+
+    for label in given:
+        old = given[label]['old']
+        new = given[label]['new']
+
+        # We can only do the test if there are some differences
+        if all([x == y for (x, y) in zip(old, new)]):
+            # No differences found, so we don't sent this to R. We still need to
+            # keep track of it in pValues, to ensure it's skipped when reading
+            # results back
+            pValues.append({'label':label, 'skip':True})
+        else:
+            # We have some differences, to we can send these values into R, and
+            # we should expect a p-value back.
+            pValues.append({'label':label, 'skip':False})
+            with open(label + '.csv', 'w') as f:
+                for o, n in zip(old, new):
+                    f.write(','.join([str(o), str(n)]) + '\n')
+            data.append((label + '.csv'))
+
+    # To avoid problems looping over stdin in R, we write filenames to a file
+    with open('filenames', 'w') as f:
+        f.write('\n'.join(data))
+
+    # Invoke R once, bailing out if it throws an error
+    import subprocess
+    result = subprocess.run([r],  # This is our R script, read from an env var
                             check=True,
                             stdout=subprocess.PIPE)
 
-    # Extract p-value from result
-    pVal = None
-    for s in pRE.findall(result.stdout):
-        for n in numRE.findall(s):
-            pVal = n
+    # Extract every p-value from result, and assign each to the labels we expect
+    index = 0
+    for line in result.stdout.decode('utf-8').split('\n'):
+        if line.strip() == '':
+            continue
 
-    return pVal
+        assert index < len(pValues), repr({
+            'error'  : 'Too many p-value matches',
+            'index'  : index,
+            'pValues': len(pValues),
+            'line'   : line
+        })
+
+        # Ignore entries which had no differences, and hence weren't sent to R
+        while pValues[index]['skip']:
+            index += 1
+        pValues[index]['pvalue'] = line.strip()
+        index += 1
+
+    # Format the return value
+    formatted = {}
+    for pValue in pValues:
+        if pValue['skip']:
+            assert 'pvalue' not in pValue, repr({
+                'error': 'Skipped entry should not have p-value',
+                'data' : pValue
+            })
+            formatted[pValue['label']] = None
+        else:
+            assert 'pvalue' in pValue, repr({
+                'error': 'Non-skipped entry does not have p-value',
+                'data' : pValue
+            })
+            formatted[pValue['label']] = pValue['pvalue']
+
+    return formatted
 
 from math import sqrt
 def meanStdDev(xs):
@@ -107,8 +154,9 @@ def meanStdDev(xs):
 
 # Transpose the data so it's size->count->reps, and do Wilcoxon signed-rank test
 #from scipy.stats import wilcoxon
-counts = sorted(list(sizes.values())[0][0]['hashed'].keys())
-paired = {}
+counts     = sorted(list(sizes.values())[0][0]['hashed'].keys())
+paired     = {}
+toWilcoxon = {}  # Gather up data to send into R
 for size in sizes:
     paired[size] = {}
     for rep in sizes[size]:
@@ -122,54 +170,42 @@ for size in sizes:
         del(these)
         for count in counts:
             if count not in paired[size]:
-                paired[size][count] = {'hashed':[], 'recurrent':[]}
+                paired[size][count] = {
+                    'hashed'   :[],
+                    'recurrent':[],
+                    'proportions':{
+                        'hashed'   :[],
+                        'recurrent':[]
+                    }}
             for method in ['hashed', 'recurrent']:
                 paired[size][count][method].append(rep[method][count])
+                paired[size][count]['proportions'][method].append(
+                    rep[method][count] / rep['theorems'])
 
     for count in paired[size]:
         data         = paired[size][count]
-        mean, stddev = meanStdDev([r - h for r, h in zip(data['recurrent'],
-                                                         data['hashed'   ])])
-        paired[size][count].update({
-            'wilcoxon'  : wilcoxon(data['recurrent'], data['hashed'])
 
-            'meandelta' : mean
-            'stddev'    : stddev
+        toWilcoxon[str(size)+'_'+str(count)] = {
+            'old':data['hashed'   ],
+            'new':data['recurrent']
+        }
+
+        mean, stddev = meanStdDev([r - h for r, h in zip(
+            data['proportions']['recurrent'],
+            data['proportions']['hashed'   ])])
+        paired[size][count].update({
+            'meandelta' : mean,
+            'stddev'    : stddev,
         })
+
+# Add Wilcoxon test results
+wilcoxoned = wilcoxon(toWilcoxon)
+del(toWilcoxon)
+for label in wilcoxoned:
+    size, count = label.split('_')
+    paired[size][count]['wilcoxon'] = wilcoxoned[label]
 
 del(sizes)
 
-print(repr(paired))
-sys.exit(1)
-
-
-tested = {}
-for size in deltas:
-    tested[size] = {}
-    for count in deltas[size]:
-        tested[size][count] = wilcoxon(deltas[size][count])
-
-
-print(repr(deltas['30']['5']))
-
-exit(1)
-
-# from pandas import read_csv
-# with open(getenv('proportionsTsv'), 'r') as f:
-#     times = read_csv(f, header=0, index_col=0)
-# del(read_csv)
-
-# label       = getenv('label')
-# textWidthPt = float(getenv('textWidth'))
-# del(getenv)
-
-# from math import sqrt
-
-# def figSize(widthFraction, height=None):
-#     ptToInch    = 1.0 / 72.27
-#     textWidthIn = textWidthPt * ptToInch
-#     goldMean    = (sqrt(5.0)-1.0) / 2.0
-#     calcWidth   = widthFraction * textWidthIn
-#     calcHeight  = textWidthIn * ((goldMean * widthFraction) \
-#                                  if height is None else height)
-#     return (calcWidth, calcHeight)
+import json
+print(json.dumps(paired))

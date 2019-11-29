@@ -1,16 +1,16 @@
-{ basicTex, bucketingSrc, lib, lzip, python3, rPackages, runCommand, runner,
-  rWrapper, textWidth, wrap }:
+{ basicTex, bucketingSrc, lib, lzip, python3, rPackages, run, runCommand,
+  runner, rWrapper, textWidth, wrap }:
 
 with lib;
 with rec {
-  grapher = wrap {
+  extracter = wrap {
     name  = "pairwise-clustering-hash";
-    file  = ./pairwiseGraph.py;
+    file  = ./pairwiseData.py;
     paths = [
       basicTex
-      (python3.withPackages (p: [ p.ijson p.matplotlib p.scipy ]))
+      (python3.withPackages (p: [ p.ijson p.scipy ]))
     ];
-    vars = { inherit textWidth wilcoxon; };
+    vars = { inherit wilcoxon; };
   };
 
   # Annoyingly, SciPy's implementation of Wilcoxon uses a normal approximation,
@@ -23,13 +23,18 @@ with rec {
         name   = "wilcoxon.R";
         script = ''
           library(coin)
-          df <- read.csv(file="stdin", header=FALSE, sep=",")
-          x  <- df[,1]
-          y  <- df[,2]
-          wilcoxsign_test(x ~ y, data=df, paired=TRUE,
-                          distribution='exact', correct=FALSE,
-                          alternative="greater",
-                          zero.method = c('Pratt'))
+          lines <- readLines(con="filenames")
+          message(sprintf("Need to process %d files\n", length(lines)))
+          for (i in 1:length(lines)) {
+            df <- read.csv(file=lines[i], header=FALSE, sep=",")
+            x  <- df[,1]
+            y  <- df[,2]
+            cat(sprintf("%f\n",
+              pvalue(wilcoxsign_test(x ~ y, paired=TRUE,
+                                     distribution='exact', correct=FALSE,
+                                     alternative="greater",
+                                     zero.method=c('Pratt')))))
+          }
         '';
       };
     };
@@ -46,16 +51,25 @@ with rec {
     "withBucketsGroundTruths.json.lz"
   ];
 
-  pairwise = runCommand "pairwise-clustering-hash"
+  processed = runCommand "pairwise-clustering-hash"
     {
       script = wrap {
         name   = "pairwise-analyser";
         paths  = [ lzip ];
         script = ''
-          lzip -d < "${data}" | "${grapher}" | tee out
+          lzip -d < "${data}" | "${extracter}" > out
+          rm -f filenames
+          find . -name '*.csv' | while read -r F; do rm -f "$F"; done
         '';
       };
     }
     runner;
+
+  graph = run {
+    name  = "pairwise-graph";
+    file  = ./grapher.py;
+    paths = [ (python3.withPackages (p: [ p.matplotlib ])) ];
+    vars  = { inherit processed textWidth; };
+  };
 };
-{ inherit pairwise wilcox; }
+{ inherit graph processed; }
