@@ -55,19 +55,11 @@ for count in counts:
 
 # Arrange data points into lists, which we can reference by key when plotting
 points = {'size': sizes}
-#points.update({
-#    'count'+str(c): [data[str(s)][str(c)]['meandelta'] for s in sizes] \
-#    for c in counts
-#})
-#points.update({
-#    'err'+str(c): [data[str(s)][str(c)]['stddev'] for s in sizes] \
-#    for c in counts
-#})
 points.update({
     'count'+str(c): [absMeans[c][s] for s in sizes] for c in counts
 })
 points.update({
-    'err'+str(c): [absErrs[c][s] for s in sizes] for c in counts
+    'err'  +str(c): [ absErrs[c][s] for s in sizes] for c in counts
 })
 
 # Plot each count
@@ -91,7 +83,6 @@ import matplotlib.pyplot as plt
 
 plotIndex = 0
 for count in [5, 10, 15, 20]:
-    #color = palette(0.1) #plotIndex / 10)
     plotIndex += 1
 
     # Find the right spot on the plot
@@ -151,7 +142,6 @@ suplabels(x='Sample size', y='Extra theorems (vs random)')
 
 # Saving
 
-#fig.set_size_inches(figSize(graphSize[0], graphSize[1]))
-plt.savefig('foo.png', bbox_inches='tight', pad_inches=0.0)
-plt.savefig('foo.pdf', bbox_inches='tight', pad_inches=0.0)
-plt.savefig('foo.pgf', bbox_inches='tight', pad_inches=0.0)
+plt.savefig('bucketing.png', bbox_inches='tight', pad_inches=0.0)
+plt.savefig('bucketing.pdf', bbox_inches='tight', pad_inches=0.0)
+plt.savefig('bucketing.pgf', bbox_inches='tight', pad_inches=0.0)
