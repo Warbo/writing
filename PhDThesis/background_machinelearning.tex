@@ -203,20 +203,19 @@ back into those of their constituents. For example, if $c$ and $d$ are the
 compression and decompression routines of an auto-encoder for non-recursive
 data, we can define an auto-encoder ($c'$ and $d'$) for binary trees in terms
 of a combining function $\bigoplus$, a predicate $\texttt{node?}$ and projection
-functions $\pi_{left}}$ and $\pi_{right}}$ as follows:
+functions $\pi_{left}$ and $\pi_{right}$ as follows:
 
-\begin{equation*}
-  c'(x) = \begin{cases}
-            c'(a) \bigoplus c'(b) & \text{if $x = \texttt{node}(a, b)$}
-            c(x)                  & \text{otherwise}
-          \end{cases}
-
-  d'(x) = \begin{cases}
-            \texttt{node}(d'(\pi_{left }(x)),
-                          d'(\pi_{right}(x))) & \text{if \texttt(node?)(x)}
-            d(x)                            & \text{otherwise}
-          \end{cases}
-\end{equation*}
+\begin{align*}
+  c'(x) &= \begin{cases}
+             c'(a) \bigoplus c'(b) & \text{if $x = \texttt{node}(a, b)$} \\
+             c(x)                  & \text{otherwise}
+           \end{cases} \\
+  d'(x) &= \begin{cases}
+             \texttt{node}(d'(\pi_{left }(x)),
+                           d'(\pi_{right}(x))) & \text{if \texttt{node?}(x)} \\
+             d(x)                              & \text{otherwise}
+           \end{cases}
+\end{align*}
 
 With a suitable distance function between trees (e.g. edit distance), we can
 learn $c$, $d$, \texttt{node?} and $\bigoplus$ together in an unsupervised
