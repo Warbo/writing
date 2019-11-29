@@ -178,11 +178,12 @@ often in inductive proofs (e.g. when reasoning about tail-recursive
 definitions~\cite{kapur2003automatic}\footnote{Tail-recursive functions are
   desirable due to their constant space usage, unlike recursion in non-tail
   positions which requires a growing number of stack frames or nested closures.
-  Reasoning about non-tail recursive definitions is often simpler, since they
-  don't expose accumulator arguments, so equivalence ), since the specific obligations which
-arise in the proof may be incompatible with the available inductive hypotheses.
-An informative example is given by Boyer and Moore of the associativity of
-multiplication in ACL2~\cite{boyer1983proof}:
+  The presence of accumulator arguments makes reasoning harder, so it is common
+  to use the direct implementation for proofs, then transport them over to the
+  tail-recursive definition via an equivalence relation.}), since the specific
+obligations which arise in the proof may be incompatible with the available
+inductive hypotheses. An informative example is given by Boyer and Moore of the
+associativity of multiplication in \textsc{ACL2}~\cite{boyer1983proof}:
 
 $$(x * y) * z = x * (y * z)$$
 
@@ -247,23 +248,39 @@ the original lemma (which is presumably interesting enough to prove and
 subsequently explore), that of the target theorem it may help to prove, and the
 novelty provided by reframing existing concepts in a new domain. The running
 examples for demonstrating \textsc{ACL2(ml)} are equivalence theorems for
-tail-recursive and their non-tail-recursive counterparts, as well as the effect
-of repeating certain list operations:
+tail-recursive definitions with their direct (non-tail-recursive) counterparts,
+as well as the effect of repeating certain list operations:
 
 \begin{itemize}
+\item
+  $\forall n, \texttt{natp}(n) \rightarrow \texttt{fact-tail}(n) =
+  \texttt{fact}(n)$ where \texttt{natp} is the predicate that $n$ is a natural
+  number, whilst \texttt{fact-tail} and \texttt{fact} are tail-recursive and
+  non-tail-recursive implementations of factorial, respectively.
 
-  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{fact-tail}(n) = \texttt{fact}(n)$ where \texttt{natp} is the predicate that $n$ is a natural number, whilst \texttt{fact-tail} and \texttt{fact} are tail-recursive and non-tail-recursive implementations of factorial, respectively.
+\item
+  $\forall n, \texttt{natp}(n) \rightarrow \texttt{power-tail}(n) =
+  \texttt{power}(n)$, where \texttt{power-tail} and \texttt{power} calculate
+  powers of 2.
 
-  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{power-tail}(n) = \texttt{power}(n)$,  where \texttt{power-tail} and \texttt{power} calculate powers of 2.
+\item
+  $\forall n, \texttt{natp}(n) \rightarrow \texttt{fib-tail}(n) =
+  \texttt{fib}(n)$, where \texttt{fib-tail} and \texttt{fib} calculate fibonacci
+  numbers.
 
-  \item $\forall n, \texttt{natp}(n) \rightarrow \texttt{fib-tail}(n) = \texttt{fib}(n)$,  where \texttt{fib-tail} and \texttt{fib} calculate fibonacci numbers.
+\item
+  $\forall x, \texttt{nat-listp}(x) \rightarrow \texttt{sort}(\texttt{sort}(x))
+  = \texttt{sort}(x)$, for list-of-natural-numbers predicate \texttt{nat-listp}
+  and list-sorting function \texttt{sort}.
 
-  \item $\forall x, \texttt{nat-listp}(x) \rightarrow \texttt{sort}(\texttt{sort}(x)) = \texttt{sort}(x)$, for list-of-natural-numbers predicate \texttt{nat-listp} and list-sorting function \texttt{sort}.
+\item
+  $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{rev}(\texttt{rev}(x)) =
+  x$, where \texttt{true-listp} ensures that $x$ is a valid singly-linked list
+  structure and \texttt{rev} is list reversal.
 
-  \item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{rev}(\texttt{rev}(x)) = x$, where \texttt{true-listp} ensures that $x$ is a valid singly-linked list structure and \texttt{rev} is list reversal.
-
-  \item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{int}(x, x) = x$, where \texttt{int} is the intersection of lists (i.e. a list of elements common to each).
-
+\item $\forall x, \texttt{true-listp}(x) \rightarrow \texttt{int}(x, x) = x$,
+  where \texttt{int} is the intersection of lists (i.e. a list of elements
+  common to each).
 \end{itemize}
 
 \paragraph{Auxiliary Lemmas} \label{sec:auxiliarylemmas}
@@ -311,12 +328,12 @@ These definitions are equivalent to the following Haskell:
 
 \begin{haskell}
 plus :: Nat -> Nat -> Nat
-plus      n  Z    = n
-plus      n (S m) = S (plus n m)
+plus      Z      m = m
+plus      (S n') m = S (plus n' m)
 
 plus_tail :: Nat -> Nat -> Nat
-plus_tail n  Z    = n
-plus_tail n (S m) = plus_tail (S n) m
+plus_tail Z      m = m
+plus_tail (S n') m = plus_tail n' (S m)
 \end{haskell}
 
 Both of these functions implement addition, but the \coq{plus_tail} variant is
