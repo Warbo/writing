@@ -330,7 +330,7 @@ design).
   \tikzset{trapezium stretches=true}
 
   \centering
-  \scalebox{0.9}{\begin{tikzpicture}[node distance=1cm]
+  \scalebox{0.8}{\begin{tikzpicture}[node distance=1cm]
 
     % Preparation section
 
@@ -410,9 +410,9 @@ design).
       let \p{thm} = (thm.east),
           \p{in}  = (in.north),
           \p{rec} = (rec.south east)
-       in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
+       in [decorate,decoration={brace, amplitude=10pt}, xshift=1.3cm]
        (\x{rec}, \y{in}) -- (\x{rec}, \y{thm})
-         node [black, midway, right, xshift=0.3cm]
+         node [black, midway, right, xshift=0.5cm]
               {Preparation $\S$\ref{section:prep}};
 
     % Sampling
@@ -420,18 +420,18 @@ design).
       let \p{thm} = (thm.east),
           \p{gt}  = (sthm.east),
           \p{rec} = (rec.south east)
-       in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
+       in [decorate,decoration={brace, amplitude=10pt}, xshift=1.3cm]
        (\x{rec}, \y{thm}) -- (\x{rec}, \y{gt})
-         node [black, midway, right, xshift=0.3cm]
+         node [black, midway, right, xshift=0.5cm]
               {Sampling $\S$\ref{section:sampling}};
 
     % Evaluation
     \draw
       let \p{sthm} = (sthm.east),
           \p{rec}  = (rec.south east)
-       in [decorate,decoration={brace, amplitude=10pt}, xshift=0.5cm]
+       in [decorate,decoration={brace, amplitude=10pt}, xshift=1.3cm]
        (\x{rec}, \y{sthm}) -- (\x{rec}, \y{rec})
-         node [black, midway, right, xshift=0.3cm]
+         node [black, midway, right, xshift=0.5cm]
               {Evaluation $\S$\ref{section:evaluation}};
 
   \end{tikzpicture}}
