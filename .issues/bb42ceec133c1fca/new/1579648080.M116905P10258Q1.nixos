@@ -1,0 +1,13 @@
+From: Chris Warburton
+Date: Tue, 21 Jan 2020 23:04:58 +0000
+State: new
+Subject: Mention Ghosts of Departed Proofs
+Message-Id: <bb42ceec133c1fca-0-artemis@nixos>
+
+GODP is a way of using phantom types to encode proofs, useful as
+preconditions for functions. The paper begins with a simple example of
+non-empty lists, eventually working up to a standalone library of
+natural-deduction proofs, and GHC type-checker plugins which implement
+proof tactics.
+
+This is a clear use-case for theory exploration results.
